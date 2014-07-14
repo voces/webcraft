@@ -1,0 +1,37 @@
+<div class="menu">
+	<p var="novaP" class="nova hoverglow">Nova</p>
+	<p var="about" class="about">About WebCraft</p>
+	<p var="gallery" class="gallery">Gallery</p>
+	<p var="editor" class="editor hoverglow">Editor</p>
+	<p var="github" class="github hoverglow">GitHub</p>
+</div>
+
+<div var="settings" class="settings"></div>
+
+<div var="settingsPanel" class="settingsPanel">
+	<h1>Network Settings</h1>
+	<label>Address</label>
+	<input var="address" class="address" type="text" placeholder="Address" value="ws://68.229.21.36:8082">
+</div>
+
+<div var="loginPanel" class="login" style="opacity: 1;">
+
+	<div var="container" class="container">
+		<h1>Log into Nova</h1>
+		<label>Account</label>
+		<input var="account" class="account" type="text" placeholder="Account">
+		<label>Password</label>
+		<input var="password" class="password" type="password" placeholder="Password">
+		
+		<div var="error" class="error" style="display: block;"></div>
+		
+		<div class="buttons">
+			<input var="login" class="next" type="button" value="Login">
+			<input var="cancel" class="cancel" type="button" value="Cancel">
+		</div>
+	</div>
+	
+	<div var="shield" class="shield"></div>
+	
+	<h3 var="prompt" class="prompt" style="display: none;"></h3>
+</div>

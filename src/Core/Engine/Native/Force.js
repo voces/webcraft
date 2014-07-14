@@ -1,0 +1,3 @@
+Force = function() {
+	this.objects = [];
+}

@@ -1,0 +1,317 @@
+/********************************
+*********************************
+** Global
+*********************************
+********************************/
+
+/********************************
+*********************************
+** Left
+*********************************
+********************************/
+
+.Chat {
+	position: absolute;
+	right: 16em;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	
+	min-width: 75%;
+	
+	background-color: #111;
+}
+
+.Chat .container {
+	height: 100%;
+	width: calc(100% - 17px);
+	overflow: hidden;
+}
+
+.Chat .log {
+	width: calc(100% - 2em + 17px);
+	height: calc(100% - 5em);
+	
+	padding: 1em;
+	
+	overflow-y: scroll;
+	margin-right: 17px;
+	
+	font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+}
+
+.Chat .log .indent {
+	padding-left: 1em;
+}
+
+.Chat .log .server {
+	color: #bde;
+}
+
+.Chat .log .server.offline {
+	opacity: .75;
+}
+
+.Chat .log .error {
+	color: #cbb;
+}
+
+.Chat .log .selfJoin {
+	color: #ded;
+}
+
+.Chat .log .join {
+	color: #ded;
+}
+
+.Chat .log .whisper {
+	color: #cad;
+}
+
+.Chat .log .message {
+	color: #eee;
+}
+
+.Chat .log .account {
+	color: #ffe;
+	font-weight: bold;
+}
+
+.Chat .log .group {
+	color: #ffe;
+	font-weight: bold;
+}
+
+.Chat .input {
+	outline: none;
+	padding: .5em;
+	border: none;
+	width: calc(100% - 3em);
+	bottom: 1em;
+	left: 1em;
+	position: absolute;
+}
+
+/********************************
+*********************************
+** Right
+*********************************
+********************************/
+
+.Portal .control {
+	position: absolute;
+	width: 16em;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	
+	max-width: 25%;
+	
+	background-color: #333;
+	
+	overflow: auto;
+}
+
+.Portal .control .tab > input {
+	display: none;
+}
+
+.Portal .control .tab > label {
+	display: inline-block;
+	
+	font-size: 1.17em;
+	font-weight: bold;
+	
+	height: 2em;
+	width: 100%;
+	
+	margin-top: 1em;
+}
+
+.Portal .control .tab > label:hover {
+	text-shadow: .1em	.1em	.1em #bbb,
+				.1em	-.1em	.1em #bbb,
+				-.1em	.1em	.1em #bbb,
+				-.1em	-.1em	.1em #bbb;
+
+	cursor: pointer;
+}
+
+.Portal .control .tab > label > img {
+	margin-left: .25em;
+	
+	width: 2em;
+	height: 2em;
+}
+
+.Portal .control .tab > label > span {
+	position: relative;
+	bottom: .7em;
+}
+
+.Portal .control .tab > input:checked ~ label {
+	background-color: #444;
+}
+
+.Portal .control .tab > input:checked ~ .tabContent {
+	display: block;
+}
+
+.Portal .tabContent {
+	display: none;
+	
+	margin: 1em;
+}
+
+/********************************
+** Group
+********************************/
+
+.Portal .tab.group input {
+	border: none;
+	outline: none;
+	padding: .5em;
+	margin: 0;
+}
+
+.Portal .tab.group input[type="text"] {
+	width: calc(100% - 4.5em - 4px);
+}
+
+.Portal .tab.group input[type="button"] {
+	background-color: gray;
+	font-weight: bold;
+	color: white;
+	width: 3.5em;
+	position: relative;
+	right: 4px;
+}
+
+.Portal .tab.group input[type="button"]:hover {
+	background-color: #999;
+	cursor: pointer;
+}
+
+.Portal .tab.group .list .user {
+	height: 1.5em;
+	margin: .5em 0;
+	cursor: pointer;
+}
+
+.Portal .tab.group .list .user img.avatar {
+	width: 1.5em;
+	height: 1.5em;
+}
+
+.Portal .tab.group .list .user span.label {
+	position: relative;
+	bottom: .33em;
+	left: .5em;
+}
+
+/********************************
+** Lobby
+********************************/
+
+.Portal .tab.lobby input {
+	border: none;
+	outline: none;
+	padding: .5em;
+	margin: 0;
+}
+
+.Portal .tab.lobby .list .lobby {
+	height: 1.5em;
+	margin: .5em 0;
+	cursor: pointer;
+}
+
+.Portal .tab.lobby .list .lobby img.preview {
+	width: 1.5em;
+	height: 1.5em;
+}
+
+.Portal .tab.lobby .list .lobby span.label {
+	position: relative;
+	bottom: .33em;
+	left: .5em;
+}
+
+.Portal .tab.lobby input[type="text"] {
+	width: calc(100% - 5em - 4px);
+}
+
+.Portal .tab.lobby input[type="button"] {
+	background-color: gray;
+	font-weight: bold;
+	color: white;
+	width: 4em;
+	position: relative;
+	right: 4px;
+}
+
+.Portal .tab.lobby input[type="button"]:hover {
+	background-color: #999;
+	cursor: pointer;
+}
+
+.Portal .tab.lobby .lobbyCurrentHost {
+	font-style: italic;
+}
+
+.Portal .tab.lobby .lobbyCurrentHost > span {
+	font-weight: bold;
+}
+
+.Portal .tab.lobby .lobbyCurrentHost > span:hover {
+	text-shadow:	0.05em	0.05em	.05em #999,
+				0.05em	-.05em	.05em #999,
+				-.05em	0.05em	.05em #999,
+				-.05em	-.05em	.05em #999;
+	
+	cursor: pointer;
+}
+
+/********************************
+** Friends
+********************************/
+
+.Portal .tab.friends .list .user {
+	height: 1.5em;
+	margin: .5em 0;
+	cursor: pointer;
+}
+
+.Portal .tab.friends .list .user.offline {
+	opacity: .5;
+	cursor: default;
+}
+
+.Portal .tab.friends .list .user img.avatar {
+	width: 1.5em;
+	height: 1.5em;
+}
+
+.Portal .tab.friends .list .user span.label {
+	position: relative;
+	bottom: .33em;
+	left: .5em;
+}
+
+@media (max-width: 700px) {
+	.Portal {
+		font-size: 90%;
+	}
+}
+
+@media (max-width: 600px) {
+	.Portal {
+		font-size: 78%;
+	}
+}
+
+@media (max-width: 500px) {
+	.Portal {
+		font-size: 60%;
+	}
+}
