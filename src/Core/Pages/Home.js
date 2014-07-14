@@ -19,6 +19,8 @@ Core.Pages.Home = function(pages) {
 	this.prevAccount = "";
 	this.prevPassword = "";
 	
+	this.connecting = false;
+	
 	this.page = $('<div></div>').addClass('Home').load(
 		'src/Core/Pages/Home/HomeTemplate.html',
 		this.load.bind(this)
@@ -31,23 +33,32 @@ Core.Pages.Home = function(pages) {
 ***********************************/
 
 Core.Pages.Home.prototype.selectNova = function() {
-	if (!this.nova.connected()) this.nova.loadSocket(this.address.val());
 	
-	if (this.core.logged) {
+	//Connect to Nova if we aren't
+	if (!this.nova.connected()) {
+		
+		this.shield.insertBefore(this.prompt).show();
+		this.prompt
+			.show()
+			.text('Connecting to Nova')
+			.append($("<span></span>")
+				.addClass("marchingEllipsis")
+				.append($("<span></span>").text("."))
+				.append($("<span></span>").text("."))
+				.append($("<span></span>").text("."))
+			);
+		
+		this.connecting = true;
+		this.nova.loadSocket(this.address.val());
+		
+	//We're connected, if we're logged in, just go to portal
+	} else if (this.core.logged) {
+		
 		this.fadeOut();
 		this.pages.portal.fadeIn();
-		
-	} else if (!this.loginPanel.is('visible')) {
-		this.loginPanel.css('opacity', 0);
-		this.loginPanel.animate({opacity: 1});
-		
-		this.loginPanel.show();
-		
-		if (this.account.val() != "")
-			this.password.select();
-		else
-			this.account.select();
-	}
+	
+	//Connected but not logged in, show login prompt
+	} else this.showLogin();
 };
 
 Core.Pages.Home.prototype.selectEditor = function() {
@@ -74,8 +85,22 @@ Core.Pages.Home.prototype.selectSettings = function() {
 };
 
 /**********************************
-**	Menu Options
+**	Menu options stuff
 ***********************************/
+
+Core.Pages.Home.prototype.showLogin = function() {
+	if (!this.loginPanel.is('visible')) {
+		this.loginPanel.css('opacity', 0);
+		this.loginPanel.animate({opacity: 1});
+		
+		this.loginPanel.show();
+		
+		if (this.account.val() != "")
+			this.password.select();
+		else
+			this.account.select();
+	}
+};
 
 Core.Pages.Home.prototype.focusPassword = function(e) {
 	if (e.which == 13) {
@@ -95,7 +120,14 @@ Core.Pages.Home.prototype.tryLogin = function() {
 	var password = this.password.val();
 	
 	if (account == this.prevAccount && password == this.prevPassword && this.register === true) {
-		this.prompt.text('Registering');
+		this.prompt
+			.text('Registering')
+			.append($("<span></span>")
+				.addClass("marchingEllipsis")
+				.append($("<span></span>").text("."))
+				.append($("<span></span>").text("."))
+				.append($("<span></span>").text("."))
+		);
 		this.core.secureRegister(account, password);
 		
 		this.register = false;
@@ -104,7 +136,14 @@ Core.Pages.Home.prototype.tryLogin = function() {
 		this.prevAccount = account;
 		this.prevPassword = password;
 		
-		this.prompt.text('Logging in');
+		this.prompt
+			.text('Logging in')
+			.append($("<span></span>")
+				.addClass("marchingEllipsis")
+				.append($("<span></span>").text("."))
+				.append($("<span></span>").text("."))
+				.append($("<span></span>").text("."))
+		);
 		this.core.secureLogin(account, password);
 	}
 };
@@ -171,6 +210,35 @@ Core.Pages.Home.prototype.keydown = function(e) {
 /**********************************
 **	Communications
 ***********************************/
+
+//Connected
+Core.Pages.Home.prototype.onOpen = function(e2, e) {
+	
+	this.prompt.fadeOut();
+	this.shield.fadeOut();
+	
+	this.showLogin();
+};
+
+//Failed to connect
+Core.Pages.Home.prototype.onClose = function(e2, e) {
+	
+	if (!this.connecting) return;
+	this.connecting = true;
+	
+	this.prompt
+		.show()
+		.text("")
+		.append($("<span></span>")
+			.css("color", "red")
+			.text("Unable to connect to Nova."));
+	
+	setTimeout(function() {
+		this.prompt.fadeOut();
+		this.shield.fadeOut();
+	}.bind(this), 3000);
+	
+};
 
 Core.Pages.Home.prototype.onLogin = function(e2, e) {
 	
@@ -284,6 +352,9 @@ Core.Pages.Home.prototype.load = function() {
 	this.loginPanel.hide();
 	
 	//Communications
+	$(this.nova).on('onOpen.Home', this.onOpen.bind(this));
+	$(this.nova).on('onClose.Home', this.onClose.bind(this));
+	
 	$(this.nova).on('onLogin.Home', this.onLogin.bind(this));
 	$(this.nova).on('onLoginFail.Home', this.onLoginFail.bind(this));
 	$(this.nova).on('onRegister.Home', this.onRegister.bind(this));
