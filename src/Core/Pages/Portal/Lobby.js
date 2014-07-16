@@ -27,8 +27,12 @@ Core.Pages.Portal.Lobby = function(portal) {
 **	UI
 ***********************************/
 
+Core.Pages.Portal.Lobby.prototype.selectLobby = function(e) {
+	this.section.lobbyJoinText.val($(e.delegateTarget).text());
+};
+
 Core.Pages.Portal.Lobby.prototype.joinLobby = function(e) {
-	this.nova.lobby($(e.target).text());
+	this.nova.lobby($(e.delegateTarget).text());
 };
 
 Core.Pages.Portal.Lobby.prototype.joinText = function(e) {
@@ -51,6 +55,43 @@ Core.Pages.Portal.Lobby.prototype.createClick = function(e) {
 	$(this.section.lobbyCreateText).val("");
 };
 
+//Can still paste return lines and other html, but w/e
+Core.Pages.Portal.Lobby.prototype.hostTextDown = function(e) {
+	if (e.which == 13)
+		return false;
+};
+
+Core.Pages.Portal.Lobby.prototype.selectHost = function(e) {
+	console.log(e);
+};
+
+Core.Pages.Portal.Lobby.prototype.hostTextUp = function(e) {
+	var text = $(e.target).text().toLowerCase().replace(/\s/g, "");
+	var validNames = new RegExp('.*' + text.split('').join('.*') + '.*');
+	
+	this.section.lobbySuggestions.empty();
+	
+	var count = 0;
+	for (var i = 0; i < this.hosts.length && count < 10; i++)
+		if (validNames.test(this.hosts[i].toLowerCase())) {
+			this.section.lobbySuggestions
+				.append($("<span></span>")
+					.text(this.hosts[i])
+					//TODO: add this functionality, requires us to change the css show/hide into scripted so we have time to fire click (i.e., collapse instead of disappear)
+					//.click(this.selectHost.bind(this))
+				);
+			count++;
+		}
+};
+
+Core.Pages.Portal.Lobby.prototype.hostTextBlur = function(e) {
+	var target = $(e.target);
+	if (target.text() == "")
+		target.text("none");
+	else if (target.text() != target.html())
+		target.text(target.text());
+};
+
 /**********************************
 **	Communication
 ***********************************/
@@ -68,6 +109,7 @@ Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
 		.append($("<span></span>")
 			.addClass("label")
 			.text(lobby.name))
+		.on("click", this.selectLobby.bind(this))
 		.on("dblclick", this.joinLobby.bind(this));
 	
 	if (append) card.appendTo(this.section.list);
@@ -159,6 +201,10 @@ Core.Pages.Portal.Lobby.prototype.load = function() {
 	//Creating lobbies
 	$(this.section.lobbyCreateText).on("keydown", this.createText.bind(this));
 	$(this.section.lobbyCreateButton).on("click", this.createClick.bind(this));
+	
+	$(this.section.lobbyCurrentHost).on("keydown", this.hostTextDown.bind(this));
+	$(this.section.lobbyCurrentHost).on("keyup", this.hostTextUp.bind(this));
+	$(this.section.lobbyCurrentHost).on("blur", this.hostTextBlur.bind(this));
 	
 	/**********************************
 	**	Communication hooks

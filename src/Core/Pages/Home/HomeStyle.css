@@ -24,6 +24,11 @@
 	color: gray;
 }
 
+.Home .menu .nova {
+	font-size: 4em;
+	margin: .25em 0;
+}
+
 .Home .menu > input {
 	outline: none;
 }

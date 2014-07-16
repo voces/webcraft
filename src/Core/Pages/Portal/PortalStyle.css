@@ -259,17 +259,31 @@
 	font-style: italic;
 }
 
-.Portal .tab.lobby .lobbyCurrentHost > span {
+.Portal .tab.lobby .lobbyCurrentHost > span[contenteditable] {
 	font-weight: bold;
+	outline: none;
 }
 
-.Portal .tab.lobby .lobbyCurrentHost > span:hover {
+.Portal .tab.lobby .lobbyCurrentHost > span[contenteditable]:hover {
 	text-shadow:	0.05em	0.05em	.05em #999,
 				0.05em	-.05em	.05em #999,
 				-.05em	0.05em	.05em #999,
 				-.05em	-.05em	.05em #999;
 	
 	cursor: pointer;
+}
+
+.Portal .tab.lobby .lobbyCurrentHost .suggestions {
+	display: none;
+	font-style: normal;
+}
+
+.Portal .tab.lobby .lobbyCurrentHost .suggestions span {
+	display: block
+}
+
+.Portal .tab.lobby .lobbyCurrentHost > span[contenteditable]:focus ~ .suggestions {
+	display: block;
 }
 
 /********************************

@@ -6,6 +6,7 @@ Core.Pages = function(core) {
 	this.home = new Core.Pages.Home(this);
 	this.portal = new Core.Pages.Portal(this);
 	this.editor = new Core.Pages.Editor(this);
+	this.game = new Core.Pages.Game(this);
 	
 	$(document).ready(this.load.bind(this));
 };
