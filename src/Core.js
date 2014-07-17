@@ -2,6 +2,8 @@ Core = function() {
 	
 	this.bcrypt = new bCrypt();
 	
+	this.graphic = new Graphic("world");
+	
 	this.nova = new Nova('ws://68.229.21.36:8082', true);
 	this.host = this.nova.newHost();
 	this.pages = new Core.Pages(this);

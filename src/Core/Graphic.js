@@ -1,4 +1,4 @@
-Graphic = function() {
+Graphic = function(element) {
 	
 	//Scene
 	this.scene = new THREE.Scene();
@@ -8,7 +8,7 @@ Graphic = function() {
 	 *************************/
 	
 	this.renderer = new THREE.WebGLRenderer({antialias:true});
-	this.renderer.domElement.id = 'world';
+	this.renderer.domElement.id = element;
 	
 	this.renderer.setSize(window.innerWidth, window.innerHeight);
 	
