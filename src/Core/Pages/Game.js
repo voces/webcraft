@@ -22,6 +22,58 @@ Core.Pages.Game = function(pages) {
 ***********************************/
 
 /**********************************
+***********************************
+**	UI
+***********************************
+***********************************/
+
+/**********************************
+**	Menu
+***********************************/
+
+Core.Pages.Game.prototype.menuHome = function(e) {
+	this.fadeOut();
+	this.pages.home.fadeIn();
+};
+
+Core.Pages.Game.prototype.menuLeave = function(e) {
+	this.host.leave();
+};
+
+Core.Pages.Game.prototype.menuCancel = function(e) {
+	this.menu.toggle();
+};
+
+/**********************************
+**	Global Hooks
+***********************************/
+
+/**********************************
+**	Window Hooks
+***********************************/
+
+Core.Pages.Game.prototype.keydown = function(e) {
+	if (e.which == 27) {
+		this.menu.toggle();
+		
+		return false;
+	}
+};
+
+/**********************************
+**	Host Communication Hooks
+***********************************/
+
+Core.Pages.Game.prototype.onLeave = function(e2, e) {
+	console.log("onLeave", e, e2, this.core.displayAccount);
+	//Means we left the game
+	if (e.account == this.core.displayAccount) {
+		this.fadeOut();
+		this.pages.portal.fadeIn();
+	}
+};
+
+/**********************************
 **	Initializer
 ***********************************/
 
@@ -40,6 +92,7 @@ Core.Pages.Game.prototype.fadeIn = function(instant) {
 		this.page.animate({opacity: 1}, this.bindGlobals.bind(this));
 	}
 	
+	this.menu.hide();
 	this.page.show();
 	
 };
@@ -56,7 +109,9 @@ Core.Pages.Game.prototype.fadeOut = function() {
 Core.Pages.Game.prototype.bindGlobals = function() {
 	
 	//Global hooks
+	$(window).on('keydown.Game', this.keydown.bind(this));
 	
+	$(this.host).on("onLeave", this.onLeave.bind(this));
 	
 };
 
@@ -75,7 +130,16 @@ Core.Pages.Game.prototype.load = function() {
 	**	Local hooks
 	***********************************/
 	
+	$(this.mHome).on('click', this.menuHome.bind(this));
+	$(this.mLeave).on('click', this.menuLeave.bind(this));
+	$(this.mCancel).on('click', this.menuCancel.bind(this));
+	
+	/**********************************
+	**	Page setup
+	***********************************/
+	
 	this.page.appendTo('body');
+	this.page.hide();
 	
 	this.ready = true;
 	

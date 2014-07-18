@@ -15,7 +15,7 @@ Nova.Host = function(ip, port) {
 
 Nova.Host.prototype.connect = function(ip, port) {
 	
-	if (this.ip != ip || this.port != port) {
+	if (!this.connected(ip, port)) {
 		
 		this.destroy();
 		
@@ -28,7 +28,7 @@ Nova.Host.prototype.connect = function(ip, port) {
 };
 
 //***************************************
-//**	Joining
+//**	Joining/Leaving
 //***************************************
 
 Nova.Host.prototype.sendKey = function(key) {
@@ -37,6 +37,10 @@ Nova.Host.prototype.sendKey = function(key) {
 
 Nova.Host.prototype.lobby = function(lobby) {
 	this.send({id: 'lobby', name: lobby});
+};
+
+Nova.Host.prototype.leave = function() {
+	this.send({id: 'leave'});
 };
 
 //***************************************
@@ -70,6 +74,10 @@ Nova.Host.prototype.send = function(what) {
 	what = JSON.stringify(what);
 	
 	if (this.socket.readyState == 1) this.socket.send(what);
+};
+
+Nova.Host.prototype.connected = function(ip, port) {
+	return this.ip == ip && this.port == port && this.socket.readyState == 1;
 };
 
 //***************************************

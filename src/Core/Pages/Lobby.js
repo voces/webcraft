@@ -223,7 +223,7 @@ Core.Pages.Lobby.prototype.template = function() {
 };
 
 Core.Pages.Lobby.prototype.bindGlobals = function() {
-	console.log('rawr', window);
+	
 	//Global hooks
 	$(window).on('keydown.Lobby', this.keydown.bind(this));
 	
@@ -232,7 +232,7 @@ Core.Pages.Lobby.prototype.bindGlobals = function() {
 	$(this.nova).on('onLoginFail.Lobby', this.onLoginFail.bind(this));
 	$(this.nova).on('onRegister.Lobby', this.onRegister.bind(this));
 	$(this.nova).on('onRegisterFail.Lobby', this.onRegisterFail.bind(this));
-	console.log('rawr2');
+	
 };
 
 Core.Pages.Lobby.prototype.unbindGlobals = function() {

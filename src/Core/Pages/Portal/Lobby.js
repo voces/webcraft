@@ -11,8 +11,9 @@ Core.Pages.Portal.Lobby = function(portal) {
 	this.nova = portal.nova;
 	this.host = portal.core.host;
 	
-	this.hosts = null;
-	this.lobbies = null;
+	this.hosts = [];
+	this.lobbies = [];
+	this.lobby = "";
 	
 	this.key = 0;
 	
@@ -27,12 +28,24 @@ Core.Pages.Portal.Lobby = function(portal) {
 **	UI
 ***********************************/
 
+Core.Pages.Portal.Lobby.prototype.joinLobby = function(lobby) {
+	this.lobby = this.lobbies[lobby];
+	
+	//If we're already connected to the host, just join lobby
+	if (this.host.socket && this.host.socket.readyState == 1 && this.host.account == this.lobby.host)
+		this.host.lobby(this.lobby.name);
+	
+	//Else bridge it
+	else
+		this.nova.bridge(this.lobby.host);
+}
+
 Core.Pages.Portal.Lobby.prototype.selectLobby = function(e) {
 	this.section.lobbyJoinText.val($(e.delegateTarget).text());
 };
 
-Core.Pages.Portal.Lobby.prototype.joinLobby = function(e) {
-	this.nova.lobby($(e.delegateTarget).text());
+Core.Pages.Portal.Lobby.prototype.joinOnDblClick = function(e) {
+	this.joinLobby($(e.delegateTarget).text());
 };
 
 Core.Pages.Portal.Lobby.prototype.joinText = function(e) {
@@ -41,8 +54,9 @@ Core.Pages.Portal.Lobby.prototype.joinText = function(e) {
 };
 
 Core.Pages.Portal.Lobby.prototype.joinClick = function(e) {
-	this.nova.lobby($(this.section.lobbyJoinText).val());
-	$(this.section.lobbyJoinText).val("");
+	this.joinLobby(this.section.lobbyJoinText.val());
+	
+	this.section.lobbyJoinText.val("");
 };
 
 Core.Pages.Portal.Lobby.prototype.createText = function(e) {
@@ -110,7 +124,7 @@ Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
 			.addClass("label")
 			.text(lobby.name))
 		.on("click", this.selectLobby.bind(this))
-		.on("dblclick", this.joinLobby.bind(this));
+		.on("dblclick", this.joinOnDblClick.bind(this));
 	
 	if (append) card.appendTo(this.section.list);
 	else card.prependTo(this.section.list);
@@ -133,14 +147,17 @@ Core.Pages.Portal.Lobby.prototype.onLobbyList = function(e2, e) {
 	
 	this.lobbies = e.list;
 	
-	for (var i = 0; i < e.list.length; i++)
+	for (var i = 0; i < e.list.length; i++) {
 		this.appendLobby(e.list[i]);
+		this.lobbies[e.list[i].name] = e.list[i];
+	}
 	
 };
 
 Core.Pages.Portal.Lobby.prototype.onReserve = function(e2, e) {
 	var lobby = {host: e.host, name: e.name, listed: new Date().getTime()};
 	this.lobbies.push(lobby);
+	this.lobbies[lobby.name] = lobby;
 	
 	this.appendLobby(lobby, false);
 };
@@ -159,14 +176,22 @@ Core.Pages.Portal.Lobby.prototype.onHostList = function(e2, e) {
 		this.section.lobbyCurrentHost.text(e.list[0]);
 };
 
-Core.Pages.Portal.Lobby.prototype.onLobby = function(e2, e) {
+Core.Pages.Portal.Lobby.prototype.onBridge = function(e2, e) {
 	this.key = e.key;
+	this.host.account = e.account;
 	
-	this.host.connect(e.ip, e.port);
+	if (typeof this.host.socket == "undefined" || this.host.socket.readyState != 1)
+		this.host.connect(e.ip, e.port);
+	else
+		this.host.sendKey(this.key);
 };
 
 Core.Pages.Portal.Lobby.prototype.onOpen = function(e2, e) {
 	this.host.sendKey(this.key);
+};
+
+Core.Pages.Portal.Lobby.prototype.onKey = function(e2, e) {
+	this.host.lobby(this.lobby.name);
 };
 
 Core.Pages.Portal.Lobby.prototype.onJoin = function(e2, e) {
@@ -216,8 +241,10 @@ Core.Pages.Portal.Lobby.prototype.load = function() {
 	$(this.nova).on('onUnreserve', this.onUnreserve.bind(this));
 	
 	//Joining lobbies
-	$(this.nova).on('onLobby', this.onLobby.bind(this));
+	$(this.nova).on('onBridge', this.onBridge.bind(this));
+	
 	$(this.host).on('onOpen', this.onOpen.bind(this));
+	$(this.host).on('onKey', this.onKey.bind(this));
 	$(this.host).on('onJoin', this.onJoin.bind(this));
 	
 	//Misc
