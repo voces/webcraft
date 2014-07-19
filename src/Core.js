@@ -71,10 +71,17 @@ Core.prototype.onLogout = function(e2, e) {
 	this.displayAccount = "";
 };
 
+Core.prototype.onKeyFail = function(e2, e) {
+	this.host.destroy();
+	this.host = this.nova.newHost();
+};
+
 Core.prototype.load = function() {
 	
 	//Communication hooks
 	$(this.nova).on('onLogin.Core', this.onLogin.bind(this));
 	$(this.nova).on('onLogout.Core', this.onLogout.bind(this));
+	
+	$(this.host).on('onKeyFail.Core', this.onKeyFail.bind(this));
 	
 };

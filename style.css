@@ -18,6 +18,10 @@ body {
 	bottom: 0;
 }
 
+.error {
+	color: red;
+}
+
 /*
 Code adapted from Christofer Vilander and Roobyx
 http://stackoverflow.com/questions/13014808/is-there-anyway-to-animate-an-ellipsis-with-css-animations

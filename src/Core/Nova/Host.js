@@ -44,6 +44,22 @@ Nova.Host.prototype.leave = function() {
 };
 
 //***************************************
+//**	Control
+//***************************************
+
+Nova.Host.prototype.unlist = function(lobby) {
+	this.send({id: 'unlist', name: lobby});
+};
+
+Nova.Host.prototype.relist = function(lobby) {
+	this.send({id: 'relist', name: lobby});
+};
+
+Nova.Host.prototype.unreserve = function(lobby) {
+	this.send({id: 'unreserve', name: lobby});
+};
+
+//***************************************
 //**	Protocols
 //***************************************
 
@@ -131,7 +147,8 @@ Nova.Host.prototype._onerror = function(evt) {
 
 //Closes the socket
 Nova.Host.prototype.close = function() {
-	this.socket.close();
+	if (typeof this.socket != "undefined")
+		this.socket.close();
 };
 
 //***************************************

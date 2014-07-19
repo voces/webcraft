@@ -110,6 +110,14 @@
 	background-color: #333;
 }
 
+@media screen and (max-width: 500) {
+body {
+	background: red;
+	color: green;
+	font-size: 500%;
+}
+}
+
 .Home .container {
 	position: absolute;
 	

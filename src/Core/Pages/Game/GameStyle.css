@@ -12,11 +12,7 @@ body > .Game {
 	height: 100%;
 }
 
-/********************************
-** Menu
-********************************/
-
-body > .Game  > .menu {
+body > .Game > .shield {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -28,17 +24,20 @@ body > .Game  > .menu {
 	background: rgba(0, 0, 0, 0.6);
 }
 
-body > .Game > .menu > div {
+body > .Game > .shield > div {
 	position: relative;
 	margin: auto;
 	width: 15em;
 	height: 6em;
 	top: calc(50% - 4em);
-}
-
-body > .Game > .menu > div > p {
+	
 	text-align: center;
 }
+
+
+/********************************
+** Menu
+********************************/
 
 body > .Game .hoverglow:hover {
 	text-shadow: .1em	.1em	.2em white,

@@ -41,12 +41,7 @@ Core.Pages.Home.prototype.selectNova = function() {
 		this.prompt
 			.show()
 			.text('Connecting to Nova')
-			.append($("<span></span>")
-				.addClass("marchingEllipsis")
-				.append($("<span></span>").text("."))
-				.append($("<span></span>").text("."))
-				.append($("<span></span>").text("."))
-			);
+			.append(new Ellipse());
 		
 		this.connecting = true;
 		this.nova.loadSocket(this.address.val());
@@ -122,12 +117,7 @@ Core.Pages.Home.prototype.tryLogin = function() {
 	if (account == this.prevAccount && password == this.prevPassword && this.register === true) {
 		this.prompt
 			.text('Registering')
-			.append($("<span></span>")
-				.addClass("marchingEllipsis")
-				.append($("<span></span>").text("."))
-				.append($("<span></span>").text("."))
-				.append($("<span></span>").text("."))
-		);
+			.append(new Ellipse());
 		this.core.secureRegister(account, password);
 		
 		this.register = false;

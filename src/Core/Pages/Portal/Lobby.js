@@ -41,11 +41,11 @@ Core.Pages.Portal.Lobby.prototype.joinLobby = function(lobby) {
 }
 
 Core.Pages.Portal.Lobby.prototype.selectLobby = function(e) {
-	this.section.lobbyJoinText.val($(e.delegateTarget).text());
+	this.section.lobbyJoinText.val($(e.delegateTarget).find("td:nth-child(2)").text());
 };
 
 Core.Pages.Portal.Lobby.prototype.joinOnDblClick = function(e) {
-	this.joinLobby($(e.delegateTarget).text());
+	this.joinLobby($(e.delegateTarget).find("td:nth-child(2)").text());
 };
 
 Core.Pages.Portal.Lobby.prototype.joinText = function(e) {
@@ -113,16 +113,22 @@ Core.Pages.Portal.Lobby.prototype.hostTextBlur = function(e) {
 Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
 	if (typeof append == "undefined") append = true;
 	
-	if (lobby.preview == "" || typeof lobby.preview == "undefined") lobby.preview = "blank.png";
+	if (lobby.preview == "" || typeof lobby.preview == "undefined") var preview = "images/lobbies/blank.png";
+	else if (lobby.preview.indexOf("http") >= 0) var preview = lobby.preview;
+	else var preview = "images/lobbies/" + lobby.preview;
 	
-	var card = $('<div></div>')
+	var card = $('<table>')
 		.addClass("lobby")
-		.append($("<img>")
-			.addClass("preview")
-			.attr("src", "images/avatars/" + lobby.preview))
-		.append($("<span></span>")
-			.addClass("label")
-			.text(lobby.name))
+		.attr("data-lobby", lobby.name)
+		.append($("<tbody>")
+			.append($("<tr>")
+				.append($("<td>")
+					.attr("rowspan", "2")
+					.append($("<img>").attr("src", preview)))
+				.append($("<td>").text(lobby.name)))
+			.append($("<tr>")
+				.append($("<td>").text(lobby.host))
+				.attr("title", "The host is " + lobby.host + ".")))
 		.on("click", this.selectLobby.bind(this))
 		.on("dblclick", this.joinOnDblClick.bind(this));
 	
@@ -164,7 +170,7 @@ Core.Pages.Portal.Lobby.prototype.onReserve = function(e2, e) {
 
 Core.Pages.Portal.Lobby.prototype.onUnreserve = function(e2, e) {
 	this.section.list.children().each(function(i, v) {
-		if ($(v).children().eq(1).text() == e.name)
+		if ($(v).attr("data-lobby") == e.name)
 			v.remove();
 	});
 };
@@ -195,6 +201,8 @@ Core.Pages.Portal.Lobby.prototype.onKey = function(e2, e) {
 };
 
 Core.Pages.Portal.Lobby.prototype.onJoin = function(e2, e) {
+	this.host.gameName = e.lobby;
+	
 	this.portal.fadeOut();
 	this.pages.game.fadeIn();
 };

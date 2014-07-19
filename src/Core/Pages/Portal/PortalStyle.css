@@ -222,19 +222,28 @@
 
 .Portal .tab.lobby .list .lobby {
 	height: 1.5em;
+	width: 100%;
 	margin: .5em 0;
 	cursor: pointer;
 }
 
-.Portal .tab.lobby .list .lobby img.preview {
-	width: 1.5em;
-	height: 1.5em;
+.Portal .tab.lobby .list .lobby img {
+	width: 2em;
+	height: 2em;
 }
 
-.Portal .tab.lobby .list .lobby span.label {
-	position: relative;
-	bottom: .33em;
-	left: .5em;
+.Portal .tab.lobby .list .lobby  tbody > tr:first-child {
+	line-height: .75em;
+	font-weight: bold;
+}
+
+.Portal .tab.lobby .list .lobby  tbody > tr:first-child > td:first-child {
+	width: 2em;
+}
+
+.Portal .tab.lobby .list .lobby  tbody > tr:nth-child(2) {
+	line-height: .75em;
+	color: #ddd;
 }
 
 .Portal .tab.lobby input[type="text"] {

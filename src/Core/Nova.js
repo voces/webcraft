@@ -134,10 +134,6 @@ Nova.prototype.bridge = function(host) {
 	this.send({id: 'bridge', host: host});
 };
 
-Nova.prototype.lobby = function(lobby) {
-	this.send({id: 'lobby', lobby: lobby});
-};
-
 Nova.prototype.lobbyList = function() {
 	this.send({id: 'lobbyList'});
 };

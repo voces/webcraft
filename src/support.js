@@ -74,7 +74,13 @@ $(document).ready(function() {
 	}); 
 });
 
-
+Ellipse = function() {
+	return $("<span></span>")
+		.addClass("marchingEllipsis")
+		.append($("<span></span>").text("."))
+		.append($("<span></span>").text("."))
+		.append($("<span></span>").text("."));
+}
 
 /*
 var shape = new THREE.TextGeometry("Username", {size: 300, font: 'helvetiker'});

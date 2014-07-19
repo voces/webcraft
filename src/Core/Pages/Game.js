@@ -65,12 +65,65 @@ Core.Pages.Game.prototype.keydown = function(e) {
 ***********************************/
 
 Core.Pages.Game.prototype.onLeave = function(e2, e) {
-	console.log("onLeave", e, e2, this.core.displayAccount);
+	
 	//Means we left the game
 	if (e.account == this.core.displayAccount) {
 		this.fadeOut();
 		this.pages.portal.fadeIn();
 	}
+};
+
+Core.Pages.Game.prototype.onClose = function(e2, e) {
+	
+	this.splash
+		.show()
+		.empty()
+		.append($("<div>")
+			.text("Reconnecting")
+			.append(new Ellipse()));
+	
+};
+
+//Portal will automatically try to key
+Core.Pages.Game.prototype.onOpen = function(e2, e) {
+	
+	this.splash
+		.empty()
+		.append($("<div>")
+			.text("Authenticating")
+			.append(new Ellipse()));
+	
+};
+
+Core.Pages.Game.prototype.onKeyFail = function(e2, e) {
+	
+	this.splash
+		.empty()
+		.append($("<div>")
+			.text("Bridging")
+			.append(new Ellipse()));
+	
+	this.nova.bridge(this.host.account);
+	
+};
+
+Core.Pages.Game.prototype.onLobby = function(e2, e) {
+	this.splash.hide();
+};
+
+//After bridging, Portal tries to lobby
+Core.Pages.Game.prototype.onLobbyFail = function(e2, e) {
+	
+	this.splash
+		.empty()
+		.append($("<div>")
+			.text("Unable to rejoin."));
+	
+	setTimeout(function() {
+		this.fadeOut();
+		this.pages.portal.fadeIn();
+	}.bind(this), 3000);
+	
 };
 
 /**********************************
@@ -93,6 +146,7 @@ Core.Pages.Game.prototype.fadeIn = function(instant) {
 	}
 	
 	this.menu.hide();
+	this.splash.hide();
 	this.page.show();
 	
 };
@@ -111,8 +165,6 @@ Core.Pages.Game.prototype.bindGlobals = function() {
 	//Global hooks
 	$(window).on('keydown.Game', this.keydown.bind(this));
 	
-	$(this.host).on("onLeave", this.onLeave.bind(this));
-	
 };
 
 Core.Pages.Game.prototype.unbindGlobals = function() {
@@ -123,8 +175,28 @@ Core.Pages.Game.prototype.load = function() {
 	
 	$(this.page).find('*').each(variablize.bind(this));
 	
-	//Communications
+	/**********************************
+	**	Local hooks
+	***********************************/
 	
+	$(this.host).on("onLeave.Game", this.onLeave.bind(this));
+	
+	/*	Autoreconnect code...
+		Autoreconnect is done in Core
+		When connected, Portal will key
+		If key works, Portal does lobby
+		Else we bridge (failure is NOT handled...)
+		If bridge > Portal keys (hopefully this won't fail, else we loop again)
+		Once key'd Portal does lobby
+		If Lobbyy, we're done
+		Else we give up
+	*/	
+	
+	$(this.host).on("onClose.Game", this.onClose.bind(this));
+	$(this.host).on("onOpen.Game", this.onOpen.bind(this));
+	$(this.host).on("onKeyFail.Game", this.onKeyFail.bind(this));
+	$(this.host).on("onLobby.Game", this.onLobby.bind(this));
+	$(this.host).on("onLobbyFail.Game", this.onLobbyFail.bind(this));
 	
 	/**********************************
 	**	Local hooks
