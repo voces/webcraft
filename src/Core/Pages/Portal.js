@@ -116,6 +116,7 @@ Core.Pages.Portal.prototype.bindGlobals = function() {
 	this.chat.bindGlobals();
 	this.group.bindGlobals();
 	this.friends.bindGlobals();
+	this.lobby.bindGlobals();
 	
 };
 
@@ -128,6 +129,7 @@ Core.Pages.Portal.prototype.unbindGlobals = function() {
 	this.chat.unbindGlobals();
 	this.group.unbindGlobals();
 	this.friends.unbindGlobals();
+	this.lobby.unbindGlobals();
 	
 };
 

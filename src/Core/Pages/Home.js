@@ -326,21 +326,6 @@ Core.Pages.Home.prototype.bindGlobals = function() {
 	//Global hooks
 	$(window).on('keydown.Home', this.keydown.bind(this));
 	
-};
-
-Core.Pages.Home.prototype.unbindGlobals = function() {
-	
-	$(window).off('.Home');
-	//$(this.nova).off('.Home');
-	
-};
-
-Core.Pages.Home.prototype.load = function() {
-	
-	$(this.page).find('*').each(variablize.bind(this));
-	
-	this.loginPanel.hide();
-	
 	//Communications
 	$(this.nova).on('onOpen.Home', this.onOpen.bind(this));
 	$(this.nova).on('onClose.Home', this.onClose.bind(this));
@@ -349,6 +334,23 @@ Core.Pages.Home.prototype.load = function() {
 	$(this.nova).on('onLoginFail.Home', this.onLoginFail.bind(this));
 	$(this.nova).on('onRegister.Home', this.onRegister.bind(this));
 	$(this.nova).on('onRegisterFail.Home', this.onRegisterFail.bind(this));
+	
+	
+};
+
+Core.Pages.Home.prototype.unbindGlobals = function() {
+	
+	$(window).off('.Home');
+	$(this.nova).off('.Home');
+	$(this.host).off('.Home');
+	
+};
+
+Core.Pages.Home.prototype.load = function() {
+	
+	$(this.page).find('*').each(variablize.bind(this));
+	
+	this.loginPanel.hide();
 	
 	/**********************************
 	**	Local hooks

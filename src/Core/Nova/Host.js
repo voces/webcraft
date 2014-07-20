@@ -85,6 +85,7 @@ Nova.Host.prototype.broadcast = function(data) {
 
 //A simplification of .socket.send
 Nova.Host.prototype.send = function(what) {
+	console.log("send", this.ip, this.port);
 	if (this.nova.debugging) console.log('tH', what);
 	
 	what = JSON.stringify(what);
@@ -135,8 +136,6 @@ Nova.Host.prototype._onopen = function(evt) {
 
 //When the connection is closed
 Nova.Host.prototype._onclose = function(evt) {
-	this.loadSocket();
-	
 	$(this).trigger("onClose", [evt]);
 };
 
@@ -159,12 +158,12 @@ Nova.Host.prototype.destroy = function() {
 	
 	if (this.socket) {
 		
+		this.socket.close();
+		
 		//Detach events
 		this.socket.onmessage = null;
 		this.socket.onopen = null;
 		this.socket.onclose = null;
 		this.socket.onerror = null;
-		
-		this.socket.close();
 	}
 }

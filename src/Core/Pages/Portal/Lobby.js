@@ -13,9 +13,7 @@ Core.Pages.Portal.Lobby = function(portal) {
 	
 	this.hosts = [];
 	this.lobbies = [];
-	this.lobby = "";
-	
-	this.key = 0;
+	this.lobby = null;
 	
 	this.section = $('<div></div>').addClass('section').load(
 		'src/Core/Pages/Portal/LobbyTemplate.html',
@@ -30,6 +28,7 @@ Core.Pages.Portal.Lobby = function(portal) {
 
 Core.Pages.Portal.Lobby.prototype.joinLobby = function(lobby) {
 	this.lobby = this.lobbies[lobby];
+	this.host.lobbyName = this.lobby.name;
 	
 	//If we're already connected to the host, just join lobby
 	if (this.host.socket && this.host.socket.readyState == 1 && this.host.account == this.lobby.host)
@@ -183,17 +182,17 @@ Core.Pages.Portal.Lobby.prototype.onHostList = function(e2, e) {
 };
 
 Core.Pages.Portal.Lobby.prototype.onBridge = function(e2, e) {
-	this.key = e.key;
+	this.host.key = e.key;
 	this.host.account = e.account;
 	
 	if (typeof this.host.socket == "undefined" || this.host.socket.readyState != 1)
 		this.host.connect(e.ip, e.port);
 	else
-		this.host.sendKey(this.key);
+		this.host.sendKey(this.host.key);
 };
 
 Core.Pages.Portal.Lobby.prototype.onOpen = function(e2, e) {
-	this.host.sendKey(this.key);
+	this.host.sendKey(this.host.key);
 };
 
 Core.Pages.Portal.Lobby.prototype.onKey = function(e2, e) {
@@ -213,10 +212,19 @@ Core.Pages.Portal.Lobby.prototype.onJoin = function(e2, e) {
 
 Core.Pages.Portal.Lobby.prototype.bindGlobals = function() {
 	
+	//Joining lobbies
+	$(this.nova).on('onBridge.Lobby', this.onBridge.bind(this));
+	
+	$(this.host).on('onOpen.Lobby', this.onOpen.bind(this));
+	$(this.host).on('onKey.Lobby', this.onKey.bind(this));
+	$(this.host).on('onJoin.Lobby', this.onJoin.bind(this));
+	
 };
 
 Core.Pages.Portal.Lobby.prototype.unbindGlobals = function() {
 	$(window).off('.Lobby');
+	$(this.nova).off('.Lobby');
+	$(this.host).off('.Lobby');
 };
 
 Core.Pages.Portal.Lobby.prototype.load = function() {
@@ -247,13 +255,6 @@ Core.Pages.Portal.Lobby.prototype.load = function() {
 	$(this.nova).on('onLobbyList', this.onLobbyList.bind(this));
 	$(this.nova).on('onReserve', this.onReserve.bind(this));
 	$(this.nova).on('onUnreserve', this.onUnreserve.bind(this));
-	
-	//Joining lobbies
-	$(this.nova).on('onBridge', this.onBridge.bind(this));
-	
-	$(this.host).on('onOpen', this.onOpen.bind(this));
-	$(this.host).on('onKey', this.onKey.bind(this));
-	$(this.host).on('onJoin', this.onJoin.bind(this));
 	
 	//Misc
 	$(this.nova).on('onHostList', this.onHostList.bind(this));

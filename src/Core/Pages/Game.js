@@ -45,6 +45,23 @@ Core.Pages.Game.prototype.menuCancel = function(e) {
 };
 
 /**********************************
+**	Splash
+***********************************/
+
+Core.Pages.Game.prototype.updateSplash = function(text, ellipse, show) {
+	this.splash
+		.empty()
+		.append($("<div>")
+			.text(text));
+	
+	if (ellipse)
+		this.splash.children().first().append(new Ellipse());
+	
+	if (show)
+		this.splash.show();
+};
+
+/**********************************
 **	Global Hooks
 ***********************************/
 
@@ -61,8 +78,10 @@ Core.Pages.Game.prototype.keydown = function(e) {
 };
 
 /**********************************
+***********************************
 **	Host Communication Hooks
-***********************************/
+***********************************
+**********************************/
 
 Core.Pages.Game.prototype.onLeave = function(e2, e) {
 	
@@ -73,56 +92,61 @@ Core.Pages.Game.prototype.onLeave = function(e2, e) {
 	}
 };
 
+/**********************************
+**	Reconnecting
+**********************************/
+
+//First event, goto onOpen
 Core.Pages.Game.prototype.onClose = function(e2, e) {
-	
-	this.splash
-		.show()
-		.empty()
-		.append($("<div>")
-			.text("Reconnecting")
-			.append(new Ellipse()));
-	
+	console.log("onClose");
+	this.updateSplash("Reconnecting", true, true);
+	this.core.host.connect(this.core.host.ip, this.core.host.port);
 };
 
-//Portal will automatically try to key
+//goto onKey
 Core.Pages.Game.prototype.onOpen = function(e2, e) {
-	
-	this.splash
-		.empty()
-		.append($("<div>")
-			.text("Authenticating")
-			.append(new Ellipse()));
-	
+	this.updateSplash("Authenticating", true);
+	this.host.sendKey(this.host.key);
 };
 
+//goto onLobby
+Core.Pages.Game.prototype.onKey = function(e2, e) {
+	this.host.lobby(this.host.lobbyName);
+};
+
+//goto onBridge
 Core.Pages.Game.prototype.onKeyFail = function(e2, e) {
-	
-	this.splash
-		.empty()
-		.append($("<div>")
-			.text("Bridging")
-			.append(new Ellipse()));
-	
+	this.updateSplash("Bridging", true);
 	this.nova.bridge(this.host.account);
-	
 };
 
+//success
 Core.Pages.Game.prototype.onLobby = function(e2, e) {
 	this.splash.hide();
 };
 
-//After bridging, Portal tries to lobby
+//failure
 Core.Pages.Game.prototype.onLobbyFail = function(e2, e) {
 	
-	this.splash
-		.empty()
-		.append($("<div>")
-			.text("Unable to rejoin."));
+	this.updateSplash("Unable to rejoin.", true);
 	
 	setTimeout(function() {
 		this.fadeOut();
 		this.pages.portal.fadeIn();
 	}.bind(this), 3000);
+	
+};
+
+//goto onOpen/onKey
+Core.Pages.Game.prototype.onBridge = function(e2, e) {
+	
+	this.host.key = e.key;
+	this.host.account = e.account;
+	
+	if (typeof this.host.socket == "undefined" || this.host.socket.readyState != 1)
+		this.host.connect(e.ip, e.port);
+	else
+		this.host.sendKey(this.host.key);
 	
 };
 
@@ -165,6 +189,17 @@ Core.Pages.Game.prototype.bindGlobals = function() {
 	//Global hooks
 	$(window).on('keydown.Game', this.keydown.bind(this));
 	
+	//Communication
+	
+	//Reconnecting events
+	$(this.host).on("onClose.Game", this.onClose.bind(this));			//	goto onOpen
+	$(this.host).on("onOpen.Game", this.onOpen.bind(this));				//	goto onKey
+	$(this.host).on("onKey.Game", this.onKey.bind(this));				//	goto onLobby
+	$(this.host).on("onKeyFail.Game", this.onKeyFail.bind(this));		//	goto onBridge
+	$(this.nova).on('onBridge.Lobby', this.onBridge.bind(this));		//	goto onOpen/onKey
+	$(this.host).on("onLobby.Game", this.onLobby.bind(this));			//	success
+	$(this.host).on("onLobbyFail.Game", this.onLobbyFail.bind(this));	//	fail
+	
 };
 
 Core.Pages.Game.prototype.unbindGlobals = function() {
@@ -180,23 +215,6 @@ Core.Pages.Game.prototype.load = function() {
 	***********************************/
 	
 	$(this.host).on("onLeave.Game", this.onLeave.bind(this));
-	
-	/*	Autoreconnect code...
-		Autoreconnect is done in Core
-		When connected, Portal will key
-		If key works, Portal does lobby
-		Else we bridge (failure is NOT handled...)
-		If bridge > Portal keys (hopefully this won't fail, else we loop again)
-		Once key'd Portal does lobby
-		If Lobbyy, we're done
-		Else we give up
-	*/	
-	
-	$(this.host).on("onClose.Game", this.onClose.bind(this));
-	$(this.host).on("onOpen.Game", this.onOpen.bind(this));
-	$(this.host).on("onKeyFail.Game", this.onKeyFail.bind(this));
-	$(this.host).on("onLobby.Game", this.onLobby.bind(this));
-	$(this.host).on("onLobbyFail.Game", this.onLobbyFail.bind(this));
 	
 	/**********************************
 	**	Local hooks

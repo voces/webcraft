@@ -82,6 +82,6 @@ Core.prototype.load = function() {
 	$(this.nova).on('onLogin.Core', this.onLogin.bind(this));
 	$(this.nova).on('onLogout.Core', this.onLogout.bind(this));
 	
-	$(this.host).on('onKeyFail.Core', this.onKeyFail.bind(this));
+	//$(this.host).on('onKeyFail.Core', this.onKeyFail.bind(this));
 	
 };
