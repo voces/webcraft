@@ -74,8 +74,9 @@ Core.Pages.Portal.Lobby.prototype.hostTextDown = function(e) {
 		return false;
 };
 
+//Not working... (see below)
 Core.Pages.Portal.Lobby.prototype.selectHost = function(e) {
-	console.log(e);
+	
 };
 
 Core.Pages.Portal.Lobby.prototype.hostTextUp = function(e) {

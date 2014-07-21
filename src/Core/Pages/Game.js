@@ -9,6 +9,7 @@ Core.Pages.Game = function(pages) {
 	this.core = pages.core;
 	this.nova = pages.nova;
 	this.host = pages.core.host;
+	this.engine = pages.core.engine;
 	
 	this.page = $('<div></div>').addClass('Game').load(
 		'src/Core/Pages/Game/GameTemplate.html',
@@ -62,8 +63,10 @@ Core.Pages.Game.prototype.updateSplash = function(text, ellipse, show) {
 };
 
 /**********************************
-**	Global Hooks
-***********************************/
+***********************************
+**	Global hooks
+***********************************
+**********************************/
 
 /**********************************
 **	Window Hooks
@@ -75,6 +78,15 @@ Core.Pages.Game.prototype.keydown = function(e) {
 		
 		return false;
 	}
+};
+
+/**********************************
+**	Engine Hooks
+***********************************/
+
+Core.Pages.Game.prototype.onLoad = function() {
+	if (this.engine.protocol == null)
+		console.log("empty!");
 };
 
 /**********************************
@@ -92,13 +104,16 @@ Core.Pages.Game.prototype.onLeave = function(e2, e) {
 	}
 };
 
+Core.Pages.Game.prototype.onJoin = function(e2, e) {
+	this.engine.load(e.protocol);
+};
+
 /**********************************
 **	Reconnecting
 **********************************/
 
 //First event, goto onOpen
 Core.Pages.Game.prototype.onClose = function(e2, e) {
-	console.log("onClose");
 	this.updateSplash("Reconnecting", true, true);
 	this.core.host.connect(this.core.host.ip, this.core.host.port);
 };
@@ -190,6 +205,7 @@ Core.Pages.Game.prototype.bindGlobals = function() {
 	$(window).on('keydown.Game', this.keydown.bind(this));
 	
 	//Communication
+	$(this.host).on("onLeave.Game", this.onLeave.bind(this));
 	
 	//Reconnecting events
 	$(this.host).on("onClose.Game", this.onClose.bind(this));			//	goto onOpen
@@ -211,10 +227,11 @@ Core.Pages.Game.prototype.load = function() {
 	$(this.page).find('*').each(variablize.bind(this));
 	
 	/**********************************
-	**	Local hooks
+	**	Global hooks
 	***********************************/
 	
-	$(this.host).on("onLeave.Game", this.onLeave.bind(this));
+	$(this.host).on("onJoin", this.onJoin.bind(this));
+	$(this.engine).on("onLoad", this.onLoad.bind(this));
 	
 	/**********************************
 	**	Local hooks

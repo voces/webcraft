@@ -84,13 +84,13 @@ Nova.Host.prototype.broadcast = function(data) {
 };
 
 //A simplification of .socket.send
-Nova.Host.prototype.send = function(what) {
-	console.log("send", this.ip, this.port);
-	if (this.nova.debugging) console.log('tH', what);
+Nova.Host.prototype.send = function(data) {
+	if (this.socket.readyState != 1) return;
 	
-	what = JSON.stringify(what);
+	if (this.nova.debugging) console.log('tH', data);
 	
-	if (this.socket.readyState == 1) this.socket.send(what);
+	data = JSON.stringify(data);
+	this.socket.send(data);
 };
 
 Nova.Host.prototype.connected = function(ip, port) {
@@ -118,11 +118,9 @@ Nova.Host.prototype.loadSocket = function() {
 Nova.Host.prototype._onmessage = function(evt) {
 	try {
 		var packet = jQuery.parseJSON(String(evt.data));
-		
 		if (this.nova.debugging) console.log('rH', packet);
 	} catch (err) {
 		if (this.nova.debugging) console.error(err, String(evt.data));
-		
 		$(this).trigger('onError', String(evt.data));
 	}
 	

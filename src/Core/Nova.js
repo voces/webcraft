@@ -25,11 +25,12 @@ Nova = function(address, debug) {
 
 //A simplification of .socket.send
 Nova.prototype.send = function(what) {
+	if (this.socket.readyState != 1) return;
+	
 	if (this.debugging) console.log("tS", what);
 	
 	what = JSON.stringify(what);
-	
-	if (this.socket.readyState == 1) this.socket.send(what);
+	this.socket.send(what);
 };
 
 Nova.prototype.connected = function() {
@@ -167,11 +168,9 @@ Nova.prototype.loadSocket = function(address) {
 Nova.prototype._onmessage = function(evt) {
 	try {
 		var packet = jQuery.parseJSON(String(evt.data));
-		
 		if (this.debugging) console.log("rS", packet);
 	} catch (err) {
 		if (this.debugging) console.error(err, String(evt.data));
-		
 		$(this).trigger('onError', String(evt.data));
 	}
 	
