@@ -75,9 +75,7 @@
 	right: 0;
 	left: 0;
 	
-	background-color: black;
-    filter: alpha(opacity=60);
-    opacity: 0.6;
+	background: rgba(0,0,0,.6);
 }
 
 .Home .prompt {
@@ -88,8 +86,6 @@
 	left: calc(50% - 5em);
 	
 	text-align: center;
-	
-	display: none;
 }
 
 /**************************************

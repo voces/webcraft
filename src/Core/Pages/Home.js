@@ -37,9 +37,8 @@ Core.Pages.Home.prototype.selectNova = function() {
 	//Connect to Nova if we aren't
 	if (!this.nova.connected()) {
 		
-		this.shield.insertBefore(this.prompt).show();
+		this.shield.show();
 		this.prompt
-			.show()
 			.text('Connecting to Nova')
 			.append(new Ellipse());
 		
@@ -57,10 +56,8 @@ Core.Pages.Home.prototype.selectNova = function() {
 };
 
 Core.Pages.Home.prototype.selectEditor = function() {
-	
 	this.fadeOut();
 	this.pages.editor.fadeIn();
-	
 };
 
 Core.Pages.Home.prototype.selectGithub = function() {
@@ -108,8 +105,7 @@ Core.Pages.Home.prototype.focusPassword = function(e) {
 
 Core.Pages.Home.prototype.tryLogin = function() {
 	
-	this.container.after(this.shield);
-	this.prompt.show();
+	this.shield.show();
 	
 	var account = (this.account.val() ? this.account.val() : 'anon');
 	var password = this.password.val();
@@ -128,12 +124,7 @@ Core.Pages.Home.prototype.tryLogin = function() {
 		
 		this.prompt
 			.text('Logging in')
-			.append($("<span></span>")
-				.addClass("marchingEllipsis")
-				.append($("<span></span>").text("."))
-				.append($("<span></span>").text("."))
-				.append($("<span></span>").text("."))
-		);
+			.append(new Ellipse());
 		this.core.secureLogin(account, password);
 	}
 };
@@ -203,10 +194,7 @@ Core.Pages.Home.prototype.keydown = function(e) {
 
 //Connected
 Core.Pages.Home.prototype.onOpen = function(e2, e) {
-	
-	this.prompt.fadeOut();
 	this.shield.fadeOut();
-	
 	this.showLogin();
 };
 
@@ -216,15 +204,14 @@ Core.Pages.Home.prototype.onClose = function(e2, e) {
 	if (!this.connecting) return;
 	this.connecting = true;
 	
+	this.shield.show();
 	this.prompt
-		.show()
 		.text("")
 		.append($("<span></span>")
 			.css("color", "red")
 			.text("Unable to connect to Nova."));
 	
 	setTimeout(function() {
-		this.prompt.fadeOut();
 		this.shield.fadeOut();
 	}.bind(this), 3000);
 	
@@ -242,32 +229,24 @@ Core.Pages.Home.prototype.onLogin = function(e2, e) {
 
 Core.Pages.Home.prototype.onLoginFail = function(e2, e) {
 	
-	this.container.before(this.shield);
-	this.prompt.hide();
+	this.shield.hide();
 	this.error.show();
 	
-	if (e.reason == 'password') {
+	if (e.reason == 'password')
 		this.error.text('Invalid password');
-		/*this.error.promptText('Invalid password');
-		this.prompt.retry();*/
-	} else if (e.reason == 'account') {
-		this.error.html('Account does not exist. Try again to register.');
-		/*this.prompt.promptText('Account does not exist.<br>Press enter to register.');
-		this.prompt.register = true;*/
+	else if (e.reason == 'account') {
+		this.error.html('Account does not exist. Try again to register it.');
 		this.register = true;
 	}
 };
 
 Core.Pages.Home.prototype.onRegister = function(e2, e) {
-	
 	this.tryLogin();
-	
 };
 
 Core.Pages.Home.prototype.onRegisterFail = function(e2, e) {
 	
-	this.container.before(this.shield);
-	this.prompt.hide();
+	this.shield.hide();
 	this.error.show();
 	
 	if (e.reason == 'invalid') {
@@ -289,8 +268,7 @@ Core.Pages.Home.prototype.fadeIn = function(instant) {
 		return;
 	}
 	
-	this.container.before(this.shield);
-	this.prompt.hide();
+	this.shield.hide();
 	this.loginPanel.hide();
 	this.error.show();
 	
@@ -310,15 +288,12 @@ Core.Pages.Home.prototype.fadeIn = function(instant) {
 Core.Pages.Home.prototype.fadeOutComplete = function() {
 	
 	this.page.hide();
-	//this.page.detach();
 	this.unbindGlobals();
 	
 };
 
 Core.Pages.Home.prototype.fadeOut = function() {
-	
 	this.page.animate({opacity: 0}, this.fadeOutComplete.bind(this));
-	
 };
 
 Core.Pages.Home.prototype.bindGlobals = function() {

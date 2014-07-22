@@ -68,7 +68,7 @@ Core.Pages.Portal.prototype.onNoGroup = function(e2, e) {
 Core.Pages.Portal.prototype.onLogout = function(e2, e) {
 	this.location = null;
 	this.chat.log.empty();
-	this.group.list.empty();
+	this.group.section.list.empty();
 	this.lobbies.section.list.empty();
 	this.friends.list.empty();
 	//this.clan.list.empty();
