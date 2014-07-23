@@ -113,7 +113,7 @@ Core.Pages.Portal.Lobby.prototype.hostTextBlur = function(e) {
 Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
 	if (typeof append == "undefined") append = true;
 	
-	if (lobby.preview == "" || typeof lobby.preview == "undefined") var preview = "images/lobbies/blank.png";
+	if (lobby.preview == "" || typeof lobby.preview == "undefined") var preview = "images/lobbies/unknownsmall.png";
 	else if (lobby.preview.indexOf("http") >= 0) var preview = lobby.preview;
 	else var preview = "images/lobbies/" + lobby.preview;
 	
@@ -132,8 +132,8 @@ Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
 		.on("click", this.selectLobby.bind(this))
 		.on("dblclick", this.joinOnDblClick.bind(this));
 	
-	if (append) card.appendTo(this.section.list);
-	else card.prependTo(this.section.list);
+	if (append) card.appendTo(this.section.lobbyList);
+	else card.prependTo(this.section.lobbyList);
 };
 
 Core.Pages.Portal.Lobby.prototype.createLobbyCard = function(picture, title, host, uptime) {
@@ -149,7 +149,7 @@ Core.Pages.Portal.Lobby.prototype.createLobbyCard = function(picture, title, hos
 
 Core.Pages.Portal.Lobby.prototype.onLobbyList = function(e2, e) {
 	
-	$(this.section.list).empty();
+	$(this.section.lobbyList).empty();
 	
 	this.lobbies = e.list;
 	
@@ -169,7 +169,7 @@ Core.Pages.Portal.Lobby.prototype.onReserve = function(e2, e) {
 };
 
 Core.Pages.Portal.Lobby.prototype.onUnreserve = function(e2, e) {
-	this.section.list.children().each(function(i, v) {
+	this.section.lobbyList.children().each(function(i, v) {
 		if ($(v).attr("data-lobby") == e.name)
 			v.remove();
 	});
@@ -197,6 +197,9 @@ Core.Pages.Portal.Lobby.prototype.onOpen = function(e2, e) {
 };
 
 Core.Pages.Portal.Lobby.prototype.onKey = function(e2, e) {
+	console.log(e);
+	this.host.access = e.access;
+	
 	this.host.lobby(this.lobby.name);
 };
 

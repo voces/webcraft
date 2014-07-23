@@ -220,28 +220,35 @@
 	margin: 0;
 }
 
-.Portal .tab.lobby .list .lobby {
+#lobbyList .lobby {
 	height: 1.5em;
 	width: 100%;
 	margin: .5em 0;
 	cursor: pointer;
 }
 
-.Portal .tab.lobby .list .lobby img {
+#lobbyList > table:hover {
+	text-shadow:	0.05em	0.05em	.05em #999,
+					0.05em	-.05em	.05em #999,
+					-.05em	0.05em	.05em #999,
+					-.05em	-.05em	.05em #999;
+}
+
+#lobbyList .lobby img {
 	width: 2em;
 	height: 2em;
 }
 
-.Portal .tab.lobby .list .lobby  tbody > tr:first-child {
+#lobbyList .lobby  tbody > tr:first-child {
 	line-height: .75em;
 	font-weight: bold;
 }
 
-.Portal .tab.lobby .list .lobby  tbody > tr:first-child > td:first-child {
+#lobbyList .lobby  tbody > tr:first-child > td:first-child {
 	width: 2em;
 }
 
-.Portal .tab.lobby .list .lobby  tbody > tr:nth-child(2) {
+#lobbyList .lobby  tbody > tr:nth-child(2) {
 	line-height: .75em;
 	color: #ddd;
 }

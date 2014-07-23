@@ -310,7 +310,6 @@ Core.Pages.Home.prototype.bindGlobals = function() {
 	$(this.nova).on('onRegister.Home', this.onRegister.bind(this));
 	$(this.nova).on('onRegisterFail.Home', this.onRegisterFail.bind(this));
 	
-	
 };
 
 Core.Pages.Home.prototype.unbindGlobals = function() {

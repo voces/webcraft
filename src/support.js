@@ -6,13 +6,18 @@ function reloadStylesheets() {
 }
 
 function variablize(i, e) {
-	var a = e.getAttribute('var');
-	var detach = e.getAttribute('detach');
-	var hide = e.getAttribute('hide');
+	var aVar = e.getAttribute('var');
+	var aId = e.getAttribute('id');
+	var detach = e.getAttribute('data-detach');
+	var hide = e.getAttribute('data-hide');
 	
-	if (a != null) {
+	if (aVar != null || aId != null || detach != null || hide != null) {
 		e = $(e);
-		this[a] = e;
+		if (aVar != null) this[aVar] = e;
+		if (aId != null) {
+			//console.log("variablize", aId, e, this);
+			this[aId] = e;
+		}
 		
 		if (detach != null) e.detach();
 		if (hide != null) e.hide();

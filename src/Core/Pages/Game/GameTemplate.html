@@ -1,11 +1,59 @@
-<div var="menu" class="menu shield">
-	<div>
-		<p var="mHome" class="hoverglow">Home</p>
-		<p var="mLeave" class="hoverglow">Leave Lobby</p>
-		<p var="mCancel" class="hoverglow">Cancel</p>
+<div id="gameProtocol" class="shield">
+	<div id="gamePlayer" data-hide>
+		Please wait while a protocol is selected
+		<span class="marchingEllipsis">
+			<span>.</span>
+			<span>.</span>
+			<span>.</span>
+		</span>
+	</div>
+	<div id="gameOwner" data-hide>
+		<h1 id="gameTitle">Some example text</h1>
+		
+		<div id="gameCard">
+			<img id="gamePImage" />
+			<div class="left">
+				<div>
+					<span>Author:</span> <span id="gamePAuthor">Some author</span>
+				</div>
+			</div>
+			<div class="right">
+				<div>
+					<span>Version:</span> <span id="gamePVersion">0</span>
+				</div>
+				<div>
+					<span>Date:</span> <span id="gamePDate">2014-07-22</span>
+				</div>
+			</div>
+			<div id="gamePDescription">Some description</div>
+			<button>Select</button>
+		</div>
+		
+		<div id="gameSearch">
+			<input id="gameSearchInput" placeholder="Search"></input>
+			<img src="images/search.png"/>
+		</div>
+		
+		<div id="gameProtocolsContainer">
+			<div id="gameProtocols"></div>
+		</div>
+		
+		<div id="gameForceRefresh" class="hoverglow">
+			<span>Force refresh</span>
+			<img src="images/refresh.png"/>
+		</div>
+		
 	</div>
 </div>
 
 <div var="splash" class="shield">
 	<div var="splashContent"></div>
+</div>
+
+<div var="menu" class="menu shield">
+	<div>
+		<p var="mHome" class="hoverglow">Home</p>
+		<p var="mLeave" class="hoverglow">Leave Game</p>
+		<p var="mCancel" class="hoverglow">Cancel</p>
+	</div>
 </div>

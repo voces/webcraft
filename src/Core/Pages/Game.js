@@ -11,6 +11,9 @@ Core.Pages.Game = function(pages) {
 	this.host = pages.core.host;
 	this.engine = pages.core.engine;
 	
+	this.leaving = false;
+	this.selectedProtocol = null;
+	
 	this.page = $('<div></div>').addClass('Game').load(
 		'src/Core/Pages/Game/GameTemplate.html',
 		this.load.bind(this)
@@ -38,6 +41,11 @@ Core.Pages.Game.prototype.menuHome = function(e) {
 };
 
 Core.Pages.Game.prototype.menuLeave = function(e) {
+	this.leaving = true;
+	
+	this.fadeOut();
+	this.pages.portal.fadeIn();
+	
 	this.host.leave();
 };
 
@@ -63,6 +71,87 @@ Core.Pages.Game.prototype.updateSplash = function(text, ellipse, show) {
 };
 
 /**********************************
+**	Protocols
+***********************************/
+
+Core.Pages.Game.prototype.search = function(e) {
+	var search = this.gameSearchInput.val().toLowerCase();
+	
+	//Only do a remote search if they hit enter and we have a partial list
+	if (e.which == 13 && ((this.complete == false && this.subset == false) || search == ""))
+		this.host.getProtocols(search);
+	
+	//Else we're doing a local search, which is puffy
+	else {
+		var regex = new RegExp(".*" + search.split("").join(".*") + ".*");
+		this.gameProtocols.children().each(function(i, v) {
+			$v = $(v);
+			
+			if (regex.test($v.text().toLowerCase())) $v.show();
+			else $v.hide();
+		});
+	}
+};
+
+Core.Pages.Game.prototype.forceRefresh = function(e) {
+	this.host.getProtocols(this.gameSearchInput.val().toLowerCase(), true);
+};
+
+Core.Pages.Game.prototype.onSelectProtocol = function(e) {
+	var $target = $(e.delegateTarget);
+	
+	$target.parent().find(".selected").removeClass("selected");
+	$target.addClass("selected");
+	
+	this.displayProtocol(this.protocols[$target.attr("data-protoId")]);
+};
+
+Core.Pages.Game.prototype.tryImage = function(preview, size, terminateOn) {
+	var order = ["small", "medium", "large"];
+	
+	if (typeof preview == "string")
+		return preview;
+	else if (typeof preview != "undefined") {
+		var index = order.indexOf(size);
+		
+		if (typeof preview[size] == "undefined") {
+			if (typeof terminateOn == "undefined") terminateOn = index;
+			else if (terminateOn == index) return "images/lobbies/unknown" + size + ".png";
+			
+			if (index < 2) index++;
+			else index = 0;
+			
+			return this.tryImage(preview, order[index], terminateOn);
+		} else
+			return preview[size];			
+	}
+};
+
+Core.Pages.Game.prototype.appendProtocol = function(protocol, id) {
+	$("<div>")
+		.attr("data-protoId", id)
+		.append($("<img>").attr("src", this.tryImage(protocol.meta.preview, "medium")))
+		.append($("<div>").text(protocol.meta.title))
+		.append($("<div>").text(protocol.meta.date + " • " + protocol.meta.version))
+		.append($("<div>").text(protocol.meta.author))
+		.click(this.onSelectProtocol.bind(this))
+		.appendTo(this.gameProtocols);
+			
+};
+
+Core.Pages.Game.prototype.displayProtocol = function(protocol) {
+	this.selectedProtocol = protocol;
+	
+	this.gameTitle.text(protocol.meta.title || "");
+	this.gamePImage.attr("src", this.tryImage(protocol.meta.preview, "large"));
+	this.gamePAuthor.text(protocol.meta.author || "");
+	this.gamePVersion.text(protocol.meta.version || 0);
+	this.gamePDate.text(protocol.meta.date || "");
+	this.gamePDescription.text(protocol.meta.description || "");
+	
+};
+
+/**********************************
 ***********************************
 **	Global hooks
 ***********************************
@@ -85,8 +174,22 @@ Core.Pages.Game.prototype.keydown = function(e) {
 ***********************************/
 
 Core.Pages.Game.prototype.onLoad = function() {
-	if (this.engine.protocol == null)
-		console.log("empty!");
+	
+	//Only do something if the protocol is empty
+	if (this.engine.protocol != null) return;
+	
+	if (this.host.isOwner || this.host.access.protocol) {
+		this.gamePlayer.hide();
+		this.gameOwner.show();
+		
+		this.host.getProtocols();
+		
+	//Do not have neccessary access to change protocol
+	} else {
+		this.gamePlayer.show();
+		this.gameOwner.hide();
+	}
+	
 };
 
 /**********************************
@@ -98,14 +201,33 @@ Core.Pages.Game.prototype.onLoad = function() {
 Core.Pages.Game.prototype.onLeave = function(e2, e) {
 	
 	//Means we left the game
-	if (e.account == this.core.displayAccount) {
+	if (e.account == this.core.displayAccount && this.leaving == false) {
+		this.leaving = true;
 		this.fadeOut();
 		this.pages.portal.fadeIn();
 	}
 };
 
 Core.Pages.Game.prototype.onJoin = function(e2, e) {
+	this.host.owner = e.isOwner;
+	this.host.ownerAccount = e.ownerAccount;
 	this.engine.load(e.protocol);
+};
+
+Core.Pages.Game.prototype.onProtocols = function(e2, e) {
+	this.subset = e.subset;
+	this.complete = e.complete;
+	
+	this.gameProtocols.empty();
+	this.protocols = e.protocols;
+	
+	for (var i = 0; i < e.protocols.length; i++)
+		this.appendProtocol(e.protocols[i], i);
+	
+	if (this.selectedProtocol == null) {
+		this.displayProtocol(e.protocols[0]);
+		this.gameProtocols.children().first().addClass("selected");
+	}
 };
 
 /**********************************
@@ -191,6 +313,8 @@ Core.Pages.Game.prototype.fadeIn = function(instant) {
 };
 
 Core.Pages.Game.prototype.fadeOutComplete = function() {
+	this.leaving = false;
+	
 	this.page.hide();
 	this.unbindGlobals();
 };
@@ -224,13 +348,14 @@ Core.Pages.Game.prototype.unbindGlobals = function() {
 
 Core.Pages.Game.prototype.load = function() {
 	
-	$(this.page).find('*').each(variablize.bind(this));
+	this.page.find('*').each(variablize.bind(this));
 	
 	/**********************************
 	**	Global hooks
 	***********************************/
 	
 	$(this.host).on("onJoin", this.onJoin.bind(this));
+	$(this.host).on("onGetProtocols", this.onProtocols.bind(this));
 	$(this.engine).on("onLoad", this.onLoad.bind(this));
 	
 	/**********************************
@@ -240,6 +365,9 @@ Core.Pages.Game.prototype.load = function() {
 	$(this.mHome).on('click', this.menuHome.bind(this));
 	$(this.mLeave).on('click', this.menuLeave.bind(this));
 	$(this.mCancel).on('click', this.menuCancel.bind(this));
+	
+	$(this.gameSearchInput).on('keyup', this.search.bind(this));
+	$(this.gameForceRefresh).on('click', this.forceRefresh.bind(this));
 	
 	/**********************************
 	**	Page setup

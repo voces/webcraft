@@ -10,7 +10,7 @@ body {
 	color: white;
 }
 
-#content {
+#content, #world {
 	position: absolute;
 	top: 0;
 	right: 0;

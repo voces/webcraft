@@ -67,8 +67,8 @@ Nova.Host.prototype.protocol = function(protocol) {
 	this.send({id: 'protocol', path: protocol});
 };
 
-Nova.Host.prototype.getProtocols = function() {
-	this.send({id: 'getProtocols'});
+Nova.Host.prototype.getProtocols = function(search, force, offset) {
+	this.send({id: 'getProtocols', search:search, force: force, offset: offset});
 };
 
 //***************************************
