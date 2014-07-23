@@ -104,7 +104,7 @@ body > .Game .hoverglow:hover {
 	overflow: hidden;
 }
 
-#gameCard > button {
+#gameSelect {
 	position: absolute;
 	
 	bottom: 1em;
@@ -116,6 +116,11 @@ body > .Game .hoverglow:hover {
 	color: white;
 	font-weight: bold;
 	padding: .5em 1em;
+}
+
+#gameSelect:hover {
+	background-color: #999;
+	cursor: pointer;
 }
 
 #gameSearch {
@@ -166,11 +171,13 @@ body > .Game .hoverglow:hover {
 	padding: 0 1em 1em 0;
 }
 
-#gameProtocols > div:hover > *, #gameProtocols > div.selected > * {
+#gameProtocols > div:hover, #gameProtocols > div.selected{
 	text-shadow: .1em	.1em	.2em #ccc,
 				.1em	-.1em	.2em #ccc,
 				-.1em	.1em	.2em #ccc,
 				-.1em	-.1em	.2em #ccc;
+	
+	cursor: pointer;
 }
 
 #gameProtocols > div > div {

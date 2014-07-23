@@ -93,6 +93,11 @@ Core.Pages.Game.prototype.search = function(e) {
 	}
 };
 
+Core.Pages.Game.prototype.selectProtocol = function(e) {
+	console.log(this.selectedProtocol);
+	this.host.protocol(this.selectedProtocol.path);
+};
+
 Core.Pages.Game.prototype.forceRefresh = function(e) {
 	this.host.getProtocols(this.gameSearchInput.val().toLowerCase(), true);
 };
@@ -175,9 +180,17 @@ Core.Pages.Game.prototype.keydown = function(e) {
 
 Core.Pages.Game.prototype.onLoad = function() {
 	
-	//Only do something if the protocol is empty
-	if (this.engine.protocol != null) return;
+	//Hide everything is we have something
+	console.log(this.engine.protocol);
+	if (this.engine.protocol != null) {
+		this.gameProtocol.hide();
+		return;
+	}
 	
+	//Else show what we want
+	this.gameProtocol.show();
+	
+	//Only show the proper slide...
 	if (this.host.isOwner || this.host.access.protocol) {
 		this.gamePlayer.hide();
 		this.gameOwner.show();
@@ -211,6 +224,10 @@ Core.Pages.Game.prototype.onLeave = function(e2, e) {
 Core.Pages.Game.prototype.onJoin = function(e2, e) {
 	this.host.owner = e.isOwner;
 	this.host.ownerAccount = e.ownerAccount;
+	this.engine.load(e.protocol);
+};
+
+Core.Pages.Game.prototype.onProtocol = function(e2, e) {
 	this.engine.load(e.protocol);
 };
 
@@ -248,6 +265,8 @@ Core.Pages.Game.prototype.onOpen = function(e2, e) {
 
 //goto onLobby
 Core.Pages.Game.prototype.onKey = function(e2, e) {
+	this.host.access = e.access;
+	
 	this.host.lobby(this.host.lobbyName);
 };
 
@@ -265,7 +284,7 @@ Core.Pages.Game.prototype.onLobby = function(e2, e) {
 //failure
 Core.Pages.Game.prototype.onLobbyFail = function(e2, e) {
 	
-	this.updateSplash("Unable to rejoin.", true);
+	this.updateSplash("Unable to rejoin.");
 	
 	setTimeout(function() {
 		this.fadeOut();
@@ -306,6 +325,7 @@ Core.Pages.Game.prototype.fadeIn = function(instant) {
 		this.page.animate({opacity: 1}, this.bindGlobals.bind(this));
 	}
 	
+	this.selectedProtocol = null;
 	this.menu.hide();
 	this.splash.hide();
 	this.page.show();
@@ -331,15 +351,6 @@ Core.Pages.Game.prototype.bindGlobals = function() {
 	//Communication
 	$(this.host).on("onLeave.Game", this.onLeave.bind(this));
 	
-	//Reconnecting events
-	$(this.host).on("onClose.Game", this.onClose.bind(this));			//	goto onOpen
-	$(this.host).on("onOpen.Game", this.onOpen.bind(this));				//	goto onKey
-	$(this.host).on("onKey.Game", this.onKey.bind(this));				//	goto onLobby
-	$(this.host).on("onKeyFail.Game", this.onKeyFail.bind(this));		//	goto onBridge
-	$(this.nova).on('onBridge.Lobby', this.onBridge.bind(this));		//	goto onOpen/onKey
-	$(this.host).on("onLobby.Game", this.onLobby.bind(this));			//	success
-	$(this.host).on("onLobbyFail.Game", this.onLobbyFail.bind(this));	//	fail
-	
 };
 
 Core.Pages.Game.prototype.unbindGlobals = function() {
@@ -355,8 +366,18 @@ Core.Pages.Game.prototype.load = function() {
 	***********************************/
 	
 	$(this.host).on("onJoin", this.onJoin.bind(this));
+	$(this.host).on("onProtocol", this.onProtocol.bind(this));
 	$(this.host).on("onGetProtocols", this.onProtocols.bind(this));
 	$(this.engine).on("onLoad", this.onLoad.bind(this));
+	
+	//Reconnecting events
+	$(this.host).on("onClose", this.onClose.bind(this));			//	goto onOpen
+	$(this.host).on("onOpen", this.onOpen.bind(this));				//	goto onKey
+	$(this.host).on("onKey", this.onKey.bind(this));				//	goto onLobby
+	$(this.host).on("onKeyFail", this.onKeyFail.bind(this));		//	goto onBridge
+	$(this.nova).on('onBridge', this.onBridge.bind(this));			//	goto onOpen/onKey
+	$(this.host).on("onLobby", this.onLobby.bind(this));			//	success
+	$(this.host).on("onLobbyFail", this.onLobbyFail.bind(this));	//	fail
 	
 	/**********************************
 	**	Local hooks
@@ -367,6 +388,7 @@ Core.Pages.Game.prototype.load = function() {
 	$(this.mCancel).on('click', this.menuCancel.bind(this));
 	
 	$(this.gameSearchInput).on('keyup', this.search.bind(this));
+	$(this.gameSelect).on('click', this.selectProtocol.bind(this));
 	$(this.gameForceRefresh).on('click', this.forceRefresh.bind(this));
 	
 	/**********************************

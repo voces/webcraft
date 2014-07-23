@@ -110,12 +110,31 @@ Core.Pages.Portal.Lobby.prototype.hostTextBlur = function(e) {
 **	Communication
 ***********************************/
 
+Core.Pages.Portal.Lobby.prototype.tryImage = function(preview, size, terminateOn) {
+	var order = ["small", "medium", "large"];
+	
+	if (typeof preview == "string")
+		return preview;
+	else if (typeof preview != "undefined") {
+		var index = order.indexOf(size);
+		
+		if (typeof preview[size] == "undefined") {
+			if (typeof terminateOn == "undefined") terminateOn = index;
+			else if (terminateOn == index) return "images/lobbies/unknown" + size + ".png";
+			
+			if (index < 2) index++;
+			else index = 0;
+			
+			return this.tryImage(preview, order[index], terminateOn);
+		} else
+			return preview[size];			
+	}
+};
+
 Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
 	if (typeof append == "undefined") append = true;
 	
-	if (lobby.preview == "" || typeof lobby.preview == "undefined") var preview = "images/lobbies/unknownsmall.png";
-	else if (lobby.preview.indexOf("http") >= 0) var preview = lobby.preview;
-	else var preview = "images/lobbies/" + lobby.preview;
+	var preview = this.tryImage(lobby.preview, "small");
 	
 	var card = $('<table>')
 		.addClass("lobby")
@@ -197,7 +216,6 @@ Core.Pages.Portal.Lobby.prototype.onOpen = function(e2, e) {
 };
 
 Core.Pages.Portal.Lobby.prototype.onKey = function(e2, e) {
-	console.log(e);
 	this.host.access = e.access;
 	
 	this.host.lobby(this.lobby.name);
@@ -215,14 +233,7 @@ Core.Pages.Portal.Lobby.prototype.onJoin = function(e2, e) {
 ***********************************/
 
 Core.Pages.Portal.Lobby.prototype.bindGlobals = function() {
-	
-	//Joining lobbies
-	$(this.nova).on('onBridge.Lobby', this.onBridge.bind(this));
-	
-	$(this.host).on('onOpen.Lobby', this.onOpen.bind(this));
-	$(this.host).on('onKey.Lobby', this.onKey.bind(this));
 	$(this.host).on('onJoin.Lobby', this.onJoin.bind(this));
-	
 };
 
 Core.Pages.Portal.Lobby.prototype.unbindGlobals = function() {
