@@ -11,6 +11,7 @@ Core.Pages.Game = function(pages) {
 	this.host = pages.core.host;
 	this.engine = pages.core.engine;
 	
+	this.account = "";
 	this.leaving = false;
 	this.selectedProtocol = null;
 	
@@ -207,6 +208,16 @@ Core.Pages.Game.prototype.onLoad = function() {
 
 /**********************************
 ***********************************
+**	Nova Hooks
+***********************************
+**********************************/
+
+Core.Pages.Game.prototype.onLogin = function(e2, e) {
+	this.account = e.account;
+};
+
+/**********************************
+***********************************
 **	Host Communication Hooks
 ***********************************
 **********************************/
@@ -222,9 +233,13 @@ Core.Pages.Game.prototype.onLeave = function(e2, e) {
 };
 
 Core.Pages.Game.prototype.onJoin = function(e2, e) {
-	this.host.owner = e.isOwner;
-	this.host.ownerAccount = e.ownerAccount;
-	this.engine.load(e.protocol);
+	
+	//Make sure it's us joining
+	if (e.accounts.indexOf(this.account) >= 0) {
+		this.host.owner = e.isOwner;
+		this.host.ownerAccount = e.ownerAccount;
+		this.engine.load(e.protocol);
+	}
 };
 
 Core.Pages.Game.prototype.onProtocol = function(e2, e) {
@@ -364,6 +379,8 @@ Core.Pages.Game.prototype.load = function() {
 	/**********************************
 	**	Global hooks
 	***********************************/
+	
+	$(this.nova).on("onLogin", this.onLogin.bind(this));
 	
 	$(this.host).on("onJoin", this.onJoin.bind(this));
 	$(this.host).on("onProtocol", this.onProtocol.bind(this));

@@ -2,13 +2,19 @@ Core = function() {
 	
 	this.bcrypt = new bCrypt();
 	
-	this.graphic = new Graphic("world");
-	this.engine = new Engine();
-	
+	//Network objects
 	this.nova = new Nova('ws://68.229.21.36:8082', true);
 	this.host = this.nova.newHost();
+	
+	//Game objects
+	this.graphic = new Graphic("world");
+	this.engine = new Engine(this);
+	
+	//UI object
 	this.pages = new Core.Pages(this);
 	
+	//Stored credentials
+	//	Note: password is bcrypted, not stored plainly
 	this.account = "";
 	this.password = "";
 	
@@ -74,7 +80,7 @@ Core.prototype.onLogout = function(e2, e) {
 
 Core.prototype.onKeyFail = function(e2, e) {
 	this.host.destroy();
-	this.host = this.nova.newHost();
+	//this.host = this.nova.newHost();
 };
 
 Core.prototype.load = function() {

@@ -1,4 +1,6 @@
-Graphic = function(element) {
+Graphic = function(core, element) {
+	
+	this.core = core;
 	
 	//Scene
 	this.scene = new THREE.Scene();
@@ -30,32 +32,18 @@ Graphic = function(element) {
 	 **	Create the camera
 	 *************************/
 	
-	this.distance = 72;
-	this.camera = new THREE.OrthographicCamera(
-			window.innerWidth / -this.distance,
-			window.innerWidth / this.distance,
-			window.innerHeight / this.distance,
-			window.innerHeight / -this.distance,
-			.01,
-			100000
-	);
-	/*this.camera.left = window.innerWidth / - this.distance;
-	this.camera.right = window.innerWidth / this.distance;
-	this.camera.top = window.innerHeight / this.distance;
-	this.camera.bottom = window.innerHeight / - this.distance;*/
-	//this.camera.position.z = 10;
-	//this.camera.updateProjectionMatrix();
-	this.scene.add(this.camera);
+	this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+	this.camera.position.z = 2000;
 	
-	//camera: new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000),
+	this.scene.add(this.camera);
 	
 	/*************************
 	 **	Create the lights
 	 *************************/
 	
-	this.sun = new THREE.DirectionalLight(0xffffff, 1);	//Lights up UI, nothing else?
-	this.moon = new THREE.DirectionalLight(0xffffff, .33);	//Lights up UI, nothing else?
-	this.stars = new THREE.AmbientLight(0x111111);	//Lights up UI, nothing else?
+	this.sun = new THREE.DirectionalLight(0xffffff, 1);
+	this.moon = new THREE.DirectionalLight(0xffffff, .33);
+	this.stars = new THREE.AmbientLight(0x111111);
 	
 	this.sun.position.z = 100;
 	this.moon.position.z = 100;
@@ -65,7 +53,7 @@ Graphic = function(element) {
 	this.scene.add(this.stars);
 	
 	//Create the fog
-	this.scene.fog = new THREE.FogExp2(0x000000, 0.0001);
+	//this.scene.fog = new THREE.FogExp2(0x000000, 0.0001);
 	
 	//this.light.position.z = 5000;
 	/*this.light.shadowCameraLeft = -500;
@@ -116,9 +104,13 @@ Graphic = function(element) {
 
 /** Runs when DOM finishes loading */
 Graphic.prototype.load = function() {
+	
+	this.engine = this.core.engine;
+	
 	$("body").append(this.renderer.domElement);
+	
 	this.render();
-},
+};
 
 Graphic.prototype.render = function() {
 	requestAnimationFrame(this.render.bind(this));
@@ -149,24 +141,17 @@ Graphic.prototype.render = function() {
 		}
 	});*/
 	
-	
 	this.renderer.render(this.scene, this.camera);
-},
+};
 
 /** Handle window resizing */
 Graphic.prototype.resize = function() {
-	this.renderer.setSize(window.innerWidth, window.innerHeight);
 	
-	this.camera.left = window.innerWidth / - this.distance;
-	this.camera.right = window.innerWidth / this.distance;
-	this.camera.top = window.innerHeight / this.distance;
-	this.camera.bottom = window.innerHeight / - this.distance;
-	
-	this.camera.updateProjectionMatrix();
-	
-	//camera.aspect = window.innerWidth / window.innerHeight;
-	//camera.updateProjectionMatrix();
-},
+	this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+
+    this.renderer.setSize( window.innerWidth, window.innerHeight );
+};
 
 /** Handle mouse movement */
 Graphic.prototype.mousemove = function(e) {
@@ -176,7 +161,7 @@ Graphic.prototype.mousemove = function(e) {
 	if (this.getTopObject(e.clientX / window.innerWidth, e.clientY / window.innerHeight)) {
 		console.log('hover');
 	}
-},
+};
 
 /** Returns top object, checks for UI and WORLD */
 Graphic.prototype.getTopObject = function(x, y) {
@@ -191,70 +176,4 @@ Graphic.prototype.getTopObject = function(x, y) {
 	if (intersects.length > 0) {
 		return intersects[0];
 	} else return false;
-},
-
-Graphic.prototype.generateBackground = function() {
-	// create the particle variables
-	var particleCount = 512,
-		particles = new THREE.Geometry(),
-		pMaterial = new THREE.ParticleBasicMaterial({
-			color: 0xFFFFFF,
-			size: .5,
-			map: THREE.ImageUtils.loadTexture(
-				"img/smoke.png"
-			),
-			transparent: true,
-		});
-	
-	var m = 4;
-	
-	// now create the individual particles
-	for (var p = 0; p < particleCount; p++) {
-
-		// create a particle with random
-		// position values, -250 -> 250
-		var pX = Math.random() * 16*m - 8*m,
-			pY = Math.random() * 9*m - 4.5*m,
-			pZ = Math.random() * 90 - 100,
-			particle = new THREE.Vector3(pX, pY, pZ);
-		
-		particle.velocity = new THREE.Vector3(Math.random()-.5, -Math.random()*2-.1, Math.random()-.5);
-		particle.velocity.multiplyScalar(.25/m);
-		
-		// add it to the geometry
-		particles.vertices.push(particle);
-	}
-
-	// create the particle system
-	var particleSystem = new THREE.ParticleSystem(particles, pMaterial);
-	particleSystem.sortParticles = true;
-	
-	// add it to the scene
-	this.scene.add(particleSystem);
-	
-	var interval = setInterval(function() {
-		if (typeof particleSystem.parent == 'undefined') clearInterval(interval);
-		else {
-			var t = particleCount;
-			
-			while (t--) {
-				var particle = particles.vertices[t];
-				
-				if (particle.y < -4.5*m)
-					particle.y = 4.5*m;
-				else if (particle.x < -8*m)
-					particle.x = 8*m;
-				else if (particle.x > 8*m)
-					particle.x = -8*m;
-				else if (particle.z < -100) {
-					particle.z = 0;
-					particle.y = 4.5*m;
-				} else if (particle.z > 0)
-					particle.z = -100;
-				else
-					particle.addSelf(particle.velocity);
-			}
-		}
-		particleSystem.geometry.__dirtyVertices = true;
-	}.bind(this), 32);	//
-}
+};
