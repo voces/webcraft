@@ -91,8 +91,8 @@ Graphic = function(core, element) {
 	
 	//this.objects = [];
 	this.mouse = {
-			x: 0,
-			y: 0
+		x: 0,
+		y: 0
 	};
 	
 	/** Attach our events */
@@ -153,7 +153,6 @@ Graphic.prototype.resize = function() {
     this.renderer.setSize( window.innerWidth, window.innerHeight );
 };
 
-/** Handle mouse movement */
 Graphic.prototype.mousemove = function(e) {
 	this.mouse.x = e.clientX;
 	this.mouse.y = e.clientY;
@@ -163,7 +162,29 @@ Graphic.prototype.mousemove = function(e) {
 	}
 };
 
-/** Returns top object, checks for UI and WORLD */
+Graphic.prototype.getTopObject = function(x, y) {
+	var mouse = new THREE.Vector3( ( x ) * 2 - 1, - ( y ) * 2 + 1, .5);
+	var ray = this.projector.pickingRay(mouse, this.camera);
+	
+	var intersects = ray.intersectObjects(this.scene.children);
+	
+	if (intersects.length > 0)
+		return intersects[0];
+	else return false;
+};
+
+/*	This is for an ortho camera
+// Handle mouse movement
+Graphic.prototype.mousemove = function(e) {
+	this.mouse.x = e.clientX;
+	this.mouse.y = e.clientY;
+	
+	if (this.getTopObject(e.clientX / window.innerWidth, e.clientY / window.innerHeight)) {
+		console.log('hover');
+	}
+};
+
+// Returns top object, checks for UI and WORLD
 Graphic.prototype.getTopObject = function(x, y) {
 	var vector = new THREE.Vector3( ( x ) * 2 - 1, - ( y ) * 2 + 1, .5);
 	this.projector.unprojectVector(vector, this.camera);
@@ -176,4 +197,4 @@ Graphic.prototype.getTopObject = function(x, y) {
 	if (intersects.length > 0) {
 		return intersects[0];
 	} else return false;
-};
+};*/

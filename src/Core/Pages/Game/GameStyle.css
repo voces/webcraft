@@ -36,6 +36,10 @@ body > .Game > .shield > div {
 	text-align: center;
 }
 
+body > .Game .disabled {
+	color: gray;
+}
+
 body > .Game .hoverglow:hover {
 	text-shadow: .1em	.1em	.2em white,
 				.1em	-.1em	.2em white,

@@ -41,6 +41,16 @@ Core.Pages.Game.prototype.menuHome = function(e) {
 	this.pages.home.fadeIn();
 };
 
+Core.Pages.Game.prototype.menuChange = function(e) {
+	this.menu.hide();
+	this.gameProtocol.show();
+	
+	this.gamePlayer.hide();
+	this.gameOwner.show();
+	
+	this.host.getProtocols();
+};
+
 Core.Pages.Game.prototype.menuLeave = function(e) {
 	this.leaving = true;
 	
@@ -95,7 +105,6 @@ Core.Pages.Game.prototype.search = function(e) {
 };
 
 Core.Pages.Game.prototype.selectProtocol = function(e) {
-	console.log(this.selectedProtocol);
 	this.host.protocol(this.selectedProtocol.path);
 };
 
@@ -136,10 +145,10 @@ Core.Pages.Game.prototype.tryImage = function(preview, size, terminateOn) {
 Core.Pages.Game.prototype.appendProtocol = function(protocol, id) {
 	$("<div>")
 		.attr("data-protoId", id)
-		.append($("<img>").attr("src", this.tryImage(protocol.meta.preview, "medium")))
-		.append($("<div>").text(protocol.meta.title))
-		.append($("<div>").text(protocol.meta.date + " • " + protocol.meta.version))
-		.append($("<div>").text(protocol.meta.author))
+		.append($("<img>").attr("src", this.tryImage(protocol.preview, "medium")))
+		.append($("<div>").text(protocol.title))
+		.append($("<div>").text(protocol.date + " • " + protocol.version))
+		.append($("<div>").text(protocol.author))
 		.click(this.onSelectProtocol.bind(this))
 		.appendTo(this.gameProtocols);
 			
@@ -148,12 +157,12 @@ Core.Pages.Game.prototype.appendProtocol = function(protocol, id) {
 Core.Pages.Game.prototype.displayProtocol = function(protocol) {
 	this.selectedProtocol = protocol;
 	
-	this.gameTitle.text(protocol.meta.title || "");
-	this.gamePImage.attr("src", this.tryImage(protocol.meta.preview, "large"));
-	this.gamePAuthor.text(protocol.meta.author || "");
-	this.gamePVersion.text(protocol.meta.version || 0);
-	this.gamePDate.text(protocol.meta.date || "");
-	this.gamePDescription.text(protocol.meta.description || "");
+	this.gameTitle.text(protocol.title || "");
+	this.gamePImage.attr("src", this.tryImage(protocol.preview, "large"));
+	this.gamePAuthor.text(protocol.author || "");
+	this.gamePVersion.text(protocol.version || 0);
+	this.gamePDate.text(protocol.date || "");
+	this.gamePDescription.text(protocol.description || "");
 	
 };
 
@@ -169,7 +178,10 @@ Core.Pages.Game.prototype.displayProtocol = function(protocol) {
 
 Core.Pages.Game.prototype.keydown = function(e) {
 	if (e.which == 27) {
-		this.menu.toggle();
+		if (this.gameProtocol.is(":visible"))
+			this.gameProtocol.hide();
+		else
+			this.menu.toggle();
 		
 		return false;
 	}
@@ -182,7 +194,6 @@ Core.Pages.Game.prototype.keydown = function(e) {
 Core.Pages.Game.prototype.onLoad = function() {
 	
 	//Hide everything is we have something
-	console.log(this.engine.protocol);
 	if (this.engine.protocol != null) {
 		this.gameProtocol.hide();
 		return;
@@ -227,6 +238,12 @@ Core.Pages.Game.prototype.onLeave = function(e2, e) {
 	//Means we left the game
 	if (e.account == this.core.displayAccount && this.leaving == false) {
 		this.leaving = true;
+		
+		this.mChange
+			.removeClass("hoverglow")
+			.addClass("disabled")
+			.off("click");
+		
 		this.fadeOut();
 		this.pages.portal.fadeIn();
 	}
@@ -238,6 +255,13 @@ Core.Pages.Game.prototype.onJoin = function(e2, e) {
 	if (e.accounts.indexOf(this.account) >= 0) {
 		this.host.owner = e.isOwner;
 		this.host.ownerAccount = e.ownerAccount;
+		
+		if (this.host.isOwner || this.host.access.protocol)
+			this.mChange
+				.removeClass("disabled")
+				.addClass("hoverglow")
+				.on('click', this.menuChange.bind(this));
+		
 		this.engine.load(e.protocol);
 	}
 };
@@ -400,13 +424,13 @@ Core.Pages.Game.prototype.load = function() {
 	**	Local hooks
 	***********************************/
 	
-	$(this.mHome).on('click', this.menuHome.bind(this));
-	$(this.mLeave).on('click', this.menuLeave.bind(this));
-	$(this.mCancel).on('click', this.menuCancel.bind(this));
+	this.mHome.on('click', this.menuHome.bind(this));
+	this.mLeave.on('click', this.menuLeave.bind(this));
+	this.mCancel.on('click', this.menuCancel.bind(this));
 	
-	$(this.gameSearchInput).on('keyup', this.search.bind(this));
-	$(this.gameSelect).on('click', this.selectProtocol.bind(this));
-	$(this.gameForceRefresh).on('click', this.forceRefresh.bind(this));
+	this.gameSearchInput.on('keyup', this.search.bind(this));
+	this.gameSelect.on('click', this.selectProtocol.bind(this));
+	this.gameForceRefresh.on('click', this.forceRefresh.bind(this));
 	
 	/**********************************
 	**	Page setup
