@@ -76,16 +76,24 @@ Nova.Host.prototype.getProtocols = function(search, force, offset) {
 //***************************************
 
 Nova.Host.prototype.broadcast = function(data) {
-	if (typeof data == "undefined") data = {id:"broadcast"};
+	if (typeof data == "undefined") data = {id: "broadcast"};
 	else if (typeof data == "object") data.id = "broadcast";
-	else data = {id:"broadcast", data: data};
+	else data = {id: "broadcast", data: data};
+	
+	this.send(data);
+};
+
+Nova.Host.prototype.echo = function(data) {
+	if (typeof data == "undefined") data = {id: "echo"};
+	else if (typeof data == "object") data.id = "echo";
+	else data = {id: "echo", data: data};
 	
 	this.send(data);
 };
 
 //A simplification of .socket.send
 Nova.Host.prototype.send = function(data) {
-	if (this.socket.readyState != 1) return;
+	if (!this.socket || this.socket.readyState != 1) return;
 	
 	if (this.nova.debugging) console.log('tH', data);
 	

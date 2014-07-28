@@ -184,7 +184,11 @@ Core.Pages.Game.prototype.keydown = function(e) {
 			this.menu.toggle();
 		
 		return false;
-	}
+	} else this.engine.keydown(e);
+};
+
+Core.Pages.Game.prototype.keyup = function(e) {
+	if (e.which != 27) this.engine.keyup(e);
 };
 
 /**********************************
@@ -346,8 +350,10 @@ Core.Pages.Game.prototype.onBridge = function(e2, e) {
 };
 
 /**********************************
+***********************************
 **	Initializer
-***********************************/
+***********************************
+**********************************/
 
 Core.Pages.Game.prototype.fadeIn = function(instant) {
 	
@@ -386,6 +392,7 @@ Core.Pages.Game.prototype.bindGlobals = function() {
 	
 	//Global hooks
 	$(window).on('keydown.Game', this.keydown.bind(this));
+	$(window).on('keyup.Game', this.keyup.bind(this));
 	
 	//Communication
 	$(this.host).on("onLeave.Game", this.onLeave.bind(this));
@@ -394,6 +401,7 @@ Core.Pages.Game.prototype.bindGlobals = function() {
 
 Core.Pages.Game.prototype.unbindGlobals = function() {
 	$(window).off('.Game');
+	$(this.host).off('.Game');
 };
 
 Core.Pages.Game.prototype.load = function() {

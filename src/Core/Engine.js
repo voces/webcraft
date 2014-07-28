@@ -7,6 +7,12 @@ Engine = function(core) {
 	this.protocol = null;
 	this.sandbox = null;
 	this.players = [];
+	this.widgets = [];
+	
+	this.pinger = null;
+	this.pings = [];	//Round trip time
+	this.clocks = [];	//Difference from timestamp and received
+	this.clockOffset = 0;
 	
 	this.$ = $(this);
 	
@@ -16,7 +22,7 @@ Engine = function(core) {
 };
 
 /**********************************
-**	Server Communication Hooks
+**	Server Hooks
 **********************************/
 
 Engine.prototype.onLogin = function(e2, e) {
@@ -24,8 +30,15 @@ Engine.prototype.onLogin = function(e2, e) {
 };
 
 /**********************************
-**	Host Communication Hooks
+**	Host Hooks
 **********************************/
+
+Engine.prototype.onOpen = function(e2, e) {
+	this.pings = [];
+	this.clocks = [];
+	
+	this.ping();
+};
 
 Engine.prototype.onJoin = function(e2, e) {
 	
@@ -35,15 +48,95 @@ Engine.prototype.onJoin = function(e2, e) {
 		this.players.concat(e.accounts);
 	
 	//Give to sandbox
-	if (this.sandbox)
+	if (this.sandbox) {
+		e.timestamp = e.timestamp + this.clockOffset;
 		this.sandbox.postMessage({type: "host", data: e});
+	}
 };
 
 Engine.prototype.onBroadcast = function(e2, e) {
 	
 	//Give to sandbox
-	if (this.sandbox)
+	if (this.sandbox) {
+		e.timestamp = e.timestamp + this.clockOffset;
+		
 		this.sandbox.postMessage({type: "host", data: e});
+	}
+};
+
+/**********************************
+**	UI Hooks
+**********************************/
+
+//Attached in Game.js
+Engine.prototype.keydown = function(e) {
+	this.sandbox.postMessage({
+		type: "ui",
+		data: {
+			id: "keydown",
+			which: e.which,
+			altKey: e.altKey,
+			ctrlKey: e.ctrlKey,
+			metaKey: e.metaKey,
+			shiftKey: e.shiftKey,
+			timeStamp: e.timeStamp
+		}
+	});
+};
+
+Engine.prototype.keyup = function(e) {
+	this.sandbox.postMessage({
+		type: "ui",
+		data: {
+			id: "keyup",
+			which: e.which,
+			altKey: e.altKey,
+			ctrlKey: e.ctrlKey,
+			metaKey: e.metaKey,
+			shiftKey: e.shiftKey,
+			timeStamp: e.timeStamp
+		}
+	});
+};
+
+/**********************************
+**	Pinging
+**********************************/
+
+Engine.prototype.ping = function() {
+	this.host.echo({sid: "ping", sent: Date.now()});
+};
+
+Engine.prototype.onEcho = function(e2, e) {
+	if (e.sid == "ping") {
+		this.pings.push(Date.now() - e.sent);
+		this.clocks.push(Date.now() - e.timestamp);
+		
+		if (this.clocks.length == 1)
+			this.clockOffset = this.clocks[0];
+	}
+};
+
+Engine.prototype.getPing = function(e2, e) {
+	
+	var sum = 0;
+	var n;
+	
+	for (var i = this.pings.length - 1, n = 0; i >= 0 && n < 5; i--, n++)
+		sum += this.pings[i];
+	
+	return sum / n;
+};
+
+Engine.prototype.getClock = function(e2, e) {
+	
+	var sum = 0;
+	var n;
+	
+	for (var i = this.clocks.length - 1, n = 0; i >= 0 && n < 5; i--, n++)
+		sum += this.clocks[i];
+	
+	return sum / n;
 };
 
 /**********************************
@@ -99,7 +192,7 @@ Engine.prototype.load = function(protocol) {
 		url: window.location.href,
 		players: this.players,
 		localPlayer: this.account
-	}) + ";\n" + this.protocol.script;
+	}) + ";" + this.protocol.script;
 	
 	var blob;
 	try {
@@ -132,6 +225,11 @@ Engine.prototype.ready = function() {
 	$(this.nova).on("onLogin", this.onLogin.bind(this));
 	
 	//Host events
+	$(this.host).on("onOpen", this.onOpen.bind(this));
 	$(this.host).on("onJoin", this.onJoin.bind(this));
 	$(this.host).on("onBroadcast", this.onBroadcast.bind(this));
+	$(this.host).on("onEcho.Game", this.onEcho.bind(this));
+	
+	//Other
+	this.pinger = setInterval(this.ping.bind(this), 1000);
 };
