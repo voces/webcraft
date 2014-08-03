@@ -1,6 +1,22 @@
 
-//Requires applyProperties.js
+/*
+	Requires
+		applyProperties.js
+		local.js
+	
+	Provides
+		Widget(Object props, Boolean localize)
+		Array widgets
+*/
+
+var widgets = [];
+
 function Widget(props, localize) {
+	
+	/**********************************
+	**	Position
+	**********************************/
+	
 	this.position = {
 		x: 0,
 		y: 0,
@@ -12,6 +28,50 @@ function Widget(props, localize) {
 		y: 0,
 		z: 0
 	};
+	
+	/**********************************
+	**	Collision/Movement
+	**********************************/
+	
+	//Radial collision
+	this.collision = 0;
+	
+	//Area it takes up
+	this.pathingmap = [
+		{x: -0.5, y: -0.5},
+		{x: -0.5, y:  0.5},
+		{x:  0.5, y: -0.5},
+		{x:  0.5, y:  0.5}
+	];
+	
+	this.speed = 0;
+	
+	//Limits on where the Widget can go
+	this.boundingBox = {
+		max: {
+			x: NaN,
+			y: NaN
+		},
+		min: {
+			x: NaN,
+			y: NaN
+		}
+	};
+	
+	//Internal object for sliding
+	this._slide = {
+		start: NaN,
+		startPosition: {
+			x: NaN,
+			y: NaN
+		},
+		direction: NaN,
+		speed: NaN
+	};
+	
+	/**********************************
+	**	Looks
+	**********************************/
 	
 	this.model = {
 		type:  "simple",
@@ -29,58 +89,53 @@ function Widget(props, localize) {
 		}
 	};
 	
-	this.collison = 0;
+	/**********************************
+	**	Finish (ID, applied properties, and engine communication)
+	**********************************/
 	
-	this.pathingmap = [
-		{x: -0.5, y: -0.5},
-		{x: -0.5, y:  0.5},
-		{x:  0.5, y: -0.5},
-		{x:  0.5, y:  0.5}
-	];
+	this.id = NaN;								//ID within scene
+	this.tempID = Date.now() + Math.random();	//ID used only for creation
 	
-	this.id = NaN;	//ID within scene
-	this.randID = Math.random();	//ID used only for creation
+	widgets.push(this);
 	
 	applyProperties(this, props);
 	
-	if (!localize)
+	if (localize !== true)
 		postMessage({
-			_func: "newWidget", 
+			_func: "createWidget", 
+			tempID: this.tempID,
 			position: this.position,
 			offset: this.offset,
+			boundingBox: this.boundingBox,
 			model: this.model
 		});
 }
 
 Widget.prototype.getX = function() {
-	if (this._slide.start == NaN)
+	if (isNaN(this._slide.start))
 		return this.position.x;
 	else {
 		this.position.x = this._slide.startPosition.x + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
 		
-		var maxX = g(this, ["boundingBox", "max", "x"]);
-		var minX = g(this, ["boundingBox", "min", "x"]);
-		if (maxX !== false && maxX < this.position.x)
-			this.position.x = maxX;
-		else if (minX !== false && minX > this.position.x)
-			this.position.x = minX;
+		if (this.boundingBox.max.x < this.position.x)
+			this.position.x = this.boundingBox.max.x;
+		else if (this.boundingBox.min.x > this.position.x)
+			this.position.x = this.boundingBox.min.x;
 		
 		return this.position.x;
 	}
 };
 
 Widget.prototype.getY = function() {
-	if (this._slide.start == NaN)
+	if (isNaN(this._slide.start))
 		return this.position.y;
 	else {
 		this.position.y = this._slide.startPosition.y + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 		
-		var maxY = g(this, ["boundingBox", "max", "y"]);
-		var minY = g(this, ["boundingBox", "min", "y"]);
-		if (maxY !== false && maxY < this.position.y)
-			this.position.y = maxY;
-		else if (minY !== false && minY > this.position.y)
-			this.position.y = minY;
+		if (this.boundingBox.max.y < this.position.y)
+			this.position.y = this.boundingBox.max.y;
+		else if (this.boundingBox.min.y > this.position.y)
+			this.position.y = this.boundingBox.min.y;
 		
 		return this.position.y;
 	}
@@ -89,26 +144,22 @@ Widget.prototype.getY = function() {
 Widget.prototype.getPosition = function() {
 	
 	//Sliding is the only movement we have, so it's easy
-	if (this._slide.start == NaN)
+	if (isNaN(this._slide.start))
 		return this.position;
 	else {
 		
 		this.position.x = this._slide.startPosition.x + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
-		this.position.y = this._slide.startPosition.y + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
+		this.position.y = this._slide.startPosition.y + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 		
-		var maxX = g(this, ["boundingBox", "max", "x"]);
-		var minX = g(this, ["boundingBox", "min", "x"]);
-		if (maxX !== false && maxX < this.position.x)
-			this.position.x = maxX;
-		else if (minX !== false && minX > this.position.x)
-			this.position.x = minX;
+		if (this.boundingBox.max.x < this.position.x)
+			this.position.x = this.boundingBox.max.x;
+		else if (this.boundingBox.min.x > this.position.x)
+			this.position.x = this.boundingBox.min.x;
 		
-		var maxY = g(this, ["boundingBox", "max", "y"]);
-		var minY = g(this, ["boundingBox", "min", "y"]);
-		if (maxY !== false && maxY < this.position.y)
-			this.position.y = maxY;
-		else if (minY !== false && minY > this.position.y)
-			this.position.y = minY;
+		if (this.boundingBox.max.y < this.position.y)
+			this.position.y = this.boundingBox.max.y;
+		else if (this.boundingBox.min.y > this.position.y)
+			this.position.y = this.boundingBox.min.y;
 		
 		return this.position;
 	}
@@ -141,10 +192,14 @@ Widget.prototype.slide = function(args) {
 
 Widget.prototype.stopSlide = function(args) {
 	
-	if (typeof args.timestamp == "undefined" || isNaN(this._slide.start)) return;
+	if (
+		typeof args.timestamp == "undefined" ||
+		isNaN(this._slide.start)
+		|| this._slide.direction != args.direction
+	) return;
 	
 	this.position.x = this._slide.startPosition.x + (args.timestamp - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
-	this.position.y = this._slide.startPosition.y + (args.timestamp - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
+	this.position.y = this._slide.startPosition.y + (args.timestamp - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 	
 	this._slide.start = NaN;
 	
@@ -156,3 +211,11 @@ Widget.prototype.stopSlide = function(args) {
 		speed: this._slide.speed,
 	});
 };
+
+local.on("createWidget", function(e) {
+	for (var i = 0; i < widgets.length; i++)
+		if (widgets[i].tempID == e.tempID) {
+			widgets[i].id = e.oid;
+			break;
+		}
+});

@@ -9,10 +9,13 @@ Engine = function(core) {
 	this.players = [];
 	this.widgets = [];
 	
+	this.css;
+	this.elements = [];
+	
 	this.pinger = null;
 	this.pings = [];	//Round trip time
-	this.clocks = [];	//Difference from timestamp and received
-	this.clockOffset = 0;
+	this.clocks = [];	//Difference from now and received, basically is latency + real clock difference
+	this.offset = 0;	//This should NOT arbitrarily change value, as things can get desynced
 	
 	this.$ = $(this);
 	
@@ -20,6 +23,12 @@ Engine = function(core) {
 	
 	$(document).ready(this.ready.bind(this));
 };
+
+/**********************************
+***********************************
+**	Hooks
+***********************************
+**********************************/
 
 /**********************************
 **	Server Hooks
@@ -49,7 +58,7 @@ Engine.prototype.onJoin = function(e2, e) {
 	
 	//Give to sandbox
 	if (this.sandbox) {
-		e.timestamp = e.timestamp + this.clockOffset;
+		e.timestamp = e.timestamp + this.offset;
 		this.sandbox.postMessage({type: "host", data: e});
 	}
 };
@@ -58,7 +67,7 @@ Engine.prototype.onBroadcast = function(e2, e) {
 	
 	//Give to sandbox
 	if (this.sandbox) {
-		e.timestamp = e.timestamp + this.clockOffset;
+		e.timestamp = e.timestamp + this.offset;
 		
 		this.sandbox.postMessage({type: "host", data: e});
 	}
@@ -71,7 +80,7 @@ Engine.prototype.onBroadcast = function(e2, e) {
 //Attached in Game.js
 Engine.prototype.keydown = function(e) {
 	this.sandbox.postMessage({
-		type: "ui",
+		type: "local",
 		data: {
 			id: "keydown",
 			which: e.which,
@@ -86,7 +95,7 @@ Engine.prototype.keydown = function(e) {
 
 Engine.prototype.keyup = function(e) {
 	this.sandbox.postMessage({
-		type: "ui",
+		type: "local",
 		data: {
 			id: "keyup",
 			which: e.which,
@@ -113,7 +122,7 @@ Engine.prototype.onEcho = function(e2, e) {
 		this.clocks.push(Date.now() - e.timestamp);
 		
 		if (this.clocks.length == 1)
-			this.clockOffset = this.clocks[0];
+			this.offset = this.clocks[0];
 	}
 };
 
@@ -137,6 +146,93 @@ Engine.prototype.getClock = function(e2, e) {
 		sum += this.clocks[i];
 	
 	return sum / n;
+};
+
+/**********************************
+***********************************
+**	Functionality
+***********************************
+**********************************/
+
+Engine.prototype.addElement = function(data, parent) {
+	switch (data.tag) {
+	case "style":
+		
+		if (typeof this.css == "undefined") this.css = $("<style>").prependTo(this.core.pages.game.gameUI);
+		
+		var string = "";
+		data.rules.forEach(function(v, i) {
+			
+			var selector = "#gameUI ";
+			
+			if (v.id) {
+				if (this.elements.indexOf(v.id) >= 0)
+					selector = "#" + v.id + " ";
+				
+				delete v.id;
+			}
+			
+			if (v.selector) {
+				v.selector = v.selector.replace(/#/g, "");
+				selector += v.selector;
+				
+				delete v.selector;
+			}
+			
+			string += selector + "{\n";
+			
+			for (var p in v)
+				if (v.hasOwnProperty(p))
+					
+					//We only allow a z-index of less than 1000, which makes sure esc work
+					if (p != "z-index" || v[p] < 1000)
+						string += p + ": " + v[p] + ";\n";
+			
+			string += "}\n\n";
+			
+		}.bind(this));
+		
+		this.css.append(string);
+	
+	break; case "div": case "span":
+		
+		//Create it
+		var ele = $("<" + data.tag + ">");
+		
+		//Push to element array
+		this.elements.push(ele);
+		
+		//Set ID; if ID, then set value in elements array
+		if (typeof data.id != "undefined") {
+			var check = document.getElementById(data.id);
+			
+			if (!check) {
+				this.elements[data.id] = ele;
+				ele.attr("id", data.id);
+			}
+		}
+		
+		//Place it
+		if (typeof parent != "undefined")
+			ele.appendTo(parent);
+		else if (typeof data.parent == "undefined" || this.elements[data.parent] == "undefined")
+			ele.appendTo(this.core.pages.game.gameUI);
+		else if (this.elements[data.parent] != "undefined")
+			ele.appendTo(this.elements[data.parent]);
+		
+		//Some text
+		if (typeof data.text != "undefined")
+			ele.text(data.text);
+		
+		//Classes
+		if (typeof data.class != "undefined")
+			ele.addClass(data.class);
+		
+		//And children
+		if (typeof data.children != "undefined")
+			for (var i = 0; i < data.children.length; i++)
+				this.addElement(data.children[i], ele);
+	}
 };
 
 /**********************************
@@ -167,9 +263,14 @@ Engine.prototype.clear = function() {
 		this.sandbox = null;
 	}
 	
-	//Eventually the entire scene should be cleared, but I don't want to abstract the cameras and lights ATM
-	for (var i = 6; i < this.graphic.scene.children.length; i++)
+	for (var i = this.graphic.scene.children.length - 1; i > -1; i--)
 		this.graphic.scene.remove(this.graphic.scene.children[i]);
+	
+	this.core.pages.game.gameUI.empty();
+	
+	this.widgets = [];
+	this.elements = [];
+	delete this.css;
 };
 
 //Loads a protocol
@@ -185,6 +286,9 @@ Engine.prototype.load = function(protocol) {
 		this.$.trigger("onLoad", []);
 		return;
 	}
+	
+	//Create camera and lights
+	this.graphic.loadBaseScene();
 	
 	//Build a JS blob from the script
 	this.protocol.script = "_initData = " + JSON.stringify({

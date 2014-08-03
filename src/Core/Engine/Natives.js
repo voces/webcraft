@@ -8,7 +8,7 @@ Engine.Natives.prototype.broadcast = function(args) {
 	this.engine.core.host.broadcast(args);
 };
 
-Engine.Natives.prototype.newWidget = function(args) {
+Engine.Natives.prototype.createWidget = function(args) {
 	delete args._func;
 	
 	var widget = new Engine.Widget(args);
@@ -18,8 +18,8 @@ Engine.Natives.prototype.newWidget = function(args) {
 	this.engine.widgets[id] = widget;
 	
 	this.engine.sandbox.postMessage({type: "local", data: {
-		id: "widget",
-		randID: args.randID,
+		id: "createWidget",
+		tempID: args.tempID,
 		position: widget.mesh.position,
 		oid: id
 	}});
@@ -39,4 +39,14 @@ Engine.Natives.prototype.stopSlide = function(args) {
 	delete args.id;
 	
 	this.engine.widgets[id].stopSlide(args);
+};
+
+Engine.Natives.prototype.addHTML = function(args) {
+	if (!args.html || typeof args.html != "object") throw("Bad arguments for addHTML");
+	
+	if (args.html instanceof Array)
+		for (var i = 0; i < args.html.length; i++)
+			this.engine.addElement(args.html[i]);
+	else
+		this.engine.addElement(args.html);
 };

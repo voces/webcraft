@@ -24,30 +24,6 @@ Graphic = function(core, element) {
 	this.renderer.shadowMapDarkness = 0.5;
 	
 	/*************************
-	 **	Create the camera
-	 *************************/
-	
-	this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-	this.camera.position.z = 2000;
-	
-	this.scene.add(this.camera);
-	
-	/*************************
-	 **	Create the lights
-	 *************************/
-	
-	this.sun = new THREE.DirectionalLight(0xffffff, 1);
-	this.moon = new THREE.DirectionalLight(0xffffff, .33);
-	this.stars = new THREE.AmbientLight(0x111111);
-	
-	this.sun.position.z = 100;
-	this.moon.position.z = 100;
-	
-	this.scene.add(this.sun);
-	this.scene.add(this.moon);
-	this.scene.add(this.stars);
-	
-	/*************************
 	 **	Create the support objects
 	 *************************/
 	
@@ -70,6 +46,34 @@ Graphic = function(core, element) {
 	
 };
 
+Graphic.prototype.loadBaseScene = function() {
+	
+	/*************************
+	 **	Create the camera
+	 *************************/
+	
+	this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
+	this.camera.position.z = 2000;
+	
+	this.scene.add(this.camera);
+	
+	/*************************
+	 **	Create the lights
+	 *************************/
+	
+	this.sun = new THREE.DirectionalLight(0xffffff, 1);
+	this.moon = new THREE.DirectionalLight(0xffffff, .33);
+	this.stars = new THREE.AmbientLight(0x111111);
+	
+	this.sun.position.z = 5000;
+	this.moon.position.z = 5000;
+	
+	this.scene.add(this.sun);
+	this.scene.add(this.moon);
+	this.scene.add(this.stars);
+	
+};
+
 /** Runs when DOM finishes loading */
 Graphic.prototype.load = function() {
 	
@@ -83,13 +87,15 @@ Graphic.prototype.load = function() {
 Graphic.prototype.render = function() {
 	requestAnimationFrame(this.render.bind(this));
 	
+	if (!this.camera) return;
+	
 	this.activeMeshes.forEach(function(mesh) {
 		/*if (typeof this.marker == "undefined")
 			this.marker = 0;
 		else return;*/
 		
 		var position = mesh.widget.getPosition();
-		//console.log(position);
+		
 		mesh.position.x = position.x;
 		mesh.position.y = position.y;
 	}.bind(this));
@@ -99,6 +105,7 @@ Graphic.prototype.render = function() {
 
 /** Handle window resizing */
 Graphic.prototype.resize = function() {
+	if (!this.camera) return;
 	
 	this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
@@ -107,15 +114,19 @@ Graphic.prototype.resize = function() {
 };
 
 Graphic.prototype.mousemove = function(e) {
+	if (!this.camera) return;
+	
 	this.mouse.x = e.clientX;
 	this.mouse.y = e.clientY;
 	
 	if (this.getTopObject(e.clientX / window.innerWidth, e.clientY / window.innerHeight)) {
-		console.log('hover');
+		//console.log('hover');
 	}
 };
 
 Graphic.prototype.getTopObject = function(x, y) {
+	if (!this.camera) return false;
+	
 	var mouse = new THREE.Vector3( ( x ) * 2 - 1, - ( y ) * 2 + 1, .5);
 	var ray = this.projector.pickingRay(mouse, this.camera);
 	
