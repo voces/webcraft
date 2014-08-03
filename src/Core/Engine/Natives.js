@@ -1,3 +1,4 @@
+
 Engine.Natives = function(engine) {
 	this.engine = engine;
 };
@@ -42,11 +43,36 @@ Engine.Natives.prototype.stopSlide = function(args) {
 };
 
 Engine.Natives.prototype.addHTML = function(args) {
-	if (!args.html || typeof args.html != "object") throw("Bad arguments for addHTML");
+	
+	if (!args.html || typeof args.html != "object") throw "Bad arguments for addHTML"
 	
 	if (args.html instanceof Array)
 		for (var i = 0; i < args.html.length; i++)
 			this.engine.addElement(args.html[i]);
 	else
 		this.engine.addElement(args.html);
+};
+
+Engine.Natives.prototype.setText = function(args) {
+	this.engine.elements[args.id].text(args.text);
+};
+
+Engine.Natives.prototype.removeElement = function(args) {
+	var element = this.engine.elements[args.id];
+	
+	var index = this.engine.elements.indexOf(element);
+	this.engine.elements.splice(index, 1);
+	
+	element.remove();
+};
+
+Engine.Natives.prototype.emptyElement = function(args) {
+	var element = this.engine.elements[args.id];
+	
+	element.children().each(function(i, v) {
+		var id = $(v).attr("id");
+		
+		if (id) delete this.engine.elements[id];
+		$(v).remove();
+	}.bind(this));
 };

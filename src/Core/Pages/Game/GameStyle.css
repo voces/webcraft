@@ -104,7 +104,7 @@ body > .Game .hoverglow:hover {
 #gamePDescription {
 	position: relative;
 	top: 2.5em;
-	height: calc(100% - 20em);
+	height: calc(100% - 21em);
 	overflow: hidden;
 }
 

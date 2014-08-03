@@ -54,7 +54,7 @@ Engine.prototype.onJoin = function(e2, e) {
 	if (e.accounts.indexOf(this.account) >= 0)
 		this.players = e.accounts;
 	else
-		this.players.concat(e.accounts);
+		this.players = this.players.concat(e.accounts);
 	
 	//Give to sandbox
 	if (this.sandbox) {
@@ -217,7 +217,7 @@ Engine.prototype.addElement = function(data, parent) {
 			ele.appendTo(parent);
 		else if (typeof data.parent == "undefined" || this.elements[data.parent] == "undefined")
 			ele.appendTo(this.core.pages.game.gameUI);
-		else if (this.elements[data.parent] != "undefined")
+		else
 			ele.appendTo(this.elements[data.parent]);
 		
 		//Some text
@@ -232,6 +232,9 @@ Engine.prototype.addElement = function(data, parent) {
 		if (typeof data.children != "undefined")
 			for (var i = 0; i < data.children.length; i++)
 				this.addElement(data.children[i], ele);
+	
+	break; default: 
+		throw "Unsupported element type"
 	}
 };
 

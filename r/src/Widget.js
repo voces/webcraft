@@ -201,6 +201,16 @@ Widget.prototype.stopSlide = function(args) {
 	this.position.x = this._slide.startPosition.x + (args.timestamp - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
 	this.position.y = this._slide.startPosition.y + (args.timestamp - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 	
+	if (this.boundingBox.max.x < this.position.x)
+		this.position.x = this.boundingBox.max.x;
+	else if (this.boundingBox.min.x > this.position.x)
+		this.position.x = this.boundingBox.min.x;
+	
+	if (this.boundingBox.max.y < this.position.y)
+		this.position.y = this.boundingBox.max.y;
+	else if (this.boundingBox.min.y > this.position.y)
+		this.position.y = this.boundingBox.min.y;
+	
 	this._slide.start = NaN;
 	
 	postMessage({
