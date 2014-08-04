@@ -43,7 +43,7 @@ function Poll(vid, callback, players) {
 	this.options = [];
 	this.votes = [];
 	
-	this.ended = "idle";
+	this.status = "idle";
 	
 	polls[this.pollID] = this;
 };
@@ -62,9 +62,9 @@ Poll.prototype.start = function(data, callback, players, timeout) {
 	this.options = [];
 	this.votes = [];
 	
-	this.newVote(data, _initData.localPlayer, true);
-	
 	this.status = "ongoing";
+	
+	//this.newVote(data, _initData.localPlayer, true);
 	
 	polls[this.pollID] = this;
 	
@@ -75,20 +75,22 @@ Poll.prototype.start = function(data, callback, players, timeout) {
 		data: data
 	});
 	
-	setTimeout(this.timeout.bind(this), timeout);
+	this.timeout = setTimeout(this.onTimeout.bind(this), timeout);
 };
 
-Poll.prototype.timeout = function() {
+Poll.prototype.onTimeout = function() {
 	this.status = "ended";
 	
 	this.tally();
 }
 
-Poll.prototype.newVote = function(data, account, local) {
+Poll.prototype.newVote = function(data, account) {
+	if (this.status == "idle") this.status = "ongoing";
+	
 	var vote = new Poll.Vote(this, data, account);
 	this.votes.push(vote);
 	
-	if (local) this.localVote = vote;
+	if (account == _initData.localPlayer) this.localVote = vote;
 	
 	var option = false;
 	for (var i = 0; i < this.options.length; i++)
@@ -112,6 +114,11 @@ Poll.prototype.newVote = function(data, account, local) {
 Poll.prototype.tally = function() {
 	if (this.votes.length != this.players.length && this.status != "ended") return;
 	
+	if (this.status == "idle") return;
+	this.status = "idle";
+	
+	clearTimeout(this.timeout);
+	
 	var winCount = 0;
 	var winner = null;
 	for (var i = 0; i < this.options.length; i++)
@@ -122,6 +129,7 @@ Poll.prototype.tally = function() {
 	
 	if (typeof this.callback == "function")
 		this.callback(this, this.winner);
+	
 	this.fire("tally", {poll: this, winner: this.winner});
 }
 
@@ -130,19 +138,19 @@ host.on("onBroadcast", function(e) {
 	
 	var poll = polls[e.pollID];
 	if (poll) poll.newVote(e.data, e.account);
-});
+}.bind(this));
 
-Poll.Option = function(poll, tally) {
+Poll.Option = function(poll, vote) {
 	this.poll = poll;
-	this.data = tally.data;
-	this.stringified = tally.stringified;
+	this.data = vote.data;
+	this.stringified = vote.stringified;
 	
-	this.votes = [tally];
+	this.votes = [vote];
 };
 
-Poll.Option.prototype.try = function(tally) {
-	if (this.stringified == tally.stringified) {
-		this.votes.push(tally);
+Poll.Option.prototype.try = function(vote) {
+	if (this.stringified == vote.stringified) {
+		this.votes.push(vote);
 		return this;
 	} else return false;
 }
@@ -160,5 +168,5 @@ host.on("onJoin", function(e) {
 
 host.on("onLeave", function(e) {
 	var index = Poll.players.indexOf(e.account);
-	Poll.players.splice(index, 1);
+	if (index >= 0) Poll.players.splice(index, 1);
 });

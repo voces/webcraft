@@ -63,6 +63,26 @@ Engine.prototype.onJoin = function(e2, e) {
 	}
 };
 
+Engine.prototype.onLeave = function(e2, e) {
+	
+	//We left
+	if (e.account == this.account) {
+		this.clear();
+		this.players = [];
+		
+		return;
+	}
+	
+	var index = this.players.indexOf(e.account);
+	if (index >= 0) this.players.splice(index, 1);
+	
+	//Give to sandbox
+	if (this.sandbox) {
+		e.timestamp = e.timestamp + this.offset;
+		this.sandbox.postMessage({type: "host", data: e});
+	}
+};
+
 Engine.prototype.onBroadcast = function(e2, e) {
 	
 	//Give to sandbox
@@ -334,6 +354,7 @@ Engine.prototype.ready = function() {
 	//Host events
 	$(this.host).on("onOpen", this.onOpen.bind(this));
 	$(this.host).on("onJoin", this.onJoin.bind(this));
+	$(this.host).on("onLeave", this.onLeave.bind(this));
 	$(this.host).on("onBroadcast", this.onBroadcast.bind(this));
 	$(this.host).on("onEcho.Game", this.onEcho.bind(this));
 	
