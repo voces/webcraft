@@ -34,17 +34,25 @@ Engine.Widget = function(props) {
 			if (this.model.geometry.shape == "BoxGeometry") {
 				
 				if (this.validateProps(
-					[this.model.geometry.size, "object"],
-					[this.model.geometry.size.depth, "number"],
-					[this.model.geometry.size.height, "number"],
-					[this.model.geometry.size.width, "number"]
-				))
+						[this.model.geometry.size, "object"],
+						[this.model.geometry.size.depth, "number"],
+						[this.model.geometry.size.height, "number"],
+						[this.model.geometry.size.width, "number"]))
 					this.geometry = new THREE.BoxGeometry(
-						this.model.geometry.size.width,
-						this.model.geometry.size.height,
-						this.model.geometry.size.depth);
+							this.model.geometry.size.width,
+							this.model.geometry.size.height,
+							this.model.geometry.size.depth);
 				else
 					this.geometry = new THREE.BoxGeometry(100, 100, 100);
+			
+			} else if (this.model.geometry.shape == "IcosahedronGeometry") {
+				
+				if (this.validateProps(
+						[this.model.geometry.radius, "number"],
+						[this.model.geometry.detail, "number"]))
+					this.geometry = new THREE.IcosahedronGeometry(
+							this.model.geometry.radius,
+							this.model.geometry.detail);
 			
 			//Unknown geometry type
 			} else this.geometry = new THREE.BoxGeometry(100, 100, 100);
@@ -73,6 +81,28 @@ Engine.Widget = function(props) {
 	this.mesh.position.z = (this.position.z || 0) + (this.offset.z || 0);
 	
 	core.graphic.scene.add(this.mesh);
+};
+
+Engine.Widget.prototype.setPosition = function(args) {
+	this.position = args.position;
+	
+	if (this.boundingBox.max.x < this.position.x)
+		this.position.x = this.boundingBox.max.x;
+	else if (this.boundingBox.min.x > this.position.x)
+		this.position.x = this.boundingBox.min.x;
+	
+	if (this.boundingBox.max.y < this.position.y)
+		this.position.y = this.boundingBox.max.y;
+	else if (this.boundingBox.min.y > this.position.y)
+		this.position.y = this.boundingBox.min.y;
+	
+	if (!isNaN(this._slide.start)) {
+		this._slide.startPosition = this.position;
+		this._slide.start = args.timestamp;
+	}
+	
+	this.mesh.position.x = this.position.x;
+	this.mesh.position.y = this.position.y;
 };
 
 Engine.Widget.prototype.getX = function() {
@@ -111,6 +141,7 @@ Engine.Widget.prototype.getPosition = function() {
 	if (isNaN(this._slide.start))
 		return this.position;
 	else {
+		console.log(this._slide.startPosition.y, (Date.now() - this._slide.start), this._slide.speed, this._slide.direction);
 		
 		this.position.x = this._slide.startPosition.x + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
 		this.position.y = this._slide.startPosition.y + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
@@ -153,8 +184,8 @@ Engine.Widget.prototype.stopSlide = function(args) {
 	
 	if (
 		typeof args.timestamp == "undefined" ||
-		isNaN(this._slide.start)
-		|| this._slide.direction != args.direction
+		isNaN(this._slide.start) ||
+		(typeof args.direction != "undefined" && this._slide.direction != args.direction)
 	) return;
 	
 	this.position.x = this._slide.startPosition.x + (args.timestamp - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);

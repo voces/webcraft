@@ -26,20 +26,16 @@ Engine.Natives.prototype.createWidget = function(args) {
 	}});
 };
 
+Engine.Natives.prototype.setPosition = function(args) {
+	this.engine.widgets[args.id].setPosition(args);
+};
+
 Engine.Natives.prototype.slide = function(args) {
-	delete args._func;
-	var id = args.id;
-	delete args.id;
-	
-	this.engine.widgets[id].slide(args);
+	this.engine.widgets[args.id].slide(args);
 };
 
 Engine.Natives.prototype.stopSlide = function(args) {
-	delete args._func;
-	var id = args.id;
-	delete args.id;
-	
-	this.engine.widgets[id].stopSlide(args);
+	this.engine.widgets[args.id].stopSlide(args);
 };
 
 Engine.Natives.prototype.addHTML = function(args) {

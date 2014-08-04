@@ -111,6 +111,32 @@ function Widget(props, localize) {
 		});
 }
 
+Widget.prototype.setPosition = function(args) {
+	this.position = args.position;
+	
+	if (this.boundingBox.max.x < this.position.x)
+		this.position.x = this.boundingBox.max.x;
+	else if (this.boundingBox.min.x > this.position.x)
+		this.position.x = this.boundingBox.min.x;
+	
+	if (this.boundingBox.max.y < this.position.y)
+		this.position.y = this.boundingBox.max.y;
+	else if (this.boundingBox.min.y > this.position.y)
+		this.position.y = this.boundingBox.min.y;
+	
+	if (!isNaN(this._slide.start)) {
+		this._slide.startPosition = this.position;
+		this._slide.start = args.timestamp;
+	}
+	
+	postMessage({
+		_func: "setPosition", 
+		id: this.id,
+		timestamp: args.timestamp,
+		position: args.position
+	});
+};
+
 Widget.prototype.getX = function() {
 	if (isNaN(this._slide.start))
 		return this.position.x;
@@ -194,8 +220,8 @@ Widget.prototype.stopSlide = function(args) {
 	
 	if (
 		typeof args.timestamp == "undefined" ||
-		isNaN(this._slide.start)
-		|| this._slide.direction != args.direction
+		isNaN(this._slide.start) ||
+		(typeof args.direction != "undefined" && this._slide.direction != args.direction)
 	) return;
 	
 	this.position.x = this._slide.startPosition.x + (args.timestamp - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);

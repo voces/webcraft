@@ -45,13 +45,13 @@ Core.Pages.Portal.Group.prototype.newGroup = function() {
 ***********************************/
 
 Core.Pages.Portal.Group.prototype.appendUser = function(user) {
-	if (user.avatar == "") user.avatar = "blank.png";
+	if (user.avatar == "") user.avatar = "r/img/avatar/blank.png";
 	
 	this.section.list.append($('<div></div>')
 		.addClass("user")
 		.append($("<img>")
 			.addClass("avatar")
-			.attr("src", "images/avatars/" + user.avatar))
+			.attr("src", user.avatar))
 		.append($("<span></span>")
 			.addClass("label")
 			.text(user.account))

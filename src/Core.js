@@ -7,7 +7,7 @@ Core = function() {
 	this.host = this.nova.newHost();
 	
 	//Game objects
-	this.graphic = new Graphic("world");
+	this.graphic = new Graphic(this, "world");
 	this.engine = new Engine(this);
 	
 	//UI object
