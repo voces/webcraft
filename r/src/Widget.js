@@ -173,7 +173,6 @@ Widget.prototype.getPosition = function() {
 	if (isNaN(this._slide.start))
 		return this.position;
 	else {
-		
 		this.position.x = this._slide.startPosition.x + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
 		this.position.y = this._slide.startPosition.y + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 		

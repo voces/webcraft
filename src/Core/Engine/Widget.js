@@ -96,10 +96,12 @@ Engine.Widget.prototype.setPosition = function(args) {
 	else if (this.boundingBox.min.y > this.position.y)
 		this.position.y = this.boundingBox.min.y;
 	
-	if (!isNaN(this._slide.start)) {
-		this._slide.startPosition = this.position;
-		this._slide.start = args.timestamp;
-	}
+	if (!isNaN(this._slide.start))
+		//We do this instead of setting so it creates hardcopies
+		applyProperties(this._slide, {
+			start: args.timestamp,
+			startPosition: this.position
+		});
 	
 	this.mesh.position.x = this.position.x;
 	this.mesh.position.y = this.position.y;
@@ -141,8 +143,6 @@ Engine.Widget.prototype.getPosition = function() {
 	if (isNaN(this._slide.start))
 		return this.position;
 	else {
-		console.log(this._slide.startPosition.y, (Date.now() - this._slide.start), this._slide.speed, this._slide.direction);
-		
 		this.position.x = this._slide.startPosition.x + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
 		this.position.y = this._slide.startPosition.y + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 		
@@ -169,6 +169,7 @@ Engine.Widget.prototype.slide = function(args) {
 	
 	var startPosition = this.getPosition();
 	
+	//We do this instead of setting so it creates hardcopies
 	applyProperties(this._slide, {
 		start: args.timestamp,
 		startPosition: startPosition,

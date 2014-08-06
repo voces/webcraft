@@ -279,6 +279,7 @@ Engine.prototype.onMessage = function(e) {
 **********************************/
 
 Engine.prototype.clear = function() {
+	console.log("clear");
 	this.protocol = null;
 	
 	if (this.sandbox != null) {
@@ -288,6 +289,8 @@ Engine.prototype.clear = function() {
 	
 	for (var i = this.graphic.scene.children.length - 1; i > -1; i--)
 		this.graphic.scene.remove(this.graphic.scene.children[i]);
+	
+	this.graphic.activeMeshes = [];
 	
 	this.core.pages.game.gameUI.empty();
 	
