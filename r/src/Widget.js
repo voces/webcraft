@@ -269,7 +269,7 @@ Widget.prototype.slide = function(args) {
 		typeof args.timestamp == "undefined"
 	) return;
 	
-	var startPosition = this.getPosition();
+	var startPosition = args.position || this.getPosition(args.timestamp);
 	
 	applyProperties(this._slide, {
 		start: args.timestamp,
@@ -282,6 +282,7 @@ Widget.prototype.slide = function(args) {
 		_func: "slide", 
 		id: this.id,
 		timestamp: args.timestamp,
+		position: startPosition,
 		direction: args.direction,
 		speed: this._slide.speed,
 	});

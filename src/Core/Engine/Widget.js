@@ -189,14 +189,16 @@ Engine.Widget.prototype.getY = function() {
 	}
 };
 
-Engine.Widget.prototype.getPosition = function() {
+Engine.Widget.prototype.getPosition = function(timestamp) {
+	
+	if (typeof timestamp == "undefined") timestamp = Date.now();
 	
 	//Sliding is the only movement we have, so it's easy
 	if (isNaN(this._slide.start))
 		return this.position;
 	else {
-		this.position.x = this._slide.startPosition.x + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
-		this.position.y = this._slide.startPosition.y + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
+		this.position.x = this._slide.startPosition.x + (timestamp - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
+		this.position.y = this._slide.startPosition.y + (timestamp - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 		
 		if (this.boundingBox.max.x < this.position.x)
 			this.position.x = this.boundingBox.max.x;
@@ -219,7 +221,7 @@ Engine.Widget.prototype.slide = function(args) {
 		typeof args.timestamp == "undefined"
 	) return;
 	
-	var startPosition = this.getPosition();
+	var startPosition = args.position || this.getPosition(args.timestamp);
 	
 	//We do this instead of setting so it creates hardcopies
 	applyProperties(this._slide, {
