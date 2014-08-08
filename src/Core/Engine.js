@@ -279,7 +279,7 @@ Engine.prototype.onMessage = function(e) {
 **********************************/
 
 Engine.prototype.clear = function() {
-	console.log("clear");
+	
 	this.protocol = null;
 	
 	if (this.sandbox != null) {

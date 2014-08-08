@@ -60,8 +60,8 @@ Core.Pages.Home.prototype.selectEditor = function() {
 	this.pages.editor.fadeIn();
 };
 
-Core.Pages.Home.prototype.selectGithub = function() {
-	window.open('https://github.com/voces/webcraft', '_blank');
+Core.Pages.Home.prototype.selectBitbucket = function() {
+	window.open('https://bitbucket.org/voces/webcraft', '_blank');
 };
 
 Core.Pages.Home.prototype.selectSettings = function() {
@@ -164,14 +164,14 @@ Core.Pages.Home.prototype.keydown = function(e) {
 				this.selectNova();
 				e.preventDefault();
 			
+			//b
+			break; case 66:
+				this.selectBitbucket();
+				e.preventDefault();
+			
 			//e
 			break; case 69:
 				this.selectEditor();
-				e.preventDefault();
-			
-			//g
-			break; case 71:
-				this.selectGithub();
 				e.preventDefault();
 			
 			//s
@@ -333,7 +333,7 @@ Core.Pages.Home.prototype.load = function() {
 	//Menu options
 	$(this.novaP).on('click', this.selectNova.bind(this));
 	$(this.editor).on('click', this.selectEditor.bind(this));
-	$(this.github).on('click', this.selectGithub.bind(this));
+	$(this.bitbucket).on('click', this.selectBitbucket.bind(this));
 	$(this.settings).on('click', this.selectSettings.bind(this));
 	
 	//Login events

@@ -83,6 +83,22 @@ Engine.Widget = function(props) {
 	core.graphic.scene.add(this.mesh);
 };
 
+
+Engine.Widget.prototype.setSpeed = function(args) {
+	this.speed = args.speed;
+	
+	var startPosition = this.getPosition();
+	
+	//We do this instead of setting so it creates hardcopies
+	if (!isNaN(this._slide.start))
+		applyProperties(this._slide, {
+			start: args.timestamp,
+			startPosition: startPosition,
+			speed: this.speed
+		});
+};
+
+
 Engine.Widget.prototype.setPosition = function(args) {
 	this.position = args.position;
 	
@@ -104,6 +120,42 @@ Engine.Widget.prototype.setPosition = function(args) {
 		});
 	
 	this.mesh.position.x = this.position.x;
+	this.mesh.position.y = this.position.y;
+};
+
+Engine.Widget.prototype.setX = function(args) {
+	this.position.x = args.x;
+	
+	if (this.boundingBox.max.x < this.position.x)
+		this.position.x = this.boundingBox.max.x;
+	else if (this.boundingBox.min.x > this.position.x)
+		this.position.x = this.boundingBox.min.x;
+	
+	if (!isNaN(this._slide.start))
+		//We do this instead of setting so it creates hardcopies
+		applyProperties(this._slide, {
+			start: args.timestamp,
+			startPosition: this.position
+		});
+	
+	this.mesh.position.x = this.position.x;
+};
+
+Engine.Widget.prototype.setY = function(args) {
+	this.position.y = args.y;
+	
+	if (this.boundingBox.max.y < this.position.y)
+		this.position.y = this.boundingBox.max.y;
+	else if (this.boundingBox.min.y > this.position.y)
+		this.position.y = this.boundingBox.min.y;
+	
+	if (!isNaN(this._slide.start))
+		//We do this instead of setting so it creates hardcopies
+		applyProperties(this._slide, {
+			start: args.timestamp,
+			startPosition: this.position
+		});
+	
 	this.mesh.position.y = this.position.y;
 };
 

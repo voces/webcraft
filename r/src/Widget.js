@@ -111,6 +111,28 @@ function Widget(props, localize) {
 		});
 }
 
+
+Widget.prototype.setSpeed = function(args) {
+	this.speed = args.speed;
+	
+	var startPosition = this.getPosition();
+	
+	if (!isNaN(this._slide.start))
+		applyProperties(this._slide, {
+			start: args.timestamp,
+			startPosition: startPosition,
+			speed: this.speed
+		});
+	
+	postMessage({
+		_func: "setX", 
+		id: this.id,
+		timestamp: args.timestamp,
+		speed: args.speed
+	});
+};
+
+
 Widget.prototype.setPosition = function(args) {
 	this.position = args.position;
 	
@@ -137,7 +159,52 @@ Widget.prototype.setPosition = function(args) {
 	});
 };
 
-Widget.prototype.getX = function() {
+Widget.prototype.setX = function(args) {
+	this.position.x = args.x;
+	
+	if (this.boundingBox.max.x < this.position.x)
+		this.position.x = this.boundingBox.max.x;
+	else if (this.boundingBox.min.x > this.position.x)
+		this.position.x = this.boundingBox.min.x;
+	
+	if (!isNaN(this._slide.start)) {
+		this._slide.startPosition = this.position;
+		this._slide.start = args.timestamp;
+	}
+	
+	postMessage({
+		_func: "setX", 
+		id: this.id,
+		timestamp: args.timestamp,
+		x: args.x
+	});
+};
+
+Widget.prototype.setY = function(args) {
+	this.position.y = args.y;
+	
+	if (this.boundingBox.max.y < this.position.y)
+		this.position.y = this.boundingBox.max.y;
+	else if (this.boundingBox.min.y > this.position.y)
+		this.position.y = this.boundingBox.min.y;
+	
+	if (!isNaN(this._slide.start)) {
+		this._slide.startPosition = this.position;
+		this._slide.start = args.timestamp;
+	}
+	
+	postMessage({
+		_func: "setY", 
+		id: this.id,
+		timestamp: args.timestamp,
+		y: args.y
+	});
+};
+
+Widget.prototype.getX = function(timestamp) {
+	
+	if (typeof timestamp == "undefined") timestamp = Date.now();
+	
 	if (isNaN(this._slide.start))
 		return this.position.x;
 	else {
@@ -152,7 +219,10 @@ Widget.prototype.getX = function() {
 	}
 };
 
-Widget.prototype.getY = function() {
+Widget.prototype.getY = function(timestamp) {
+	
+	if (typeof timestamp == "undefined") timestamp = Date.now();
+	
 	if (isNaN(this._slide.start))
 		return this.position.y;
 	else {
@@ -167,14 +237,16 @@ Widget.prototype.getY = function() {
 	}
 };
 
-Widget.prototype.getPosition = function() {
+Widget.prototype.getPosition = function(timestamp) {
+	
+	if (typeof timestamp == "undefined") timestamp = Date.now();
 	
 	//Sliding is the only movement we have, so it's easy
 	if (isNaN(this._slide.start))
-		return this.position;
+		return new Point(this.position.x, this.position.y);
 	else {
-		this.position.x = this._slide.startPosition.x + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
-		this.position.y = this._slide.startPosition.y + (Date.now() - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
+		this.position.x = this._slide.startPosition.x + (timestamp - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
+		this.position.y = this._slide.startPosition.y + (timestamp - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 		
 		if (this.boundingBox.max.x < this.position.x)
 			this.position.x = this.boundingBox.max.x;
@@ -186,7 +258,7 @@ Widget.prototype.getPosition = function() {
 		else if (this.boundingBox.min.y > this.position.y)
 			this.position.y = this.boundingBox.min.y;
 		
-		return this.position;
+		return new Point(this.position.x, this.position.y);
 	}
 };
 

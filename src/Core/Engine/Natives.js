@@ -26,8 +26,20 @@ Engine.Natives.prototype.createWidget = function(args) {
 	}});
 };
 
+Engine.Natives.prototype.setSpeed = function(args) {
+	this.engine.widgets[args.id].setSpeed(args);
+};
+
 Engine.Natives.prototype.setPosition = function(args) {
 	this.engine.widgets[args.id].setPosition(args);
+};
+
+Engine.Natives.prototype.setX = function(args) {
+	this.engine.widgets[args.id].setX(args);
+};
+
+Engine.Natives.prototype.setY = function(args) {
+	this.engine.widgets[args.id].setY(args);
 };
 
 Engine.Natives.prototype.slide = function(args) {
