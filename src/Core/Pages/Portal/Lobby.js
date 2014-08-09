@@ -128,13 +128,19 @@ Core.Pages.Portal.Lobby.prototype.tryImage = function(preview, size, terminateOn
 			return this.tryImage(preview, order[index], terminateOn);
 		} else
 			return preview[size];			
-	}
+	} else return "images/lobbies/unknown" + size + ".png";
 };
 
 Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
 	if (typeof append == "undefined") append = true;
 	
 	var preview = this.tryImage(lobby.preview, "small");
+	
+	var bTag = [];
+	if (typeof lobby.protocol != "undefined") bTag.push("Protocol: " + lobby.protocol);
+	if (typeof lobby.date != "undefined") bTag.push("Date: " + lobby.date);
+	if (typeof lobby.version != "undefined") bTag.push("Version: " + lobby.version);
+	if (typeof lobby.host != "undefined") bTag.push("Host: " + lobby.host);
 	
 	var card = $('<table>')
 		.addClass("lobby")
@@ -146,8 +152,8 @@ Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
 					.append($("<img>").attr("src", preview)))
 				.append($("<td>").text(lobby.name)))
 			.append($("<tr>")
-				.append($("<td>").text(lobby.host))
-				.attr("title", "The host is " + lobby.host + ".")))
+				.append($("<td>").text((lobby.protocol ? lobby.protocol + " • " : "") + lobby.host))
+				.attr("title", bTag.join(", "))))
 		.on("click", this.selectLobby.bind(this))
 		.on("dblclick", this.joinOnDblClick.bind(this));
 	
@@ -180,11 +186,50 @@ Core.Pages.Portal.Lobby.prototype.onLobbyList = function(e2, e) {
 };
 
 Core.Pages.Portal.Lobby.prototype.onReserve = function(e2, e) {
-	var lobby = {host: e.host, name: e.name, listed: new Date().getTime()};
+	var lobby = {
+		host: e.host,
+		name: e.name,
+		listed: new Date().getTime(),
+		protocol: e.protocol,
+		date: e.date,
+		version: e.version,
+		preview: e.preview
+	};
+	
 	this.lobbies.push(lobby);
 	this.lobbies[lobby.name] = lobby;
 	
 	this.appendLobby(lobby, false);
+};
+
+Core.Pages.Portal.Lobby.prototype.onUpdate = function(e2, e) {
+	var lobby = this.lobbies[e.name]
+	if (lobby) {
+		lobby.listed = new Date().getTime();
+		lobby.protocol = e.protocol;
+		lobby.date = e.date;
+		lobby.version = e.version;
+		lobby.preview = e.preview;
+		
+	} else this.onReserve(null, e);
+	
+	var bTag = [];
+	if (typeof lobby.protocol != "undefined") bTag.push("Protocol: " + lobby.protocol);
+	if (typeof lobby.date != "undefined") bTag.push("Date: " + lobby.date);
+	if (typeof lobby.version != "undefined") bTag.push("Version: " + lobby.version);
+	if (typeof lobby.host != "undefined") bTag.push("Host: " + lobby.host);
+	
+	this.section.lobbyList.children().each(function(i, v) {
+		var card = $(v);
+		if (card.attr("data-lobby") == lobby.name) {
+			card.find("img").attr("src", this.tryImage(lobby.preview, "small"));
+			
+			card.find("tr").eq(1)
+				.attr("title", bTag.join(", "))
+				.find("td")
+					.text((lobby.protocol ? lobby.protocol + " • " : "") + lobby.host);
+		}
+	}.bind(this));
 };
 
 Core.Pages.Portal.Lobby.prototype.onUnreserve = function(e2, e) {
@@ -192,6 +237,11 @@ Core.Pages.Portal.Lobby.prototype.onUnreserve = function(e2, e) {
 		if ($(v).attr("data-lobby") == e.name)
 			v.remove();
 	});
+	
+	var lobby = this.lobbies[e.name];
+	
+	this.lobbies.splice(this.lobbies.indexOf(lobby), 1);
+	delete this.lobbies[e.name];
 };
 
 Core.Pages.Portal.Lobby.prototype.onHostList = function(e2, e) {
@@ -269,6 +319,7 @@ Core.Pages.Portal.Lobby.prototype.load = function() {
 	//Lobby list management
 	$(this.nova).on('onLobbyList', this.onLobbyList.bind(this));
 	$(this.nova).on('onReserve', this.onReserve.bind(this));
+	$(this.nova).on('onUpdate', this.onUpdate.bind(this));
 	$(this.nova).on('onUnreserve', this.onUnreserve.bind(this));
 	
 	//Misc

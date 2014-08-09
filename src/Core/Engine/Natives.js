@@ -26,27 +26,31 @@ Engine.Natives.prototype.createWidget = function(args) {
 	}});
 };
 
-Engine.Natives.prototype.setSpeed = function(args) {
+Engine.Natives.prototype.updateWidget = function(args) {
+	this.engine.widgets[args.id].update(args);
+};
+
+Engine.Natives.prototype.setWidgetSpeed = function(args) {
 	this.engine.widgets[args.id].setSpeed(args);
 };
 
-Engine.Natives.prototype.setPosition = function(args) {
+Engine.Natives.prototype.setWidgetPosition = function(args) {
 	this.engine.widgets[args.id].setPosition(args);
 };
 
-Engine.Natives.prototype.setX = function(args) {
+Engine.Natives.prototype.setWidgetX = function(args) {
 	this.engine.widgets[args.id].setX(args);
 };
 
-Engine.Natives.prototype.setY = function(args) {
+Engine.Natives.prototype.setWidgetY = function(args) {
 	this.engine.widgets[args.id].setY(args);
 };
 
-Engine.Natives.prototype.slide = function(args) {
+Engine.Natives.prototype.slideWidget = function(args) {
 	this.engine.widgets[args.id].slide(args);
 };
 
-Engine.Natives.prototype.stopSlide = function(args) {
+Engine.Natives.prototype.stopWidgetSlide = function(args) {
 	this.engine.widgets[args.id].stopSlide(args);
 };
 

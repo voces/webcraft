@@ -99,12 +99,12 @@ Core.Pages.Portal.prototype.fadeIn = function() {
 };
 
 Core.Pages.Portal.prototype.fadeOut = function() {
+	this.unbindGlobals();
 	this.page.animate({opacity: 0}, this.fadeOutComplete.bind(this));
 };
 
 Core.Pages.Portal.prototype.fadeOutComplete = function() {
-	this.page.hide();
-	this.unbindGlobals();
+	this.page.hide();	
 };
 
 Core.Pages.Portal.prototype.bindGlobals = function() {

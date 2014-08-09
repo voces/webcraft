@@ -139,7 +139,7 @@ Core.Pages.Game.prototype.tryImage = function(preview, size, terminateOn) {
 			return this.tryImage(preview, order[index], terminateOn);
 		} else
 			return preview[size];			
-	}
+	} else return "images/lobbies/unknown" + size + ".png";
 };
 
 Core.Pages.Game.prototype.appendProtocol = function(protocol, id) {
@@ -178,11 +178,7 @@ Core.Pages.Game.prototype.displayProtocol = function(protocol) {
 
 Core.Pages.Game.prototype.keydown = function(e) {
 	if (e.which == 27) {
-		if (this.gameProtocol.is(":visible"))
-			this.gameProtocol.hide();
-		else
-			this.menu.toggle();
-		
+		this.menu.toggle();
 		return false;
 	} else this.engine.keydown(e);
 };
@@ -362,12 +358,13 @@ Core.Pages.Game.prototype.fadeIn = function(instant) {
 		return;
 	}
 	
-	if (instant) {
+	this.bindGlobals();
+	
+	if (instant)
 		this.page.css('opacity', 1);
-		this.bindGlobals();
-	} else {
+	else {
 		this.page.css('opacity', 0);
-		this.page.animate({opacity: 1}, this.bindGlobals.bind(this));
+		this.page.animate({opacity: 1});
 	}
 	
 	this.selectedProtocol = null;
@@ -381,10 +378,10 @@ Core.Pages.Game.prototype.fadeOutComplete = function() {
 	this.leaving = false;
 	
 	this.page.hide();
-	this.unbindGlobals();
 };
 
 Core.Pages.Game.prototype.fadeOut = function() {
+	this.unbindGlobals();
 	this.page.animate({opacity: 0}, this.fadeOutComplete.bind(this));
 };
 

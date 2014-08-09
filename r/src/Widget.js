@@ -111,6 +111,14 @@ function Widget(props, localize) {
 		});
 }
 
+Widget.prototype.update = function(props) {
+	applyProperties(this, props);
+	
+	props._func = "updateWidget";
+	props.id = this.id;
+	
+	postMessage(props);
+};
 
 Widget.prototype.setSpeed = function(args) {
 	this.speed = args.speed;
@@ -125,7 +133,7 @@ Widget.prototype.setSpeed = function(args) {
 		});
 	
 	postMessage({
-		_func: "setX", 
+		_func: "setWidgetSpeed", 
 		id: this.id,
 		timestamp: args.timestamp,
 		speed: args.speed
@@ -134,7 +142,7 @@ Widget.prototype.setSpeed = function(args) {
 
 
 Widget.prototype.setPosition = function(args) {
-	this.position = args.position;
+	applyProperties(this.position, args.position);
 	
 	if (this.boundingBox.max.x < this.position.x)
 		this.position.x = this.boundingBox.max.x;
@@ -152,7 +160,7 @@ Widget.prototype.setPosition = function(args) {
 	}
 	
 	postMessage({
-		_func: "setPosition", 
+		_func: "setWidgetPosition", 
 		id: this.id,
 		timestamp: args.timestamp,
 		position: args.position
@@ -173,7 +181,7 @@ Widget.prototype.setX = function(args) {
 	}
 	
 	postMessage({
-		_func: "setX", 
+		_func: "setWidgetX", 
 		id: this.id,
 		timestamp: args.timestamp,
 		x: args.x
@@ -194,7 +202,7 @@ Widget.prototype.setY = function(args) {
 	}
 	
 	postMessage({
-		_func: "setY", 
+		_func: "setWidgetY", 
 		id: this.id,
 		timestamp: args.timestamp,
 		y: args.y
@@ -279,7 +287,7 @@ Widget.prototype.slide = function(args) {
 	});
 	
 	postMessage({
-		_func: "slide", 
+		_func: "slideWidget", 
 		id: this.id,
 		timestamp: args.timestamp,
 		position: startPosition,
@@ -312,7 +320,7 @@ Widget.prototype.stopSlide = function(args) {
 	this._slide.start = NaN;
 	
 	postMessage({
-		_func: "stopSlide", 
+		_func: "stopWidgetSlide", 
 		id: this.id,
 		timestamp: args.timestamp,
 		direction: args.direction,

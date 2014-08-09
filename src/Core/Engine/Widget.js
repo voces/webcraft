@@ -83,6 +83,9 @@ Engine.Widget = function(props) {
 	core.graphic.scene.add(this.mesh);
 };
 
+Engine.Widget.prototype.update = function(props) {
+	applyProperties(this, props);
+};
 
 Engine.Widget.prototype.setSpeed = function(args) {
 	this.speed = args.speed;
@@ -100,7 +103,7 @@ Engine.Widget.prototype.setSpeed = function(args) {
 
 
 Engine.Widget.prototype.setPosition = function(args) {
-	this.position = args.position;
+	applyProperties(this.position, args.position);
 	
 	if (this.boundingBox.max.x < this.position.x)
 		this.position.x = this.boundingBox.max.x;
