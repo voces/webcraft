@@ -55,6 +55,10 @@ Core.Pages.Home.prototype.selectNova = function() {
 	} else this.showLogin();
 };
 
+Core.Pages.Home.prototype.selectForum = function() {
+	document.location.href = "//chatcraft.net/forum/";
+};
+
 Core.Pages.Home.prototype.selectEditor = function() {
 	this.fadeOut();
 	this.pages.editor.fadeIn();
@@ -164,15 +168,20 @@ Core.Pages.Home.prototype.keydown = function(e) {
 				this.selectNova();
 				e.preventDefault();
 			
+			//f
+			break; case 70:
+				this.selectForum();
+				e.preventDefault();
+			
 			//b
 			break; case 66:
 				this.selectBitbucket();
 				e.preventDefault();
 			
 			//e
-			break; case 69:
+			/*break; case 69:
 				this.selectEditor();
-				e.preventDefault();
+				e.preventDefault();*/
 			
 			//s
 			break; case 83:
@@ -332,7 +341,8 @@ Core.Pages.Home.prototype.load = function() {
 	
 	//Menu options
 	$(this.novaP).on('click', this.selectNova.bind(this));
-	$(this.editor).on('click', this.selectEditor.bind(this));
+	$(this.forum).on('click', this.selectForum.bind(this));
+	//$(this.editor).on('click', this.selectEditor.bind(this));
 	$(this.bitbucket).on('click', this.selectBitbucket.bind(this));
 	$(this.settings).on('click', this.selectSettings.bind(this));
 	
