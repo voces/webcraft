@@ -199,8 +199,8 @@
 }
 
 .Portal .tab.group .list .user img.avatar {
-	width: 1.5em;
-	height: 1.5em;
+	max-width: 1.5em;
+	max-height: 1.5em;
 }
 
 .Portal .tab.group .list .user span.label {
@@ -225,6 +225,10 @@
 	width: 100%;
 	margin: .5em 0;
 	cursor: pointer;
+}
+
+#lobbyList:empty:after {
+	content: "There are no lobbies."
 }
 
 #lobbyList > table:hover {
@@ -306,6 +310,10 @@
 ** Friends
 ********************************/
 
+.Portal .tab.friends .list:empty:after {
+	content: "You have no friends."
+}
+
 .Portal .tab.friends .list .user {
 	height: 1.5em;
 	margin: .5em 0;
@@ -318,8 +326,8 @@
 }
 
 .Portal .tab.friends .list .user img.avatar {
-	width: 1.5em;
-	height: 1.5em;
+	max-width: 1.5em;
+	max-height: 1.5em;
 }
 
 .Portal .tab.friends .list .user span.label {

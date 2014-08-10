@@ -241,11 +241,14 @@ Core.Pages.Home.prototype.onLoginFail = function(e2, e) {
 	this.shield.hide();
 	this.error.show();
 	
-	if (e.reason == 'password')
-		this.error.text('Invalid password');
-	else if (e.reason == 'account') {
+	if (e.reason == 'Provided password is incorrect.') {
+		this.error.text(e.reason);
+		this.password.select();
+	} else if (e.reason == 'Provided account does not exist.') {
 		this.error.html('Account does not exist. Try again to register it.');
 		this.register = true;
+	} else {
+		this.error.text('Uncoded error #5412');
 	}
 };
 
@@ -258,8 +261,11 @@ Core.Pages.Home.prototype.onRegisterFail = function(e2, e) {
 	this.shield.hide();
 	this.error.show();
 	
-	if (e.reason == 'invalid') {
-		this.error.text('Account is invalid. Accounts may only use alphabetic characters.');
+	if (e.reason == 'Provided account already exists.') {
+		this.error.text(e.reason);
+		this.account.select();
+	} else if (e.reason == 'Provided account does not meet requirements.') {
+		this.error.text('Account is invalid. Accounts may only use alphabetic characters and spaces.');
 		this.account.select();
 	} else {
 		this.error.text('Uncoded error #951356');
@@ -302,6 +308,8 @@ Core.Pages.Home.prototype.fadeOutComplete = function() {
 };
 
 Core.Pages.Home.prototype.fadeOut = function() {
+	this.prevPassword = "";
+	
 	this.page.animate({opacity: 0}, this.fadeOutComplete.bind(this));
 };
 

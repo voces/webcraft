@@ -131,7 +131,7 @@ Core.Pages.Game.prototype.tryImage = function(preview, size, terminateOn) {
 		
 		if (typeof preview[size] == "undefined") {
 			if (typeof terminateOn == "undefined") terminateOn = index;
-			else if (terminateOn == index) return "images/lobbies/unknown" + size + ".png";
+			else if (terminateOn == index) return "r/img/lobby/unknown" + size + ".png";
 			
 			if (index < 2) index++;
 			else index = 0;
@@ -139,7 +139,7 @@ Core.Pages.Game.prototype.tryImage = function(preview, size, terminateOn) {
 			return this.tryImage(preview, order[index], terminateOn);
 		} else
 			return preview[size];			
-	} else return "images/lobbies/unknown" + size + ".png";
+	} else return "r/img/lobby/unknown" + size + ".png";
 };
 
 Core.Pages.Game.prototype.appendProtocol = function(protocol, id) {
@@ -262,12 +262,12 @@ Core.Pages.Game.prototype.onJoin = function(e2, e) {
 				.addClass("hoverglow")
 				.on('click', this.menuChange.bind(this));
 		
-		this.engine.load(e.protocol);
+		this.engine.load(e.protocol, false);
 	}
 };
 
 Core.Pages.Game.prototype.onProtocol = function(e2, e) {
-	this.engine.load(e.protocol);
+	this.engine.load(e.protocol, true, e.timestamp);
 };
 
 Core.Pages.Game.prototype.onProtocols = function(e2, e) {

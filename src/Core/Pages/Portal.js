@@ -69,7 +69,7 @@ Core.Pages.Portal.prototype.onLogout = function(e2, e) {
 	this.location = null;
 	this.chat.log.empty();
 	this.group.section.list.empty();
-	this.lobby.section.list.empty();
+	this.lobby.section.lobbyList.empty();
 	this.friends.list.empty();
 	//this.clan.list.empty();
 };

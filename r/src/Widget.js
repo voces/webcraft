@@ -140,7 +140,6 @@ Widget.prototype.setSpeed = function(args) {
 	});
 };
 
-
 Widget.prototype.setPosition = function(args) {
 	applyProperties(this.position, args.position);
 	

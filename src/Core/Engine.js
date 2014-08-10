@@ -300,7 +300,7 @@ Engine.prototype.clear = function() {
 };
 
 //Loads a protocol
-Engine.prototype.load = function(protocol) {
+Engine.prototype.load = function(protocol, start, timestamp) {
 	
 	if (this.protocol != null)
 		this.clear();
@@ -321,7 +321,9 @@ Engine.prototype.load = function(protocol) {
 		type: "init",
 		url: window.location.href,
 		players: this.players,
-		localPlayer: this.account
+		localPlayer: this.account,
+		start: start || false,
+		timestamp: timestamp || false
 	}) + ";" + this.protocol.script;
 	
 	var blob;

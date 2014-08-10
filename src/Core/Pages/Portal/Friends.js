@@ -29,20 +29,21 @@ Core.Pages.Portal.Friends.prototype.whisperUser = function(e) {
 ***********************************/
 
 Core.Pages.Portal.Friends.prototype.appendFriend = function(user) {
-	if (user.avatar == "") user.avatar = "blank.png";
+	if (user.avatar == "") user.avatar = "r/img/avatar/blank.png";
 	
 	var userDiv = $('<div></div>')
 		.addClass("user")
 		.addClass(user.online ? "online" : "offline")
 		.append($("<img>")
 			.addClass("avatar")
-			.attr("src", "images/avatars/" + user.avatar))
+			.attr("src", user.avatar))
 		.append($("<span></span>")
 			.addClass("label")
 			.text(user.account))
 		.appendTo(this.list);
 	
 	if (user.online) userDiv.on("click", this.whisperUser.bind(this));
+	if (user.location) userDiv.attr("title", "In group " + user.location + ".");
 };
 
 Core.Pages.Portal.Friends.prototype.onFriendList = function(e2, e) {

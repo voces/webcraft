@@ -120,7 +120,7 @@ Core.Pages.Portal.Lobby.prototype.tryImage = function(preview, size, terminateOn
 		
 		if (typeof preview[size] == "undefined") {
 			if (typeof terminateOn == "undefined") terminateOn = index;
-			else if (terminateOn == index) return "images/lobbies/unknown" + size + ".png";
+			else if (terminateOn == index) return "r/img/lobby/unknown" + size + ".png";
 			
 			if (index < 2) index++;
 			else index = 0;
@@ -128,7 +128,7 @@ Core.Pages.Portal.Lobby.prototype.tryImage = function(preview, size, terminateOn
 			return this.tryImage(preview, order[index], terminateOn);
 		} else
 			return preview[size];			
-	} else return "images/lobbies/unknown" + size + ".png";
+	} else return "r/img/lobby/unknown" + size + ".png";
 };
 
 Core.Pages.Portal.Lobby.prototype.appendLobby = function(lobby, append) {
@@ -200,6 +200,12 @@ Core.Pages.Portal.Lobby.prototype.onReserve = function(e2, e) {
 	this.lobbies[lobby.name] = lobby;
 	
 	this.appendLobby(lobby, false);
+};
+
+Core.Pages.Portal.Lobby.prototype.onReserveFail = function(e2, e) {
+	this.portal.chat.appendChat($("<div></div>")
+		.addClass("error")
+		.text(e.reason));
 };
 
 Core.Pages.Portal.Lobby.prototype.onUpdate = function(e2, e) {
@@ -274,6 +280,8 @@ Core.Pages.Portal.Lobby.prototype.onKey = function(e2, e) {
 Core.Pages.Portal.Lobby.prototype.onJoin = function(e2, e) {
 	this.host.gameName = e.lobby;
 	
+	this.nova.noGroup();
+	
 	this.portal.fadeOut();
 	this.pages.game.fadeIn();
 };
@@ -319,6 +327,7 @@ Core.Pages.Portal.Lobby.prototype.load = function() {
 	//Lobby list management
 	$(this.nova).on('onLobbyList', this.onLobbyList.bind(this));
 	$(this.nova).on('onReserve', this.onReserve.bind(this));
+	$(this.nova).on('onReserveFail', this.onReserveFail.bind(this));
 	$(this.nova).on('onUpdate', this.onUpdate.bind(this));
 	$(this.nova).on('onUnreserve', this.onUnreserve.bind(this));
 	
