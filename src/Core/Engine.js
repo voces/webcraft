@@ -8,6 +8,7 @@ Engine = function(core) {
 	this.sandbox = null;
 	this.players = [];
 	this.widgets = [];
+	this.keys = [];
 	
 	this.css;
 	this.elements = [];
@@ -58,6 +59,7 @@ Engine.prototype.onJoin = function(e2, e) {
 	
 	//Give to sandbox
 	if (this.sandbox) {
+		e.seed = e.timestamp;
 		e.timestamp = e.timestamp + this.offset;
 		this.sandbox.postMessage({type: "host", data: e});
 	}
@@ -93,39 +95,102 @@ Engine.prototype.onBroadcast = function(e2, e) {
 	}
 };
 
+Engine.prototype.onSync = function(e2, e) {
+	
+	//Give to sandbox
+	if (this.sandbox) {
+		e.timestamp = e.timestamp + this.offset;
+		
+		this.sandbox.postMessage({type: "host", data: e});
+	}
+};
+
+Engine.prototype.tally = function(e2, e) {
+	
+	//Give to sandbox
+	if (this.sandbox) {
+		e.timestamp = e.timestamp + this.offset;
+		
+		this.sandbox.postMessage({type: "host", data: e});
+	}
+};
+
 /**********************************
 **	UI Hooks
 **********************************/
 
 //Attached in Game.js
 Engine.prototype.keydown = function(e) {
-	this.sandbox.postMessage({
-		type: "local",
-		data: {
-			id: "keydown",
-			which: e.which,
-			altKey: e.altKey,
-			ctrlKey: e.ctrlKey,
-			metaKey: e.metaKey,
-			shiftKey: e.shiftKey,
-			timeStamp: e.timeStamp
-		}
-	});
+	if (this.sandbox)
+		this.sandbox.postMessage({
+			type: "local",
+			data: {
+				id: "keydown",
+				which: e.which,
+				altKey: e.altKey,
+				ctrlKey: e.ctrlKey,
+				metaKey: e.metaKey,
+				shiftKey: e.shiftKey,
+				timestamp: e.timeStamp
+			}
+		});
 };
 
 Engine.prototype.keyup = function(e) {
-	this.sandbox.postMessage({
-		type: "local",
-		data: {
-			id: "keyup",
-			which: e.which,
-			altKey: e.altKey,
-			ctrlKey: e.ctrlKey,
-			metaKey: e.metaKey,
-			shiftKey: e.shiftKey,
-			timeStamp: e.timeStamp
-		}
-	});
+	if (this.sandbox)
+		this.sandbox.postMessage({
+			type: "local",
+			data: {
+				id: "keyup",
+				which: e.which,
+				altKey: e.altKey,
+				ctrlKey: e.ctrlKey,
+				metaKey: e.metaKey,
+				shiftKey: e.shiftKey,
+				timestamp: e.timeStamp
+			}
+		});
+};
+
+//This should get the camera coordinates, objects that intersect (ordered first to last), etc
+Engine.prototype.click = function(e) {
+	if (this.sandbox)
+		this.sandbox.postMessage({
+			type: "local",
+			data: {
+				id: "click",
+				which: e.which,
+				x: e.clientX,
+				y: e.clientY,
+				element: $(e.target).attr("id"),
+				altKey: e.altKey,
+				ctrlKey: e.ctrlKey,
+				metaKey: e.metaKey,
+				shiftKey: e.shiftKey,
+				timestamp: e.timeStamp
+			}
+		});
+};
+
+//This should get the camera coordinates, objects that intersect (ordered first to last), etc
+Engine.prototype.wheel = function(e) {
+	if (this.sandbox)
+		this.sandbox.postMessage({
+			type: "local",
+			data: {
+				id: "wheel",
+				which: e.which,
+				delta: (e.originalEvent.deltaY > 0 ? -1 : 1),
+				x: e.originalEvent.clientX,
+				y: e.originalEvent.clientY,
+				element: $(e.target).attr("id"),
+				altKey: e.altKey,
+				ctrlKey: e.ctrlKey,
+				metaKey: e.metaKey,
+				shiftKey: e.shiftKey,
+				timestamp: e.timeStamp
+			}
+		});
 };
 
 /**********************************
@@ -291,10 +356,15 @@ Engine.prototype.clear = function() {
 		this.graphic.scene.remove(this.graphic.scene.children[i]);
 	
 	this.graphic.activeMeshes = [];
+	this.graphic.keys = [];
 	
 	this.core.pages.game.gameUI.empty();
 	
+	for (var i = 0; i < this.keys.length; i++)
+		this.keys[i].destroy();
+	
 	this.widgets = [];
+	this.keys = [];
 	this.elements = [];
 	delete this.css;
 };
@@ -323,7 +393,8 @@ Engine.prototype.load = function(protocol, start, timestamp) {
 		players: this.players,
 		localPlayer: this.account,
 		start: start || false,
-		timestamp: timestamp || false
+		seed: timestamp,
+		timestamp: (timestamp + this.offset) || false
 	}) + ";" + this.protocol.script;
 	
 	var blob;
@@ -352,6 +423,7 @@ Engine.prototype.ready = function() {
 	this.nova = core.nova;
 	this.host = core.host;
 	this.graphic = core.graphic;
+	this.natives.graphic = core.graphic;
 	
 	//Nova events
 	$(this.nova).on("onLogin", this.onLogin.bind(this));
@@ -361,7 +433,9 @@ Engine.prototype.ready = function() {
 	$(this.host).on("onJoin", this.onJoin.bind(this));
 	$(this.host).on("onLeave", this.onLeave.bind(this));
 	$(this.host).on("onBroadcast", this.onBroadcast.bind(this));
-	$(this.host).on("onEcho.Game", this.onEcho.bind(this));
+	$(this.host).on("onEcho", this.onEcho.bind(this));
+	$(this.host).on("onSync", this.onSync.bind(this));
+	$(this.host).on("tally", this.tally.bind(this));
 	
 	//Other
 	this.pinger = setInterval(this.ping.bind(this), 1000);

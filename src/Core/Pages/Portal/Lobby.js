@@ -257,24 +257,11 @@ Core.Pages.Portal.Lobby.prototype.onHostList = function(e2, e) {
 		this.section.lobbyCurrentHost.text(e.list[0]);
 };
 
-Core.Pages.Portal.Lobby.prototype.onBridge = function(e2, e) {
-	this.host.key = e.key;
-	this.host.account = e.account;
-	
-	if (typeof this.host.socket == "undefined" || this.host.socket.readyState != 1)
-		this.host.connect(e.ip, e.port);
-	else
-		this.host.sendKey(this.host.key);
-};
-
-Core.Pages.Portal.Lobby.prototype.onOpen = function(e2, e) {
-	this.host.sendKey(this.host.key);
-};
-
-Core.Pages.Portal.Lobby.prototype.onKey = function(e2, e) {
-	this.host.access = e.access;
-	
-	this.host.lobby(this.lobby.name);
+Core.Pages.Portal.Lobby.prototype.onBridgeFail = function(e2, e) {
+	console.log("test");
+	this.portal.chat.appendChat($("<div></div>")
+		.addClass("error")
+		.text(e.reason));
 };
 
 Core.Pages.Portal.Lobby.prototype.onJoin = function(e2, e) {
@@ -330,6 +317,9 @@ Core.Pages.Portal.Lobby.prototype.load = function() {
 	$(this.nova).on('onReserveFail', this.onReserveFail.bind(this));
 	$(this.nova).on('onUpdate', this.onUpdate.bind(this));
 	$(this.nova).on('onUnreserve', this.onUnreserve.bind(this));
+	
+	//Hosting
+	$(this.nova).on('onBridgeFail', this.onBridgeFail.bind(this));
 	
 	//Misc
 	$(this.nova).on('onHostList', this.onHostList.bind(this));

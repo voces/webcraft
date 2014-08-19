@@ -26,18 +26,18 @@
 
 var polls = {};
 
-function Poll(vid, callback, players) {
+function Poll(vid, callback, players, timeoutPeriod) {
 	if (typeof vid == "undefined") throw "No vid!"
-	if (typeof players == "undefined") players = Poll.players;
 	
 	EventTarget.apply(this, [])
 	
 	this.pollID = Poll.id++;
 	
 	this.vid = vid;
-	this.players = players;
+	this.players = players || Poll.players;
 	this.data = null;
 	this.callback = callback;
+	this.timeoutPeriod = timeoutPeriod || 2000;
 	
 	this.localVote = null;
 	this.options = [];
@@ -52,8 +52,7 @@ Poll.players = _initData.players;
 Poll.id = 0;
 Poll.prototype = Object.create(EventTarget.prototype);
 
-Poll.prototype.start = function(data, callback, players, timeout) {
-	if (typeof timeout == "undefined") timeout = 2000;
+Poll.prototype.start = function(data, callback, players) {
 	
 	this.data = data;
 	if (callback) this.callback = callback;
@@ -75,7 +74,7 @@ Poll.prototype.start = function(data, callback, players, timeout) {
 		data: data
 	});
 	
-	this.timeout = setTimeout(this.onTimeout.bind(this), timeout);
+	this.timeout = setTimeout(this.onTimeout.bind(this), this.timeoutPeriod);
 };
 
 Poll.prototype.onTimeout = function() {
@@ -85,7 +84,12 @@ Poll.prototype.onTimeout = function() {
 }
 
 Poll.prototype.newVote = function(data, account) {
-	if (this.status == "idle") this.status = "ongoing";
+	
+	//Means we didn't know a vote was going on, probably means we are new and this is a syncing poll
+	if (this.status == "idle") {
+		this.status = "ongoing";
+		this.timeout = setTimeout(this.onTimeout.bind(this), this.timeoutPeriod);
+	}
 	
 	var vote = new Poll.Vote(this, data, account);
 	this.votes.push(vote);
@@ -137,6 +141,9 @@ host.on("onBroadcast", function(e) {
 	if (e.sid != "vote") return;
 	
 	var poll = polls[e.pollID];
+	
+	console.log("vote", poll, e);
+	
 	if (poll) poll.newVote(e.data, e.account);
 }.bind(this));
 

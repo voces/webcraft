@@ -263,10 +263,9 @@ Core.Pages.Portal.Chat.prototype.onFriendAdd = function(e2, e) {
 };
 
 Core.Pages.Portal.Chat.prototype.onFriendAddFail = function(e2, e) {
-	if (e.reason == "duplicate")
-		this.appendChat($("<div></div>")
-			.addClass("error")
-			.text("That user is already on your friends list."));
+	this.appendChat($("<div></div>")
+		.addClass("error")
+		.text(e.reason));
 };
 
 
@@ -283,10 +282,9 @@ Core.Pages.Portal.Chat.prototype.onFriendRemove = function(e2, e) {
 };
 
 Core.Pages.Portal.Chat.prototype.onFriendRemoveFail = function(e2, e) {
-	if (e.reason == "not friend")
-		this.appendChat($("<div></div>")
-			.addClass("error")
-			.text("That user is not on your friends list."));
+	this.appendChat($("<div></div>")
+		.addClass("error")
+		.text(e.reason));
 };
 
 

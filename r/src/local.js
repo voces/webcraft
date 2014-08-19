@@ -5,19 +5,18 @@
 	
 	Provides
 		EventTarget local
-		Array localKeys
 */
 
 var local = new EventTarget();
-var localKeys = [];
+local.keys = [];
 
 local.on("keydown", function(e) {
-	if (localKeys[e.which] != true) {
+	if (local.keys[e.which] != true) {
 		e.firstDown = true;
-		localKeys[e.which] = true;
-	}
+		local.keys[e.which] = true;
+	} else e.firstDown = false;
 });
 
 local.on("keyup", function(e) {
-	localKeys[e.which] = false;
+	local.keys[e.which] = false;
 });

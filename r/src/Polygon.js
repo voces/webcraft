@@ -39,10 +39,11 @@ Polygon.prototype.intercepts = function(segment) {
 		intercept;
 	
 	//Check our segments
-	for (var i = 0; i < this.segments.length; i++) {
-		if (intercept = segment.intercept(this.segments[i]))
+	for (var i = 0; i < this.segments.length; i++)
+		if (intercept = segment.intercept(this.segments[i])) {
+			intercept.segment = this.segments[i];
 			intercepts.push(intercept);
-	}
+		}
 	
 	//No intercepts, return false
 	if (intercepts.length == 0) return false;

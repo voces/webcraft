@@ -5,6 +5,7 @@ Graphic = function(core, element) {
 	//Scene
 	this.scene = new THREE.Scene();
 	this.activeMeshes = [];
+	this.keys = [];
 	
 	/*************************
 	 **	Create the renderer
@@ -99,6 +100,9 @@ Graphic.prototype.render = function() {
 		mesh.position.x = position.x;
 		mesh.position.y = position.y;
 	}.bind(this));
+	
+	for (var i = 0; i < this.keys.length; i++)
+		this.keys[i].update();
 	
 	this.renderer.render(this.scene, this.camera);
 };

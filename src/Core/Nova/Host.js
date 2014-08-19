@@ -91,6 +91,11 @@ Nova.Host.prototype.echo = function(data) {
 	this.send(data);
 };
 
+
+Nova.Host.prototype.sync = function(sid, data) {
+	this.send({id: "sync", sid: sid, data: data});
+};
+
 //A simplification of .socket.send
 Nova.Host.prototype.send = function(data) {
 	if (!this.socket || this.socket.readyState != 1) return;

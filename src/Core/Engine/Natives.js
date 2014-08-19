@@ -3,11 +3,91 @@ Engine.Natives = function(engine) {
 	this.engine = engine;
 };
 
+/**********************************
+**	General
+**********************************/
+
+Engine.Natives.prototype.createKey = function(args) {
+	
+	var obj = null;
+	if (args.on == "camera")
+		obj = this.graphic.camera;
+	
+	for (var i = 0; i < args.path.length - 1; i++)
+		obj = obj[args.path[i]];
+	
+	var key = new Engine.Key(obj, args);
+	key.id = this.engine.keys.push(key) - 1;
+	
+	if (key.enabled) {
+		if (key.how == "frame")
+			this.graphic.keys.push(key);
+	}
+	
+	this.engine.sandbox.postMessage({type: "local", data: {
+		id: "createKey",
+		tempID: args.tempID,
+		oid: key.id
+	}});
+};
+
+Engine.Natives.prototype.enableKey = function(args) {
+	var key = this.engine.keys[args.id];
+	
+	delete args._func;
+	delete args.id;
+	
+	applyProperties(key, args);
+	
+	if (typeof args.start == "undefined") key.start = Date.now();
+	
+	key.last = key.start;
+	
+	if (key.how == "frame") {
+		if (this.graphic.keys.indexOf(key) < 0)
+			key.gid = this.graphic.keys.push(key) - 1;
+	}
+};
+
+Engine.Natives.prototype.disableKey = function(args) {
+	var key = this.engine.keys[args.id];
+	
+	applyProperties(key, args);
+	
+	if (key.how == "frame") this.graphic.keys.splice(key.gid, 1);
+};
+
+/**********************************
+**	Host
+**********************************/
+
 Engine.Natives.prototype.broadcast = function(args) {
 	delete args._func;
 	
 	this.engine.core.host.broadcast(args);
 };
+
+Engine.Natives.prototype.sync = function(args) {
+	delete args._func;
+	
+	this.engine.core.host.sync(args.sid, args.data);
+};
+
+/**********************************
+**	Camera
+**********************************/
+
+Engine.Natives.prototype.adjustCameraField = function(args) {
+	if (args.field == "height") {
+		this.graphic.camera.position.z += args.amount;
+	} else if (args.field == "angle") {
+		this.graphic.camera.rotation.x += args.amount;
+	}
+};
+
+/**********************************
+**	Widgets
+**********************************/
 
 Engine.Natives.prototype.createWidget = function(args) {
 	delete args._func;
@@ -53,6 +133,10 @@ Engine.Natives.prototype.slideWidget = function(args) {
 Engine.Natives.prototype.stopWidgetSlide = function(args) {
 	this.engine.widgets[args.id].stopSlide(args);
 };
+
+/**********************************
+**	UI
+**********************************/
 
 Engine.Natives.prototype.addHTML = function(args) {
 	

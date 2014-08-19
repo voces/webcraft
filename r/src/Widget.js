@@ -2,6 +2,7 @@
 /*
 	Requires
 		applyProperties.js
+		Point.js
 		local.js
 	
 	Provides
@@ -17,11 +18,7 @@ function Widget(props, localize) {
 	**	Position
 	**********************************/
 	
-	this.position = {
-		x: 0,
-		y: 0,
-		z: 0
-	};
+	this.position = new Point(0, 0);
 	
 	this.offset = {
 		x: 0,
@@ -100,6 +97,9 @@ function Widget(props, localize) {
 	
 	applyProperties(this, props);
 	
+	if (typeof props.position == "undefined" && typeof props.homePosition != "undefined")
+		applyProperties(this.position, this.homePosition);
+	
 	if (localize !== true)
 		postMessage({
 			_func: "createWidget", 
@@ -111,6 +111,8 @@ function Widget(props, localize) {
 		});
 }
 
+Widget.prototype = Object.create(EventTarget.prototype);
+
 Widget.prototype.update = function(props) {
 	applyProperties(this, props);
 	
@@ -118,6 +120,32 @@ Widget.prototype.update = function(props) {
 	props.id = this.id;
 	
 	postMessage(props);
+};
+
+Widget.prototype.returnHome = function(timestamp) {
+	applyProperties(this.position, this.homePosition);
+	
+	if (this.boundingBox.max.x < this.position.x)
+		this.position.x = this.boundingBox.max.x;
+	else if (this.boundingBox.min.x > this.position.x)
+		this.position.x = this.boundingBox.min.x;
+	
+	if (this.boundingBox.max.y < this.position.y)
+		this.position.y = this.boundingBox.max.y;
+	else if (this.boundingBox.min.y > this.position.y)
+		this.position.y = this.boundingBox.min.y;
+	
+	if (!isNaN(this._slide.start)) {
+		this._slide.startPosition = this.position;
+		this._slide.start = timestamp;
+	}
+	
+	postMessage({
+		_func: "setWidgetPosition", 
+		id: this.id,
+		timestamp: timestamp,
+		position: this.position
+	});
 };
 
 Widget.prototype.setSpeed = function(args) {
@@ -252,6 +280,7 @@ Widget.prototype.getPosition = function(timestamp) {
 	if (isNaN(this._slide.start))
 		return new Point(this.position.x, this.position.y);
 	else {
+		
 		this.position.x = this._slide.startPosition.x + (timestamp - this._slide.start)/1000 * this._slide.speed * Math.cos(this._slide.direction);
 		this.position.y = this._slide.startPosition.y + (timestamp - this._slide.start)/1000 * this._slide.speed * Math.sin(this._slide.direction);
 		

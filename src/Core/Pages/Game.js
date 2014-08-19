@@ -180,11 +180,13 @@ Core.Pages.Game.prototype.keydown = function(e) {
 	if (e.which == 27) {
 		this.menu.toggle();
 		return false;
-	} else this.engine.keydown(e);
+	} else if (e.which != 27 && !this.gameProtocol.is(":visible") && !this.splash.is(":visible") && !this.menu.is(":visible"))
+		this.engine.keydown(e);
 };
 
 Core.Pages.Game.prototype.keyup = function(e) {
-	if (e.which != 27) this.engine.keyup(e);
+	if (e.which != 27 && !this.gameProtocol.is(":visible") && !this.splash.is(":visible") && !this.menu.is(":visible"))
+		this.engine.keyup(e);
 };
 
 /**********************************
@@ -436,6 +438,10 @@ Core.Pages.Game.prototype.load = function() {
 	this.gameSearchInput.on('keyup', this.search.bind(this));
 	this.gameSelect.on('click', this.selectProtocol.bind(this));
 	this.gameForceRefresh.on('click', this.forceRefresh.bind(this));
+	
+	//Hooks going straight to engine
+	this.gameUI.on('click', function(e) { this.engine.click(e) }.bind(this));
+	this.gameUI.on('wheel', function(e) { this.engine.wheel(e) }.bind(this));
 	
 	/**********************************
 	**	Page setup

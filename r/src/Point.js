@@ -17,6 +17,10 @@ Point = function(x, y) {
 	this.y = y;
 };
 
+Point.fromPolar = function(angle) {
+	return new Point(Math.cos(angle), Math.sin(angle));
+};
+
 Point.prototype.add = function(point) {
 	return new Point(this.x + point.x, this.y + point.y);
 };
@@ -43,4 +47,16 @@ Point.prototype.cross = function(point) {
 
 Point.prototype.distance = function(point) {
 	return Math.sqrt((point.x - this.x)*(point.x - this.x) + (point.y - this.y)*(point.y - this.y));
+}
+
+Point.prototype.angleTo = function(point) {
+	return Math.atan2(point.y - this.y, point.x - this.x);
+}
+
+Point.prototype.angleFrom = function(point) {
+	return Math.atan2(this.y - point.y, this.x - point.x);
+}
+
+Point.prototype.toPolar = function() {
+	return Math.atan2(this.y, this.x);
 }
