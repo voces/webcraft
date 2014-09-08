@@ -251,7 +251,7 @@ Engine.prototype.addElement = function(data, parent) {
 			var selector = "#gameUI ";
 			
 			if (v.id) {
-				if (this.elements.indexOf(v.id) >= 0)
+				if (typeof this.elements[v.id] != "undefined")
 					selector = "#" + v.id + " ";
 				
 				delete v.id;
@@ -279,7 +279,7 @@ Engine.prototype.addElement = function(data, parent) {
 		
 		this.css.append(string);
 	
-	break; case "div": case "span":
+	break; case "div": case "span": case "input":
 		
 		//Create it
 		var ele = $("<" + data.tag + ">");
@@ -289,6 +289,7 @@ Engine.prototype.addElement = function(data, parent) {
 		
 		//Set ID; if ID, then set value in elements array
 		if (typeof data.id != "undefined") {
+			
 			var check = document.getElementById(data.id);
 			
 			if (!check) {

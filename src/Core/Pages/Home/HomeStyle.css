@@ -13,9 +13,9 @@
 .Home .menu {
 	position: relative;
 	margin: auto;
-	width: 15em;
+	width: 25em;
 	height: 17em;
-	top: calc(50% - 8.5em);
+	top: calc(50% - 12.5em);
 }
 
 .Home .menu > p {
