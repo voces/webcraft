@@ -3,7 +3,7 @@ Core = function() {
 	this.bcrypt = new bCrypt();
 	
 	//Network objects
-	this.nova = new Nova('ws://68.229.21.36:8082');
+	this.nova = new Nova('ws://68.229.21.36:8082', true);
 	this.host = this.nova.newHost();
 	
 	//Game objects

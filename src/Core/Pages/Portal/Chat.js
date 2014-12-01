@@ -368,6 +368,15 @@ Core.Pages.Portal.Chat.prototype.onGroup = function(e2, e) {
 	
 };
 
+Core.Pages.Portal.Chat.prototype.onNoGroup = function(e2, e) {
+	
+	this.appendChat($('<div></div>')
+			.addClass("selfJoin")
+			.append($('<span></span>')
+				.text("-- Entered the void --")));
+	
+};
+
 Core.Pages.Portal.Chat.prototype.onJoin = function(e2, e) {
 	
 	
@@ -420,6 +429,7 @@ Core.Pages.Portal.Chat.prototype.load = function() {
 	
 	//Communication hooks
 	$(this.nova).on('onGroup.Portal', this.onGroup.bind(this));
+	$(this.nova).on('onNoGroup.Portal', this.onNoGroup.bind(this));
 	$(this.nova).on('onJoin.Portal', this.onJoin.bind(this));
 	$(this.nova).on('onLeave.Portal', this.onLeave.bind(this));
 	

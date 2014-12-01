@@ -306,6 +306,10 @@
 	display: block;
 }
 
+#lobbyCurrentHost.invalid {
+	color: #c77;
+}
+
 /********************************
 ** Friends
 ********************************/

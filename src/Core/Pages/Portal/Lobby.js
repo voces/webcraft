@@ -253,8 +253,10 @@ Core.Pages.Portal.Lobby.prototype.onUnreserve = function(e2, e) {
 Core.Pages.Portal.Lobby.prototype.onHostList = function(e2, e) {
 	this.hosts = e.list;
 	
-	if (this.section.lobbyCurrentHost.text() == "none" && e.list.length > 0)
+	if (this.section.lobbyCurrentHost.text() == "none" && e.list.length > 0) {
+		this.section.lobbyCurrentHost.removeClass("invalid");
 		this.section.lobbyCurrentHost.text(e.list[0]);
+	}
 };
 
 Core.Pages.Portal.Lobby.prototype.onBridgeFail = function(e2, e) {

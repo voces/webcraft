@@ -47,7 +47,7 @@ Engine.prototype.onOpen = function(e2, e) {
 	this.pings = [];
 	this.clocks = [];
 	
-	this.ping();
+	//this.ping();
 };
 
 Engine.prototype.onJoin = function(e2, e) {
@@ -113,6 +113,20 @@ Engine.prototype.tally = function(e2, e) {
 		
 		this.sandbox.postMessage({type: "host", data: e});
 	}
+};
+
+/*Engine.prototype.ping = function(e2, e) {
+	
+	//Give to sandbox
+	if (this.sandbox) {
+		e.timestamp = e.timestamp + this.offset;
+		
+		this.sandbox.postMessage({type: "host", data: e});
+	}
+};*/
+
+Engine.prototype.ping = function(e2, e) {
+	this.host.send({id: "onPing", time: e.time});
 };
 
 /**********************************
@@ -197,11 +211,7 @@ Engine.prototype.wheel = function(e) {
 **	Pinging
 **********************************/
 
-Engine.prototype.ping = function() {
-	this.host.echo({sid: "ping", sent: Date.now()});
-};
-
-Engine.prototype.onEcho = function(e2, e) {
+/*Engine.prototype.onOnPing = function(e2, e) {
 	if (e.sid == "ping") {
 		this.pings.push(Date.now() - e.sent);
 		this.clocks.push(Date.now() - e.timestamp);
@@ -231,7 +241,7 @@ Engine.prototype.getClock = function(e2, e) {
 		sum += this.clocks[i];
 	
 	return sum / n;
-};
+};*/
 
 /**********************************
 ***********************************
@@ -433,10 +443,12 @@ Engine.prototype.ready = function() {
 	$(this.host).on("onJoin", this.onJoin.bind(this));
 	$(this.host).on("onLeave", this.onLeave.bind(this));
 	$(this.host).on("onBroadcast", this.onBroadcast.bind(this));
-	$(this.host).on("onEcho", this.onEcho.bind(this));
+	//$(this.host).on("onEcho", this.onEcho.bind(this));
 	$(this.host).on("onSync", this.onSync.bind(this));
+	
 	$(this.host).on("tally", this.tally.bind(this));
+	$(this.host).on("ping", this.ping.bind(this));
 	
 	//Other
-	this.pinger = setInterval(this.ping.bind(this), 1000);
+	//this.pinger = setInterval(this.ping.bind(this), 1000);
 };
