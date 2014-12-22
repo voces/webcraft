@@ -60,12 +60,11 @@ Core.Pages.Home.prototype.selectForum = function() {
 };
 
 Core.Pages.Home.prototype.selectEditor = function() {
-	this.fadeOut();
-	this.pages.editor.fadeIn();
+	window.open('editor/', '_blank');
 };
 
 Core.Pages.Home.prototype.selectBitbucket = function() {
-	window.open('https://bitbucket.org/voces/webcraft', '_blank');
+	window.open('//bitbucket.org/voces/webcraft', '_blank');
 };
 
 Core.Pages.Home.prototype.selectSettings = function() {
@@ -179,9 +178,9 @@ Core.Pages.Home.prototype.keydown = function(e) {
 				e.preventDefault();
 			
 			//e
-			/*break; case 69:
+			break; case 69:
 				this.selectEditor();
-				e.preventDefault();*/
+				e.preventDefault();
 			
 			//s
 			break; case 83:
@@ -350,7 +349,7 @@ Core.Pages.Home.prototype.load = function() {
 	//Menu options
 	$(this.novaP).on('click', this.selectNova.bind(this));
 	$(this.forum).on('click', this.selectForum.bind(this));
-	//$(this.editor).on('click', this.selectEditor.bind(this));
+	$(this.editor).on('click', this.selectEditor.bind(this));
 	$(this.bitbucket).on('click', this.selectBitbucket.bind(this));
 	$(this.settings).on('click', this.selectSettings.bind(this));
 	

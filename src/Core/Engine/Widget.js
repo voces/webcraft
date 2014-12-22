@@ -31,6 +31,8 @@ Engine.Widget = function(props) {
 		
 		//Geometry
 		if (typeof this.model.geometry == "object") {
+			
+			//Box Geoemtry
 			if (this.model.geometry.shape == "BoxGeometry") {
 				
 				if (this.validateProps(
@@ -45,6 +47,7 @@ Engine.Widget = function(props) {
 				else
 					this.geometry = new THREE.BoxGeometry(100, 100, 100);
 			
+			//Icosahedron Geometry
 			} else if (this.model.geometry.shape == "IcosahedronGeometry") {
 				
 				if (this.validateProps(
@@ -54,6 +57,13 @@ Engine.Widget = function(props) {
 							this.model.geometry.radius,
 							this.model.geometry.detail);
 			
+			//Plane Geometry
+			} else if (this.model.geometry.shape == "PlaneGeometry") {
+				
+				this.geometry = new THREE.PlaneGeometry(
+						this.model.geometry.width, this.model.geometry.height,
+						this.model.geometry.widthSegments, this.model.geometry.heightSegments);
+				
 			//Unknown geometry type
 			} else this.geometry = new THREE.BoxGeometry(100, 100, 100);
 		} else this.geometry = new THREE.BoxGeometry(100, 100, 100);
@@ -62,6 +72,9 @@ Engine.Widget = function(props) {
 		if (typeof this.model.material == "object") {
 			if (this.model.material.type == "MeshLambertMaterial")
 				this.material = new THREE.MeshLambertMaterial(this.model.material);
+			
+			else if (this.model.material.type == "LineBasicMaterial")
+				this.material = new THREE.LineBasicMaterial(this.model.material);
 			
 			//Unknown material
 			else this.material = new THREE.MeshLambertMaterial({color: "green"});

@@ -1,3 +1,4 @@
+
 Graphic = function(element) {
 	
 	//Scene
@@ -9,10 +10,12 @@ Graphic = function(element) {
 	 **	Create the renderer
 	 *************************/
 	
+	this.container = $('div[view_id="worldContainer"')[0];
+	
 	this.renderer = new THREE.WebGLRenderer({antialias:true});
 	this.renderer.domElement.id = element;
 	
-	this.renderer.setSize(window.innerWidth, window.innerHeight);
+	this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
 	
 	this.renderer.shadowMapEnabled = true;
 	this.renderer.shadowMapSoft = true;
@@ -30,7 +33,7 @@ Graphic = function(element) {
 	this.loader = new THREE.JSONLoader();
 	
 	//Projector for ray casting
-	this.projector = new THREE.Projector();
+	//this.projector = new THREE.Projector();
 	
 	//this.objects = [];
 	this.mouse = {
@@ -76,7 +79,7 @@ Graphic.prototype.loadBaseScene = function() {
 /** Runs when DOM finishes loading */
 Graphic.prototype.load = function() {
 	
-	$("body").append(this.renderer.domElement);
+	$(this.container).append(this.renderer.domElement);
 	
 	this.render();
 };
@@ -85,6 +88,8 @@ Graphic.prototype.render = function() {
 	requestAnimationFrame(this.render.bind(this));
 	
 	if (!this.camera) return;
+	
+	//console.log('rendering');
 	
 	this.activeMeshes.forEach(function(mesh) {
 		/*if (typeof this.marker == "undefined")
@@ -107,10 +112,10 @@ Graphic.prototype.render = function() {
 Graphic.prototype.resize = function() {
 	if (!this.camera) return;
 	
-	this.camera.aspect = window.innerWidth / window.innerHeight;
+	this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
     this.camera.updateProjectionMatrix();
 
-    this.renderer.setSize( window.innerWidth, window.innerHeight );
+    this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
 };
 
 Graphic.prototype.mousemove = function(e) {
@@ -119,12 +124,12 @@ Graphic.prototype.mousemove = function(e) {
 	this.mouse.x = e.clientX;
 	this.mouse.y = e.clientY;
 	
-	if (this.getTopObject(e.clientX / window.innerWidth, e.clientY / window.innerHeight)) {
+	/*if (this.getTopObject(e.clientX / window.innerWidth, e.clientY / window.innerHeight)) {
 		//console.log('hover');
-	}
+	}*/
 };
 
-Graphic.prototype.getTopObject = function(x, y) {
+/*Graphic.prototype.getTopObject = function(x, y) {
 	if (!this.camera) return false;
 	
 	var mouse = new THREE.Vector3( ( x ) * 2 - 1, - ( y ) * 2 + 1, .5);
@@ -135,7 +140,7 @@ Graphic.prototype.getTopObject = function(x, y) {
 	if (intersects.length > 0)
 		return intersects[0];
 	else return false;
-};
+};*/
 
 /*	This is for an ortho camera
 // Handle mouse movement

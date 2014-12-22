@@ -13,10 +13,13 @@ Engine = function(core) {
 	this.css;
 	this.elements = [];
 	
-	this.pinger = null;
-	this.pings = [];	//Round trip time
-	this.clocks = [];	//Difference from now and received, basically is latency + real clock difference
+	this.ping = null;	//Round trip time, reported by host
+	
+	this.clock = null;	//Difference from now and received, basically is latency + real clock difference,
+						//	which is more helpful than a ping
 	this.offset = 0;	//This should NOT arbitrarily change value, as things can get desynced
+						//	All incoming timestamps are adjusted by this value
+						//	Offset based on clock
 	
 	this.$ = $(this);
 	
@@ -44,10 +47,8 @@ Engine.prototype.onLogin = function(e2, e) {
 **********************************/
 
 Engine.prototype.onOpen = function(e2, e) {
-	this.pings = [];
-	this.clocks = [];
-	
-	//this.ping();
+	this.ping = null;
+	this.clock = null;
 };
 
 Engine.prototype.onJoin = function(e2, e) {
@@ -115,18 +116,15 @@ Engine.prototype.tally = function(e2, e) {
 	}
 };
 
-/*Engine.prototype.ping = function(e2, e) {
+Engine.prototype.pingFunc = function(e2, e) {
+	this.host.send({id: "onPing", time: e.time});	//Report this first, as this is ultimately more favourable
 	
-	//Give to sandbox
-	if (this.sandbox) {
-		e.timestamp = e.timestamp + this.offset;
-		
-		this.sandbox.postMessage({type: "host", data: e});
-	}
-};*/
-
-Engine.prototype.ping = function(e2, e) {
-	this.host.send({id: "onPing", time: e.time});
+	if (this.clock == null)
+		this.clock = Date.now() - e.timestamp;
+	else
+		this.clock = ((4/5)*this.clock + (Date.now() - e.timestamp))/5;
+	
+	this.ping = e.ping;
 };
 
 /**********************************
@@ -206,42 +204,6 @@ Engine.prototype.wheel = function(e) {
 			}
 		});
 };
-
-/**********************************
-**	Pinging
-**********************************/
-
-/*Engine.prototype.onOnPing = function(e2, e) {
-	if (e.sid == "ping") {
-		this.pings.push(Date.now() - e.sent);
-		this.clocks.push(Date.now() - e.timestamp);
-		
-		if (this.clocks.length == 1)
-			this.offset = this.clocks[0];
-	}
-};
-
-Engine.prototype.getPing = function(e2, e) {
-	
-	var sum = 0;
-	var n;
-	
-	for (var i = this.pings.length - 1, n = 0; i >= 0 && n < 5; i--, n++)
-		sum += this.pings[i];
-	
-	return sum / n;
-};
-
-Engine.prototype.getClock = function(e2, e) {
-	
-	var sum = 0;
-	var n;
-	
-	for (var i = this.clocks.length - 1, n = 0; i >= 0 && n < 5; i--, n++)
-		sum += this.clocks[i];
-	
-	return sum / n;
-};*/
 
 /**********************************
 ***********************************
@@ -447,8 +409,6 @@ Engine.prototype.ready = function() {
 	$(this.host).on("onSync", this.onSync.bind(this));
 	
 	$(this.host).on("tally", this.tally.bind(this));
-	$(this.host).on("ping", this.ping.bind(this));
+	$(this.host).on("ping", this.pingFunc.bind(this));
 	
-	//Other
-	//this.pinger = setInterval(this.ping.bind(this), 1000);
 };

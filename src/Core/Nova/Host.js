@@ -100,7 +100,7 @@ Nova.Host.prototype.sync = function(sid, data) {
 Nova.Host.prototype.send = function(data) {
 	if (!this.socket || this.socket.readyState != 1) return;
 	
-	if (this.nova.debugging) console.log('tH', data);
+	if (this.nova.debugging && data.id != "onPing") console.log('tH', data);
 	
 	data = JSON.stringify(data);
 	this.socket.send(data);
@@ -131,7 +131,7 @@ Nova.Host.prototype.loadSocket = function() {
 Nova.Host.prototype._onmessage = function(evt) {
 	try {
 		var packet = jQuery.parseJSON(String(evt.data));
-		if (this.nova.debugging) console.log('rH', packet);
+		if (this.nova.debugging && packet.id != "ping") console.log('rH', packet);
 	} catch (err) {
 		if (this.nova.debugging) console.error(err, String(evt.data));
 		$(this).trigger('onError', String(evt.data));

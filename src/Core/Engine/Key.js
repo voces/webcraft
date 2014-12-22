@@ -24,4 +24,5 @@ Engine.Key.prototype.update = function() {
 };
 
 Engine.Key.prototype.destroy = function() {
+	
 };
