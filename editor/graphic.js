@@ -54,8 +54,8 @@ Graphic.prototype.loadBaseScene = function() {
 	 **	Create the camera
 	 *************************/
 	
-	this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 10000);
-	this.camera.position.z = 2000;
+	this.camera = new THREE.PerspectiveCamera(60, this.container.clientWidth / this.container.clientHeight, 1, 10000);
+	this.camera.position.z = 1792;
 	
 	this.scene.add(this.camera);
 	
@@ -91,19 +91,22 @@ Graphic.prototype.render = function() {
 	
 	//console.log('rendering');
 	
-	this.activeMeshes.forEach(function(mesh) {
-		/*if (typeof this.marker == "undefined")
+	/*this.activeMeshes.forEach(function(mesh) {
+		if (typeof this.marker == "undefined")
 			this.marker = 0;
-		else return;*/
+		else return;
 		
 		var position = mesh.widget.getPosition();
 		
 		mesh.position.x = position.x;
 		mesh.position.y = position.y;
-	}.bind(this));
+	}.bind(this));*/
 	
 	for (var i = 0; i < this.keys.length; i++)
-		this.keys[i].update();
+		if (this.keys[i].update()) {
+			this.keys.splice(i, 1);
+			i--;
+		}
 	
 	this.renderer.render(this.scene, this.camera);
 };

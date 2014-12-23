@@ -22,19 +22,27 @@ function Mod(props) {
 	
 	//We assume it's flat for now...
 	
+	var size = props.width * props.height;
+	
 	this.terrain = {
 		center: {x: 0, y: 0},
 		
 		width: props.width,
 		height: props.height,
 		
-		heightMap: new Uint8ClampedArray(props.width * props.height),
-		levelMap: new Uint8ClampedArray(props.width * props.height),
-		tileMap: new Uint8ClampedArray(props.width * props.height),
-		pathingMap: new Uint8ClampedArray(props.width * props.height),
+		levelBias: props.bias || 31,
+		
+		heightMap: new Uint8ClampedArray(size),
+		levelMap: new Uint8ClampedArray(size),
+		tileMap: new Uint8ClampedArray(size),
+		pathingMap: new Uint8ClampedArray(size),
 		
 		tiles: []
 	};
+	
+	if (this.terrain.levelBias != 0)
+		for (var i = 0; i < size; i++)
+			this.terrain.levelMap[i] = this.terrain.levelBias;
 	
 	/***********************************************
 	**	Widgets
