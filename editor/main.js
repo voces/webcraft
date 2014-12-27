@@ -1,15 +1,4 @@
 
-function removeA(arr) {
-    var what, a = arguments, L = a.length, ax;
-    while (L > 1 && arr.length) {
-        what = a[--L];
-        while ((ax= arr.indexOf(what)) !== -1) {
-            arr.splice(ax, 1);
-        }
-    }
-    return arr;
-}
-
 /***********************************
 **	Primary Init
 ************************************/
@@ -25,7 +14,7 @@ var editor,
 
 function buildEditor() {
 
-	editor = new SharedWorker('editor.js')
+	editor = new SharedWorker('worker/worker.js')
 	
 	editor.port.addEventListener('message', function(e) {
 		
@@ -46,14 +35,24 @@ function buildEditor() {
 
 function attachEditorListeners() {
 	
+	editor.addEventListener("connect", connect);
 	editor.addEventListener("newMod", newMod);
 	editor.addEventListener("onRequest", onRequest);
 	
 }
 
+function connect(e) {
+	mods = mods.concat(e.data.mods);
+	
+	if (typeof lastRequest != "undefined")
+		editor.port.postMessage({
+			id: 'request',
+			which: lastRequest,
+			major: 'terrain'
+		});
+}
+
 function newMod(e) {
-	//$$('mod').add({e.data.path});
-	//$$('mod').add(e.data.path);
 	
 	if (typeof modSubMenu == "undefined") {
 		$$('mainMenu').enableItem('mod');
@@ -71,29 +70,59 @@ function newMod(e) {
 	var length = mods.push(e.data.path);
 	
 	//First mod
-	if (length == 1) {
+	if (length == 1)
 		editor.port.postMessage({id: 'request', which: 0, major: 'terrain'});
-	}
+	
 }
 
-var plane;
-
+var plane, lastRequest;
 function onRequest(e) {
 	
 	DATA = e.data;
 	
-	//Ignore requests that are not terrain, geometry, or pre-placement related
+	lastRequest = e.data.which;
+	
+	//Ignore requests that are not terrain, geometry, or pre-placement
+	//	related
 	if (e.data.major != "terrain") return;
 	
+	//For actual terrain
 	if (e.data.major == "terrain") {
-		if (typeof e.data.terrain.width != "undefined" && typeof e.data.terrain.height != "undefined") {
-			var geometry = new THREE.PlaneBufferGeometry(e.data.terrain.width*128, e.data.terrain.height*128,
-															e.data.terrain.width, e.data.terrain.height);
+		
+		//Make sure we have our data (we just check width and height)
+		if (typeof e.data.terrain.width != "undefined" &&
+				typeof e.data.terrain.height != "undefined") {
 			
+			//For easier access
+			var terrain = e.data.terrain;
+			
+			//The geometry...
+			var geometry = new THREE.PlaneBufferGeometry(
+					terrain.width*128, terrain.height*128,
+					terrain.width, terrain.height);
+			
+			//Some flags so it is updateable
+			geometry.dynamic = true;
+			/*geometry.addAttribute('color', new THREE.BufferAttribute(
+					new Uint8ClampedArray(terrain.width * terrain.height * 3),
+					3));*/
+			
+			//Material
 			var material = new THREE.MeshPhongMaterial({color: 'green'});
 			
+			/*var material = new THREE.ShaderMaterial({
+				uniforms: {
+				},
+				attributes: {
+				}
+			});*/
+			
+			//material.vertexColors = THREE.FaceColors;
+			
+			//Build the mesh
 			plane = new THREE.Mesh(geometry, material);
 			
+			//And add it
 			graphic.scene.add(plane);
 		}
 	}
@@ -113,8 +142,15 @@ function menuSwitch(id) {
 	var which = $$('mainMenu').getMenuItem(id).value;
 	
 	switch (which) {
+		
+		//File
 		case 'New': window.open('new', 'New Mod',
 				'width=250,height=500,scrollbars=no,location=no'); break;
+		
+		//window
+		case 'Terrain Editor': window.open('../editor'); break;
+		case 'Code Editor': window.open('code'); break;
+		
 		default: console.log('woot');
 	}
 }
@@ -199,15 +235,39 @@ function onScroll(e) {
 	}
 }
 
+function onMouseMove(e) {
+	//console.log(e);
+	ui.mouse.x = (e.offsetX / graphic.container.clientWidth) * 2 - 1;
+	ui.mouse.y = (e.offsetY / graphic.container.clientHeight) * 2 - 1;
+	
+	ui.raycaster.setFromCamera(ui.mouse, graphic.camera);
+	
+	var intersects = ui.raycaster.intersectObjects(graphic.scene.children);
+	
+	if (intersects.length) {
+		OBJS = intersects;
+		
+		intersects[0].face.color = new THREE.Color(0xf2b640);
+		intersects[0].object.geometry.__dirtyColors = true;
+	}
+	
+	//console.log(ui.mouse);
+}
+
 function attachUIEvents() {
 	
 	//Make our objects
 	if (typeof ui.keys == "undefined") ui.keys = [];
+	if (typeof ui.mouse == "undefined") ui.mouse = new THREE.Vector2();
+	if (typeof ui.raycaster == "undefined")
+		ui.raycaster = new THREE.Raycaster();
 	
 	//Attach them
 	$(window).keydown(onKeyDown);
 	$(window).keyup(onKeyUp);
 	$(window).bind('mousewheel', onScroll);
+	
+	$("#world").mousemove(onMouseMove);
 	
 	//Build any keys we might want
 	
@@ -216,8 +276,20 @@ function attachUIEvents() {
 	ui.panUDKey = new Key({obj: graphic.camera.position, property: 'y'});
 	
 	//Approaches, handle detaching themselves
-	ui.angleKey = new Key({obj: graphic.camera.rotation, property: 'x', method: 'approach', minRate: .01, target: 0});
-	ui.ZoomKey = new Key({obj: graphic.camera.position, property: 'z', method: 'approach', minRate: 1, target: 1792});
+	ui.angleKey = new Key({
+		obj: graphic.camera.rotation,
+		property: 'x',
+		method: 'approach',
+		minRate: .01,
+		target: 0
+	});
+	ui.ZoomKey = new Key({
+		obj: graphic.camera.position,
+		property: 'z',
+		method: 'approach',
+		minRate: 1,
+		target: 1792
+	});
 }
 
 /***********************************
@@ -225,8 +297,6 @@ function attachUIEvents() {
 ************************************/
 
 function buildUI() {
-	
-	RAWRmod = [];
 	
 	webix.ui({
 		container: 'body',
@@ -254,7 +324,7 @@ function buildUI() {
 						{$template: 'Separator'},
 						'Terrain Editor',
 						'Object Editor',
-						'Trigger Editor',
+						'Code Editor',
 					]},
 					{value: 'Mod', id: 'mod', submenu: []},
 					{value: 'Help'},
@@ -274,19 +344,21 @@ function buildUI() {
 					type: 'clean'
 				},
 				{view: 'resizer'},
-				{view: 'accordion', type: 'line', width: 256, minWidth: 64, rows: [
-					{header: 'Terrain', body: 'Content a'},
-					{header: 'Widgets', body: 'Content b', collapsed: true},
-					{header: 'Geometry', body: 'Content c', collapsed: true}
-				]}
+				{
+					view: 'accordion', type: 'line',
+					width: 256, minWidth: 64,
+					rows: [
+						{header: 'Terrain', body: 'Content a'},
+						{header: 'Widgets', body: 'Content b',
+							collapsed: true},
+						{header: 'Geometry', body: 'Content c',
+							collapsed: true}
+					]
+				}
 			]},
 			{template: 'row 3', height: 30}
 		]
 	}).show();
-	
-	rawrMENU = $$('mainMenu').getItem('mod').submenu;
-	
-	$$('mainMenu').disableItem('mod');
 	
 }
 
@@ -295,7 +367,7 @@ function buildUI() {
 ************************************/
 
 function buildGraphics() {
-	graphic = new Graphic("world");
+	graphic = new Graphic("worldContainer", "world");
 	
 	graphic.loadBaseScene();
 }
@@ -310,7 +382,19 @@ $(document).ready(function() {
 	buildUI();
 	buildGraphics();
 	
-	attachEditorListeners();
-	attachUIEvents();
+	setTimeout(function() {
+		attachEditorListeners();
+		attachUIEvents();
+	}, 50);
+	
+	//This page was opened from another, grab the lastRequest
+	//	Note this is the ONLY proper place to look at the previous window
+	//	contextual as ALL mod-related data is stored on the worker, NOT the
+	//	first window (as the first window can be closed)
+	if (window.opener && typeof window.opener.lastRequest != "undefined") {
+		
+		//editor probably not, so we set lastRequest and check on connect
+		lastRequest = window.opener.lastRequest;
+	}
 	
 });

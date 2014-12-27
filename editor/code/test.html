@@ -1,0 +1,23 @@
+<script src="Emitter.js"></script>
+
+<script>
+
+function ClassB() {
+	Emitter.call(this);
+}
+
+ClassB.prototype = Object.create(Emitter.prototype, {constructor: {value: Emitter}});
+
+ClassB.prototype.sample = function(name) {
+	et.on(name, function(e) {
+		console.log(name, this, e);
+	});
+};
+
+
+
+et = new ClassB();
+et.sample("test");
+
+et.fire({type: "test", timeStamp: Date.now()});
+</script>

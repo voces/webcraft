@@ -2,7 +2,7 @@
 var editor;
 $(document).ready(function() {
 	
-	editor = new SharedWorker('../editor.js')
+	editor = new SharedWorker('../worker/worker.js')
 	editor.port.start();
 	
 	webix.ui({

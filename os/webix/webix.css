@@ -1400,7 +1400,7 @@ div.webix_modal_cover {
 .webix_tree_file,
 .webix_tree_folder_open {
   float: left;
-  width: 20px;
+  width: 13px;
   height: 100%;
   cursor: pointer;
   margin: 0px 0px 0px 0px;
@@ -1410,6 +1410,9 @@ div.webix_modal_cover {
 .webix_tree_close,
 .webix_tree_open,
 .webix_tree_none {
+  position: relative;
+  bottom: 5px;
+  right: 4px;
   background-position: center center;
 }
 .webix_cell .webix_tree_close,
@@ -4461,7 +4464,7 @@ label.webix_required:after {
 }
 .webix_icon,
 .webix_input_icon {
-  font-size: 17px;
+  font-size: 14px;
   display: inline-block;
   width: 20px;
 }
