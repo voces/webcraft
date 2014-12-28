@@ -10,7 +10,7 @@ Graphic = function(container, element) {
 	 **	Create the renderer
 	 *************************/
 	
-	this.container = $('div[view_id="' + container + '"')[0];
+	this.container = $('div[view_id="' + container + '"]')[0];
 	
 	this.renderer = new THREE.WebGLRenderer({antialias:true});
 	this.renderer.domElement.id = element;
@@ -32,14 +32,11 @@ Graphic = function(container, element) {
 	//Loads objects from JSON, including models
 	this.loader = new THREE.JSONLoader();
 	
-	//Projector for ray casting
-	//this.projector = new THREE.Projector();
-	
-	//this.objects = [];
-	
-	/** Attach our events */
+	//Attach our events
 	$(document).ready(this.load.bind(this));
 	$(window).resize(this.resize.bind(this));
+	
+	this.loadBaseScene();
 	
 };
 
@@ -50,6 +47,7 @@ Graphic.prototype.loadBaseScene = function() {
 	 *************************/
 	
 	this.camera = new THREE.PerspectiveCamera(60, this.container.clientWidth / this.container.clientHeight, 1, 10000);
+	
 	this.camera.position.z = 1792;
 	
 	this.scene.add(this.camera);

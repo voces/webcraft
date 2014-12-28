@@ -22,10 +22,22 @@
 		<script src="graphics/graphic.js"></script>
 		<script src="graphics/key.js"></script>
 		
+		<!-- Mods -->
+		<script src="Emitter.js"></script>
+		<script src="Mod.js"></script>
+		
 		<!-- Driver -->
-		<script src="main.js"></script>
+		<script src="logic.js"></script>
+		<script src="webix.js"></script>
 		
 	</head>
 
-	<body id="body"></body>
+	<body id="body">
+		<script>
+			webix.ready(function() {
+				ui.webix = webix.ui(ui.scheme);
+				logic.init();
+			});
+		</script>
+	</body>
 </html>

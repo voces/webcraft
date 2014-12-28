@@ -10,7 +10,7 @@ var ui = {
 			{
 				view: 'menu',
 				id: "mainMenu",
-				on: {onMenuItemclick: logic.menuSwitch},
+				on: {onMenuItemclick: logic.menuSwitch.bind(logic)},
 				data: [
 					{value: 'File', submenu: [
 						'New',
@@ -22,6 +22,8 @@ var ui = {
 						'Save local'
 					]},
 					{value: 'Edit', submenu: [
+            'Rename section',
+            {$template: 'Separator'},
 						'New section'
 					]},
 					{value: 'View'},

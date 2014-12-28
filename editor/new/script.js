@@ -1,9 +1,7 @@
 
-var editor;
+var mods = window.opener.mods || new Emitter([]);
+
 $(document).ready(function() {
-	
-	editor = new SharedWorker('../worker/worker.js')
-	editor.port.start();
 	
 	webix.ui({
 		view: 'form', id: 'form',
@@ -52,18 +50,30 @@ $(document).ready(function() {
 		}
 	});
 	
+	//Submit
 	$$('submitter').attachEvent('onItemClick', function(a, e, i) {
+		
+		//Exit if not valid data
 		if (!$$('form').validate()) return;
 		
+		//Grab our values
 		var values = $$('form').getValues();
-		
 		values.width = parseInt(values.width);
 		values.height = parseInt(values.height);
 		values.radius = parseFloat(values.radius);
 		
-		editor.port.postMessage({id: 'newMod', data: values});
+		//Create the mod
+		var mod = new Mod(values);
+		var id = mods.push(mod) - 1;
 		
+		//Build an event
+		mods.emit('push', new CustomEvent('push', {
+			detail: {mod: mod, id: id}
+		}));
+		
+		//And we're done
 		window.close();
+		
 	});
 	
 	$$('title').focus();
