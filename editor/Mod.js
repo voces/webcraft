@@ -106,7 +106,7 @@ Mod.prototype.save = function() {
 	var file = '';
 	
 	//Meta
-	file += '//!! Meta\n\n/*' + JSON.stringify(this.meta, null, '\t') + '*/\n\n';
+	file += '//!! Meta\n\n/*!' + JSON.stringify(this.meta, null, '\t') + '*/\n\n';
 	
 	//Terrain, widgets, and geometry
 	
@@ -151,7 +151,9 @@ Mod.prototype.save = function() {
 	//Code
 	file += '//!! Code\n' + this.rCode(this.code) + '\n';
 	
-	return file;
+	this.window.download(this.path() + ".js", file);
+	
+	//return file;
 	
 };
 
