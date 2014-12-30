@@ -2,6 +2,14 @@
 var mods = window.opener ? window.opener.mods : new Emitter([]);
 
 var logic = {
+	
+	//Saving/loading objects
+	localFileInput: document.createElement('input'),
+	fileReader: new FileReader(),
+	
+	currentMod: null,
+	
+	//UI objects
   tree: null,
   coder: null,
   
@@ -27,6 +35,17 @@ var logic = {
 		this.coder = ace.edit('code');
 		this.coder.$blockScrolling = Infinity;
     
+		/**************************************************************************
+		 **	Flesh out our file readers
+		 **************************************************************************/
+		
+		this.localFileInput.setAttribute('type', 'file');
+		this.localFileInput.addEventListener('change',
+				this.handleLocalInput.bind(this), false);
+		
+		this.fileReader.onload = this.loadLocalFile.bind(this);
+		
+		
     /**************************************************************************
 		 **	Load our mods
 		 **************************************************************************/
@@ -92,6 +111,44 @@ logic.loadSection = function(id, value, code, parent) {
         
         //Recursively add children
 				this.loadSection(parent + '_' + sub, sub, code[sub], parent);
+};
+
+/******************************************************************************
+ **	Save/load
+ ******************************************************************************/
+
+logic.loadLocalFile = function(e, blah, blah2) {
+	var file = this.fileReader.result;
+	
+	var mod = Mod.load(file);
+	var id = mods.push(mod) - 1;
+	
+	mods.emit('push', new CustomEvent('push', {
+		detail: {mod: mod, id: id}
+	}));
+};
+
+logic.handleLocalInput = function(e) {
+	var file = e.target.files[0];
+	this.fileReader.readAsText(file);
+};
+
+logic.openLocal = function() {
+	this.localFileInput.click();
+};
+
+logic.saveLocal = function() {
+	
+	if (!this.currentMod) {
+		webix.message({
+			type: 'error',
+			text: 'You must select a mod to add a selection to.'
+		});
+		return;
+	}
+	
+	mods[this.currentMod].window = window;
+	mods[this.currentMod].save();
 };
 
 /******************************************************************************
@@ -171,6 +228,8 @@ logic.menuSwitch = function(id) {
 		//File
 		case 'New': window.open('new', 'New Mod',
 				'width=250,height=500,scrollbars=no,location=no'); break;
+		case 'Open local': this.openLocal(); break;
+		case 'Save local': this.saveLocal(); break;
 		
 		//Edit
 		case 'Rename section': this.renameSection(); break;
@@ -189,6 +248,8 @@ logic.onChange = function(e, section) {
 };
 
 logic.onAfterSelect = function(id) {
+	
+	this.currentMod = id.split('_')[0].substr(1);
 	
   //Grab the section
   var section = this.idToCode(id);

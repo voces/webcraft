@@ -6,7 +6,7 @@ var ui = {
 			{
 				view: 'menu',
 				id: "mainMenu",
-				on: {onMenuItemclick: logic.menuSwitch},
+				on: {onMenuItemclick: logic.menuSwitch.bind(logic)},
 				data: [
 					{value: 'File', submenu: [
 						'New',

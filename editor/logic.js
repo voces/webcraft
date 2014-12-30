@@ -11,6 +11,11 @@ var logic = {
 	raycaster: new THREE.Raycaster(),
 	plane: null,
 	
+	localFileInput: document.createElement('input'),
+	fileReader: new FileReader(),
+	
+	currentMod: null,
+	
 	/****************************************************************************
 	 *	Build any keys we might want
 	 ****************************************************************************/
@@ -55,6 +60,16 @@ var logic = {
 		this.zoomKey.obj = this.graphic.camera.position;
 		
 		/**************************************************************************
+		 **	Flesh out our file readers
+		 **************************************************************************/
+		
+		this.localFileInput.setAttribute('type', 'file');
+		this.localFileInput.addEventListener('change',
+				this.handleLocalInput.bind(this), false);
+		
+		this.fileReader.onload = this.loadLocalFile.bind(this);
+		
+		/**************************************************************************
 		 **	Events
 		 **************************************************************************/
 		
@@ -96,8 +111,10 @@ logic.newMod = function(e) {
   
   var terrain = e.detail.mod.terrain;
   
-  if (this.plane == null)
+  if (this.plane == null) {
+		this.currentMod = e.detail.id;
     this.loadTerrain(terrain);
+	}
 };
 
 /******************************************************************************
@@ -211,15 +228,51 @@ logic.onMouseMove = function(e) {
  ******************************************************************************
  ******************************************************************************/
 
+logic.loadLocalFile = function(e, blah, blah2) {
+	var file = this.fileReader.result;
+	
+	var mod = Mod.load(file);
+	var id = mods.push(mod) - 1;
+	
+	mods.emit('push', new CustomEvent('push', {
+		detail: {mod: mod, id: id}
+	}));
+};
+
+logic.handleLocalInput = function(e) {
+	var file = e.target.files[0];
+	this.fileReader.readAsText(file);
+};
+
+logic.openLocal = function() {
+	this.localFileInput.click();
+};
+
+logic.saveLocal = function() {
+	
+	if (this.currentMod) {
+		webix.message({
+			type: 'error',
+			text: 'You must select a mod to add a selection to.'
+		});
+		return;
+	}
+	
+	mods[this.currentMod].window = window;
+	mods[this.currentMod].save();
+};
+
 logic.menuSwitch = function(id) {
 	var which = $$('mainMenu').getMenuItem(id).value;
-	
+	console.log(this);
 	switch (which) {
 		
 		//File
 		case 'New': window.open('new', 'New Mod',
 				'width=250,height=500,scrollbars=no,location=no'); break;
-		
+		case 'Open local': this.openLocal(); break;
+		case 'Save local': this.saveLocal(); break;
+			
 		//window
 		case 'Terrain Editor': window.open('../editor'); break;
 		case 'Code Editor': window.open('code'); break;
