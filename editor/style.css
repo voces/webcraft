@@ -36,11 +36,13 @@ body {
  ******************************************************************************/
 
 #menu {
-	color: #888;
 	display: block;
-	
 	height: 2em;
 	
+	position: relative;
+	z-index: 2;
+	
+	color: #888;
 	line-height: 1;
 }
 
@@ -71,7 +73,7 @@ body {
 
 #menu li.hr {
 	display: block;
-	border-top: .1em solid #ddd;
+	border-top: 0.1em solid #ddd;
 	padding: 0 1em;
 }
 
@@ -89,13 +91,17 @@ body {
 }
 
 #menu > ul > li > ul {
-	margin-top: .5em;
+	margin-top: 0.5em;
 	margin-left: -1em;
 }
 
 #menu li:hover {
 	background-color: #eee;
 	cursor: pointer;
+}
+
+#menu li:hover > a > span.caret {
+	transform: rotate(-45deg);
 }
 
 #menu li:hover > ul {
@@ -137,6 +143,10 @@ body {
 	vertical-align: top;
 }
 
+/******************************************************************************
+ *	Left
+ ******************************************************************************/
+
 #left > div.spacer {
 	position: relative;
 	height: 16em;
@@ -160,6 +170,10 @@ body {
 	background: gray;
 }
 
+/******************************************************************************
+ *	Center
+ ******************************************************************************/
+
 #world {
 	background: gray;
 	width: calc(100% - 14em - 2px);
@@ -170,8 +184,15 @@ body {
 	
 }
 
+/******************************************************************************
+ *	Right
+ ******************************************************************************/
+
 #right {
 	width: 14em;
+	overflow-y: auto;
+	overflow-x: hidden;
+	white-space: normal;
 }
 
 #right > div + div {

@@ -1,5 +1,7 @@
 
-var mods = window.opener ? window.opener.mods : new Emitter([]);
+var mods = window.opener ?
+		window.opener.mods || new Emitter([]) :
+		new Emitter([]);
 
 var logic = {
 	
@@ -8,6 +10,7 @@ var logic = {
 	//Objects we need
 	keys: [],
 	mouse: new THREE.Vector2(),
+	mouseRaw: new THREE.Vector2(),
 	raycaster: new THREE.Raycaster(),
 	plane: null,
 	
@@ -21,10 +24,14 @@ var logic = {
 	menu: null,
 	modCaret: null,
 	modList: null,
+	openMethod: null,
+	saveMethod: null,
 	
 	/****************************************************************************
 	 *	Build any keys we might want
 	 ****************************************************************************/
+	
+	currentCamera: 'world',
 	
 	//Default linear methods (we scroll the camera until key up)
 	panLRKey: new Key({property: 'x'}),
@@ -59,6 +66,11 @@ var logic = {
 		this.modCaret = document.getElementById('mod').children[0].children[0];
 		this.modList = document.getElementById('mod').children[1];
 		
+		this.openMethod = document.getElementById('menu').children[0].children[0]
+				.children[1].children[2].children[0].firstChild;
+		this.saveMethod = document.getElementById('menu').children[0].children[0]
+				.children[1].children[3].children[0].firstChild;
+		
 		/**************************************************************************
 		 **	Build our graphics and attach graphic-related values
 		 **************************************************************************/
@@ -91,8 +103,8 @@ var logic = {
 		$(window).keyup(this.onKeyUp.bind(this));
 		
 		//Mouse
-		$("#world").bind('mousewheel', this.onScroll.bind(this));
-		$("#world").mousemove(this.onMouseMove.bind(this));
+		$(window).bind('mousewheel', this.onScroll.bind(this));
+		$(window).mousemove(this.onMouseMove.bind(this));
 		
 		$('#menu').click(this.menuSwitch.bind(this));
 		
@@ -124,8 +136,6 @@ logic.loadTerrain = function(terrain) {
 
 logic.newMod = function(e) {
   
-	console.log(mods.length, e);
-	
 	//First mod, so add the caret
 	this.modCaret.style.display = 'inline-block'
 	
@@ -206,8 +216,6 @@ logic.onKeyUp = function(e) {
 
 logic.onScroll = function(e) {
 	
-	console.log(e);
-	
 	//Scroll = zoom
 	if (!e.altKey) {
 		
@@ -236,8 +244,29 @@ logic.onScroll = function(e) {
 
 logic.onMouseMove = function(e) {
 	
-	this.mouse.x = (e.offsetX / this.graphic.renderer.domElement.clientWidth) * 2 - 1;
-	this.mouse.y = (e.offsetY / this.graphic.renderer.domElement.clientHeight) * 2 - 1;
+	this.mouseRaw.x = e.pageX;
+	this.mouseRaw.y = e.pageY;
+	
+	if (this.mouseRaw.y > 33 && this.mouseRaw.y < 290 && this.mouseRaw.x < 257) {
+		if (this.currentCamera == 'world') {
+			this.currentCamera = 'preview';
+			
+			this.panLRKey.obj = this.graphic.previewCamera.position;
+			this.panUDKey.obj = this.graphic.previewCamera.position;
+			this.angleKey.obj = this.graphic.previewCamera.rotation;
+			this.zoomKey.obj = this.graphic.previewCamera.position;
+		}
+	} else if (this.currentCamera == 'preview') {
+		this.currentCamera = 'world';
+		
+		this.panLRKey.obj = this.graphic.camera.position;
+		this.panUDKey.obj = this.graphic.camera.position;
+		this.angleKey.obj = this.graphic.camera.rotation;
+		this.zoomKey.obj = this.graphic.camera.position;
+	}
+	
+	this.mouse.x = (e.offsetX / this.graphic.canvas.clientWidth) * 2 - 1;
+	this.mouse.y = (e.offsetY / this.graphic.canvas.clientHeight) * 2 - 1;
 	
 	this.raycaster.setFromCamera(this.mouse, this.graphic.camera);
 	
@@ -246,8 +275,8 @@ logic.onMouseMove = function(e) {
 	if (intersects.length) {
 		OBJS = intersects;
 		
-		intersects[0].face.color = new THREE.Color(0xf2b640);
-		intersects[0].object.geometry.__dirtyColors = true;
+		/*intersects[0].face.color = new THREE.Color(0xf2b640);
+		intersects[0].object.geometry.__dirtyColors = true;*/
 	}
 	
 	//console.log(ui.mouse);
@@ -281,11 +310,12 @@ logic.openLocal = function() {
 
 logic.saveLocal = function() {
 	
-	if (this.currentMod) {
-		webix.message({
-			type: 'error',
+	if (this.currentMod == null) {
+		message({
+			error: true,
 			text: 'You must select a mod to add a selection to.'
 		});
+		
 		return;
 	}
 	
@@ -294,20 +324,48 @@ logic.saveLocal = function() {
 };
 
 logic.menuSwitch = function(e) {
-	var which = e.target.innerText;
-	console.log(this);
+	var which = e.target;
+	if (which.tagName == 'LI')
+		which = which.children[0];
+	
+	which = which.innerText.trim();
+	
+	var ele = e.target;
+	while (ele.tagName != 'UL')
+		ele = ele.parentNode
+	
+	if (ele.parentNode.tagName != 'NAV')
+		ele.style.display = 'none';
+	
 	switch (which) {
 		
 		//File
 		case 'New': window.open('new', 'New Mod',
 				'width=250,height=500,scrollbars=no,location=no'); break;
-		case 'Open local': this.openLocal(); break;
-		case 'Save local': this.saveLocal(); break;
+		case 'Open local':
+			this.openMethod.nodeValue = 'Open local ';
+			/*if (ele.parentNode.children[0].innerText.trim() != 'File')
+				ele.parentNode.children[0].firstChild.nodeValue = 'Open local ';*/
+			
+			this.openLocal();
+			break;
+		case 'Save local':
+			this.saveMethod.nodeValue = 'Save local ';
+			/*if (ele.parentNode.children[0].innerText.trim() != 'File')
+				ele.parentNode.children[0].firstChild.nodeValue = 'Save local ';*/
+			
+			this.saveLocal();
+			break;
 			
 		//window
 		case 'Terrain Editor': window.open('../editor'); break;
 		case 'Code Editor': window.open('code'); break;
 		
-		default: console.log('woot');
+		default: console.log('"' + which + '"');
 	}
+	
+	if (ele.parentNode.tagName != 'NAV')
+		setTimeout(function() {
+			ele.style.display = null;
+		}, 50);
 }

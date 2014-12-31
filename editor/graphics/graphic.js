@@ -11,8 +11,9 @@ Graphic = function(world) {
 	 *************************/
 	
 	this.renderer = new THREE.WebGLRenderer({antialias:true, canvas: world});
+	this.canvas = this.renderer.domElement;
 	
-	this.renderer.setSize(this.renderer.domElement.clientWidth, this.renderer.domElement.clientHeight);
+	this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
 	
 	this.renderer.shadowMapEnabled = true;
 	this.renderer.shadowMapSoft = true;
@@ -44,8 +45,8 @@ Graphic.prototype.loadBaseScene = function() {
 	 *************************/
 	
 	this.camera = new THREE.PerspectiveCamera(60,
-			(this.renderer.domElement.clientWidth - 257) /
-			this.renderer.domElement.clientHeight,
+			(this.canvas.clientWidth - 257) /
+			this.canvas.clientHeight,
 			1, 10000);
 	
 	this.camera.position.z = 1792;
@@ -82,7 +83,7 @@ Graphic.prototype.loadBaseScene = function() {
 /** Runs when DOM finishes loading */
 Graphic.prototype.load = function() {
 	
-	//$(this.container).append(this.renderer.domElement);
+	//$(this.container).append(this.canvas);
 	
 	this.render();
 };
@@ -111,14 +112,14 @@ Graphic.prototype.render = function() {
 			i--;
 		}
 	
-	this.renderer.setViewport(0, this.renderer.domElement.clientHeight - 256, 256, 256);
-	this.renderer.setScissor(0, this.renderer.domElement.clientHeight - 256, 256, 256);
+	this.renderer.setViewport(0, this.canvas.clientHeight - 256, 256, 256);
+	this.renderer.setScissor(0, this.canvas.clientHeight - 256, 256, 256);
 	this.renderer.enableScissorTest(true);
 	
 	this.renderer.render(this.scene, this.previewCamera);
 	
-	this.renderer.setViewport(257, 0, this.renderer.domElement.clientWidth - 257, this.renderer.domElement.clientHeight);
-	this.renderer.setScissor(257, 0, this.renderer.domElement.clientWidth - 257, this.renderer.domElement.clientHeight);
+	this.renderer.setViewport(257, 0, this.canvas.clientWidth - 257, this.canvas.clientHeight);
+	this.renderer.setScissor(257, 0, this.canvas.clientWidth - 257, this.canvas.clientHeight);
 	this.renderer.enableScissorTest(true);
 	
 	this.renderer.render(this.scene, this.camera);
@@ -128,15 +129,15 @@ Graphic.prototype.render = function() {
 Graphic.prototype.resize = function() {
 	if (!this.camera) return;
 	
-	this.renderer.domElement.style.height = '100%';
+	this.canvas.style.height = '100%';
 	
-	this.camera.aspect = (this.renderer.domElement.clientWidth - 257) /
-			this.renderer.domElement.clientHeight;
+	this.camera.aspect = (this.canvas.clientWidth - 257) /
+			this.canvas.clientHeight;
 	
 	this.camera.updateProjectionMatrix();
 
-	this.renderer.setSize(this.renderer.domElement.clientWidth,
-			this.renderer.domElement.clientHeight);
+	this.renderer.setSize(this.canvas.clientWidth,
+			this.canvas.clientHeight);
 };
 
 /*Graphic.prototype.getTopObject = function(x, y) {
