@@ -11,10 +11,16 @@ var logic = {
 	raycaster: new THREE.Raycaster(),
 	plane: null,
 	
+	//Save/loading
 	localFileInput: document.createElement('input'),
 	fileReader: new FileReader(),
 	
 	currentMod: null,
+	
+	//UI
+	menu: null,
+	modCaret: null,
+	modList: null,
 	
 	/****************************************************************************
 	 *	Build any keys we might want
@@ -47,11 +53,18 @@ var logic = {
 	init: function() {
 		
 		/**************************************************************************
+		 **	UI stuff
+		 **************************************************************************/
+		
+		this.modCaret = document.getElementById('mod').children[0].children[0];
+		this.modList = document.getElementById('mod').children[1];
+		
+		/**************************************************************************
 		 **	Build our graphics and attach graphic-related values
 		 **************************************************************************/
 		
 		//The object
-		this.graphic = new Graphic("worldContainer", "world");
+		this.graphic = new Graphic(document.getElementById('world'));
 		
 		//Related keys
 		this.panLRKey.obj = this.graphic.camera.position;
@@ -81,6 +94,8 @@ var logic = {
 		$("#world").bind('mousewheel', this.onScroll.bind(this));
 		$("#world").mousemove(this.onMouseMove.bind(this));
 		
+		$('#menu').click(this.menuSwitch.bind(this));
+		
 		//Mods (other windows)
 		mods.on("push", this.newMod.bind(this));
 		
@@ -109,11 +124,25 @@ logic.loadTerrain = function(terrain) {
 
 logic.newMod = function(e) {
   
-  var terrain = e.detail.mod.terrain;
-  
+	console.log(mods.length, e);
+	
+	//First mod, so add the caret
+	this.modCaret.style.display = 'inline-block'
+	
+	//Now let's create our new menu item & append it
+	
+	var listItem = document.createElement('li');
+	
+	var link = document.createElement('a');
+	link.innerText = e.detail.mod.meta.title;
+	
+	listItem.appendChild(link);
+	this.modList.appendChild(listItem);
+	
+	//Okay, let's load the terrain if required
   if (this.plane == null) {
 		this.currentMod = e.detail.id;
-    this.loadTerrain(terrain);
+    this.loadTerrain(e.detail.mod.terrain);
 	}
 };
 
@@ -177,6 +206,8 @@ logic.onKeyUp = function(e) {
 
 logic.onScroll = function(e) {
 	
+	console.log(e);
+	
 	//Scroll = zoom
 	if (!e.altKey) {
 		
@@ -205,8 +236,8 @@ logic.onScroll = function(e) {
 
 logic.onMouseMove = function(e) {
 	
-	this.mouse.x = (e.offsetX / this.graphic.container.clientWidth) * 2 - 1;
-	this.mouse.y = (e.offsetY / this.graphic.container.clientHeight) * 2 - 1;
+	this.mouse.x = (e.offsetX / this.graphic.renderer.domElement.clientWidth) * 2 - 1;
+	this.mouse.y = (e.offsetY / this.graphic.renderer.domElement.clientHeight) * 2 - 1;
 	
 	this.raycaster.setFromCamera(this.mouse, this.graphic.camera);
 	
@@ -262,8 +293,8 @@ logic.saveLocal = function() {
 	mods[this.currentMod].save();
 };
 
-logic.menuSwitch = function(id) {
-	var which = $$('mainMenu').getMenuItem(id).value;
+logic.menuSwitch = function(e) {
+	var which = e.target.innerText;
 	console.log(this);
 	switch (which) {
 		

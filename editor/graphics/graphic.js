@@ -1,5 +1,5 @@
 
-Graphic = function(container, element) {
+Graphic = function(world) {
 	
 	//Scene
 	this.scene = new THREE.Scene();
@@ -10,12 +10,9 @@ Graphic = function(container, element) {
 	 **	Create the renderer
 	 *************************/
 	
-	this.container = $('div[view_id="' + container + '"]')[0];
+	this.renderer = new THREE.WebGLRenderer({antialias:true, canvas: world});
 	
-	this.renderer = new THREE.WebGLRenderer({antialias:true});
-	this.renderer.domElement.id = element;
-	
-	this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+	this.renderer.setSize(this.renderer.domElement.clientWidth, this.renderer.domElement.clientHeight);
 	
 	this.renderer.shadowMapEnabled = true;
 	this.renderer.shadowMapSoft = true;
@@ -46,11 +43,24 @@ Graphic.prototype.loadBaseScene = function() {
 	 **	Create the camera
 	 *************************/
 	
-	this.camera = new THREE.PerspectiveCamera(60, this.container.clientWidth / this.container.clientHeight, 1, 10000);
+	this.camera = new THREE.PerspectiveCamera(60,
+			(this.renderer.domElement.clientWidth - 257) /
+			this.renderer.domElement.clientHeight,
+			1, 10000);
 	
 	this.camera.position.z = 1792;
 	
 	this.scene.add(this.camera);
+	
+	/*************************
+	 **	Create the secondary camera (preview)
+	 *************************/
+	
+	this.previewCamera = new THREE.PerspectiveCamera(60, 1, 1, 10000);
+	
+	this.previewCamera.position.z = 1792;
+	
+	this.scene.add(this.previewCamera);
 	
 	/*************************
 	 **	Create the lights
@@ -72,7 +82,7 @@ Graphic.prototype.loadBaseScene = function() {
 /** Runs when DOM finishes loading */
 Graphic.prototype.load = function() {
 	
-	$(this.container).append(this.renderer.domElement);
+	//$(this.container).append(this.renderer.domElement);
 	
 	this.render();
 };
@@ -101,6 +111,16 @@ Graphic.prototype.render = function() {
 			i--;
 		}
 	
+	this.renderer.setViewport(0, this.renderer.domElement.clientHeight - 256, 256, 256);
+	this.renderer.setScissor(0, this.renderer.domElement.clientHeight - 256, 256, 256);
+	this.renderer.enableScissorTest(true);
+	
+	this.renderer.render(this.scene, this.previewCamera);
+	
+	this.renderer.setViewport(257, 0, this.renderer.domElement.clientWidth - 257, this.renderer.domElement.clientHeight);
+	this.renderer.setScissor(257, 0, this.renderer.domElement.clientWidth - 257, this.renderer.domElement.clientHeight);
+	this.renderer.enableScissorTest(true);
+	
 	this.renderer.render(this.scene, this.camera);
 };
 
@@ -108,10 +128,15 @@ Graphic.prototype.render = function() {
 Graphic.prototype.resize = function() {
 	if (!this.camera) return;
 	
-	this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
-    this.camera.updateProjectionMatrix();
+	this.renderer.domElement.style.height = '100%';
+	
+	this.camera.aspect = (this.renderer.domElement.clientWidth - 257) /
+			this.renderer.domElement.clientHeight;
+	
+	this.camera.updateProjectionMatrix();
 
-    this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+	this.renderer.setSize(this.renderer.domElement.clientWidth,
+			this.renderer.domElement.clientHeight);
 };
 
 /*Graphic.prototype.getTopObject = function(x, y) {

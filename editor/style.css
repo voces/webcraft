@@ -1,22 +1,210 @@
-#world {
-	width: 100%;
+
+body {
+	margin: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+	
+	font-family: Arial;
+	
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.caret {
+	border-top: 4px solid #aaa;
+	border-right: 4px solid transparent;
+	border-left: 4px solid transparent;
+	content: "";
+	display: inline-block;
+	height: 0;
+	width: 0;
+	vertical-align: middle;
+}
+
+/******************************************************************************
+ ******************************************************************************
+ *	Menu
+ ******************************************************************************
+ ******************************************************************************/
+
+#menu {
+	color: #888;
+	display: block;
+	
+	height: 2em;
+	
+	line-height: 1;
+}
+
+#menu ul {
+	padding: 0;
+	margin: 0;
+	background-color: white;
+}
+
+#menu > ul {
+	white-space: nowrap;
+}
+
+#menu > ul > li {
+	padding: 0.5em;
+	white-space: normal;
+}
+
+#menu li {
+	display: inline-block;
+	position: relative;
+	list-style-type: none;
+}
+
+#menu li:not(.hr) {
+	padding: 0.5em 1em;
+}
+
+#menu li.hr {
+	display: block;
+	border-top: .1em solid #ddd;
+	padding: 0 1em;
+}
+
+#menu li > a {
+	white-space: nowrap;
+}
+
+#menu ul ul {
+	position: absolute;
+	display: none;
+}
+
+#menu ul ul > li {
+	width: calc(100% - 2em);
+}
+
+#menu > ul > li > ul {
+	margin-top: .5em;
+	margin-left: -1em;
+}
+
+#menu li:hover {
+	background-color: #eee;
+	cursor: pointer;
+}
+
+#menu li:hover > ul {
+	display: block;
+}
+
+#menu ul ul ul {
+	left: 100%;
+	top: 0;
+}
+
+#menu li:hover > ul {
+	display: block;
+}
+
+#menu li! > ul {
+	background-color: red;
+}
+
+/******************************************************************************
+ ******************************************************************************
+ *	Content
+ ******************************************************************************
+ ******************************************************************************/
+
+#content {
+	height: calc(100% - 3em - 2px);
+	overflow: hidden;
+	
+	border: solid #ddd;
+	border-width: 1px 0;
+	
+	white-space: nowrap;
+}
+
+#content > div, #world {
+	display: inline-block;
 	height: 100%;
-	background: gray;
+	vertical-align: top;
+}
+
+#left > div.spacer {
+	position: relative;
+	height: 16em;
+	width: 0;
+	left: 16em;
+	border-right: 1px solid #ddd;
+}
+
+#properties {
+	height: calc(100% - 16em - 1px);
+	position: relative;
+	border-top: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+	width: 16em;
+	background-color: white;
 }
 
 #preview {
-	width: 100%;
-	height: 100%;
+	width: 16em;
+	height: 16em;
 	background: gray;
 }
 
-.webix_tree_close,
-.webix_tree_open,
-.webix_tree_none {
-	position: relative !important;
-	bottom: 5px !important;
-	right: 4px !important;
-	width: 13px !important;
+#world {
+	background: gray;
+	width: calc(100% - 14em - 2px);
 	
-	background-color: red;
+	margin-left: calc(-16em - 1px);
+	border: solid #ddd;
+	border-width: 0 1px 0 0;
+	
+}
+
+#right {
+	width: 14em;
+}
+
+#right > div + div {
+	border-top: 1px solid #eee;
+}
+
+#right > div > input {
+	display: none;
+}
+
+#right > div > input ~ label {
+	display: block;
+	padding: 0.25em 0.5em;
+}
+
+#right > div > input ~ div {
+	display: none;
+}
+
+#right > div > input:checked ~ div {
+	display: block;
+}
+
+#right > div > input:checked ~ label > .caret {
+	transform: rotate(-45deg);
+}
+
+/******************************************************************************
+ ******************************************************************************
+ *	Status
+ ******************************************************************************
+ ******************************************************************************/
+
+#status {
+	height: 1em;
 }

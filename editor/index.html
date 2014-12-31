@@ -33,11 +33,77 @@
 	</head>
 
 	<body id="body">
+		<nav id="menu">
+			<ul>
+				<li>
+					<a>File <span class="caret"></a>
+					<ul>
+						<li><a>New</a></li>
+						<li class="hr"></li>
+						<li>
+							<a>Open remote <span class="caret"></a>
+							<ul>
+								<li><a>Open remote</li>
+								<li><a>Open local</a></li>
+							</ul>
+						</li>
+						<li>
+							<a>Save remote <span class="caret"></a>
+							<ul>
+								<li><a>Save remote</li>
+								<li><a>Save local</a></li>
+							</ul>
+						</li>
+					</ul>
+				</li
+				><li><a>Edit</a></li
+				><li><a>View</a></li
+				><li>
+					<a>Window <span class="caret"></a>
+					<ul>
+						<li><a>Properties</a></li>
+						<li class="hr"></li>
+						<li><a>Terrain Editor</a></li>
+						<li><a>Object Editor</a></li>
+						<li><a>Code Editor</a></li>
+					</ul>
+				</li
+				><li id="mod"><a>Mod <span class="caret" style="display: none;"></a><ul></ul></li
+				><li><a>Help</a></li>
+			</ul>
+		</nav>
+		<div id="content">
+			<div id="left">
+				<div class="spacer"></div>
+				<div id="properties">Properties</div>
+			</div
+			><canvas id="world"></canvas
+			><div id="right">
+				<div>
+					<input type="checkbox" id="terrain" checked>
+					<label for="terrain">Terrain <span class="caret"></label>
+					<div> Content a</div>
+				</div>
+				<div>
+					<input type="checkbox" id="widgets">
+					<label for="widgets">Widgets <span class="caret"></label>
+					<div>Content b</div>
+				</div>
+				<div>
+					<input type="checkbox" id="geometry">
+					<label for="geometry">Geometry <span class="caret"></label>
+					<div>Content c</div>
+				</div>
+			</div>
+		</div>
+		<div id="status">row 3</div>
+		
 		<script>
-			webix.ready(function() {
+			/*webix.ready(function() {
 				ui.webix = webix.ui(ui.scheme);
 				logic.init();
-			});
+			});*/
+			logic.init();
 		</script>
 	</body>
 </html>
