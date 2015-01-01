@@ -103,3 +103,21 @@ message.container.style.right = '0.5em';
 message.container.style.top = '0.5em';
 message.initialized = false;
 
+function selectText(element) {
+	var range, selection;
+	
+	if (typeof element === 'string')
+		element = document.getElementById(element);
+	
+	if (document.body.createTextRange) {
+		range = document.body.createTextRange();
+		range.moveToElementText(element);
+		range.select();
+	} else if (window.getSelection) {
+		selection = window.getSelection();        
+		range = document.createRange();
+		range.selectNodeContents(element);
+		selection.removeAllRanges();
+		selection.addRange(range);
+	}
+}

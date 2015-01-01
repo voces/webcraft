@@ -1,3 +1,214 @@
+
+body {
+	margin: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+	
+	font-family: Arial;
+	
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.caret {
+	border-top: 4px solid #aaa;
+	border-right: 4px solid transparent;
+	border-left: 4px solid transparent;
+	content: "";
+	display: inline-block;
+	height: 0;
+	width: 0;
+	vertical-align: middle;
+}
+
+/******************************************************************************
+ ******************************************************************************
+ *	Menu
+ ******************************************************************************
+ ******************************************************************************/
+
+#menu {
+	display: block;
+	height: 2em;
+	
+	position: relative;
+	z-index: 5;
+	
+	color: #888;
+	line-height: 1;
+}
+
+#menu ul {
+	padding: 0;
+	margin: 0;
+	background-color: white;
+}
+
+#menu > ul {
+	white-space: nowrap;
+}
+
+#menu > ul > li {
+	padding: 0.5em;
+	white-space: normal;
+}
+
+#menu li {
+	display: inline-block;
+	position: relative;
+	list-style-type: none;
+}
+
+#menu li:not(.hr) {
+	padding: 0.5em 1em;
+}
+
+#menu li.hr {
+	display: block;
+	border-top: 0.1em solid #ddd;
+	padding: 0 1em;
+}
+
+#menu li > a {
+	white-space: nowrap;
+}
+
+#menu ul ul {
+	position: absolute;
+	display: none;
+	box-shadow: 0 0 0.25em 0 #ddd;
+}
+
+#menu ul ul > li {
+	width: calc(100% - 2em);
+}
+
+#menu > ul > li > ul {
+	margin-top: 0.5em;
+	margin-left: -1em;
+}
+
+#menu li:hover {
+	background-color: #eee;
+	cursor: pointer;
+}
+
+#menu li:hover > a > span.caret {
+	transform: rotate(-45deg);
+}
+
+#menu li:hover > ul {
+	display: block;
+}
+
+#menu ul ul ul {
+	left: 100%;
+	top: 0;
+}
+
+#menu li:hover > ul {
+	display: block;
+}
+
+#menu li! > ul {
+	background-color: red;
+}
+
+/******************************************************************************
+ ******************************************************************************
+ *	Content
+ ******************************************************************************
+ ******************************************************************************/
+
+#content {
+	height: calc(100% - 3em - 2px);
+	overflow: hidden;
+	
+	border: solid #ddd;
+	border-width: 1px 0;
+	
+	white-space: nowrap;
+}
+
+#content > div {
+	display: inline-block;
+	height: 100%;
+	vertical-align: top;
+}
+
+/******************************************************************************
+ *	Tree
+ ******************************************************************************/
+
+#tree {
+	width: 16em;
+	border-right: 1px solid #ddd;
+	
+}
+
+#tree ul {
+	padding-left: 0.75em;
+}
+
+#tree ul ul {
+	display: none;
+}
+
+#tree li {
+	list-style-type: none;
+}
+
+#tree label + span {
+	position: relative;
+	left: 0.25em;
+}
+
+#tree label + span > br {
+	display: none;
+}
+
+#tree label.caret {
+	opacity: 0;
+	border-top-width: 8px;
+	border-right-width: 8px;
+	border-left-width: 8px;
+}
+
+#tree input {
+	display: none;
+}
+
+#tree input:checked ~ ul {
+	display: block;
+}
+
+#tree input:checked ~ label.caret {
+	transform: rotate(-45deg);
+}
+
+/******************************************************************************
+ *	Code
+ ******************************************************************************/
+
 #code {
-	margin-top: 1px !important;
+	width: 100%;
+	height: 100%;
+}
+
+/******************************************************************************
+ ******************************************************************************
+ *	Status
+ ******************************************************************************
+ ******************************************************************************/
+
+#status {
+	height: 1em;
 }

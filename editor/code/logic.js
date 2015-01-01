@@ -1,5 +1,7 @@
 
-var mods = window.opener ? window.opener.mods : new Emitter([]);
+var mods = window.opener ?
+		window.opener.mods || new Emitter([]) :
+		new Emitter([]);
 
 var logic = {
 	
@@ -10,8 +12,13 @@ var logic = {
 	currentMod: null,
 	
 	//UI objects
-  tree: null,
-  coder: null,
+  modCaret: null,
+	modList: null,
+	openMethod: null,
+	saveMethod: null,
+	
+	tree: null,
+	coder: null,
   
   init: function() {
 		
@@ -19,18 +26,30 @@ var logic = {
 		 **	Build our UI context
 		 **************************************************************************/
     
-    //Stuff
-		this.tree = $$('tree');
-    this.tree.prevSection = null
+		//Bind elements
 		
+		this.modCaret = document.getElementById('mod').children[0].children[0];
+		this.modList = document.getElementById('mod').children[1];
+		
+		this.openMethod = document.getElementById('open').firstChild;
+		this.saveMethod = document.getElementById('save').firstChild;
+		
+		this.tree = document.getElementById('tree').children[0];
+    
     //Events
-    this.tree.attachEvent('onAfterSelect', this.onAfterSelect.bind(this));
+		
+    $('#menu').click(this.menuSwitch.bind(this));
+		
+		$('#tree').click(this.selectSection.bind(this));
+		$('#tree').dblclick(this.renameSection.bind(this));
+		
+		$('#tree').focusout(this.finishRename.bind(this));
 		
     /**************************************************************************
 		 **	Coder
 		 **************************************************************************/
     
-		$$('code').$view.id = 'code';
+		//$$('code').$view.id = 'code';
 		
 		this.coder = ace.edit('code');
 		this.coder.$blockScrolling = Infinity;
@@ -45,14 +64,20 @@ var logic = {
 		
 		this.fileReader.onload = this.loadLocalFile.bind(this);
 		
+		/**************************************************************************
+		 **	Events
+		 **************************************************************************/
+		
+		//Mods (other windows)
+		mods.on("push", this.newMod.bind(this));
 		
     /**************************************************************************
 		 **	Load our mods
 		 **************************************************************************/
     
-    for (var i = 0; i < mods.length; i++)
-      this.loadSection('m' + i, mods[i].path(), mods[i].code);
-    
+    for (var i = 0, mod; mod = mods[i]; i++)
+			this.newMod({detail: {mod: mod}});
+		
 	}
 };
 
@@ -78,9 +103,31 @@ logic.idToCode = function(id) {
  **	Builder
  ******************************************************************************/
 
+logic.newMod = function(e, skipLoad) {
+	
+	var mod = e.detail.mod;
+	
+	//First mod, so add the caret
+	this.modCaret.style.display = 'inline-block'
+	
+	//Now let's create our new menu item & append it
+	
+	var listItem = document.createElement('li');
+	
+	var link = document.createElement('a');
+	link.innerText = mod.meta.title;
+	
+	listItem.appendChild(link);
+	this.modList.appendChild(listItem);
+	
+	//Okay, let's load the code
+	this.loadSection('m' + (mods.length-1), mod.path(), mod.code);
+	
+};
+
 /**
  * Adds a section to the tree
- * @param {string|number} id The view_id of the section (Webix)
+ * @param {string|number} id The id of the section
  * @param {string} value The display text
  * @param {object} code An object containing at least _value, possibly children
  * @param {string|number|null} parent The id of the parent (see param1)
@@ -88,16 +135,46 @@ logic.idToCode = function(id) {
 logic.loadSection = function(id, value, code, parent) {
   
   //If the parent exists, define it in the add, otherwise don't
-  if (parent)
-		this.tree.add({
-			id: id,
-			value: value
-		}, null, parent);
-	else
-		this.tree.add({
-			id: id,
-			value: value
-		});
+	
+	var li = document.createElement('li');
+	
+	var input = document.createElement('input');
+	input.setAttribute('type', 'checkbox');
+	//input.setAttribute('name', parent || 'mods');
+	input.setAttribute('id', id);
+	
+	var label = document.createElement('label');
+	label.setAttribute('for', id);
+	label.className = 'caret';
+	
+	var text = document.createElement('span');
+	text.innerText = value;
+	
+	li.appendChild(input);
+	li.appendChild(label);
+	li.appendChild(text);
+	
+	//Not a mod-level section, so we're adding to a list
+  if (parent) {
+		
+		//Grab the parent and the list
+		parentEle = document.getElementById(parent).parentNode;
+		var childList = parentEle.children[3];
+		
+		//List doesn't exist yet so create it
+		if (!childList) {
+			childList = document.createElement('ul');
+			parentEle.appendChild(childList);
+		}
+		
+		//Append to list
+		childList.appendChild(li);
+		
+		//Make sure parent caret is visible
+		parentEle.children[1].style.opacity = 1;
+	
+	//Mod-level section
+	} else this.tree.appendChild(li);
 	
   //Set our parent, only used for possible children
 	parent = id;
@@ -140,10 +217,11 @@ logic.openLocal = function() {
 logic.saveLocal = function() {
 	
 	if (!this.currentMod) {
-		webix.message({
-			type: 'error',
+		message({
+			error: true,
 			text: 'You must select a mod to add a selection to.'
 		});
+		
 		return;
 	}
 	
@@ -155,37 +233,70 @@ logic.saveLocal = function() {
  **	Interactivity
  ******************************************************************************/
 
+logic.rFinishRename = function(li, oldName, newName) {
+	
+	//Update the input and label
+	li.children[0].id = li.children[0].id.replace(oldName, newName);
+	li.children[1].setAttribute('for',
+			li.children[1].getAttribute('for').replace(oldName, newName));
+	
+	//And update any sublists
+	var next = li.children[3];
+	if (next)
+		for (var i = 0, child; child = next.children[i]; i++)
+			this.rFinishRename(child, oldName, newName);
+	
+};
+
+logic.finishRename = function(e) {
+	
+	//Fix anything wonky (should probably make it id-valid)
+	e.target.innerHTML = e.target.innerText
+			.replace(/ /g, '&nbsp;')
+			.replace(/_/g, '&nbsp;');
+	
+	//No more edits
+	e.target.removeAttribute('contentEditable');
+	
+	//Grab info about the current item
+	var curId = e.target.parentNode.children[0].id;
+	var curItem = e.target.parentNode;
+	
+	//Get the id of parent and the suffix of current
+	var parentId = curId.substr(0, curId.lastIndexOf('_'));
+	var oldName = e.target.oldText;
+	
+	//Now grab the section of code
+	var parentSection = this.idToCode(parentId);
+	
+	//We got everything, just grab the new name
+	var newName = e.target.innerText;
+	
+	//Swap in code
+	parentSection[newName] = parentSection[oldName];
+	delete parentSection[oldName];
+	
+	//Swap in HTML
+	this.rFinishRename(curItem, parentId + '_' + oldName,
+			parentId + '_' + newName);
+	
+};
+
 /**
  * Renames a section using an ugly prompt
  * 
  */
-logic.renameSection = function() {
+logic.renameSection = function(e) {
   
-  //Grab info about the current item
-  var curId = this.tree.getSelectedId();
-  var curItem = this.tree.getSelectedItem();
-  
-  //Get the id of parent and the suffix of current
-  var parentId = curId.substr(0, curId.lastIndexOf('_'));
-  var oldName = curId.substr(curId.lastIndexOf('_') + 1);
-  
-  //Now grab the section of code
-  var parentSection = this.idToCode(parentId);
-  
-  //We got everything, prompt a new name
-  var newName = prompt('Rename section to:');
-  
-  //Swap in code
-  parentSection[newName] = parentSection[oldName];
-  delete parentSection[oldName];
-  
-  //Swap in HTML
-  this.tree.data.changeId(curId, parentId + '_' + newName);
-  curItem.value = newName;
-  
-  //And update webix
-  this.tree.refresh();
-  
+	if (e.target.tagName == 'SPAN' && e.target.className != 'caret' &&
+			e.target.parentNode.children[0].id.indexOf('_') > 0) {
+		
+		e.target.oldText = e.target.innerText;
+		e.target.setAttribute('contentEditable', true);
+		e.target.focus();
+		selectText(e.target);
+	}
+	
 };
  
 logic.newSection = function() {
@@ -193,10 +304,11 @@ logic.newSection = function() {
 	var parent = this.tree.getSelectedItem();
 	
 	if (!parent) {
-		webix.message({
-			type: 'error',
+		message({
+			error: 'true',
 			text: 'You must select a mod to add a selection to.'
 		});
+		
 		return;
 	}
 	
@@ -220,41 +332,23 @@ logic.newSection = function() {
 	}, null, parentId);
 };
 
-logic.menuSwitch = function(id) {
-	var which = $$('mainMenu').getMenuItem(id).value;
-	
-	switch (which) {
-		
-		//File
-		case 'New': window.open('new', 'New Mod',
-				'width=250,height=500,scrollbars=no,location=no'); break;
-		case 'Open local': this.openLocal(); break;
-		case 'Save local': this.saveLocal(); break;
-		
-		//Edit
-		case 'Rename section': this.renameSection(); break;
-		case 'New section': this.newSection(); break;
-		
-		//window
-		case 'Terrain Editor': window.open('..'); break;
-		case 'Code Editor': window.open('../code'); break;
-		
-		default: console.log('woot');
-	}
-};
-
 logic.onChange = function(e, section) {
   section._value = this.coder.getValue();
 };
 
-logic.onAfterSelect = function(id) {
+logic.selectSection = function(e) {
 	
+	//Ignore the span event
+	if (e.target.tagName != 'SPAN') return;
+	
+	//Get the id and update currentMod
+	var id = e.target.parentNode.children[0].id;
 	this.currentMod = id.split('_')[0].substr(1);
 	
-  //Grab the section
+	//Grab the section
   var section = this.idToCode(id);
-  
-  //Create a session if it does not exist
+	
+	//Create a session if it does not exist
   if (typeof section._session == "undefined") {
     section._session = ace.createEditSession(
       section._value, 'ace/mode/javascript'
@@ -267,5 +361,50 @@ logic.onAfterSelect = function(id) {
   
   //Set the session
   this.coder.setSession(section._session);
-  
+	
+};
+
+logic.menuSwitch = function(e) {
+	var which = e.target;
+	if (which.tagName == 'LI')
+		which = which.children[0];
+	
+	which = which.innerText.trim();
+	
+	var ele = e.target;
+	while (ele.tagName != 'UL')
+		ele = ele.parentNode
+	
+	if (ele.parentNode.tagName != 'NAV')
+		ele.style.display = 'none';
+	
+	switch (which) {
+		
+		//File
+		case 'New': window.open('../new', 'New Mod',
+				'width=250,height=500,scrollbars=no,location=no'); break;
+		case 'Open local':
+			this.openMethod.nodeValue = 'Open local ';
+			this.openLocal();
+			break;
+		case 'Save local':
+			this.saveMethod.nodeValue = 'Save local ';
+			this.saveLocal();
+			break;
+		
+		//Edit
+		case 'Rename section': this.renameSection(); break;
+		case 'New section': this.newSection(); break;
+		
+		//window
+		case 'Terrain Editor': window.open('..'); break;
+		case 'Code Editor': window.open('../code'); break;
+		
+		default: console.log('woot');
+	}
+	
+	if (ele.parentNode.tagName != 'NAV')
+		setTimeout(function() {
+			ele.style.display = null;
+		}, 50);
 };

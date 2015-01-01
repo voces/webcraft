@@ -344,16 +344,10 @@ logic.menuSwitch = function(e) {
 				'width=250,height=500,scrollbars=no,location=no'); break;
 		case 'Open local':
 			this.openMethod.nodeValue = 'Open local ';
-			/*if (ele.parentNode.children[0].innerText.trim() != 'File')
-				ele.parentNode.children[0].firstChild.nodeValue = 'Open local ';*/
-			
 			this.openLocal();
 			break;
 		case 'Save local':
 			this.saveMethod.nodeValue = 'Save local ';
-			/*if (ele.parentNode.children[0].innerText.trim() != 'File')
-				ele.parentNode.children[0].firstChild.nodeValue = 'Save local ';*/
-			
 			this.saveLocal();
 			break;
 			
