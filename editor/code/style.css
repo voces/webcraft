@@ -164,11 +164,15 @@ body {
 
 #tree li {
 	list-style-type: none;
+	
 }
 
-#tree label + span {
-	position: relative;
-	left: 0.25em;
+#tree li > input, #tree li > label, #tree li > span {
+	cursor: pointer;
+}
+
+#tree label ~ span, #tree .controls > span {
+	margin-left: 0.25em;
 }
 
 #tree label + span > br {
@@ -184,6 +188,16 @@ body {
 
 #tree input {
 	display: none;
+}
+
+#tree span.controls > span {
+	font-weight: bold;
+	color: #aaa;
+}
+
+#tree span.controls > span:hover {
+	text-shadow:	black 1px 1px  5px,
+								black 1px 1px 10px;
 }
 
 #tree input:checked ~ ul {
