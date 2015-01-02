@@ -6,7 +6,7 @@ var mods = window.opener ?
 var logic = {
 	
 	//Saving/loading objects
-	localFileInput: document.createElement('input'),
+	fileInput: document.createElement('input'),
 	fileReader: new FileReader(),
 	
 	currentMod: null,
@@ -58,11 +58,11 @@ var logic = {
 		 **	Flesh out our file readers
 		 **************************************************************************/
 		
-		this.localFileInput.setAttribute('type', 'file');
-		this.localFileInput.addEventListener('change',
-				this.handleLocalInput.bind(this), false);
+		this.fileInput.setAttribute('type', 'file');
+		this.fileInput.addEventListener('change',
+				this.handleFileInput.bind(this), false);
 		
-		this.fileReader.onload = this.loadLocalFile.bind(this);
+		this.fileReader.onload = this.loadfile.bind(this);
 		
 		/**************************************************************************
 		 **	Events
@@ -76,7 +76,7 @@ var logic = {
 		 **************************************************************************/
     
     for (var i = 0, mod; mod = mods[i]; i++)
-			this.newMod({detail: {mod: mod}});
+			this.newMod({detail: {mod: mod}}, i);
 		
 	}
 };
@@ -89,13 +89,26 @@ var logic = {
 
 logic.idToCode = function(id) {
   
+	//Split path into parts
   var path = id.split('_');
 	
+	//Grab the mod we need
   var section = mods[path.shift().substring(1)].code;
 	
-  while (path.length)
-    section = section[path.shift()];
+	//Loop until we've exhausted the path
+	var next;
+  while (path.length) {
+		next = path.shift();
+		
+		//Loop until we've found the corret child
+		for (var i = 0; section.children[i].name != next; i++) {}
+		
+		//Found it, set and repeat (or exit if finished)
+    section = section.children[i];
+		
+	}
   
+	//Found it!
   return section;
 };
 
@@ -103,7 +116,7 @@ logic.idToCode = function(id) {
  **	Builder
  ******************************************************************************/
 
-logic.newMod = function(e, skipLoad) {
+logic.newMod = function(e, version) {
 	
 	var mod = e.detail.mod;
 	
@@ -120,8 +133,12 @@ logic.newMod = function(e, skipLoad) {
 	listItem.appendChild(link);
 	this.modList.appendChild(listItem);
 	
+	//If version is unset, just use length (it's probably from an event)
+	if (typeof version == 'undefined')
+		 version = mods.length - 1;
+	
 	//Okay, let's load the code
-	this.loadSection('m' + (mods.length-1), mod.path(), mod.code);
+	this.loadSection('m' + version, mod.meta.title, mod.code.children);
 	
 };
 
@@ -132,7 +149,7 @@ logic.newMod = function(e, skipLoad) {
  * @param {object} code An object containing at least _value, possibly children
  * @param {string|number|null} parent The id of the parent (see param1)
  */
-logic.loadSection = function(id, value, code, parent) {
+logic.loadSection = function(id, value, children, parent) {
   
   //If the parent exists, define it in the add, otherwise don't
 	
@@ -195,47 +212,45 @@ logic.loadSection = function(id, value, code, parent) {
   //Set our parent, only used for possible children
 	parent = id;
 	
-  //Make sure we're working with an object
-	if (typeof code == 'object')
+  //Make sure we're working with an object (Array)
+	if (typeof children == 'object')
     
     //Grab the children (not value)
-		for (var sub in code)
-      if (code.hasOwnProperty(sub) && sub != '_value' && sub != '_session')
-        
-        //Recursively add children
-				this.loadSection(parent + '_' + sub, sub, code[sub], parent);
+		for (var i = 0, sub; sub = children[i]; i++)
+      
+			//Recursively add children
+			this.loadSection(parent + '_' + sub.name, sub.name, sub.children, parent);
 };
 
 /******************************************************************************
  **	Save/load
  ******************************************************************************/
 
-logic.loadLocalFile = function(e, blah, blah2) {
-	var file = this.fileReader.result;
-	
-	var mod = Mod.load(file);
-	var id = mods.push(mod) - 1;
+logic.loadfile = function(e, blah, blah2) {
+	var file = this.fileReader.result,
+			mod = Mod.load(file),
+			id = mods.push(mod) - 1;
 	
 	mods.emit('push', new CustomEvent('push', {
 		detail: {mod: mod, id: id}
 	}));
 };
 
-logic.handleLocalInput = function(e) {
+logic.handleFileInput = function(e) {
 	var file = e.target.files[0];
 	this.fileReader.readAsText(file);
 };
 
-logic.openLocal = function() {
-	this.localFileInput.click();
+logic.openFile = function() {
+	this.fileInput.click();
 };
 
-logic.saveLocal = function() {
+logic.saveFile = function() {
 	
 	if (!this.currentMod) {
 		message({
 			error: true,
-			text: 'You must select a mod to add a selection to.'
+			text: 'You must select a mod to save.'
 		});
 		
 		return;
@@ -334,7 +349,7 @@ logic.selectSection = function(e) {
 		//Create a session if it does not exist
 		if (typeof section._session == "undefined") {
 			section._session = ace.createEditSession(
-				section._value, 'ace/mode/javascript'
+				section.code, 'ace/mode/javascript'
 			);
 			
 			section._session.on('change', function(e) {
@@ -424,13 +439,13 @@ logic.menuSwitch = function(e) {
 		//File
 		case 'New': window.open('../new', 'New Mod',
 				'width=250,height=500,scrollbars=no,location=no'); break;
-		case 'Open local':
-			this.openMethod.nodeValue = 'Open local ';
-			this.openLocal();
+		case 'Open file':
+			this.openMethod.nodeValue = 'Open file ';
+			this.openFile();
 			break;
-		case 'Save local':
-			this.saveMethod.nodeValue = 'Save local ';
-			this.saveLocal();
+		case 'Save file':
+			this.saveMethod.nodeValue = 'Save file ';
+			this.saveFile();
 			break;
 		
 		//window

@@ -14,7 +14,7 @@ function Mod(props) {
 	this.meta.description = props.description;
 	
 	var d = new Date();
-	this.meta.date = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+	this.meta.date = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
 	
 	this.meta.version = 0;
 	
@@ -69,111 +69,174 @@ function Mod(props) {
 	************************************************/
 	
 	this.code = {
-		_value: 'function someTest() {\n\t\n}\n',
-		Utils: {
-			_value: 'function anotherTest() {\n\t\n}\n',
-			Magic: {
-				_value: 'var MAGICZ = Infinity;'
-			}
-		}
+		code: 'function firstTest() {\n\t\n}\n',
+		children: [
+			{name: 'Utils', code: 'function anotherTest() {\n\t\n}\n', children: [
+				{name: 'Magic', code: 'var MAGICZ = Infinity;\n'},
+				{name: 'Beans', code: 'var beans = 0;\n'},
+			]},
+			{name: 'Core', code: 'function someTest() {\n\t\n}\n'}
+		]
 	};
 	
 }
 
 Mod.load = function(file) {
+	
+	//Define an empty mod
 	mod = new Mod();
 	
+	//Split the file into major sections
 	parts = file.split('\n//!! ');
 	
-	parts.shift();	//First thing contains useless stuff...
+	//First thing contains useless stuff...
+	parts.shift();
 	
-	//Meta
+	/****************************************************************************
+	 **	Meta (it's a long, exciting section
+	 ****************************************************************************/
+	
 	mod.meta = JSON.parse(parts.shift().match(/\/\*!+((.|[\r\n])*?)\*\//)[1]);
 	
-	//Terrain
+	/****************************************************************************
+	 **	Terrain
+	 ****************************************************************************/
+	
+	//First grab the file data
 	var terrain = parts.shift();
 	terrain = terrain.substr(terrain.indexOf('\n'),
 			terrain.lastIndexOf(',') - terrain.indexOf('\n'));
 	mod.terrain = JSON.parse("{" + terrain + "}").terrain;
 	
+	//Now convert the b64 encoded data into uint arrays
 	mod.terrain.heightMap = mod.b642uint(mod.terrain.heightMap);
 	mod.terrain.levelMap = mod.b642uint(mod.terrain.levelMap);
 	mod.terrain.tileMap = mod.b642uint(mod.terrain.tileMap);
 	mod.terrain.pathingMap = mod.b642uint(mod.terrain.pathingMap);
 	
-	//Geometry
+	/****************************************************************************
+	 **	Geometry
+	 ****************************************************************************/
+	
 	var geometry = parts.shift();
 	geometry = geometry.substr(geometry.indexOf('\n'),
 			geometry.lastIndexOf(',') - geometry.indexOf('\n'));
 	mod.geometry = JSON.parse("{" + geometry + "}").geometry;
 	
-	//Widgets
+	/****************************************************************************
+	 **	Widgets
+	 ****************************************************************************/
+	
 	widgets = parts.shift();
 	widgets = widgets.substr(widgets.indexOf('\n'),
 			widgets.lastIndexOf(';') - 1 - widgets.indexOf('\n'));
 	mod.widgets = JSON.parse("{" + widgets + "}").widgets;
 	
-	//Code
+	/****************************************************************************
+	 **	Code (now this one is a bit complicated...)
+	 ****************************************************************************/
+	
+	//Get the text from file
 	var code = parts.shift();
 	code = code.substr(code.indexOf('\n'));
 	
+	//Seperate the code into the proper sections
 	codeSections = code.split(/\n\/\/!/g);
 	
-	var cur = {};
-	var parent = [cur];
+	//Define our variables
+	//	cur points to the current object, it starts as this.code, basically
+	//	path is an array of accessors, giving us a path of what cur is
+	var cur = {},
+			path = [cur],
+			
+			first, level, name, child;
 	
+	//Loop through the sections
 	for (var i = 0, e; e = codeSections[i]; i++) {
-		var first = e.charAt(0);
 		
+		//Get the first character (tells us if top level or not)
+		first = e.charAt(0);
+		
+		//Top level, set code and move on
 		if (first == '\n')
-			cur._value = e.substr(2);
+			cur.code = e.substr(2);
+		
+		//We're a sub-section, fun time
 		else {
 			
-			var level = e.search(/ /);
-			var title = e.substr(level + 1, e.indexOf('\n') - level - 1);
+			//How deep is the section (0 means top section, 1 means sub of that, etc)
+			level = e.search(/ /);
 			
-			if (level == 0) {
-				cur = parent[0];
-				
-				cur[title] = {_value: e.substr(e.indexOf('\n')+2)};
-				
-				parent = [cur, cur[title]];
-			} else {
-				parent[level][title] = {_value: e.substr(e.indexOf('\n')+2)};
-				parent.push(parent[level][title]);
-			}
+			//Get the name of the section
+			name = e.substr(level + 1, e.indexOf('\n') - level - 1);
+			
+			//We've entered a parent's sibling, pop to match the path
+			while (path.length > level + 1)
+				path.pop();
+			
+			//Modify current to the proper relative
+			cur = path[level];
+			
+			//Set children to an array if not already so
+			if (typeof cur.children == 'undefined')
+				cur.children = [];
+			
+			//Create the child
+			child = {
+				name: name,
+				code: e.substr(e.indexOf('\n')+2)
+			};
+			
+			//Add the child to the current node
+			cur.children.push(child);
+			
+			//And add the child to the path (in case the next section is their child)
+			path.push(child);
+			
 		}
-		
 	}
 	
-	mod.code = parent[0];
+	//OK, mod.code can be set to Eve/Adam
+	mod.code = path[0];
 	
+	//And we're done!
 	return mod;
 	
 };
 
+//Converts a base64 encoded string into a uint8 array (using a window function,
+//	ugh)
 Mod.prototype.b642uint = function(b64) {
 	return new Uint8ClampedArray(this.window.atob(b64).split('').map(function(c) {
 		return c.charCodeAt(0);}));
 };
 
+//Converts a uint8 array into a base64 encoded string (using a window function,
+//	ugh)
 Mod.prototype.uint2b64 = function(uint) {
 	return this.window.btoa(String.fromCharCode.apply(null, uint));
 };
 
+//Recursively save our code
 Mod.prototype.rCodeSave = function(obj, header, level) {
+	
+	//Append our header as well as our code
 	var data =
 			(header ?
 				'\n//!' + Array(level).join('-') + ' ' + header + '\n\n' :
 				'\n'
-			) + obj._value;
+			) + obj.code;
 	
-	for (var prop in obj) {
-		if (obj.hasOwnProperty(prop) && prop.substr(0,1) != '_') {
-			data += this.rCodeSave(obj[prop], prop, level ? level + 1 : 1);
-		}
-	}
+	//Exit if no children
+	if (typeof obj.children == 'undefined') return data;
 	
+	//Loop through all dem children
+	for (var i = 0, child; child = obj.children[i]; i++)
+		
+		//And add them recursively!
+		data += this.rCodeSave(child, child.name, level ? level + 1 : 1);
+	
+	//We're done
 	return data;
 };
 
@@ -182,7 +245,7 @@ Mod.prototype.save = function() {
 	//Update stuff first
 	
 	var d = new Date();
-	this.meta.date = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+	this.meta.date = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
 	
 	this.meta.version++;
 	

@@ -15,7 +15,7 @@ var logic = {
 	plane: null,
 	
 	//Save/loading
-	localFileInput: document.createElement('input'),
+	fileInput: document.createElement('input'),
 	fileReader: new FileReader(),
 	
 	currentMod: null,
@@ -88,11 +88,11 @@ var logic = {
 		 **	Flesh out our file readers
 		 **************************************************************************/
 		
-		this.localFileInput.setAttribute('type', 'file');
-		this.localFileInput.addEventListener('change',
-				this.handleLocalInput.bind(this), false);
+		this.fileInput.setAttribute('type', 'file');
+		this.fileInput.addEventListener('change',
+				this.handleFileInput.bind(this), false);
 		
-		this.fileReader.onload = this.loadLocalFile.bind(this);
+		this.fileReader.onload = this.loadfile.bind(this);
 		
 		/**************************************************************************
 		 **	Events
@@ -288,7 +288,7 @@ logic.onMouseMove = function(e) {
  ******************************************************************************
  ******************************************************************************/
 
-logic.loadLocalFile = function(e, blah, blah2) {
+logic.loadfile = function(e, blah, blah2) {
 	var file = this.fileReader.result;
 	
 	var mod = Mod.load(file);
@@ -299,16 +299,16 @@ logic.loadLocalFile = function(e, blah, blah2) {
 	}));
 };
 
-logic.handleLocalInput = function(e) {
+logic.handleFileInput = function(e) {
 	var file = e.target.files[0];
 	this.fileReader.readAsText(file);
 };
 
-logic.openLocal = function() {
-	this.localFileInput.click();
+logic.openFile = function() {
+	this.fileInput.click();
 };
 
-logic.saveLocal = function() {
+logic.saveFile = function() {
 	
 	if (this.currentMod == null) {
 		message({
@@ -342,13 +342,13 @@ logic.menuSwitch = function(e) {
 		//File
 		case 'New': window.open('new', 'New Mod',
 				'width=250,height=500,scrollbars=no,location=no'); break;
-		case 'Open local':
-			this.openMethod.nodeValue = 'Open local ';
-			this.openLocal();
+		case 'Open file':
+			this.openMethod.nodeValue = 'Open file ';
+			this.openFile();
 			break;
-		case 'Save local':
-			this.saveMethod.nodeValue = 'Save local ';
-			this.saveLocal();
+		case 'Save file':
+			this.saveMethod.nodeValue = 'Save file ';
+			this.saveFile();
 			break;
 			
 		//window

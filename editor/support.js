@@ -98,7 +98,7 @@ function message(props) {
 }
 message.container = document.createElement('div');
 message.container.style.position = 'absolute';
-message.container.style.zIndex = 3;
+message.container.style.zIndex = 6;
 message.container.style.right = '0.5em';
 message.container.style.top = '0.5em';
 message.initialized = false;
