@@ -153,35 +153,43 @@ logic.loadSection = function(id, value, children, parent) {
   
   //If the parent exists, define it in the add, otherwise don't
 	
+	//Container for the entire section
 	var li = document.createElement('li');
 	
+	//Used to control whether children are hidden/shown
 	var input = document.createElement('input');
 	input.setAttribute('type', 'checkbox');
-	//input.setAttribute('name', parent || 'mods');
 	input.setAttribute('id', id);
 	
+	//Used to toggle hide/show of children (and display state)
 	var label = document.createElement('label');
 	label.setAttribute('for', id);
 	label.className = 'caret';
 	
+	//The actual text of the section
 	var text = document.createElement('span');
 	text.className = 'sectionName';
 	text.innerText = value;
 	
+	//A container for controls (+/-)
 	var controls = document.createElement('span');
 	controls.className = 'controls';
 	
+	//Used to add a child
 	var add = document.createElement('span');
 	add.className = 'add';
 	add.innerText = '+';
 	
+	//Used to remove current section
 	var remove = document.createElement('span');
 	remove.className = 'remove';
 	remove.innerText = '–';
 	
+	//Build our controls
 	controls.appendChild(add);
-	controls.appendChild(remove);
+	if (id.indexOf('_') >= 0) controls.appendChild(remove);
 	
+	//And now build our item
 	li.appendChild(input);
 	li.appendChild(label);
 	li.appendChild(text);
@@ -213,7 +221,7 @@ logic.loadSection = function(id, value, children, parent) {
 	parent = id;
 	
   //Make sure we're working with an object (Array)
-	if (typeof children == 'object')
+	if (typeof children == 'object' && children != null)
     
     //Grab the children (not value)
 		for (var i = 0, sub; sub = children[i]; i++)
@@ -331,7 +339,7 @@ logic.renameSection = function(e) {
 };
 
 logic.onChange = function(e, section) {
-  section._value = this.coder.getValue();
+	section.code = this.coder.getValue();
 };
 
 logic.selectSection = function(e) {
@@ -368,20 +376,45 @@ logic.selectSection = function(e) {
 		
 		//Grab the section and define our first-pass section name
 		var section = this.idToCode(currentId);
-		var value = 'Untitled',
+		var name = 'Untitled',
 				num = '';
 		
-		//Loop until we have a unique section
-		while (typeof section[value + num] != 'undefined')
-			num = (parseInt(num) || 1) + 1;
+		//Children not defined, so just define it and we know it's not taken
+		if (typeof section.children == 'undefined' || section.children == null)
+			section.children = [];
 		
-		value += num;
+		//Children is defined, so we must make sure we're unique
+		else {
+			
+			//General flag for searching
+			var flag = true;
+			
+			//Loop while flag is true
+			while (flag) {
+				
+				//Set flag to false, meaning currently unfound
+				flag = false;
+				
+				//Loop through all children
+				for (var i = 0, child; child = section.children[i]; i++)
+					
+					//Name already taken, try again with num++
+					if (child.name == name + num) {
+						num = (parseInt(num) || 1) + 1;
+						flag = true;
+						break;
+					}
+			}
+		}
+		
+		//Set name to include num (num may be blank)
+		name += num;
 		
 		//Define the new section in code
-		section[value] = {_value: ''};
+		section.children.push({name: name, code: ''});
 		
 		//Add the new section to the tree
-		this.loadSection(currentId + '_' + value, value, null, currentId);
+		this.loadSection(currentId + '_' + name, name, null, currentId);
 		
 		//Show the section if it's not
 		e.target.parentNode.parentNode.children[0].checked = true
@@ -407,7 +440,11 @@ logic.selectSection = function(e) {
 		var parentSection = this.idToCode(parentId);
 		
 		//Remove in code
-		delete parentSection[curName];
+		for (var i = 0, child; child = parentSection.children[i]; i++)
+			if (child.name == curName) {
+				parentSection.children.splice(i, 1);
+				break;
+			}
 		
 		//Remove in HTML
 		curItem.remove();
@@ -452,7 +489,7 @@ logic.menuSwitch = function(e) {
 		case 'Terrain Editor': window.open('..'); break;
 		case 'Code Editor': window.open('../code'); break;
 		
-		default: console.log('woot');
+		default: console.log('woot', which);
 	}
 	
 	if (ele.parentNode.tagName != 'NAV')

@@ -69,14 +69,7 @@ function Mod(props) {
 	************************************************/
 	
 	this.code = {
-		code: 'function firstTest() {\n\t\n}\n',
-		children: [
-			{name: 'Utils', code: 'function anotherTest() {\n\t\n}\n', children: [
-				{name: 'Magic', code: 'var MAGICZ = Infinity;\n'},
-				{name: 'Beans', code: 'var beans = 0;\n'},
-			]},
-			{name: 'Core', code: 'function someTest() {\n\t\n}\n'}
-		]
+		code: ''
 	};
 	
 }
@@ -301,7 +294,7 @@ Mod.prototype.save = function() {
 	//Code
 	file += '//!! Code\n' + this.rCodeSave(this.code);
 	
-	this.window.download(this.path() + ".js", file);
+	this.window.download(this.path() + ".wcm", file);
 	
 	//return file;
 	
