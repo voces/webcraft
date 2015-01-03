@@ -9,7 +9,7 @@ Nova = function(address, debug) {
 	//Should add a queue system for when disconnected
 	
 	//Variables
-	this.address = address || 'ws://68.229.21.36:8082';
+	this.address = address || 'wss://notextures.io:8082';
 	this.debugging = debug || false;
 	
 	//Load the socket up
@@ -152,7 +152,7 @@ Nova.prototype.hostList = function() {
 Nova.prototype.loadSocket = function(address) {
 	
 	if (address != null) this.address = address;
-	
+	console.log('loadsocket', this.address);
 	//Create the socket
 	this.socket = new WebSocket(this.address);
 	

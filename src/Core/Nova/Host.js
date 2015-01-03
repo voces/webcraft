@@ -117,7 +117,7 @@ Nova.Host.prototype.connected = function(ip, port) {
 Nova.Host.prototype.loadSocket = function() {
 	
 	//Create the socket
-	this.socket = new WebSocket('ws://' + this.ip + ':' + this.port);
+	this.socket = new WebSocket('wss://' + this.ip + ':' + this.port);
 	
 	//Attach events
 	this.socket.onmessage = this._onmessage.bind(this);

@@ -289,7 +289,8 @@ logic.rFinishRename = function(li, oldName, newName) {
 
 logic.finishRename = function(e) {
 	
-	//Fix anything wonky (should probably make it id-valid)
+	//Fix anything wonky (note HTML5 accepts anything except spaces, underscores
+	//	are reserved to differentiate subsections)
 	e.target.innerHTML = e.target.innerText
 			.replace(/ /g, '&nbsp;')
 			.replace(/_/g, '&nbsp;');
