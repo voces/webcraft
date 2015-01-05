@@ -1,5 +1,6 @@
 
-Graphic = function(world) {
+//Assumes dom ready
+Graphic = function(canvas) {
 	
 	//Scene
 	this.scene = new THREE.Scene();
@@ -10,10 +11,11 @@ Graphic = function(world) {
 	 **	Create the renderer
 	 *************************/
 	
-	this.renderer = new THREE.WebGLRenderer({antialias:true, canvas: world});
+	this.renderer = new THREE.WebGLRenderer({antialias:true, canvas: canvas});
 	this.canvas = this.renderer.domElement;
+	this.box = canvas.parentNode;
 	
-	this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+	this.renderer.setSize(this.box.clientWidth, this.box.clientHeight);
 	
 	this.renderer.shadowMapEnabled = true;
 	this.renderer.shadowMapSoft = true;
@@ -31,10 +33,11 @@ Graphic = function(world) {
 	this.loader = new THREE.JSONLoader();
 	
 	//Attach our events
-	$(document).ready(this.load.bind(this));
-	$(window).resize(this.resize.bind(this));
+	window.addEventListener('resize', this.resize.bind(this));
 	
+	//And load the base scene (camera & lights) & render
 	this.loadBaseScene();
+	this.render();
 	
 };
 
@@ -80,31 +83,10 @@ Graphic.prototype.loadBaseScene = function() {
 	
 };
 
-/** Runs when DOM finishes loading */
-Graphic.prototype.load = function() {
-	
-	//$(this.container).append(this.canvas);
-	
-	this.render();
-};
-
 Graphic.prototype.render = function() {
 	requestAnimationFrame(this.render.bind(this));
 	
 	if (!this.camera) return;
-	
-	//console.log('rendering');
-	
-	/*this.activeMeshes.forEach(function(mesh) {
-		if (typeof this.marker == "undefined")
-			this.marker = 0;
-		else return;
-		
-		var position = mesh.widget.getPosition();
-		
-		mesh.position.x = position.x;
-		mesh.position.y = position.y;
-	}.bind(this));*/
 	
 	for (var i = 0; i < this.keys.length; i++)
 		if (this.keys[i].update()) {
@@ -112,32 +94,38 @@ Graphic.prototype.render = function() {
 			i--;
 		}
 	
+	//Render the main display first
+	
+	this.renderer.setViewport(257, 0,
+			this.canvas.clientWidth - 257, this.canvas.clientHeight);
+	this.renderer.setScissor(257, 0,
+			this.canvas.clientWidth - 257, this.canvas.clientHeight);
+	this.renderer.enableScissorTest(true);
+	
+	this.renderer.render(this.scene, this.camera);
+	
+	//Then render the preview
+	
 	this.renderer.setViewport(0, this.canvas.clientHeight - 256, 256, 256);
 	this.renderer.setScissor(0, this.canvas.clientHeight - 256, 256, 256);
 	this.renderer.enableScissorTest(true);
 	
 	this.renderer.render(this.scene, this.previewCamera);
 	
-	this.renderer.setViewport(257, 0, this.canvas.clientWidth - 257, this.canvas.clientHeight);
-	this.renderer.setScissor(257, 0, this.canvas.clientWidth - 257, this.canvas.clientHeight);
-	this.renderer.enableScissorTest(true);
-	
-	this.renderer.render(this.scene, this.camera);
 };
 
 /** Handle window resizing */
 Graphic.prototype.resize = function() {
 	if (!this.camera) return;
 	
-	this.canvas.style.height = '100%';
+	this.renderer.setSize(this.box.clientWidth,
+			this.box.clientHeight);
 	
 	this.camera.aspect = (this.canvas.clientWidth - 257) /
 			this.canvas.clientHeight;
 	
 	this.camera.updateProjectionMatrix();
-
-	this.renderer.setSize(this.canvas.clientWidth,
-			this.canvas.clientHeight);
+	
 };
 
 /*Graphic.prototype.getTopObject = function(x, y) {
@@ -159,7 +147,8 @@ Graphic.prototype.mousemove = function(e) {
 	this.mouse.x = e.clientX;
 	this.mouse.y = e.clientY;
 	
-	if (this.getTopObject(e.clientX / window.innerWidth, e.clientY / window.innerHeight)) {
+	if (this.getTopObject(e.clientX / window.innerWidth,
+			e.clientY / window.innerHeight)) {
 		console.log('hover');
 	}
 };
@@ -169,7 +158,8 @@ Graphic.prototype.getTopObject = function(x, y) {
 	var vector = new THREE.Vector3( ( x ) * 2 - 1, - ( y ) * 2 + 1, .5);
 	this.projector.unprojectVector(vector, this.camera);
 	
-	//var ray = new THREE.Ray(this.camera.position, vector.subSelf(this.camera.position ).normalize() );
+	//var ray = new THREE.Ray(this.camera.position,
+	//		vector.subSelf(this.camera.position ).normalize() );
 	var ray = this.projector.pickingRay(vector, this.camera);
 	
 	var intersects = ray.intersectObjects(this.scene.children);

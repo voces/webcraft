@@ -5,10 +5,6 @@ var mods = window.opener ?
 
 var logic = {
 	
-	//Saving/loading objects
-	fileInput: document.createElement('input'),
-	fileReader: new FileReader(),
-	
 	currentMod: null,
 	
 	//UI objects
@@ -54,16 +50,6 @@ var logic = {
 		this.coder = ace.edit('code');
 		this.coder.$blockScrolling = Infinity;
     
-		/**************************************************************************
-		 **	Flesh out our file readers
-		 **************************************************************************/
-		
-		this.fileInput.setAttribute('type', 'file');
-		this.fileInput.addEventListener('change',
-				this.handleFileInput.bind(this), false);
-		
-		this.fileReader.onload = this.loadfile.bind(this);
-		
 		/**************************************************************************
 		 **	Events
 		 **************************************************************************/
@@ -234,38 +220,73 @@ logic.loadSection = function(id, value, children, parent) {
  **	Save/load
  ******************************************************************************/
 
-logic.loadfile = function(e, blah, blah2) {
-	var file = this.fileReader.result,
-			mod = Mod.load(file),
-			id = mods.push(mod) - 1;
-	
-	mods.emit('push', new CustomEvent('push', {
-		detail: {mod: mod, id: id}
-	}));
-};
-
-logic.handleFileInput = function(e) {
-	var file = e.target.files[0];
-	this.fileReader.readAsText(file);
-};
-
+//Will prompt for a file then load the file contents, pushing to mods and
+//		emitting an event
 logic.openFile = function() {
-	this.fileInput.click();
+	
+	//Create input element for file upload
+	var fileInput = document.createElement('input');
+	fileInput.setAttribute('type', 'file');
+	
+	//Open the dialog
+	fileInput.click();
+	
+	//Attach an event listener for when file is selected
+	fileInput.addEventListener('change', function(e) {
+		
+		//Grab the file object
+		var file = e.target.files[0];
+		
+		//Create a reader
+		var fileReader = new FileReader();
+		
+		//When the file is finished reading
+		fileReader.onload = function() {
+			
+			//Grab the contents
+			var file = fileReader.result;
+			
+			//Load the mod and add the mods
+			var mod = Mod.load(file);
+			var id = mods.push(mod) - 1;
+			
+			//Emit the push event
+			mods.emit('push', new CustomEvent('push', {
+				detail: {mod: mod, id: id}
+			}));
+		}.bind(this);
+		
+		//Read the file
+		fileReader.readAsText(file);
+		
+	}.bind(this), false);
+	
 };
 
+//If a mod is selected, will convert the mod into a .wcm file and start a
+//		download
 logic.saveFile = function() {
 	
-	if (!this.currentMod) {
+	//Reject if no mod selected
+	if (this.currentMod == null) {
 		message({
 			error: true,
-			text: 'You must select a mod to save.'
+			text: 'You must select a mod to add a selection to.'
 		});
 		
 		return;
 	}
 	
-	mods[this.currentMod].window = window;
-	mods[this.currentMod].save();
+	//Set mod for easy access
+	var mod = mods[this.currentMod];
+	
+	//Set window of mod and convert to file text
+	mod.window = window;
+	file = mod.save();
+	
+	//Download for user
+	download(mod.path() + '.wcm', file);
+	
 };
 
 /******************************************************************************

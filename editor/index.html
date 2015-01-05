@@ -7,8 +7,6 @@
 		<link rel="stylesheet" href="style.css" type="text/css"/>
 		
 		<!-- General support classes -->
-		<script src="../os/jquery-latest.min.js"></script>
-		
 		<script src="../os/three.min.js"></script>
 		
 		<!-- Support -->
@@ -49,6 +47,9 @@
 								<li><a>Save file</a></li>
 							</ul>
 						</li>
+						<li class="hr"></li>
+						<li><a>Export terrain</a></li>
+						<li><a>Import terrain</a></li>
 					</ul>
 				</li
 				><li><a>Edit</a></li
@@ -73,7 +74,9 @@
 				<div class="spacer"></div>
 				<div id="properties">Properties</div>
 			</div
-			><canvas id="world"></canvas
+			><div id="box">
+				<canvas id="world"></canvas>
+			</div
 			><div id="right">
 				<div>
 					<input type="checkbox" id="terrain" checked>

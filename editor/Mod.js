@@ -26,7 +26,8 @@ function Mod(props) {
 	
 	if (props.geoType == 'flat') {
 		
-		var size = (props.width+1) * (props.height+1);
+		var bsize = (props.width+1) * (props.height+1);
+		var ssize = (props.width) * (props.height);
 		
 		this.terrain = {
 			center: {x: 0, y: 0},
@@ -34,19 +35,22 @@ function Mod(props) {
 			width: props.width,
 			height: props.height,
 			
-			levelBias: props.bias || 31,
+			heightBias: props.bias || 31,
 			
-			heightMap: new Uint8ClampedArray(size),
-			levelMap: new Uint8ClampedArray(size),
-			tileMap: new Uint8ClampedArray(size),
-			pathingMap: new Uint8ClampedArray(size),
+			heightMap: new Uint8ClampedArray(bsize*3),
+			tileMap: new Uint8ClampedArray(ssize),
+			pathingMap: new Uint8ClampedArray(ssize),
 			
 			tiles: []
 		};
 		
-		if (this.terrain.levelBias != 0)
-			for (var i = 0; i < size; i++)
-				this.terrain.levelMap[i] = this.terrain.levelBias;
+		if (this.terrain.heightBias != 0)
+			for (var i = 0; i < bsize; i++) {
+				this.terrain.heightMap[i*3] = this.terrain.heightBias;
+				this.terrain.heightMap[i*3+1] = 127;
+				this.terrain.heightMap[i*3+2] = 127;
+			}
+		
 	}
 	
 	/***********************************************
@@ -103,7 +107,6 @@ Mod.load = function(file) {
 	
 	//Now convert the b64 encoded data into uint arrays
 	mod.terrain.heightMap = mod.b642uint(mod.terrain.heightMap);
-	mod.terrain.levelMap = mod.b642uint(mod.terrain.levelMap);
 	mod.terrain.tileMap = mod.b642uint(mod.terrain.tileMap);
 	mod.terrain.pathingMap = mod.b642uint(mod.terrain.pathingMap);
 	
@@ -267,12 +270,11 @@ Mod.prototype.save = function() {
 			'\t\t"width": ' + this.terrain.width + ',\n' +
 			'\t\t"height": ' + this.terrain.height + ',\n\n' +
 			
-			'\t\t"levelBias": ' + this.terrain.levelBias + ',\n\n' +
+			'\t\t"heightBias": ' + this.terrain.heightBias + ',\n\n' +
 			
 			'\t\t"heightMap": "' + this.uint2b64(this.terrain.heightMap) + '",\n' +
-			'\t\t"levelMap": "' + this.uint2b64(this.terrain.levelMap) + '",\n' +
 			'\t\t"tileMap": "' + this.uint2b64(this.terrain.tileMap) + '",\n' +
-			'\t\t"pathingMap": "' + this.uint2b64(this.terrain.pathingMap) + '",\n\n' +
+			'\t\t"pathingMap": "' + this.uint2b64(this.terrain.pathingMap) + '",\n\n'+
 			
 			'\t\t"tiles": ' + JSON.stringify(this.terrain.tiles) + '\n\n' +
 			
@@ -294,9 +296,7 @@ Mod.prototype.save = function() {
 	//Code
 	file += '//!! Code\n' + this.rCodeSave(this.code);
 	
-	this.window.download(this.path() + ".wcm", file);
-	
-	//return file;
+	return file;
 	
 };
 
