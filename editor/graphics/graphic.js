@@ -96,13 +96,18 @@ Graphic.prototype.render = function() {
 	
 	//Render the main display first
 	
-	this.renderer.setViewport(257, 0,
-			this.canvas.clientWidth - 257, this.canvas.clientHeight);
-	this.renderer.setScissor(257, 0,
-			this.canvas.clientWidth - 257, this.canvas.clientHeight);
-	this.renderer.enableScissorTest(true);
-	
-	this.renderer.render(this.scene, this.camera);
+	//Only render it if part of it is visible, otherwise errors
+	if (this.canvas.clientWidth > 256) {
+		
+		this.renderer.setViewport(257, 0,
+				this.canvas.clientWidth - 257, this.canvas.clientHeight);
+		this.renderer.setScissor(257, 0,
+				this.canvas.clientWidth - 257, this.canvas.clientHeight);
+		this.renderer.enableScissorTest(true);
+		
+		this.renderer.render(this.scene, this.camera);
+		
+	}
 	
 	//Then render the preview
 	

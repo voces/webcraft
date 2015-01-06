@@ -3,6 +3,8 @@ function Mod(props) {
 	
 	props = props || {};
 	
+	this._saved = false;
+	
 	/***********************************************
 	**	Meta
 	************************************************/
@@ -93,7 +95,7 @@ Mod.load = function(file) {
 	 **	Meta (it's a long, exciting section
 	 ****************************************************************************/
 	
-	mod.meta = JSON.parse(parts.shift().match(/\/\*!+((.|[\r\n])*?)\*\//)[1]);
+	mod.meta = JSON.parse(parts.shift().match(/\/\*+((.|[\r\n])*?)\*\//)[1]);
 	
 	/****************************************************************************
 	 **	Terrain
@@ -250,7 +252,7 @@ Mod.prototype.save = function() {
 	var file = '\n';
 	
 	//Meta
-	file += '//!! Meta\n\n/*!' + JSON.stringify(this.meta, null, '\t') + '*/\n\n';
+	file += '//!! Meta\n\n/*' + JSON.stringify(this.meta, null, '\t') + '*/\n\n';
 	
 	//Terrain, widgets, and geometry
 	

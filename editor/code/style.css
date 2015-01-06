@@ -175,7 +175,7 @@ body {
 	margin-left: 0.25em;
 }
 
-#tree label + span > br {
+#tree .sectionName > br {
 	display: none;
 }
 
@@ -200,11 +200,16 @@ body {
 								black 1px 1px 10px;
 }
 
-#tree input:checked ~ ul {
+#tree input[type="radio"]:checked ~ label {
+	text-shadow: gray 1px 1px  5px;
+	font-weight: bold;
+}
+
+#tree input[type="checkbox"]:checked ~ ul {
 	display: block;
 }
 
-#tree input:checked ~ label.caret {
+#tree input[type="checkbox"]:checked ~ label.caret {
 	transform: rotate(-45deg);
 }
 

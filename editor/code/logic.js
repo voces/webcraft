@@ -8,10 +8,10 @@ var logic = {
 	currentMod: null,
 	
 	//UI objects
-  modCaret: null,
-	modList: null,
-	openMethod: null,
+  openMethod: null,
 	saveMethod: null,
+	
+	lastRenameEvent: 0,
 	
 	tree: null,
 	coder: null,
@@ -23,9 +23,6 @@ var logic = {
 		 **************************************************************************/
     
 		//Bind elements
-		
-		this.modCaret = document.getElementById('mod').children[0].children[0];
-		this.modList = document.getElementById('mod').children[1];
 		
 		this.openMethod = document.getElementById('open').firstChild;
 		this.saveMethod = document.getElementById('save').firstChild;
@@ -68,9 +65,7 @@ var logic = {
 };
 
 /******************************************************************************
- ******************************************************************************
- **	UI
- ******************************************************************************
+ ** Misc
  ******************************************************************************/
 
 logic.idToCode = function(id) {
@@ -99,42 +94,279 @@ logic.idToCode = function(id) {
 };
 
 /******************************************************************************
- **	Builder
+ ******************************************************************************
+ **	Interactivity
+ ******************************************************************************
+ ******************************************************************************/
+
+logic.rFinishRename = function(li, oldName, newName) {
+	
+	//Update the input and label
+	li.children[0].id = li.children[0].id.replace(oldName, newName);
+	li.children[1].setAttribute('for',
+			li.children[1].getAttribute('for').replace(oldName, newName));
+	
+	//And update any sublists
+	var next = li.children[5];
+	if (next)
+		for (var i = 0, child; child = next.children[i]; i++)
+			this.rFinishRename(child, oldName, newName);
+	
+};
+
+logic.finishRename = function(e) {
+	
+	//Ignore if this function was called <10 MS ago
+	if (e.timeStamp - this.lastRenameEvent < 10) {
+		this.lastRenameEvent = e.timeStamp;
+		return;
+	}
+	
+	//Used to make sure focusout is ignored if it occurs because we entered...
+	this.lastRenameEvent = e.timeStamp;
+	
+	//Ignore keyup events that are not enter-key related
+	if (e.type == 'keyup' && e.which != 13) return;
+	
+	//Fix anything wonky (note HTML5 accepts anything except spaces, underscores
+	//	are reserved to differentiate subsections)
+	e.target.innerHTML = e.target.innerText
+			.replace(/ /g, '&nbsp;')
+			.replace(/_/g, '&nbsp;');
+	
+	//No more edits
+	e.target.removeAttribute('contentEditable');
+	
+	//Grab the old and new names
+	var oldName = e.target.oldText;
+	var newName = e.target.innerText;
+	
+	//Quit if they didn't change anything
+	if (oldName == newName) return;
+	
+	//Error, revert, and cancel if empty
+	if (oldName == '') {
+		e.target.innerText = e.target.oldText;
+		
+		message({
+			error: true,
+			text: 'Empty names not allowed.'
+		});
+		
+		return;
+	}
+	
+	//Grab info about the current item
+	var curId = e.target.parentNode.children[0].id;
+	var curItem = e.target.parentNode;
+	
+	//Get the id of parent and the suffix of current
+	var parentId = curId.substr(0, curId.lastIndexOf('_'));
+	
+	//Now grab the section of code
+	var parentSection = this.idToCode(parentId);
+	
+	//Find in code and check for duplicate names
+	var childCode, duplicate = false;
+	for (var i = 0, child; child = parentSection.children[i]; i++) {
+		if (child.name == oldName) childCode = child;
+		else if (child.name == newName) {
+			duplicate = true;
+			break;
+		}
+	}
+	
+	//Error, revert, and cancel if taken
+	if (duplicate) {
+		e.target.innerText = e.target.oldText;
+		
+		message({
+			error: true,
+			text: 'That name is already taken.'
+		});
+		
+		return;
+	}
+	
+	//Swap in code
+	childCode.name = newName;
+	
+	//Swap in HTML
+	this.rFinishRename(curItem, parentId + '_' + oldName,
+			parentId + '_' + newName);
+	
+	//Update the saved status/title
+	this.setSavedStatus(false);
+	
+};
+
+logic.renameSection = function(e) {
+  
+	if (e.target.className == 'sectionName' &&
+			e.target.parentNode.children[0].id.indexOf('_') > 0) {
+		
+		e.target.oldText = e.target.innerText;
+		e.target.setAttribute('contentEditable', true);
+		e.target.focus();
+		selectText(e.target);
+	}
+	
+};
+
+logic.onChange = function(e, section) {
+	
+	//Update the code in mods
+	section.code = this.coder.getValue();
+	
+	//Update the saved status/title
+	this.setSavedStatus(false);
+	
+};
+
+logic.selectSection = function(e) {
+	
+	//Section name selected, change code sessions
+	if (e.target.className == 'sectionName') {
+		
+		//Get the id and update currentMod
+		var id = e.target.parentNode.children[0].id;
+		this.currentMod = id.split('_')[0].substr(1);
+		
+		//Grab the section
+		var section = this.idToCode(id);
+		
+		//Create a session if it does not exist
+		if (typeof section._session == "undefined") {
+			section._session = ace.createEditSession(
+				section.code, 'ace/mode/javascript'
+			);
+			
+			
+			//! This should emit an event on mods rather than bind an attachment
+			//!		because the onChange event is local to the window
+			section._session.on('change', function(e) {
+				this.onChange(e, section);
+			}.bind(this));
+		}
+		
+		//Set the session
+		this.coder.setSession(section._session);
+	
+		this.setSavedStatus(mods[this.currentMod]._saved);
+		
+	//New section clicked
+	} else if (e.target.className == 'add') {
+		
+		//Grab the id
+		var currentId = e.target.parentNode.parentNode.children[0].id;
+		
+		//Grab the section and define our first-pass section name
+		var section = this.idToCode(currentId);
+		var name = 'Untitled',
+				num = '';
+		
+		//Children not defined, so just define it and we know it's not taken
+		if (typeof section.children == 'undefined' || section.children == null)
+			section.children = [];
+		
+		//Children is defined, so we must make sure we're unique
+		else {
+			
+			//General flag for searching
+			var flag = true;
+			
+			//Loop while flag is true
+			while (flag) {
+				
+				//Set flag to false, meaning currently unfound
+				flag = false;
+				
+				//Loop through all children
+				for (var i = 0, child; child = section.children[i]; i++)
+					
+					//Name already taken, try again with num++
+					if (child.name == name + num) {
+						num = (parseInt(num) || 1) + 1;
+						flag = true;
+						break;
+					}
+			}
+		}
+		
+		//Set name to include num (num may be blank)
+		name += num;
+		
+		//Define the new section in code
+		section.children.push({name: name, code: ''});
+		
+		//Add the new section to the tree
+		this.loadSection(currentId + '_' + name, name, null, currentId);
+		
+		//Show the section if it's not
+		e.target.parentNode.parentNode.children[0].checked = true
+	
+	//Remove section clicked
+	} else if (e.target.className == 'remove') {
+		
+		//Grab info about the current item
+		var curId = e.target.parentNode.parentNode.children[0].id;
+		var curItem = e.target.parentNode.parentNode;
+		var listNode = curItem.parentNode;
+		
+		//Verify they want to delete
+		if (prompt('Are you sure you want to delete ' +
+				curItem.children[3].innerText + ' (type "yes" to continue)?') != 'yes')
+			return;
+		
+		//Get the id of parent
+		var parentId = curId.substr(0, curId.lastIndexOf('_'));
+		var curName = curId.substr(curId.lastIndexOf('_') + 1);
+		
+		//Now grab the section of code
+		var parentSection = this.idToCode(parentId);
+		
+		//Remove in code
+		for (var i = 0, child; child = parentSection.children[i]; i++)
+			if (child.name == curName) {
+				parentSection.children.splice(i, 1);
+				break;
+			}
+		
+		//Remove in HTML
+		curItem.remove();
+		
+		//Hide the caret if now empty
+		if (listNode.children.length == 0)
+			listNode.parentNode.children[1].style.opacity = 0;
+		
+	}
+	
+};
+
+/******************************************************************************
+******************************************************************************
+ **	Mods
+ ******************************************************************************
  ******************************************************************************/
 
 logic.newMod = function(e, version) {
 	
 	var mod = e.detail.mod;
 	
-	//First mod, so add the caret
-	this.modCaret.style.display = 'inline-block'
-	
-	//Now let's create our new menu item & append it
-	
-	var listItem = document.createElement('li');
-	
-	var link = document.createElement('a');
-	link.innerText = mod.meta.title;
-	
-	listItem.appendChild(link);
-	this.modList.appendChild(listItem);
-	
 	//If version is unset, just use length (it's probably from an event)
 	if (typeof version == 'undefined')
 		 version = mods.length - 1;
 	
 	//Okay, let's load the code
-	this.loadSection('m' + version, mod.meta.title, mod.code.children);
+	this.loadSection(
+			'm' + version,
+			(mod._saved ? '' : '*') + mod.meta.title,
+			mod.code.children
+	);
 	
 };
 
-/**
- * Adds a section to the tree
- * @param {string|number} id The id of the section
- * @param {string} value The display text
- * @param {object} code An object containing at least _value, possibly children
- * @param {string|number|null} parent The id of the parent (see param1)
- */
+//Adds a section to the tree
 logic.loadSection = function(id, value, children, parent) {
   
   //If the parent exists, define it in the add, otherwise don't
@@ -148,14 +380,22 @@ logic.loadSection = function(id, value, children, parent) {
 	input.setAttribute('id', id);
 	
 	//Used to toggle hide/show of children (and display state)
-	var label = document.createElement('label');
-	label.setAttribute('for', id);
-	label.className = 'caret';
+	var caret = document.createElement('label');
+	caret.setAttribute('for', id);
+	caret.className = 'caret';
 	
-	//The actual text of the section
-	var text = document.createElement('span');
-	text.className = 'sectionName';
-	text.innerText = value;
+	//Input for the section label (used to highlight current code)
+	var radio = document.createElement('input');
+	radio.setAttribute('type', 'radio');
+	radio.setAttribute('name', 'selectedSection');
+	radio.setAttribute('id', 'r_' + id);
+	
+	//Used to toggle hide/show of children (and display state)
+	var label = document.createElement('label');
+	label.setAttribute('for', 'r_' + id);
+	label.className = 'sectionName';
+	label.innerText = value;
+	label.addEventListener('keyup', this.finishRename.bind(this));
 	
 	//A container for controls (+/-)
 	var controls = document.createElement('span');
@@ -177,8 +417,9 @@ logic.loadSection = function(id, value, children, parent) {
 	
 	//And now build our item
 	li.appendChild(input);
+	li.appendChild(caret);
+	li.appendChild(radio);
 	li.appendChild(label);
-	li.appendChild(text);
 	li.appendChild(controls);
 	
 	//Not a mod-level section, so we're adding to a list
@@ -186,7 +427,7 @@ logic.loadSection = function(id, value, children, parent) {
 		
 		//Grab the parent and the list
 		parentEle = document.getElementById(parent).parentNode;
-		var childList = parentEle.children[4];
+		var childList = parentEle.children[5];
 		
 		//List doesn't exist yet so create it
 		if (!childList) {
@@ -217,7 +458,27 @@ logic.loadSection = function(id, value, children, parent) {
 };
 
 /******************************************************************************
- **	Save/load
+ **	Window
+ ******************************************************************************/
+
+logic.setSavedStatus = function(saved) {
+	if (this.currentMod == null) return;
+	
+	var mod = mods[this.currentMod];
+	
+	mod._saved = saved;
+	
+	document.title = (saved ? '' : '*') + mod.meta.title + ' - Code Editor';
+	
+	document.getElementById('m' + this.currentMod).parentNode.children[3]
+			.firstChild.nodeValue = (saved ? '' : '*') + mod.meta.title;
+	
+};
+
+/******************************************************************************
+ ******************************************************************************
+ **	Menu
+ ******************************************************************************
  ******************************************************************************/
 
 //Will prompt for a file then load the file contents, pushing to mods and
@@ -287,195 +548,8 @@ logic.saveFile = function() {
 	//Download for user
 	download(mod.path() + '.wcm', file);
 	
-};
-
-/******************************************************************************
- **	Interactivity
- ******************************************************************************/
-
-logic.rFinishRename = function(li, oldName, newName) {
-	
-	//Update the input and label
-	li.children[0].id = li.children[0].id.replace(oldName, newName);
-	li.children[1].setAttribute('for',
-			li.children[1].getAttribute('for').replace(oldName, newName));
-	
-	//And update any sublists
-	var next = li.children[4];
-	if (next)
-		for (var i = 0, child; child = next.children[i]; i++)
-			this.rFinishRename(child, oldName, newName);
-	
-};
-
-logic.finishRename = function(e) {
-	
-	//Fix anything wonky (note HTML5 accepts anything except spaces, underscores
-	//	are reserved to differentiate subsections)
-	e.target.innerHTML = e.target.innerText
-			.replace(/ /g, '&nbsp;')
-			.replace(/_/g, '&nbsp;');
-	
-	//No more edits
-	e.target.removeAttribute('contentEditable');
-	
-	//Grab info about the current item
-	var curId = e.target.parentNode.children[0].id;
-	var curItem = e.target.parentNode;
-	
-	//Get the id of parent and the suffix of current
-	var parentId = curId.substr(0, curId.lastIndexOf('_'));
-	var oldName = e.target.oldText;
-	
-	//Now grab the section of code
-	var parentSection = this.idToCode(parentId);
-	
-	//We got everything, just grab the new name
-	var newName = e.target.innerText;
-	
-	//Swap in code
-	parentSection[newName] = parentSection[oldName];
-	delete parentSection[oldName];
-	
-	//Swap in HTML
-	this.rFinishRename(curItem, parentId + '_' + oldName,
-			parentId + '_' + newName);
-	
-};
-
-/**
- * Renames a section using an ugly prompt
- * 
- */
-logic.renameSection = function(e) {
-  
-	if (e.target.className == 'sectionName' &&
-			e.target.parentNode.children[0].id.indexOf('_') > 0) {
-		
-		e.target.oldText = e.target.innerText;
-		e.target.setAttribute('contentEditable', true);
-		e.target.focus();
-		selectText(e.target);
-	}
-	
-};
-
-logic.onChange = function(e, section) {
-	section.code = this.coder.getValue();
-};
-
-logic.selectSection = function(e) {
-	
-	//Section name selected, change code sessions
-	if (e.target.className == 'sectionName') {
-		
-		//Get the id and update currentMod
-		var id = e.target.parentNode.children[0].id;
-		this.currentMod = id.split('_')[0].substr(1);
-		
-		//Grab the section
-		var section = this.idToCode(id);
-		
-		//Create a session if it does not exist
-		if (typeof section._session == "undefined") {
-			section._session = ace.createEditSession(
-				section.code, 'ace/mode/javascript'
-			);
-			
-			section._session.on('change', function(e) {
-				this.onChange(e, section);
-			}.bind(this));
-		}
-		
-		//Set the session
-		this.coder.setSession(section._session);
-	
-	//New section clicked
-	} else if (e.target.className == 'add') {
-		
-		//Grab the id
-		var currentId = e.target.parentNode.parentNode.children[0].id;
-		
-		//Grab the section and define our first-pass section name
-		var section = this.idToCode(currentId);
-		var name = 'Untitled',
-				num = '';
-		
-		//Children not defined, so just define it and we know it's not taken
-		if (typeof section.children == 'undefined' || section.children == null)
-			section.children = [];
-		
-		//Children is defined, so we must make sure we're unique
-		else {
-			
-			//General flag for searching
-			var flag = true;
-			
-			//Loop while flag is true
-			while (flag) {
-				
-				//Set flag to false, meaning currently unfound
-				flag = false;
-				
-				//Loop through all children
-				for (var i = 0, child; child = section.children[i]; i++)
-					
-					//Name already taken, try again with num++
-					if (child.name == name + num) {
-						num = (parseInt(num) || 1) + 1;
-						flag = true;
-						break;
-					}
-			}
-		}
-		
-		//Set name to include num (num may be blank)
-		name += num;
-		
-		//Define the new section in code
-		section.children.push({name: name, code: ''});
-		
-		//Add the new section to the tree
-		this.loadSection(currentId + '_' + name, name, null, currentId);
-		
-		//Show the section if it's not
-		e.target.parentNode.parentNode.children[0].checked = true
-	
-	//Remove section clicked
-	} else if (e.target.className == 'remove') {
-		
-		//Grab info about the current item
-		var curId = e.target.parentNode.parentNode.children[0].id;
-		var curItem = e.target.parentNode.parentNode;
-		var listNode = curItem.parentNode;
-		
-		//Verify they want to delete
-		if (prompt('Are you sure you want to delete ' +
-				curItem.children[2].innerText + ' (type "yes")?') != 'yes')
-			return;
-		
-		//Get the id of parent
-		var parentId = curId.substr(0, curId.lastIndexOf('_'));
-		var curName = curId.substr(curId.lastIndexOf('_') + 1);
-		
-		//Now grab the section of code
-		var parentSection = this.idToCode(parentId);
-		
-		//Remove in code
-		for (var i = 0, child; child = parentSection.children[i]; i++)
-			if (child.name == curName) {
-				parentSection.children.splice(i, 1);
-				break;
-			}
-		
-		//Remove in HTML
-		curItem.remove();
-		
-		//Hide the caret if now empty
-		if (listNode.children.length == 0)
-			listNode.parentNode.children[1].style.opacity = 0;
-		
-	}
+	//Set the mod state to saved
+	this.setSavedStatus(true);
 	
 };
 
@@ -498,6 +572,7 @@ logic.menuSwitch = function(e) {
 		//File
 		case 'New': window.open('../new', 'New Mod',
 				'width=250,height=500,scrollbars=no,location=no'); break;
+		
 		case 'Open file':
 			this.openMethod.nodeValue = 'Open file ';
 			this.openFile();

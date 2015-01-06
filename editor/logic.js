@@ -23,6 +23,8 @@ var logic = {
 	openMethod: null,
 	saveMethod: null,
 	
+	windowActive: true,
+	
 	/****************************************************************************
 	 *	Build any keys we might want
 	 ****************************************************************************/
@@ -62,10 +64,8 @@ var logic = {
 		this.modCaret = document.getElementById('mod').children[0].children[0];
 		this.modList = document.getElementById('mod').children[1];
 		
-		this.openMethod = document.getElementById('menu').children[0].children[0]
-				.children[1].children[2].children[0].firstChild;
-		this.saveMethod = document.getElementById('menu').children[0].children[0]
-				.children[1].children[3].children[0].firstChild;
+		this.openMethod = document.getElementById('open').children[0].firstChild;
+		this.saveMethod = document.getElementById('save').children[0].firstChild;
 		
 		/**************************************************************************
 		 **	Build our graphics and attach graphic-related values
@@ -98,6 +98,10 @@ var logic = {
 		
 		//Mods (other windows)
 		mods.on("push", this.newMod.bind(this));
+		
+		//Window
+		window.addEventListener('focus', this.windowFocus.bind(this));
+		window.addEventListener('blur', this.windowBlur.bind(this));
 		
     /**************************************************************************
 		 **	Load our mods
@@ -136,8 +140,24 @@ var logic = {
  ******************************************************************************
  ******************************************************************************/
 
-logic.loadTerrain = function(terrain) {
+//Takes in a modId, an index in global mods, sets logic.currentMod, creates
+//		geometry, modifies it with the heightmap, creates a basic material, and
+//		merges it to a mesh, logic.plane, which is added to logic.graphic.scene
+logic.loadTerrain = function(modId) {
   
+	//Set current mod to input
+	this.currentMod = modId;
+	
+	//For easy access
+	var terrain = mods[modId].terrain;
+	
+	//Remove and delete the previous plane (if it existed)
+	if (this.plane != null) {
+		this.graphic.scene.remove(this.plane);
+		this.plane = null;
+	}
+	
+	//Create geometry
   var geometry = new THREE.PlaneBufferGeometry(
       terrain.width*128, terrain.height*128,
       terrain.width, terrain.height);
@@ -150,14 +170,23 @@ logic.loadTerrain = function(terrain) {
 			terrain.heightMap[i*3+2]/2 -
 			terrain.heightBias*32768-16192.5;
 	
+	//A basic material with nothing fancy
   var material = new THREE.MeshPhongMaterial({color: 'green'});
   
+	//Create the mesh
   this.plane = new THREE.Mesh(geometry, material);
   
+	//And add it
   this.graphic.scene.add(this.plane);
   
+	//Update save status/title
+	this.setSavedStatus(mods[modId]._status);
+	
 };
 
+//Called when the push event is emitted for mods
+//	Takes in an event e, appends it to Mods menu and loads the terrain if the
+//			window is focused or if none has been loaded before
 logic.newMod = function(e) {
   
 	//First mod, so add the caret
@@ -175,10 +204,34 @@ logic.newMod = function(e) {
 	this.modList.appendChild(listItem);
 	
 	//Okay, let's load the terrain if required
-  if (this.plane == null) {
-		this.currentMod = e.detail.id;
-    this.loadTerrain(e.detail.mod.terrain);
+	if (this.windowActive || this.plane == null)
+		this.loadTerrain(e.detail.id);
+	
+};
+
+//Closes a currently loaded mod
+logic.close = function() {
+	
+	//Reject if no mod selected
+	if (this.currentMod == null) {
+		message({
+			error: true,
+			text: 'No mod selected to close.'
+		});
+		
+		return;
 	}
+	
+	//For easy access
+	var mod = mods[this.currentMod];
+	
+	//If unsaved, prompt to verification to close
+	if (!mod._saved && prompt('Are you sure you want to close ' + mod.meta.title +
+			' without saving? (Type "yes" to continue.)') != 'yes')
+		return;
+	
+	console.log('deleting');
+	
 };
 
 /******************************************************************************
@@ -308,8 +361,30 @@ logic.onMouseMove = function(e) {
 }
 
 /******************************************************************************
+ **	Window
+ ******************************************************************************/
+
+logic.windowFocus = function(e) {
+	this.windowActive = true;
+};
+
+logic.windowBlur = function(e) {
+	this.windowActive = false;
+};
+
+logic.setSavedStatus = function(saved) {
+	if (this.currentMod == null) return;
+	
+	var mod = mods[this.currentMod];
+	
+	mod._saved = saved;
+	
+	document.title = (saved ? '' : '*') + mod.meta.title + ' - Terrain Editor';
+};
+
+/******************************************************************************
  ******************************************************************************
- **	UI
+ **	Menu
  ******************************************************************************
  ******************************************************************************/
 
@@ -379,6 +454,9 @@ logic.saveFile = function() {
 	
 	//Download for user
 	download(mod.path() + '.wcm', file);
+	
+	//Set the mod state to saved
+	this.setSavedStatus(true);
 	
 };
 
@@ -460,7 +538,11 @@ logic.importTerrain = function() {
 					terrain.heightBias*32768-16192.5;
 			}
 			
+			//Reload the buffer
 			this.plane.geometry.attributes.position.needsUpdate = true;
+			
+			//Set the mod state to unsaved
+			this.setSavedStatus(false);
 			
 		}.bind(this);
 		
@@ -543,6 +625,8 @@ logic.menuSwitch = function(e) {
 	
 	//Get the clicked element
 	var which = e.target;
+	if (which.tagName == 'LI')
+		which = which.children[0];
 	
 	//And the ID
 	var modId = which.id;
@@ -551,6 +635,10 @@ logic.menuSwitch = function(e) {
 	if (modId && modId.indexOf('_') >= 0) {
 		modId = modId.split('_')[1];
 		console.log(modId);
+		
+		this.currentMod = modId;
+    this.loadTerrain(mods[modId].terrain);
+		
 		return;
 	}
 	
@@ -558,18 +646,20 @@ logic.menuSwitch = function(e) {
 	 **	Otherwise standard menu item, navigate through
 	 ****************************************************************************/
 	
-	if (which.tagName == 'LI')
-		which = which.children[0];
-	
 	//Get the text value
-	which = which.textContent .trim();
+	which = which.textContent.trim();
 	
 	//Now figure out what to do
 	switch (which) {
 		
 		//File
-		case 'New': window.open('new', 'New Mod',
-				'width=250,height=500,scrollbars=no,location=no'); break;
+		case 'New':
+			window.open('new', 'New Mod',
+					'width=250,height=500,scrollbars=no,location=no');
+			break;
+		case 'Close':
+			this.close();
+			break;
 		
 		case 'Open file':
 			this.openMethod.nodeValue = 'Open file ';
