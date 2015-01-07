@@ -99,6 +99,10 @@ Graphic.prototype.render = function() {
 	//Only render it if part of it is visible, otherwise errors
 	if (this.canvas.clientWidth > 256) {
 		
+		if (isNaN(this.camera.position.x)) this.camera.position.x = 0;
+		if (isNaN(this.camera.position.y)) this.camera.position.y = 0;
+		if (isNaN(this.camera.position.z)) this.camera.position.z = 0;
+		
 		this.renderer.setViewport(257, 0,
 				this.canvas.clientWidth - 257, this.canvas.clientHeight);
 		this.renderer.setScissor(257, 0,

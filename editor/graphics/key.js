@@ -12,6 +12,10 @@ Key = function(args) {
 	
 	this.method = args.method || "linear";
 	
+	//General
+	this.max = args.max || Infinity;
+	this.min = args.min || -Infinity;
+	
 	//Linear
 	this.amount = args.amount;
 	
@@ -29,8 +33,17 @@ Key.prototype.update = function() {
 	
 	this.last = now;
 	
-	if (this.method == "linear") this.obj[this.property] += delta * this.amount;
-	else if (this.method == "approach") {
+	if (this.method == "linear") {
+		
+		this.obj[this.property] += delta * this.amount;
+		
+		if (this.obj[this.property] > this.max)
+			this.obj[this.property] = this.max;
+		
+		if (this.obj[this.property] < this.min)
+			this.obj[this.property] = this.min;
+		
+	} else if (this.method == "approach") {
 		
 		var oldValue = this.obj[this.property];
 		var newValue = oldValue * (1 - this.rate) + this.target * this.rate;
@@ -52,6 +65,12 @@ Key.prototype.update = function() {
 		}
 		
 		this.obj[this.property] = newValue;
+		
+		if (this.obj[this.property] > this.max)
+			this.obj[this.property] = this.max;
+		
+		if (this.obj[this.property] < this.min)
+			this.obj[this.property] = this.min;
 		
 		if (newValue == this.target) return true;
 		

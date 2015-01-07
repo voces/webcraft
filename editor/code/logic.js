@@ -29,27 +29,22 @@ var logic = {
 		
 		this.tree = document.getElementById('tree').children[0];
     
-    //Events
-		
-    $('#menu').click(this.menuSwitch.bind(this));
-		
-		$('#tree').click(this.selectSection.bind(this));
-		$('#tree').dblclick(this.renameSection.bind(this));
-		
-		$('#tree').focusout(this.finishRename.bind(this));
-		
-    /**************************************************************************
-		 **	Coder
-		 **************************************************************************/
-    
-		//$$('code').$view.id = 'code';
-		
 		this.coder = ace.edit('code');
 		this.coder.$blockScrolling = Infinity;
     
 		/**************************************************************************
 		 **	Events
 		 **************************************************************************/
+		
+		//UI
+		
+		//When a menu item is clicked
+		document.getElementById('menu').addEventListener('click', 
+				this.menuSwitch.bind(this));
+		
+		//User types something in the code window, update UI (saved/unsaved)
+		document.getElementById('code').addEventListener('keydown',
+				this.codeChange.bind(this));
 		
 		//Mods (other windows)
 		mods.on("push", this.newMod.bind(this));
@@ -213,133 +208,137 @@ logic.renameSection = function(e) {
 	
 };
 
-logic.onChange = function(e, section) {
+//Called when any code is modified, updates title/tree to show unsaved
+logic.codeChange = function(e) {
 	
-	//Update the code in mods
-	section.code = this.coder.getValue();
+	//Only does anything if a mod is selected
+	if (this.currentMod == null) return;
 	
 	//Update the saved status/title
 	this.setSavedStatus(false);
 	
 };
 
+//Occurs when the section label is clicked; loads the section into code
 logic.selectSection = function(e) {
 	
-	//Section name selected, change code sessions
-	if (e.target.className == 'sectionName') {
-		
-		//Get the id and update currentMod
-		var id = e.target.parentNode.children[0].id;
-		this.currentMod = id.split('_')[0].substr(1);
-		
-		//Grab the section
-		var section = this.idToCode(id);
-		
-		//Create a session if it does not exist
-		if (typeof section._session == "undefined") {
-			section._session = ace.createEditSession(
-				section.code, 'ace/mode/javascript'
-			);
-			
-			
-			//! This should emit an event on mods rather than bind an attachment
-			//!		because the onChange event is local to the window
-			section._session.on('change', function(e) {
-				this.onChange(e, section);
-			}.bind(this));
-		}
-		
-		//Set the session
-		this.coder.setSession(section._session);
+	//Get the id and update currentMod
+	var id = e.target.parentNode.children[0].id;
+	this.currentMod = id.split('_')[0].substr(1);
 	
-		this.setSavedStatus(mods[this.currentMod]._saved);
-		
-	//New section clicked
-	} else if (e.target.className == 'add') {
-		
-		//Grab the id
-		var currentId = e.target.parentNode.parentNode.children[0].id;
-		
-		//Grab the section and define our first-pass section name
-		var section = this.idToCode(currentId);
-		var name = 'Untitled',
-				num = '';
-		
-		//Children not defined, so just define it and we know it's not taken
-		if (typeof section.children == 'undefined' || section.children == null)
-			section.children = [];
-		
-		//Children is defined, so we must make sure we're unique
-		else {
-			
-			//General flag for searching
-			var flag = true;
-			
-			//Loop while flag is true
-			while (flag) {
-				
-				//Set flag to false, meaning currently unfound
-				flag = false;
-				
-				//Loop through all children
-				for (var i = 0, child; child = section.children[i]; i++)
-					
-					//Name already taken, try again with num++
-					if (child.name == name + num) {
-						num = (parseInt(num) || 1) + 1;
-						flag = true;
-						break;
-					}
-			}
-		}
-		
-		//Set name to include num (num may be blank)
-		name += num;
-		
-		//Define the new section in code
-		section.children.push({name: name, code: ''});
-		
-		//Add the new section to the tree
-		this.loadSection(currentId + '_' + name, name, null, currentId);
-		
-		//Show the section if it's not
-		e.target.parentNode.parentNode.children[0].checked = true
+	//Grab the section
+	var section = this.idToCode(id);
 	
-	//Remove section clicked
-	} else if (e.target.className == 'remove') {
+	//Create a session if it does not exist
+	if (typeof section._session == "undefined") {
+		section._session = ace.createEditSession(
+			section.code, 'ace/mode/javascript'
+		);
 		
-		//Grab info about the current item
-		var curId = e.target.parentNode.parentNode.children[0].id;
-		var curItem = e.target.parentNode.parentNode;
-		var listNode = curItem.parentNode;
-		
-		//Verify they want to delete
-		if (prompt('Are you sure you want to delete ' +
-				curItem.children[3].innerText + ' (type "yes" to continue)?') != 'yes')
-			return;
-		
-		//Get the id of parent
-		var parentId = curId.substr(0, curId.lastIndexOf('_'));
-		var curName = curId.substr(curId.lastIndexOf('_') + 1);
-		
-		//Now grab the section of code
-		var parentSection = this.idToCode(parentId);
-		
-		//Remove in code
-		for (var i = 0, child; child = parentSection.children[i]; i++)
-			if (child.name == curName) {
-				parentSection.children.splice(i, 1);
-				break;
-			}
-		
-		//Remove in HTML
-		curItem.remove();
-		
-		//Hide the caret if now empty
-		if (listNode.children.length == 0)
-			listNode.parentNode.children[1].style.opacity = 0;
-		
+		//Updates code on change
+		section._session.on('change', function(e) {
+			
+			//Update the code in mods
+			section.code = this.coder.getValue();
+			
+		}.bind(this));
 	}
+	
+	//Set the session
+	this.coder.setSession(section._session);
+
+	this.setSavedStatus(mods[this.currentMod]._saved);
+	
+};
+
+//Occurs when the add (+) is clicked on a section; adds a section (does not
+//		load)
+logic.addSection = function(e) {
+	
+	//Grab the id
+	var currentId = e.target.parentNode.parentNode.children[0].id;
+	
+	//Grab the section and define our first-pass section name
+	var section = this.idToCode(currentId);
+	var name = 'Untitled',
+			num = '';
+	
+	//Children not defined, so just define it and we know it's not taken
+	if (typeof section.children == 'undefined' || section.children == null)
+		section.children = [];
+	
+	//Children is defined, so we must make sure we're unique
+	else {
+		
+		//General flag for searching
+		var flag = true;
+		
+		//Loop while flag is true
+		while (flag) {
+			
+			//Set flag to false, meaning currently unfound
+			flag = false;
+			
+			//Loop through all children
+			for (var i = 0, child; child = section.children[i]; i++)
+				
+				//Name already taken, try again with num++
+				if (child.name == name + num) {
+					num = (parseInt(num) || 1) + 1;
+					flag = true;
+					break;
+				}
+		}
+	}
+	
+	//Set name to include num (num may be blank)
+	name += num;
+	
+	//Define the new section in code
+	section.children.push({name: name, code: ''});
+	
+	//Add the new section to the tree
+	this.loadSection(currentId + '_' + name, name, null, currentId);
+	
+	//Show the section if it's not
+	e.target.parentNode.parentNode.children[0].checked = true
+	
+};
+
+//Occurs when the remove (-) is clicked on a section; prompts to remove a
+//		section and does so if yes
+logic.removeSection = function(e) {
+	
+	//Grab info about the current item
+	var curId = e.target.parentNode.parentNode.children[0].id;
+	var curItem = e.target.parentNode.parentNode;
+	var listNode = curItem.parentNode;
+	
+	//Verify they want to delete
+	if (prompt('Are you sure you want to delete ' +
+			curItem.children[3].innerText + ' (type "yes" to continue)?') != 'yes')
+		return;
+	
+	//Get the id of parent
+	var parentId = curId.substr(0, curId.lastIndexOf('_'));
+	var curName = curId.substr(curId.lastIndexOf('_') + 1);
+	
+	//Now grab the section of code
+	var parentSection = this.idToCode(parentId);
+	
+	//Remove in code
+	for (var i = 0, child; child = parentSection.children[i]; i++)
+		if (child.name == curName) {
+			parentSection.children.splice(i, 1);
+			break;
+		}
+	
+	//Remove in HTML
+	curItem.remove();
+	
+	//Hide the caret if now empty
+	if (listNode.children.length == 0)
+		listNode.parentNode.children[1].style.opacity = 0;
 	
 };
 
@@ -395,7 +394,11 @@ logic.loadSection = function(id, value, children, parent) {
 	label.setAttribute('for', 'r_' + id);
 	label.className = 'sectionName';
 	label.innerText = value;
+	
+	label.addEventListener('click', this.selectSection.bind(this));
+	label.addEventListener('dblclick', this.renameSection.bind(this));
 	label.addEventListener('keyup', this.finishRename.bind(this));
+	label.addEventListener('focusout', this.finishRename.bind(this));
 	
 	//A container for controls (+/-)
 	var controls = document.createElement('span');
@@ -406,10 +409,14 @@ logic.loadSection = function(id, value, children, parent) {
 	add.className = 'add';
 	add.innerText = '+';
 	
+	add.addEventListener('click', this.addSection.bind(this));
+	
 	//Used to remove current section
 	var remove = document.createElement('span');
 	remove.className = 'remove';
 	remove.innerText = '–';
+	
+	remove.addEventListener('click', this.removeSection.bind(this));
 	
 	//Build our controls
 	controls.appendChild(add);

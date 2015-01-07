@@ -182,6 +182,14 @@ logic.loadTerrain = function(modId) {
 	//Update save status/title
 	this.setSavedStatus(mods[modId]._status);
 	
+	//Update our keys...
+	
+	this.panUDKey.min = terrain.height*-64;
+	this.panUDKey.max = terrain.height*64;
+	
+	this.panLRKey.min = terrain.width*-64;
+	this.panLRKey.max = terrain.width*64;
+	
 };
 
 //Called when the push event is emitted for mods
