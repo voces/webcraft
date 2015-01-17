@@ -40,17 +40,46 @@ function Mod(props) {
 			heightBias: props.bias || 31,
 			
 			heightMap: new Uint8ClampedArray(bsize*3),
-			tileMap: new Uint8ClampedArray(ssize),
-			pathingMap: new Uint8ClampedArray(ssize),
 			
-			tiles: []
+			bottomTileMap: new Uint8ClampedArray(ssize*3),
+			topTileMap: new Uint8ClampedArray(ssize*3),
+			pathingMap: new Uint8ClampedArray(ssize*3),
+			
+			tileTextures: [
+				{
+					tex: '/r/img/terrain/info.png',
+					horizontalTiles: 4,
+					verticalTiles: 3,
+					texTileSize: 1
+				}, {
+					tex: '/r/img/terrain/Lords/Dirt.png',
+					horizontalTiles: 8,
+					verticalTiles: 4,
+					texTileSize: 65
+				}, {
+					tex: '/r/img/terrain/Lords/Grass.png',
+					horizontalTiles: 8,
+					verticalTiles: 4,
+					texTileSize: 65
+				}, {
+					tex: '/r/img/terrain/Lords/GrassDark.png',
+					horizontalTiles: 8,
+					verticalTiles: 4,
+					texTileSize: 65
+				}, {
+					tex: '/r/img/terrain/Lords/Rock.png',
+					horizontalTiles: 8,
+					verticalTiles: 4,
+					texTileSize: 65
+				}
+			]
 		};
 		
 		if (this.terrain.heightBias != 0)
 			for (var i = 0; i < bsize; i++) {
 				this.terrain.heightMap[i*3] = this.terrain.heightBias;
 				this.terrain.heightMap[i*3+1] = 127;
-				this.terrain.heightMap[i*3+2] = 127;
+				this.terrain.heightMap[i*3+2] = 127;;
 			}
 		
 	}
@@ -109,7 +138,8 @@ Mod.load = function(file) {
 	
 	//Now convert the b64 encoded data into uint arrays
 	mod.terrain.heightMap = mod.b642uint(mod.terrain.heightMap);
-	mod.terrain.tileMap = mod.b642uint(mod.terrain.tileMap);
+	mod.terrain.bottomTileMap = mod.b642uint(mod.terrain.bottomTileMap);
+	mod.terrain.topTileMap = mod.b642uint(mod.terrain.topTileMap);
 	mod.terrain.pathingMap = mod.b642uint(mod.terrain.pathingMap);
 	
 	/****************************************************************************
@@ -275,10 +305,11 @@ Mod.prototype.save = function() {
 			'\t\t"heightBias": ' + this.terrain.heightBias + ',\n\n' +
 			
 			'\t\t"heightMap": "' + this.uint2b64(this.terrain.heightMap) + '",\n' +
-			'\t\t"tileMap": "' + this.uint2b64(this.terrain.tileMap) + '",\n' +
+			'\t\t"bottomTileMap": "' + this.uint2b64(this.terrain.bottomTileMap) + '",\n' +
+			'\t\t"topTileMap": "' + this.uint2b64(this.terrain.topTileMap) + '",\n' +
 			'\t\t"pathingMap": "' + this.uint2b64(this.terrain.pathingMap) + '",\n\n'+
 			
-			'\t\t"tiles": ' + JSON.stringify(this.terrain.tiles) + '\n\n' +
+			'\t\t"tileTextures": ' + JSON.stringify(this.terrain.tileTextures) + '\n\n' +
 			
 		'\t},\n\n' +
 		

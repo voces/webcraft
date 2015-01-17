@@ -7,33 +7,42 @@ Graphic = function(canvas) {
 	this.activeMeshes = [];
 	this.keys = [];
 	
-	/*************************
+	/****************************************************************************
 	 **	Create the renderer
-	 *************************/
+	 ****************************************************************************/
 	
-	this.renderer = new THREE.WebGLRenderer({antialias:true, canvas: canvas});
+	this.renderer = new THREE.WebGLRenderer({
+		antialias: true, canvas: canvas, alpha: true
+	});
 	this.canvas = this.renderer.domElement;
 	this.box = canvas.parentNode;
 	
 	this.renderer.setSize(this.box.clientWidth, this.box.clientHeight);
 	
 	this.renderer.shadowMapEnabled = true;
-	this.renderer.shadowMapSoft = true;
+	this.renderer.shadowMapSoft = THREE.PCFSoftShadowMap;
 	
-	this.renderer.shadowCameraNear = 1;
-	
-	this.renderer.shadowMapBias = 0.0039;
-	this.renderer.shadowMapDarkness = 0.5;
-	
-	/*************************
+	/****************************************************************************
 	 **	Create the support objects
-	 *************************/
+	 ****************************************************************************/
 	
 	//Loads objects from JSON, including models
 	this.loader = new THREE.JSONLoader();
 	
+	//Time tracking for light movement
+	this.dayLength = 480 * 500 / Math.PI;
+	this.timeDayStarted;
+	
+	/****************************************************************************
+	 **	Add events
+	 ****************************************************************************/
+	
 	//Attach our events
 	window.addEventListener('resize', this.resize.bind(this));
+	
+	/****************************************************************************
+	 **	And we're ready!
+	 ****************************************************************************/
 	
 	//And load the base scene (camera & lights) & render
 	this.loadBaseScene();
@@ -43,9 +52,9 @@ Graphic = function(canvas) {
 
 Graphic.prototype.loadBaseScene = function() {
 	
-	/*************************
+	/****************************************************************************
 	 **	Create the camera
-	 *************************/
+	 ****************************************************************************/
 	
 	this.camera = new THREE.PerspectiveCamera(60,
 			(this.canvas.clientWidth - 257) /
@@ -53,12 +62,14 @@ Graphic.prototype.loadBaseScene = function() {
 			1, 10000);
 	
 	this.camera.position.z = 1792;
+	this.camera.position.y = -1024;
+	this.camera.rotation.x = Math.PI * 17/90;
 	
 	this.scene.add(this.camera);
 	
-	/*************************
+	/****************************************************************************
 	 **	Create the secondary camera (preview)
-	 *************************/
+	 ****************************************************************************/
 	
 	this.previewCamera = new THREE.PerspectiveCamera(60, 1, 1, 10000);
 	
@@ -66,20 +77,81 @@ Graphic.prototype.loadBaseScene = function() {
 	
 	this.scene.add(this.previewCamera);
 	
-	/*************************
+	/****************************************************************************
 	 **	Create the lights
-	 *************************/
+	 ****************************************************************************/
 	
-	this.sun = new THREE.DirectionalLight(0xffffff, 1);
-	this.moon = new THREE.DirectionalLight(0xffffff, .33);
-	this.stars = new THREE.AmbientLight(0x111111);
+	//Sun
 	
-	this.sun.position.z = 5000;
-	this.moon.position.z = 5000;
+	this.sun = new THREE.DirectionalLight(0xffffff, .64);
+	
+	this.sun.castShadow = true;
+	//this.sun.shadowCameraVisible = true;
+	this.sun.shadowMapWidth = 4096;
+	this.sun.shadowMapHeight = 4096;
+
+	var d = 1024;
+
+	this.sun.shadowCameraLeft = -d;
+	this.sun.shadowCameraRight = d;
+	this.sun.shadowCameraTop = d;
+	this.sun.shadowCameraBottom = -d;
+
+	this.sun.shadowCameraFar = 7000;
+	this.sun.shadowDarkness = .64;
 	
 	this.scene.add(this.sun);
+	
+	//Moon & stars
+	
+	this.moon = new THREE.DirectionalLight(0xeeeeff, .33);
 	this.scene.add(this.moon);
+	
+	this.stars = new THREE.AmbientLight(0x333333);
 	this.scene.add(this.stars);
+	
+	//Fog
+	
+	//this.fog = new THREE.FogExp2(0xcceeff);
+	this.scene.fog = new THREE.FogExp2(0xcceeff, 0.00015);
+	
+	/****************************************************************************
+	 **	And we're basically done!
+	 ****************************************************************************/
+	
+	this.timeDayStarted = Date.now();
+	
+};
+
+Graphic.prototype.animateLights = function(elapsed) {
+	
+	var dayTime = elapsed/this.dayLength;
+	
+	this.sun.position.x = Math.sin(dayTime) * 5000;
+	this.sun.position.y = Math.cos(dayTime) * 4000;
+	this.sun.position.z = Math.cos(dayTime) * 4000;
+	
+	this.stars.color.r = this.stars.color.g = this.stars.color.b =
+			Math.sin(this.sun.position.z/4000*Math.PI/2)*.2 + .4;
+	
+	if (this.sun.position.z < 2000 && this.sun.position.z > 0) {
+		this.sun.color.r = Math.sin(this.sun.position.z/2000/2*Math.PI);
+		this.sun.color.g = Math.pow(Math.sin(this.sun.position.z/2000/2*Math.PI), 2);
+		this.sun.color.b = Math.pow(Math.sin(this.sun.position.z/2000/2*Math.PI), 3);
+	} else if (this.sun.position.z < 0)
+		this.sun.color.r = this.sun.color.g = this.sun.color.b = 0;
+	else if (this.sun.position.z > 2000)
+		this.sun.color.r = this.sun.color.g = this.sun.color.b = 1;
+	
+	this.moon.position.x = Math.sin(dayTime/1.0366 + Math.PI) * 5000;
+	this.moon.position.z = Math.cos(dayTime/1.0366 + Math.PI) * 5000;
+	
+	if (this.moon.position.z < 1000 && this.moon.position.z > 0)
+		this.moon.intensity = Math.sin((this.moon.position.z/1000)/2*Math.PI) / 4;
+	else if (this.moon.position.z < 0)
+		this.moon.intensity = 0;
+	else if (this.moon.position.z > 1000)
+		this.moon.intensity = 1/4;
 	
 };
 
@@ -87,6 +159,11 @@ Graphic.prototype.render = function() {
 	requestAnimationFrame(this.render.bind(this));
 	
 	if (!this.camera) return;
+	
+	var delta = this.clock.getDelta(),
+			elapsed = this.timeDayStarted - Date.now();
+	
+	this.animateLights(elapsed);
 	
 	for (var i = 0; i < this.keys.length; i++)
 		if (this.keys[i].update()) {
@@ -107,9 +184,15 @@ Graphic.prototype.render = function() {
 				this.canvas.clientWidth - 257, this.canvas.clientHeight);
 		this.renderer.setScissor(257, 0,
 				this.canvas.clientWidth - 257, this.canvas.clientHeight);
-		this.renderer.enableScissorTest(true);
+		
+		//Must disable scissor test for shadows to work (yay bugs!)
+		
+		this.renderer.enableScissorTest(false);
 		
 		this.renderer.render(this.scene, this.camera);
+		
+		this.renderer.enableScissorTest(true);
+		
 		
 	}
 	
@@ -117,6 +200,7 @@ Graphic.prototype.render = function() {
 	
 	this.renderer.setViewport(0, this.canvas.clientHeight - 256, 256, 256);
 	this.renderer.setScissor(0, this.canvas.clientHeight - 256, 256, 256);
+	
 	this.renderer.enableScissorTest(true);
 	
 	this.renderer.render(this.scene, this.previewCamera);

@@ -121,7 +121,7 @@ var logic = {
 			title: 'Untitled',
 			author: 'Unknown',
 			geoType: 'flat',
-			height: 10,
+			height: 15,
 			width: 15
 		});
 		var id = mods.push(mod) - 1;
@@ -159,36 +159,99 @@ logic.loadTerrain = function(modId) {
 	
 	//Create geometry
   var geometry = new THREE.PlaneBufferGeometry(
-      terrain.width*128, terrain.height*128,
+      terrain.width*64, terrain.height*64,
       terrain.width, terrain.height);
-  
+	
 	//OK, let's apply the height map...
 	for (var i = 0; i < terrain.heightMap.length/3; i++)
-		geometry.attributes.position.array[i*3+2] =
+		geometry.attributes.position.array[i*3+2] =THREE.Math.randFloat(-3, 3);
 			terrain.heightMap[i*3]*32768 + 
 			terrain.heightMap[i*3+1]*128 +
 			terrain.heightMap[i*3+2]/2 -
-			terrain.heightBias*32768-16192.5;
+			terrain.heightBias*32768 - 16319.5;
 	
-	//A basic material with nothing fancy
-  var material = new THREE.MeshPhongMaterial({color: 'green'});
-  
+	//Image
+	var uTexArray = [],
+			uTexRatioArray = [],
+			uTexTileSizeArray = [],
+			uTexMultiplierArray = [],
+			uInvTileTexSizeArray = [];
+	
+	for (var i = 0, tT, tileTexture; tT = terrain.tileTextures[i]; i++) {
+		tileTexture = new TileTexture(tT);
+		
+		uTexArray[i] = tileTexture.uTex;
+		uTexRatioArray[i] = tileTexture.uTexRatio;
+		uTexTileSizeArray[i] = tileTexture.uTexTileSize;
+		uTexMultiplierArray[i] = tileTexture.uTexMultiplier;
+		uInvTileTexSizeArray[i] = tileTexture.uInvTileTexSize;
+	}
+	
+	var tileMaps = [
+		new THREE.ImageUtils.loadTexture('temp/tileMapBottom.png'),
+		new THREE.ImageUtils.loadTexture('temp/tileMapTop.png'),
+		new THREE.ImageUtils.loadTexture('temp/infoMap.png')
+	];
+	
+	for (var i = 0; i < tileMaps.length; i++) {
+		tileMaps[i].wrapS = uTexArray[i].wrapT = THREE.ClampToEdgeWrapping;
+		tileMaps[i].minFilter = THREE.NearestFilter;
+		tileMaps[i].magFilter = THREE.NearestFilter;
+	}
+	
+	// uniforms
+	//For some reason THREE.UniformsUtils.merge breaks shit...
+	var uniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.phong.uniforms);
+	
+	uniforms.shininess.value = 5;
+	
+	uniforms.uTileMapArray = {type: 'tv', value: tileMaps};
+	uniforms.uTexArray = {type: 'tv', value: uTexArray};
+  uniforms.uTexRatioArray = {type: 'fv1', value: uTexRatioArray},
+	uniforms.uTexTileSizeArray = {type: 'iv1', value: uTexTileSizeArray},
+  uniforms.uTexMultiplierArray = {type: 'v2v', value: uTexMultiplierArray},
+	uniforms.uInvTileTexSizeArray = {type: 'v2v', value: uInvTileTexSizeArray},
+	
+	uniforms.showInfo = {type: 'i', value: 0};
+	
+	var shaders = {};
+	
+	// shaders (sets first, uses third)
+	initShaders(shaders, uTexArray);
+	
+	// material
+	var material = new THREE.ShaderMaterial({
+		uniforms: uniforms,
+		attributes: {},
+		vertexShader: shaders.vertexShader,
+		fragmentShader: shaders.fragmentShader,
+		transparent: true,
+		lights: true,
+		fog: true
+	});
+	
 	//Create the mesh
   this.plane = new THREE.Mesh(geometry, material);
+  this.plane.receiveShadow = true;
   
 	//And add it
   this.graphic.scene.add(this.plane);
   
+	var box = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), new THREE.MeshPhongMaterial());
+	box.castShadow = true;
+	box.position.z = 192;
+	this.graphic.scene.add(box);
+	
 	//Update save status/title
 	this.setSavedStatus(mods[modId]._status);
 	
 	//Update our keys...
 	
-	this.panUDKey.min = terrain.height*-64;
-	this.panUDKey.max = terrain.height*64;
+	this.panUDKey.min = terrain.height*-64 - 1024;
+	this.panUDKey.max = terrain.height*64 - 1024;
 	
-	this.panLRKey.min = terrain.width*-64;
-	this.panLRKey.max = terrain.width*64;
+	this.panLRKey.min = terrain.width*-64 - 128;
+	this.panLRKey.max = terrain.width*64 + 128;
 	
 };
 
@@ -254,10 +317,12 @@ logic.onKeyDown = function(e) {
 	if (this.keys[e.which]) return;
 	else this.keys[e.which] = true;
 	
+	var zoom = this.graphic.camera.position.z / 1792;
+	
 	//Left or right
 	if (e.which == 37 || e.which == 39) {
-		if (e.which == 37) this.panLRKey.amount = -4096;
-		else this.panLRKey.amount = 4096;
+		if (e.which == 37) this.panLRKey.amount = -4096 * zoom;
+		else this.panLRKey.amount = 4096 * zoom;
 		
 		this.panLRKey.start = Date.now();
 		this.panLRKey.last = this.panLRKey.start;
@@ -266,8 +331,8 @@ logic.onKeyDown = function(e) {
 		
 	//Up or down
 	} else if (e.which == 38 || e.which == 40) {
-		if (e.which == 38) this.panUDKey.amount = 4096;
-		else this.panUDKey.amount = -4096;
+		if (e.which == 38) this.panUDKey.amount = 4096 * zoom;
+		else this.panUDKey.amount = -4096 * zoom;
 		
 		this.panUDKey.start = Date.now();
 		this.panUDKey.last = this.panUDKey.start;
