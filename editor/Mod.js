@@ -43,7 +43,7 @@ function Mod(props) {
 			
 			tileMapBottom: new Uint8ClampedArray(ssize*3),
 			tileMapTop: new Uint8ClampedArray(ssize*3),
-			tileMapInfo: new Uint8ClampedArray(ssize*3),
+			tileMapPathing: new Uint8ClampedArray(ssize*2),
 			
 			tileTextures: [
         ['/r/img/terrain/info.png', 4, 3, 1],
@@ -92,6 +92,18 @@ function Mod(props) {
 	
 }
 
+Object.defineProperty(Mod.prototype, 'saved', {
+	get: function() { return this._saved; },
+	set: function(newValue) {
+		this._saved = newValue;
+		
+		//Emit the push event
+		mods.emit('savedStateChange', new CustomEvent('savedStateChange', {
+			detail: {mod: this, saved: this._saved}
+		}));
+	}
+});
+
 Mod.Uint8toJSON = function() {
   
   var arr = [];
@@ -133,7 +145,7 @@ Mod.load = function(file) {
 	mod.terrain.heightMap = new Int16Array(mod.terrain.heightMap);
 	mod.terrain.bottomTileMap = new Uint8ClampedArray(mod.terrain.bottomTileMap);
 	mod.terrain.topTileMap = new Uint8ClampedArray(mod.terrain.topTileMap);
-	mod.terrain.pathingMap = new Uint8ClampedArray(mod.terrain.pathingMap);
+	mod.terrain.tileMapPathing = new Uint8ClampedArray(mod.terrain.tileMapPathing);
 	
 	/****************************************************************************
 	 **	Geometry
@@ -302,9 +314,9 @@ Mod.prototype.save = function() {
 			'\t\t"heightBias": ' + this.terrain.heightBias + ',\n\n' +
 			
 			'\t\t"heightMap": ' + JSON.stringify(this.t2g(this.terrain.heightMap)) + ',\n' +
-			'\t\t"bottomTileMap": ' + JSON.stringify(this.t2g(this.terrain.bottomTileMap)) + ',\n' +
-			'\t\t"topTileMap": ' + JSON.stringify(this.t2g(this.terrain.topTileMap)) + ',\n' +
-			'\t\t"pathingMap": ' + JSON.stringify(this.t2g(this.terrain.pathingMap)) + ',\n\n' +
+			'\t\t"tileMapBottom": ' + JSON.stringify(this.t2g(this.terrain.tileMapBottom)) + ',\n' +
+			'\t\t"tileMapTop": ' + JSON.stringify(this.t2g(this.terrain.tileMapTop)) + ',\n' +
+			'\t\t"tileMapPathing": ' + JSON.stringify(this.t2g(this.terrain.tileMapPathing)) + ',\n\n' +
 			
 			'\t\t"tileTextures": ' + JSON.stringify(this.terrain.tileTextures) + '\n\n' +
 			

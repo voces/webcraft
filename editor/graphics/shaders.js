@@ -65,7 +65,7 @@ shaders.fragmentShader = [
 	'uniform vec2 uTextureVariationMultiplier;',
 	'uniform vec2 uInverseTileTextureSize;',
 	
-	'uniform int showInfo;',
+	'uniform int uShowInfo;',
 	
 	'uniform vec3 diffuse;',
 	
@@ -99,7 +99,7 @@ shaders.fragmentShader = [
 		
 		'for (int i = 0; i < 3; i++) {',
 			
-			'if (showInfo < 1 && i == 2) break;',
+			'if (uShowInfo < 1 && i == 2) break;',
 			
 			'tile = texture2D(uTileMapArray[i], vec2(',
 				'vPixelCoord.x, vPixelCoord.y',
@@ -119,7 +119,7 @@ shaders.fragmentShader = [
 					'variationOffset = tile.rg * uTexMultiplierArray[n];',
 					
 					'uUv = vec2(',
-						'variationOffset.x + pixelOffset.x,',
+						'variationOffset.x + pixelOffset.x - 0.001961,',
 						'variationOffset.y + pixelOffset.y',
 					');',
 					

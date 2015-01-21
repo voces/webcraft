@@ -19,6 +19,7 @@
     <script src="graphics/shaders.js"></script>
 		<script src="graphics/TileTexture.js"></script>
 		<script src="graphics/TileMaterial.js"></script>
+		<script src="graphics/CanvasMerge.js"></script>
 		
 		<!-- Mods -->
 		<script src="Emitter.js"></script>
@@ -58,7 +59,14 @@
 					</ul>
 				</li
 				><li><a>Edit</a></li
-				><li><a>View</a></li
+				><li>
+					<a>View <span class="caret"></a>
+					<ul>
+						<li id="showPathingMap" data-enabled="false">
+							<a>Show pathing map</a>
+						</li>
+					</ul>
+				</li
 				><li>
 					<a>Window <span class="caret"></a>
 					<ul>

@@ -60,9 +60,7 @@ function TileMaterial(prop) {
   uniforms.uTexMultiplierArray = {type: 'v2v', value: uTexMultiplierArray},
 	uniforms.uInvTileTexSizeArray = {type: 'v2v', value: uInvTileTexSizeArray},
 	
-	//For now the infoMap is ignored, this value should be easily adjustable,
-	//	especially in the editor
-	uniforms.showInfo = {type: 'i', value: 0};
+	uniforms.uShowInfo = {type: 'i', value: 1};
 	
 	// shaders (sets first, uses second)
 	var shaders = {};

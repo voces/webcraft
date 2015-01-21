@@ -25,6 +25,10 @@ var logic = {
 	
 	windowActive: true,
 	
+	settings: {
+		showPathingMap: false
+	},
+	
 	/****************************************************************************
 	 *	Build any keys we might want
 	 ****************************************************************************/
@@ -99,6 +103,7 @@ var logic = {
 		//Mods (other windows)
 		mods.on("push", this.newMod.bind(this));
 		mods.on("close", this.closeMod.bind(this));
+		mods.on("savedStateChange", this.onSavedStateChange.bind(this));
 		
 		//Window
 		window.addEventListener('focus', this.windowFocus.bind(this));
@@ -146,6 +151,12 @@ var logic = {
  ******************************************************************************
  ******************************************************************************/
 
+logic.setMod = function(modId) {
+	
+	this.currentMod = modId;
+	
+};
+
 //Takes in a modId, an index in global mods, sets logic.currentMod, creates
 //		geometry, modifies it with the heightmap, creates a basic material, and
 //		merges it to a mesh, logic.plane, which is added to logic.graphic.scene
@@ -182,7 +193,7 @@ logic.loadTerrain = function(modId) {
         terrain.height, terrain.width, terrain.tileMapTop, 3
     )),
     tileMapInfo: new THREE.Texture(this.uintToCanvas(
-        terrain.height, terrain.width, terrain.tileMapInfo, 3
+        terrain.height, terrain.width, terrain.tileMapPathing, 2
     ))
   });
 	
@@ -195,7 +206,7 @@ logic.loadTerrain = function(modId) {
   this.graphic.scene.add(this.plane);
   
 	//Update save status/title
-	this.setSavedStatus(mods[modId]._status);
+	this.setSavedStatus(mods[modId]._saved);
 	
 	//Update our keys...
 	
@@ -426,20 +437,44 @@ logic.windowBlur = function(e) {
 	this.windowActive = false;
 };
 
+logic.onSavedStateChange = function(e) {
+	
+	//Grab the id of the mod
+	var id;
+	for (var i = 0; i < mods.length; i++)
+		if (mods[i] == e.detail.mod) {
+			id = i;
+			break;
+		}
+	
+	//Get the current mod
+	var mod = mods[this.currentMod];
+	
+	//Update value in Mod list
+	document.getElementById('mod_' + id).textContent =
+			(e.detail.saved ? '' : '*') + mod.meta.title + ' - ' + mod.meta.version;
+	
+	//Update window title if the mod matches current mod
+	if (id == this.currentMod)
+		document.title =
+				(e.detail.saved ? '' : '*') + mod.meta.title + ' - Terrain Editor';
+	
+};
+
 logic.setSavedStatus = function(saved) {
 	if (this.currentMod == null) return;
 	
-	var mod = mods[this.currentMod];
-	
-	mod._saved = saved;
-	
-	document.title = (saved ? '' : '*') + mod.meta.title + ' - Terrain Editor';
+	mods[this.currentMod].saved = saved;
 };
 
 /******************************************************************************
  ******************************************************************************
  **	Menu
  ******************************************************************************
+ ******************************************************************************/
+
+/******************************************************************************
+ **	File
  ******************************************************************************/
 
 //Will prompt for a file then load the file contents, pushing to mods and
@@ -449,15 +484,15 @@ logic.openFile = function() {
 	//Create input element for file upload
 	var fileInput = document.createElement('input');
 	fileInput.setAttribute('type', 'file');
-	
-	//Open the dialog
-	fileInput.click();
+	document.body.appendChild(fileInput);
 	
 	//Attach an event listener for when file is selected
 	fileInput.addEventListener('change', function(e) {
 		
 		//Grab the file object
-		var file = e.target.files[0];
+		var file = fileInput.files[0];
+		
+		fileInput.remove();
 		
 		//Create a reader
 		var fileReader = new FileReader();
@@ -482,6 +517,9 @@ logic.openFile = function() {
 		fileReader.readAsText(file);
 		
 	}.bind(this), false);
+	
+	//Open the dialog
+	fileInput.click();
 	
 };
 
@@ -688,6 +726,27 @@ logic.exportTerrain = function() {
 	
 };
 
+/******************************************************************************
+ **	View
+ ******************************************************************************/
+
+logic.togglePathingMap = function() {
+	if (this.settings.showPathingMap)
+		this.settings.showPathingMap = false;
+	else
+		this.settings.showPathingMap = true;
+	
+	document.getElementById('showPathingMap').dataset.enabled =
+			this.settings.showPathingMap;
+	
+	/*this.plane.material.uniforms.uShowInfo.value =
+			this.settings.showPathingMap ? 1 : 0;*/
+};
+
+/******************************************************************************
+ **	Main
+ ******************************************************************************/
+
 logic.menuSwitch = function(e) {
 	
 	/****************************************************************************
@@ -724,10 +783,9 @@ logic.menuSwitch = function(e) {
 	//
 	if (modId && modId.indexOf('_') >= 0) {
 		modId = modId.split('_')[1];
-		console.log(modId);
 		
 		this.currentMod = modId;
-    this.loadTerrain(mods[modId].terrain);
+    this.loadTerrain(modId);
 		
 		return;
 	}
@@ -767,7 +825,12 @@ logic.menuSwitch = function(e) {
 			this.importTerrain();
 			break;
 		
-		//window
+		//View
+		case 'Show pathing map':
+			this.togglePathingMap();
+			break;
+		
+		//Window
 		case 'Terrain Editor': window.open('../editor'); break;
 		case 'Code Editor': window.open('code'); break;
 		

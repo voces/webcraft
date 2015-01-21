@@ -42,14 +42,13 @@ body {
 	position: relative;
 	z-index: 2;
 	
-	color: #888;
+	color: dimgray;
 	line-height: 1;
 }
 
 #menu ul {
 	padding: 0;
 	margin: 0;
-	background-color: white;
 }
 
 #menu > ul {
@@ -57,7 +56,7 @@ body {
 }
 
 #menu > ul > li {
-	padding: 0.5em;
+	padding: 0.5em 1em;
 	white-space: normal;
 }
 
@@ -65,20 +64,15 @@ body {
 	display: inline-block;
 	position: relative;
 	list-style-type: none;
-}
-
-#menu li:not(.hr) {
-	padding: 0.5em 1em;
-}
-
-#menu li.hr {
-	display: block;
-	border-top: 0.1em solid #ddd;
-	padding: 0 1em;
+	background-color: white;
 }
 
 #menu li > a {
 	white-space: nowrap;
+}
+
+#menu li > a > input[type='checkbox'] {
+	margin-left: -1.5em;
 }
 
 #menu ul ul {
@@ -89,6 +83,16 @@ body {
 
 #menu ul ul > li {
 	width: calc(100% - 2em);
+}
+
+#menu ul ul > li:not(.hr) {
+	padding: 0.5em 0.5em 0.5em 2em;
+}
+
+#menu li.hr {
+	display: block;
+	border-top: 0.1em solid #ddd;
+	padding: 0 1.25em;
 }
 
 #menu > ul > li > ul {
@@ -120,6 +124,29 @@ body {
 
 #menu li! > ul {
 	background-color: red;
+}
+
+#menu ul ul > li[data-enabled]:before {
+	content: '';
+	position: absolute;
+	width: 0.5em;
+	height: 0.25em;
+	background: transparent;
+	top: 0.75em;
+	left: 0.5em;
+	border: 0.2em solid lightgray;
+	border-top: none;
+	border-right: none;
+
+	-webkit-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	-o-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+}
+
+#menu ul ul > li[data-enabled=true]:before {
+	border-color: gray;
 }
 
 /******************************************************************************
