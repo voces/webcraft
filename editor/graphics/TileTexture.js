@@ -1,16 +1,15 @@
 
-//function TileTexture(parameter) {
-function TileTexture(parameter) {
+function TileTexture(prop) {
 	
-	this.uTex = new THREE.ImageUtils.loadTexture(parameter.tex);
+	this.uTex = new THREE.ImageUtils.loadTexture(prop[0]);
 	
 	this.uTex.wrapS = this.uTex.wrapT = THREE.ClampToEdgeWrapping;
 	this.uTex.minFilter = this.uTex.magFilter = THREE.NearestFilter;
 	
-	this.uTexRatio = parameter.horizontalTiles/parameter.verticalTiles;
-	this.uTexTileSize = parameter.texTileSize;
-	this.uTexMultiplier = new THREE.Vector2(255/parameter.horizontalTiles,
-			255/parameter.verticalTiles);
-	this.uInvTileTexSize = new THREE.Vector2(1/parameter.horizontalTiles,
-			1/parameter.verticalTiles);
+	this.uTexRatio = prop[1]/prop[2];
+	this.uTexTileSize = prop[3];
+	this.uTexMultiplier = new THREE.Vector2(255/prop[1],
+			255/prop[2]);
+	this.uInvTileTexSize = new THREE.Vector2(1/prop[1],
+			1/prop[2]);
 }

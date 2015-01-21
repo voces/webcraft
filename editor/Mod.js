@@ -39,49 +39,32 @@ function Mod(props) {
 			
 			heightBias: props.bias || 31,
 			
-			heightMap: new Uint8ClampedArray(bsize*3),
+			heightMap: new Int16Array(bsize),
 			
-			bottomTileMap: new Uint8ClampedArray(ssize*3),
-			topTileMap: new Uint8ClampedArray(ssize*3),
-			pathingMap: new Uint8ClampedArray(ssize*3),
+			tileMapBottom: new Uint8ClampedArray(ssize*3),
+			tileMapTop: new Uint8ClampedArray(ssize*3),
+			tileMapInfo: new Uint8ClampedArray(ssize*3),
 			
 			tileTextures: [
-				{
-					tex: '/r/img/terrain/info.png',
-					horizontalTiles: 4,
-					verticalTiles: 3,
-					texTileSize: 1
-				}, {
-					tex: '/r/img/terrain/Lords/Dirt.png',
-					horizontalTiles: 8,
-					verticalTiles: 4,
-					texTileSize: 65
-				}, {
-					tex: '/r/img/terrain/Lords/Grass.png',
-					horizontalTiles: 8,
-					verticalTiles: 4,
-					texTileSize: 65
-				}, {
-					tex: '/r/img/terrain/Lords/GrassDark.png',
-					horizontalTiles: 8,
-					verticalTiles: 4,
-					texTileSize: 65
-				}, {
-					tex: '/r/img/terrain/Lords/Rock.png',
-					horizontalTiles: 8,
-					verticalTiles: 4,
-					texTileSize: 65
-				}
+        ['/r/img/terrain/info.png', 4, 3, 1],
+        ['/r/img/terrain/Lords/Dirt.png', 8, 4, 64],
+        ['/r/img/terrain/Lords/Grass.png', 8, 4, 64],
+        ['/r/img/terrain/Lords/GrassDark.png', 8, 4, 64],
+        ['/r/img/terrain/Lords/Rock.png', 8, 4, 64]
 			]
 		};
-		
-		if (this.terrain.heightBias != 0)
-			for (var i = 0; i < bsize; i++) {
-				this.terrain.heightMap[i*3] = this.terrain.heightBias;
-				this.terrain.heightMap[i*3+1] = 127;
-				this.terrain.heightMap[i*3+2] = 127;;
-			}
-		
+    
+    //Set both the top and bottom layers to plain dirt
+    for (var i = 0; i < ssize; i++) {
+      
+      this.terrain.tileMapTop[i*3+2] = 1;
+      this.terrain.tileMapTop[i*3+1] = 3;
+      
+      this.terrain.tileMapBottom[i*3+2] = 1;
+      this.terrain.tileMapBottom[i*3+1] = 3;
+      
+    }
+    
 	}
 	
 	/***********************************************
@@ -107,6 +90,16 @@ function Mod(props) {
 		code: ''
 	};
 	
+}
+
+Mod.Uint8toJSON = function() {
+  
+  var arr = [];
+  
+  for (var i = 0; i < this.length; i++)
+    arr[i] = this[i];
+  
+  return JSON.stringify(arr);
 }
 
 Mod.load = function(file) {
@@ -137,10 +130,10 @@ Mod.load = function(file) {
 	mod.terrain = JSON.parse("{" + terrain + "}").terrain;
 	
 	//Now convert the b64 encoded data into uint arrays
-	mod.terrain.heightMap = mod.b642uint(mod.terrain.heightMap);
-	mod.terrain.bottomTileMap = mod.b642uint(mod.terrain.bottomTileMap);
-	mod.terrain.topTileMap = mod.b642uint(mod.terrain.topTileMap);
-	mod.terrain.pathingMap = mod.b642uint(mod.terrain.pathingMap);
+	mod.terrain.heightMap = new Int16Array(mod.terrain.heightMap);
+	mod.terrain.bottomTileMap = new Uint8ClampedArray(mod.terrain.bottomTileMap);
+	mod.terrain.topTileMap = new Uint8ClampedArray(mod.terrain.topTileMap);
+	mod.terrain.pathingMap = new Uint8ClampedArray(mod.terrain.pathingMap);
 	
 	/****************************************************************************
 	 **	Geometry
@@ -268,6 +261,10 @@ Mod.prototype.rCodeSave = function(obj, header, level) {
 	return data;
 };
 
+Mod.prototype.t2g = function(typedArray) {
+  return Array.prototype.slice.call(typedArray);
+}
+
 Mod.prototype.save = function() {
 	
 	//Update stuff first
@@ -304,10 +301,10 @@ Mod.prototype.save = function() {
 			
 			'\t\t"heightBias": ' + this.terrain.heightBias + ',\n\n' +
 			
-			'\t\t"heightMap": "' + this.uint2b64(this.terrain.heightMap) + '",\n' +
-			'\t\t"bottomTileMap": "' + this.uint2b64(this.terrain.bottomTileMap) + '",\n' +
-			'\t\t"topTileMap": "' + this.uint2b64(this.terrain.topTileMap) + '",\n' +
-			'\t\t"pathingMap": "' + this.uint2b64(this.terrain.pathingMap) + '",\n\n'+
+			'\t\t"heightMap": ' + JSON.stringify(this.t2g(this.terrain.heightMap)) + ',\n' +
+			'\t\t"bottomTileMap": ' + JSON.stringify(this.t2g(this.terrain.bottomTileMap)) + ',\n' +
+			'\t\t"topTileMap": ' + JSON.stringify(this.t2g(this.terrain.topTileMap)) + ',\n' +
+			'\t\t"pathingMap": ' + JSON.stringify(this.t2g(this.terrain.pathingMap)) + ',\n\n' +
 			
 			'\t\t"tileTextures": ' + JSON.stringify(this.terrain.tileTextures) + '\n\n' +
 			

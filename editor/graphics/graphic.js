@@ -160,8 +160,7 @@ Graphic.prototype.render = function() {
 	
 	if (!this.camera) return;
 	
-	var delta = this.clock.getDelta(),
-			elapsed = this.timeDayStarted - Date.now();
+	var elapsed = this.timeDayStarted - Date.now();
 	
 	this.animateLights(elapsed);
 	
