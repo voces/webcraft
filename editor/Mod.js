@@ -46,11 +46,11 @@ function Mod(props) {
 			tileMapPathing: new Uint8ClampedArray(ssize*2),
 			
 			tileTextures: [
-        ['/r/img/terrain/info.png', 4, 3, 1],
-        ['/r/img/terrain/Lords/Dirt.png', 8, 4, 64],
-        ['/r/img/terrain/Lords/Grass.png', 8, 4, 64],
-        ['/r/img/terrain/Lords/GrassDark.png', 8, 4, 64],
-        ['/r/img/terrain/Lords/Rock.png', 8, 4, 64]
+        ['/r/img/terrain/info.png', 4, 4],
+        ['/r/img/terrain/Lords/Dirt.png', 8, 4],
+        ['/r/img/terrain/Lords/Grass.png', 8, 4],
+        ['/r/img/terrain/Lords/GrassDark.png', 8, 4],
+        ['/r/img/terrain/Lords/Rock.png', 8, 4]
 			]
 		};
     
@@ -58,7 +58,11 @@ function Mod(props) {
     for (var i = 0; i < ssize; i++) {
       
       this.terrain.tileMapTop[i*3+2] = 1;
-      this.terrain.tileMapTop[i*3+1] = 3;
+			
+			//this.terrain.tileMapTop[i*3+1] = 3;
+			
+      this.terrain.tileMapTop[i*3] = 7;
+      this.terrain.tileMapTop[i*3+1] = 2;
       
       this.terrain.tileMapBottom[i*3+2] = 1;
       this.terrain.tileMapBottom[i*3+1] = 3;

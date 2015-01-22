@@ -57,8 +57,7 @@ Graphic.prototype.loadBaseScene = function() {
 	 ****************************************************************************/
 	
 	this.camera = new THREE.PerspectiveCamera(60,
-			(this.canvas.clientWidth - 257) /
-			this.canvas.clientHeight,
+			(this.canvas.clientWidth - 257) / this.canvas.clientHeight,
 			1, 10000);
 	
 	this.camera.position.z = 1792;
@@ -138,10 +137,14 @@ Graphic.prototype.animateLights = function(elapsed) {
 		this.sun.color.r = Math.sin(this.sun.position.z/2000/2*Math.PI);
 		this.sun.color.g = Math.pow(Math.sin(this.sun.position.z/2000/2*Math.PI), 2);
 		this.sun.color.b = Math.pow(Math.sin(this.sun.position.z/2000/2*Math.PI), 3);
-	} else if (this.sun.position.z < 0)
+		this.sun.intensity = 1;
+	} else if (this.sun.position.z < 0) {
 		this.sun.color.r = this.sun.color.g = this.sun.color.b = 0;
-	else if (this.sun.position.z > 2000)
+		this.sun.intensity = 0;
+	} else if (this.sun.position.z > 2000) {
 		this.sun.color.r = this.sun.color.g = this.sun.color.b = 1;
+		this.sun.intensity = 1;
+	}
 	
 	this.moon.position.x = Math.sin(dayTime/1.0366 + Math.PI) * 5000;
 	this.moon.position.z = Math.cos(dayTime/1.0366 + Math.PI) * 5000;
@@ -173,7 +176,7 @@ Graphic.prototype.render = function() {
 	//Render the main display first
 	
 	//Only render it if part of it is visible, otherwise errors
-	if (this.canvas.clientWidth > 256) {
+	if (this.canvas.clientWidth >= 257) {
 		
 		if (isNaN(this.camera.position.x)) this.camera.position.x = 0;
 		if (isNaN(this.camera.position.y)) this.camera.position.y = 0;

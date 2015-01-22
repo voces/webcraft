@@ -2,6 +2,8 @@
 /*********************************
   Returns a ShaderMaterial
   prop: {
+		width (Integer),
+		height (Integer),
     tileTextures (Array),
 		tileMapBottom (THREE.Texture),
 		tileMapTop (THREE.Texture),
@@ -12,34 +14,30 @@ function TileMaterial(prop) {
 	
 	//Define our uniform arrays
   var uTexArray = [],
-      uTexRatioArray = [],
-      uTexTileSizeArray = [],
       uTexMultiplierArray = [],
-      uInvTileTexSizeArray = [];
+      uTileTexMultiplierArray = [];
   
 	//Grab the values from the tileTextures and put them in our uniforms
   for (var i = 0, tT, tileTexture; tT = prop.tileTextures[i]; i++) {
-		tileTexture = new TileTexture(tT);
+		tileTexture = new TileTexture(tT, prop.width, prop.height);
 		
 		uTexArray[i] = tileTexture.uTex;
-		uTexRatioArray[i] = tileTexture.uTexRatio;
-		uTexTileSizeArray[i] = tileTexture.uTexTileSize;
 		uTexMultiplierArray[i] = tileTexture.uTexMultiplier;
-		uInvTileTexSizeArray[i] = tileTexture.uInvTileTexSize;
+		uTileTexMultiplierArray[i] = tileTexture.uTileTexMultiplier;
 	}
   
-	//Define a 
+	//Define the tile map array...
   var uTileMapArray = [
     prop.tileMapBottom,
     prop.tileMapTop,
     prop.tileMapInfo
 	];
   
-	//Set some properties on our loaded textures
+	//Set some properties on our loaded tile map textures
   for (var i = 0; i < uTileMapArray.length; i++) {
 		uTileMapArray[i].wrapS = uTileMapArray[i].wrapT = THREE.ClampToEdgeWrapping;
-		uTileMapArray[i].minFilter = THREE.NearestFilter;
-		uTileMapArray[i].magFilter = THREE.NearestFilter;
+		uTileMapArray[i].minFilter = uTileMapArray[i].magFilter =
+				THREE.NearestFilter;
     
 		//Well, this took longer than I'd care to admit to realize it's required
 		uTileMapArray[i].needsUpdate = true;
@@ -50,15 +48,19 @@ function TileMaterial(prop) {
 	var uniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.phong.uniforms);
 	
 	//Phong is shiny! We don't currently support all our mappings (diffuse, etc)
-	uniforms.shininess.value = 5;
+	uniforms.shininess.value = 1;
 	
 	//Load our tile-specific uniforms
+	
+	uniforms.uInvTiles = {type: 'v2', value: new THREE.Vector2(
+			1/prop.width, 1/prop.height
+	)};
+	
 	uniforms.uTileMapArray = {type: 'tv', value: uTileMapArray};
 	uniforms.uTexArray = {type: 'tv', value: uTexArray};
-  uniforms.uTexRatioArray = {type: 'fv1', value: uTexRatioArray},
-	uniforms.uTexTileSizeArray = {type: 'iv1', value: uTexTileSizeArray},
   uniforms.uTexMultiplierArray = {type: 'v2v', value: uTexMultiplierArray},
-	uniforms.uInvTileTexSizeArray = {type: 'v2v', value: uInvTileTexSizeArray},
+	uniforms.uTileTexMultiplierArray = {type: 'v2v',
+			value: uTileTexMultiplierArray},
 	
 	uniforms.uShowInfo = {type: 'i', value: 1};
 	

@@ -3,7 +3,12 @@ function initShaders(shaders, uTexArray) {
 
 shaders.vertexShader = [
 	
+	//Used for tile picker (see fragment shader)
 	'varying vec2 vPixelCoord;',
+	
+	//User for lighting (adopted from Phong)
+	//	Anything not commented is from Phong
+	
 	'varying vec3 vPos;',
 	'varying vec3 vecNormal;',
 	
@@ -21,7 +26,8 @@ shaders.vertexShader = [
 	THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
 	
 	'void main() {',
-	
+		
+		//Set our varying...
 		'vPixelCoord = uv;',
 		
 		THREE.ShaderChunk[ "map_vertex" ],
@@ -53,27 +59,38 @@ shaders.vertexShader = [
 
 shaders.fragmentShader = [
 	
+	//Our tile picker value, ranges ([0-1], [0-1])
 	'varying vec2 vPixelCoord;',
-
+	
+	//(1/width, 1/height)
+	'uniform vec2 uInvTiles;',
+	
+	//3 for each layer (bottom, top, info)
 	'uniform sampler2D uTileMapArray[3];',
-
+	
+	//Arrays for our texture
+	
+	//Textures
 	'uniform sampler2D uTexArray[' + uTexArray.length + '];',
+	
+	//(255 / texWidth [in tiles], 255 / texHeight [in tiles])
 	'uniform vec2 uTexMultiplierArray[' + uTexArray.length + '];',
-	'uniform vec2 uInvTileTexSizeArray[' + uTexArray.length + '];',
-	'uniform float uTexRatioArray[' + uTexArray.length + '];',
 	
-	'uniform vec2 uTextureVariationMultiplier;',
-	'uniform vec2 uInverseTileTextureSize;',
+	//Like textures, except this is the mappings texture (generated)
+	'uniform vec2 uTileTexMultiplierArray[' + uTexArray.length + '];',
 	
+	//A simple variable indicating whether to display any info
+	//	This probably isn't required, as the fed texture should just be blank
+	//	if we don't want anything...
 	'uniform int uShowInfo;',
 	
-	'uniform vec3 diffuse;',
+	//Lighting stuff
 	
+	'uniform vec3 diffuse;',
 	'uniform vec3 ambient;',
 	'uniform vec3 emissive;',
 	'uniform vec3 specular;',
 	'uniform float shininess;',
-	
 	
 	THREE.ShaderChunk[ "color_pars_fragment" ],
 	THREE.ShaderChunk[ "map_pars_fragment" ],
@@ -90,51 +107,82 @@ shaders.fragmentShader = [
 	
 	'void main() {',
 		
+		//Start out with black
 		'vec4 pColor = vec4(0, 0, 0, 1.0);',
 		
+		//Define some variables we'll need
 		'vec4 tile;',
 		'int textureIndex;',
 		'vec2 variationOffset;',
 		'vec2 uUv;',
 		
+		//Loop through our layers (fixed size, 0,1,2)
 		'for (int i = 0; i < 3; i++) {',
 			
+			//Skip if we're on the info layer and it's hidden
 			'if (uShowInfo < 1 && i == 2) break;',
 			
+			//Grab the matching tile (remember vPixelCoord is (0-1, 0-1), so the tile
+			//	maps are a direct correspondence)
 			'tile = texture2D(uTileMapArray[i], vec2(',
 				'vPixelCoord.x, vPixelCoord.y',
 			'));',
 			
+			//Texture is stored in the b value of rgb; multiple by 255 to make it
+			//	0-255 instead of 0-1
 			'textureIndex = int(tile.b * 255.0);',
 			
+			//Loop through all textures (we can't use textureIndex as an actual index
+			//	but can use a looped int)
 			'for (int n = 0; n < ' + uTexArray.length + '; n++) {',
+				
+				//Only do something if the texture matches
 				'if (n == textureIndex) {',
 					
-					'vec2 pixelOffset = vec2(',
-						'mod(vPixelCoord.x, uInvTileTexSizeArray[n].x),',
-						'mod(vPixelCoord.y * uTexRatioArray[n],',
-								'uInvTileTexSizeArray[n].y)',
-					');',
-					
+					//variationOffset determines which variation within a tile we're
+					//	working with. Result is (0-1, 0-1), but it's going to be a
+					//	multiple of uTexMultiplierArray, which is 1/tileTexSize, where
+					//	tileTexSize is the width (or height, they must be the same) of a
+					//	variation within a texture
 					'variationOffset = tile.rg * uTexMultiplierArray[n];',
 					
+					//We now need a pixel offset. This is going to be a value
+					//	(0-(1/tileTexSize), 0-(1/tileTexSize)) (see above). The y value is
+					//	slightly modified due to a picking issue with texture2D sampling.
+					//	1/510 is 1/255/2 (i.e., half a "pixel"), multiply by uInvTiles.y
+					//	because IDK (it works!) TODO: check if 1/510 calculated each time
+					'vec2 pixelOffset = vec2(',
+						'mod(vPixelCoord.x, uInvTiles.x) / uTileTexMultiplierArray[n].x,',
+						'(mod(vPixelCoord.y, uInvTiles.y - 1.0/510.0 * uInvTiles.y)) / uTileTexMultiplierArray[n].y',
+					');',
+					
+					//Add our variation and pixel offsets to get the final location in the
+					//	texture
 					'uUv = vec2(',
-						'variationOffset.x + pixelOffset.x - 0.001961,',
+						'variationOffset.x + pixelOffset.x,',
 						'variationOffset.y + pixelOffset.y',
 					');',
 					
+					//And grab that color
 					'vec4 tColor = texture2D(uTexArray[n], uUv);',
 					
+					//And mix it with what we had (layers!)
 					'pColor = mix(pColor, tColor, tColor.a);',
 					
+					//And exit the loop that goes through textures, as we are working in
+					//	the found one
 					'break;',
 				'}',
 			'}',
 		'}',
 		
+		//Mixing modifies alpha; we don't want ANY transparency
 		'pColor.a = 1.0;',
 		
+		//And set our color
 		'gl_FragColor = pColor;',
+		
+		//Lighting...
 		
 		THREE.ShaderChunk[ "logdepthbuf_fragment" ],
 		THREE.ShaderChunk[ "map_fragment" ],

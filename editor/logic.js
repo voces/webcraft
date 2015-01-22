@@ -127,7 +127,7 @@ var logic = {
 			title: 'Untitled',
 			author: 'Unknown',
 			geoType: 'flat',
-			height: 15,
+			height: 10,
 			width: 15
 		});
 		var id = mods.push(mod) - 1;
@@ -176,7 +176,7 @@ logic.loadTerrain = function(modId) {
 	
 	//Create geometry
   var geometry = new THREE.PlaneBufferGeometry(
-      terrain.width*64, terrain.height*64,
+      terrain.width*128, terrain.height*128,
       terrain.width, terrain.height);
 	
 	//OK, let's apply the height map...
@@ -185,7 +185,9 @@ logic.loadTerrain = function(modId) {
 	
   //Create our material, loading in our textures and tile maps
 	var material = TileMaterial({
-    tileTextures: terrain.tileTextures,
+    width: terrain.width,
+		height: terrain.height,
+		tileTextures: terrain.tileTextures,
     tileMapBottom: new THREE.Texture(this.uintToCanvas(
         terrain.height, terrain.width, terrain.tileMapBottom, 3
     )),
@@ -200,7 +202,7 @@ logic.loadTerrain = function(modId) {
 	//Create the mesh
   this.plane = new THREE.Mesh(geometry, material);
   this.plane.receiveShadow = true;
-  this.plane.castShadow = true;
+  //this.plane.castShadow = true;
   
 	//And add it
   this.graphic.scene.add(this.plane);
@@ -211,7 +213,7 @@ logic.loadTerrain = function(modId) {
 	//Update our keys...
 	
 	this.panUDKey.min = terrain.height*-64 - 1024;
-	this.panUDKey.max = terrain.height*64 - 1024;
+	this.panUDKey.max = terrain.height*64;// - 1024;
 	
 	this.panLRKey.min = terrain.width*-64 - 128;
 	this.panLRKey.max = terrain.width*64 + 128;
