@@ -30,8 +30,9 @@ Graphic = function(canvas) {
 	this.loader = new THREE.JSONLoader();
 	
 	//Time tracking for light movement
-	this.dayLength = 480 * 500 / Math.PI;
+	this.dayLength = 4.80 * 500 / Math.PI;
 	this.timeDayStarted;
+	this.sunDown = false;
 	
 	/****************************************************************************
 	 **	Add events
@@ -106,7 +107,7 @@ Graphic.prototype.loadBaseScene = function() {
 	this.moon = new THREE.DirectionalLight(0xeeeeff, .33);
 	this.scene.add(this.moon);
 	
-	this.stars = new THREE.AmbientLight(0x333333);
+	this.stars = new THREE.AmbientLight(0x9A9A9A);
 	this.scene.add(this.stars);
 	
 	//Fog
@@ -124,37 +125,72 @@ Graphic.prototype.loadBaseScene = function() {
 
 Graphic.prototype.animateLights = function(elapsed) {
 	
+	//Get the point in the day (0 is noon, PI is midnight, 2PI = 0)
 	var dayTime = elapsed/this.dayLength;
 	
+	//Adjust the sun
 	this.sun.position.x = Math.sin(dayTime) * 5000;
 	this.sun.position.y = Math.cos(dayTime) * 4000;
-	this.sun.position.z = Math.cos(dayTime) * 4000;
+	this.sun.position.z = Math.cos(dayTime) * 3000 + 2000;
 	
-	this.stars.color.r = this.stars.color.g = this.stars.color.b =
-			Math.sin(this.sun.position.z/4000*Math.PI/2)*.2 + .4;
+	//Adjust shadows
+	this.sun.shadowDarkness = 0.64 * Math.sin(this.sun.position.z / 5000);
 	
+	//sun is setting...
 	if (this.sun.position.z < 2000 && this.sun.position.z > 0) {
+		
+		//Adjust color of sun (red/orange shift near sun set/rise)
 		this.sun.color.r = Math.sin(this.sun.position.z/2000/2*Math.PI);
-		this.sun.color.g = Math.pow(Math.sin(this.sun.position.z/2000/2*Math.PI), 2);
-		this.sun.color.b = Math.pow(Math.sin(this.sun.position.z/2000/2*Math.PI), 3);
-		this.sun.intensity = 1;
-	} else if (this.sun.position.z < 0) {
-		this.sun.color.r = this.sun.color.g = this.sun.color.b = 0;
-		this.sun.intensity = 0;
-	} else if (this.sun.position.z > 2000) {
-		this.sun.color.r = this.sun.color.g = this.sun.color.b = 1;
-		this.sun.intensity = 1;
+		this.sun.color.g = Math.pow(Math.sin(this.sun.position.z/2000/2*Math.PI),
+				1.75);
+		this.sun.color.b = Math.pow(Math.sin(this.sun.position.z/2000/2*Math.PI),
+				3);
+		
+		//Make stars somewhat match (i.e., stars + simple sun reflections)
+		this.stars.color.r = this.sun.color.r * 0.2 + 0.4;
+		this.stars.color.g = this.sun.color.g * 0.2 + 0.4;
+		this.stars.color.b = this.sun.color.b * 0.2 + 0.4;
+		
+		//Only change shadows once (IDK if it's expensive otherwise) on sunrise
+		if (this.sunDown) {
+			this.sunDown = false;
+			this.sun.castShadow = true;
+		}
+	
+	//Sun just set, turn off shadows (weird shit happens otherwise)
+	} else if (this.sun.position.z < 0 && !this.sunDown) {
+		this.sun.castShadow = false;
+		this.sunDown = true;
 	}
 	
+	//Adjust moon position
 	this.moon.position.x = Math.sin(dayTime/1.0366 + Math.PI) * 5000;
+	this.moon.position.y = Math.cos(dayTime/1.0366 + Math.PI) * -4000;
 	this.moon.position.z = Math.cos(dayTime/1.0366 + Math.PI) * 5000;
 	
+	//Dim moon when it sets (so it doesn't light from the bottom)
 	if (this.moon.position.z < 1000 && this.moon.position.z > 0)
 		this.moon.intensity = Math.sin((this.moon.position.z/1000)/2*Math.PI) / 4;
-	else if (this.moon.position.z < 0)
-		this.moon.intensity = 0;
-	else if (this.moon.position.z > 1000)
-		this.moon.intensity = 1/4;
+	
+	//These points are just illustrative to show where the sun/moon are
+	
+	if (!this.sunPoint) {
+		this.sunPoint = new Point(16, 0xffff00);
+		this.scene.add(this.sunPoint);
+	}
+	
+	this.sunPoint.position.x = this.sun.position.x / 10;
+	this.sunPoint.position.y = this.sun.position.y / 10;
+	this.sunPoint.position.z = this.sun.position.z / 10;
+	
+	if (!this.moonPoint) {
+		this.moonPoint = new Point(8, 0xdddddd);
+		this.scene.add(this.moonPoint);
+	}
+	
+	this.moonPoint.position.x = this.moon.position.x / 10;
+	this.moonPoint.position.y = this.moon.position.y / 10;
+	this.moonPoint.position.z = this.moon.position.z / 10;
 	
 };
 

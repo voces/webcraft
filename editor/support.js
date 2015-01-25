@@ -1,4 +1,11 @@
 
+function Point(size, color) {
+	return new THREE.Mesh(
+		new THREE.SphereGeometry(size, 32, 32),
+		new THREE.MeshBasicMaterial({color: color})
+	);
+}
+
 //removeA(array[, element1, element2, ...])
 //	Removes element1, element2, ... etc from array
 function removeA(arr) {

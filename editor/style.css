@@ -156,7 +156,7 @@ body {
  ******************************************************************************/
 
 #content {
-	height: calc(100% - 3em - 2px);
+	height: calc(100% - 3.25em);
 	overflow: hidden;
 	
 	border: solid #ddd;
@@ -226,7 +226,12 @@ body {
 }
 
 #right > div + div {
-	border-top: 1px solid #eee;
+	
+	margin-top: 1em;
+}
+
+#right > div > label {
+	border-bottom: 1px solid #eee;
 }
 
 #right > div > input {
@@ -250,6 +255,30 @@ body {
 	transform: rotate(-45deg);
 }
 
+#right fieldset {
+	border: 1px solid #eee;
+}
+
+#right fieldset.hideRadios > input[type=radio] {
+	display: none;
+}
+
+#right fieldset.hideRadios > label > img {
+	border: 0.2em inset lightgray;
+}
+
+#right fieldset.hideRadios > input[type=radio]:checked + label > img {
+	border-color: lightblue;
+}
+
+#right img {
+	max-height: 2.5em;
+}
+
+#right > div > div > fieldset > input[type=number] {
+	width: 100%;
+}
+
 /******************************************************************************
  ******************************************************************************
  *	Status
@@ -257,5 +286,6 @@ body {
  ******************************************************************************/
 
 #status {
-	height: 1em;
+	height: 1.25em;
+	font-size: 90%;
 }

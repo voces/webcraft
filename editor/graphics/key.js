@@ -10,6 +10,9 @@ Key = function(args) {
 	this.start = args.start || Date.now();
 	this.last = this.start;
 	
+	//Add method that is based off cosine
+	//	Two paramaters: vertical and horizontal compression
+	//	Horizontal = how long, vertical = steepness
 	this.method = args.method || "linear";
 	
 	//General

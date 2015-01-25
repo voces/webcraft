@@ -14,6 +14,8 @@ var logic = {
 	raycaster: new THREE.Raycaster(),
 	plane: null,
 	
+	activeTileMap: {},
+	
 	//Integer value of the currently loaded mod
 	currentMod: null,
 	
@@ -26,7 +28,9 @@ var logic = {
 	windowActive: true,
 	
 	settings: {
-		showPathingMap: false
+		showPathingMap: false,
+		transformations: [
+		]
 	},
 	
 	/****************************************************************************
@@ -44,7 +48,8 @@ var logic = {
 		property: 'x',
 		method: 'approach',
 		minRate: .01,
-		target: 0
+		rate: 0.01,
+		target: Math.PI * 17/90
 	}),
 	zoomKey: new Key({
 		property: 'z',
@@ -95,6 +100,10 @@ var logic = {
 		//Mouse
 		window.addEventListener('wheel', this.onScroll.bind(this));
 		window.addEventListener('mousemove', this.onMouseMove.bind(this));
+		window.addEventListener('click', this.onClick.bind(this));
+		
+		window.addEventListener('mousedown', this.onMouseDown.bind(this));
+		window.addEventListener('mouseup', this.onMouseUp.bind(this));
 		
 		//Menu
 		document.getElementById('menu')
@@ -142,6 +151,9 @@ var logic = {
     box.position.z = 192;
     this.graphic.scene.add(box);
     
+		this.point = new Point(8, 0xffffff);
+		this.graphic.scene.add(this.point);
+		
 	}
 };
 
@@ -183,6 +195,19 @@ logic.loadTerrain = function(modId) {
 	for (var i = 0; i < terrain.heightMap.length; i++)
 		geometry.attributes.position.array[i*3+2] = terrain.heightMap[i];
 	
+	//Build our active canvas layer (shows live selection, etc)
+	this.activeTileMap.canvas = document.createElement('canvas');
+	this.activeTileMap.canvas.width = terrain.width;
+	this.activeTileMap.canvas.height = terrain.height;
+	this.activeTileMap.context = this.activeTileMap.canvas.getContext('2d');
+	
+	this.activeTileMap.merger = new CanvasMerge(
+		this.uintToCanvas(terrain.height, terrain.width, terrain.tileMapPathing, 2),
+		this.activeTileMap.canvas
+	);
+	
+	this.activeTileMap.texture = new THREE.Texture(this.activeTileMap.canvas);
+	
   //Create our material, loading in our textures and tile maps
 	var material = TileMaterial({
     width: terrain.width,
@@ -194,9 +219,8 @@ logic.loadTerrain = function(modId) {
     tileMapTop: new THREE.Texture(this.uintToCanvas(
         terrain.height, terrain.width, terrain.tileMapTop, 3
     )),
-    tileMapInfo: new THREE.Texture(this.uintToCanvas(
-        terrain.height, terrain.width, terrain.tileMapPathing, 2
-    ))
+    tileMapInfo: this.activeTileMap.texture
+    //tileMapInfo: terrain.tileMapActiveTexture
   });
 	
 	//Create the mesh
@@ -377,9 +401,9 @@ logic.onScroll = function(e) {
 	} else {
 		
 		if (e.deltaY < 0)
-			this.angleKey.target += 0.05;
+			this.angleKey.target = this.angleKey.target + Math.PI / 64;
 		else
-			this.angleKey.target -= 0.05;
+			this.angleKey.target = this.angleKey.target - Math.PI / 64;
 		
 		if (this.graphic.keys.indexOf(this.angleKey) < 0)
 			this.graphic.keys.push(this.angleKey);
@@ -387,11 +411,46 @@ logic.onScroll = function(e) {
 	}
 }
 
+logic.getIntersect = function(mouse) {
+	
+	//Set our raycaster
+	this.raycaster.setFromCamera(mouse, this.graphic.camera);
+	
+	//Cast it against the plane and grab the intersect
+	var intersect = this.raycaster.intersectObjects([this.plane])[0];
+	
+	//Quit if no intersect
+	if (!intersect) return;
+	
+	//Adjust location of our UI point
+	this.point.position.copy(intersect.point);
+	document.getElementById('status').textContent = 'Point (' +
+			Math.round(intersect.point.x) + ', ' +
+			Math.round(intersect.point.y) + ', ' +
+			Math.round(intersect.point.z) + ')';
+	
+	//Set position (vertex) array for easy access
+	var arr = this.plane.geometry.attributes.position.array;
+	
+	//Grab the corresponding vertex (top left)
+	var vertex;
+	if ((intersect.face.a + intersect.face.b + intersect.face.c) % 3 == 2)
+		vertex = intersect.face.a;
+	else
+		vertex = intersect.face.c - 1;
+	
+	return vertex;// - Math.floor(vertex / (mods[this.currentMod].terrain.width + 1));
+	
+};
+
 logic.onMouseMove = function(e) {
 	
+	//Store the raw location of the mouse
 	this.mouseRaw.x = e.pageX;
 	this.mouseRaw.y = e.pageY;
 	
+	//A switcher to determine if we're in preoview or world camera
+	//	Used for camera movements/tilts
 	if (this.mouseRaw.y > 33 && this.mouseRaw.y < 290 && this.mouseRaw.x < 257) {
 		if (this.currentCamera == 'world') {
 			this.currentCamera = 'preview';
@@ -410,22 +469,87 @@ logic.onMouseMove = function(e) {
 		this.zoomKey.obj = this.graphic.camera.position;
 	}
 	
-	this.mouse.x = (e.offsetX / this.graphic.canvas.clientWidth) * 2 - 1;
-	this.mouse.y = (e.offsetY / this.graphic.canvas.clientHeight) * 2 - 1;
+	//Normalize the mouse coordinates ([-1, 1], [-1, 1])
+	this.mouse.x = ((e.clientX - 257) / (this.graphic.box.clientWidth - 257)) * 2 - 1;
+	this.mouse.y = ((e.clientY - 33) / this.graphic.box.clientHeight) * -2 + 1;
 	
-	this.raycaster.setFromCamera(this.mouse, this.graphic.camera);
+	//Grab the vertex
+	var vertex = this.getIntersect(this.mouse);
 	
-	var intersects = this.raycaster.intersectObjects(this.graphic.scene.children);
+	//Grab the width and height (width is + 1 for later calculations)
+	var width = mods[this.currentMod].terrain.width;
+	var height = mods[this.currentMod].terrain.height;
 	
-	if (intersects.length) {
-		OBJS = intersects;
-		
-		/*intersects[0].face.color = new THREE.Color(0xf2b640);
-		intersects[0].object.geometry.__dirtyColors = true;*/
-	}
+	//Convert vertex into tile
+	tile = vertex - Math.floor(vertex / (width+1));
 	
-	//console.log(ui.mouse);
+	//Get the coordinates of the tile
+	var x = tile % width;
+	var y = Math.floor(tile / width);
+	
+	//Clear the entire active canvas
+	this.activeTileMap.context.clearRect(0, 0, width, height);
+	
+	//Set our color to green (selection)
+	this.activeTileMap.context.fillStyle = '#010100';
+	
+	//Draw it
+	this.activeTileMap.context.fillRect(x, y, 1, 1);
+	
+	//Recalc & update
+	this.activeTileMap.merger.recalc();
+	this.activeTileMap.texture.needsUpdate = true;
+	
+	for (var i = 0; i < this.settings.transformations.length; i++)
+		this.settings.transformations[i](vertex);
+	
 }
+
+logic.onClick = function(e) {
+	
+	//Normalize the mouse coordinates ([-1, 1], [-1, 1])
+	this.mouse.x = ((e.clientX - 257) / (this.graphic.box.clientWidth - 257)) * 2 - 1;
+	this.mouse.y = ((e.clientY - 33) / this.graphic.box.clientHeight) * -2 + 1;
+	
+	//Grab the vertex
+	var vertex = this.getIntersect(this.mouse);
+	
+	this.heightTransform(vertex);
+	
+};
+
+logic.heightTransform = function(vertex) {
+	
+	var width = mods[this.currentMod].terrain.width;
+	var arr = this.plane.geometry.attributes.position.array;
+	
+	arr[vertex*3+2] += 8;
+	arr[(vertex+1)*3+2] += 8;
+	arr[(vertex+width+1)*3+2] += 8;
+	arr[(vertex+width+2)*3+2] += 8;
+	
+	this.plane.geometry.computeVertexNormals();
+	//this.plane.geometry.computeFaceNormals();
+	
+	this.plane.geometry.attributes.position.needsUpdate = true;
+	
+};
+
+logic.onMouseDown = function(e) {
+	
+	if (e.target.id != 'world') return;
+	
+	this.settings.transformations.push(this.heightTransform.bind(this));
+	
+};
+
+logic.onMouseUp = function(e) {
+	
+	if (e.target.id != 'world') return;
+	
+	this.settings.transformations.splice(
+			this.settings.transformations.indexOf(this.heightTransform), 1);
+};
 
 /******************************************************************************
  **	Window
@@ -733,16 +857,26 @@ logic.exportTerrain = function() {
  ******************************************************************************/
 
 logic.togglePathingMap = function() {
+	
+	//Toggle it
 	if (this.settings.showPathingMap)
 		this.settings.showPathingMap = false;
 	else
 		this.settings.showPathingMap = true;
 	
+	//Update HTML
 	document.getElementById('showPathingMap').dataset.enabled =
 			this.settings.showPathingMap;
 	
-	/*this.plane.material.uniforms.uShowInfo.value =
-			this.settings.showPathingMap ? 1 : 0;*/
+	//Switch to merger if showing pathing map
+	if (this.settings.showPathingMap)
+		this.activeTileMap.texture.image = this.activeTileMap.merger.canvas;
+	
+	//Otherwise switch to active
+	else this.activeTileMap.texture.image = this.activeTileMap.canvas;
+	
+	//Refresh to show
+	this.activeTileMap.texture.needsUpdate = true;
 };
 
 /******************************************************************************

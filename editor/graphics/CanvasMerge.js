@@ -18,7 +18,9 @@ function CanvasMerge(bottom, top) {
 
 CanvasMerge.prototype.recalc = function() {
 	
-	this.context.drawImage(bottom, 0, 0);
-	this.context.drawImage(top, 0, 0);
+	this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	
+	this.context.drawImage(this.bottom, 0, 0);
+	this.context.drawImage(this.top, 0, 0);
 	
 };

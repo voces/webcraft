@@ -48,7 +48,8 @@ function TileMaterial(prop) {
 	var uniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.phong.uniforms);
 	
 	//Phong is shiny! We don't currently support all our mappings (diffuse, etc)
-	uniforms.shininess.value = 1;
+	uniforms.shininess.value = 5;
+	//uniforms.emissive.value = new THREE.Color(1, 0.07, 0.07);
 	
 	//Load our tile-specific uniforms
 	

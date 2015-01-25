@@ -94,7 +94,49 @@
 				<div>
 					<input type="checkbox" id="terrain" checked>
 					<label for="terrain">Terrain <span class="caret"></label>
-					<div>Content a</div>
+					<div>
+						<fieldset>
+							<legend>
+								<input type="checkbox" id="taTex"
+								><label for="taTex">Apply Texture</label>
+							</legend>
+						</fieldset>
+						<fieldset>
+							<legend>
+								<input type="checkbox" id="taCliff"
+								><label for="taCliff">Apply Cliff</label>
+							</legend>
+						</fieldset>
+						<fieldset class="hideRadios">
+							<legend>
+								<input type="checkbox" id="taHeight"
+								><label for="taHeight">Apply Height: <span id="taHeightMode">Raise</span></label>
+							</legend>
+							<input type="radio" name="taHeightRadio" id="taHeightRaise" checked
+							><label for="taHeightRaise"><img src="img/raise.png"/></label>
+							<input type="radio" name="taHeightRadio" id="taHeightLower"
+							><label for="taHeightLower"><img src="img/lower.png"/></label>
+						</fieldset>
+						<fieldset>
+							
+							<legend>
+								<input type="checkbox" id="terrainBrush"
+								><label for="terrainBrush">Brush</label>
+							</legend>
+							
+							<div>Size</div>
+							<input id="terrainBrushSize" type="number" min="1" value="1">
+							
+							<div>Type</div>
+							
+							<input id="terrainBrushTypeCircle" name="terrainBrushType" type="radio" checked
+							><label for="terrainBrushTypeCircle">Circle</label>
+							
+							<input id="terrainBrushTypeSquare" name="terrainBrushType" type="radio"
+							><label for="terrainBrushTypeSquare">Square</label>
+							
+						</fieldset>
+					</div>
 				</div>
 				<div>
 					<input type="checkbox" id="widgets">

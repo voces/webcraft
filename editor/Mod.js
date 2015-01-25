@@ -55,15 +55,29 @@ function Mod(props) {
 		};
     
     //Set both the top and bottom layers to plain dirt
+		var rand;
     for (var i = 0; i < ssize; i++) {
       
+			//Set top to dirt
       this.terrain.tileMapTop[i*3+2] = 1;
 			
-			//this.terrain.tileMapTop[i*3+1] = 3;
+			//Set top to random whole variation
+			rand = Math.random();
+			if (rand < 0.03)
+				rand = THREE.Math.randInt(14, 18);
+			else if (rand < 0.10)
+				rand = THREE.Math.randInt(10, 14);
+			else if (rand < 0.25)
+				rand = THREE.Math.randInt(6, 10);
+			else if (rand < 0.75)
+				rand = THREE.Math.randInt(2, 6);
+			else
+				rand = THREE.Math.randInt(0, 2);	
 			
-      this.terrain.tileMapTop[i*3] = 7;
-      this.terrain.tileMapTop[i*3+1] = 2;
+      this.terrain.tileMapTop[i*3] = Mod.wholeTiles[rand][0];
+      this.terrain.tileMapTop[i*3+1] = Mod.wholeTiles[rand][1];
       
+			//Set to dirt & basic
       this.terrain.tileMapBottom[i*3+2] = 1;
       this.terrain.tileMapBottom[i*3+1] = 3;
       
@@ -241,18 +255,11 @@ Mod.load = function(file) {
 	
 };
 
-//Converts a base64 encoded string into a uint8 array (using a window function,
-//	ugh)
-Mod.prototype.b642uint = function(b64) {
-	return new Uint8ClampedArray(this.window.atob(b64).split('').map(function(c) {
-		return c.charCodeAt(0);}));
-};
-
-//Converts a uint8 array into a base64 encoded string (using a window function,
-//	ugh)
-Mod.prototype.uint2b64 = function(uint) {
-	return this.window.btoa(String.fromCharCode.apply(null, uint));
-};
+Mod.wholeTiles = [
+	[0, 3], [3, 0], [4, 0], [4, 1], [4, 2], [4, 3],
+	[5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1],
+	[6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3]
+];
 
 //Recursively save our code
 Mod.prototype.rCodeSave = function(obj, header, level) {
