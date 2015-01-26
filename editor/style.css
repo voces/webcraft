@@ -1,4 +1,8 @@
 
+/*********************************
+ *	background-color:	#535353
+ *********************************/
+
 body {
 	margin: 0;
 	position: absolute;
@@ -16,6 +20,11 @@ body {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+}
+
+body.lightSwitch {
+	background-color: #555;
+	color: white;
 }
 
 .caret {
@@ -42,13 +51,16 @@ body {
 	position: relative;
 	z-index: 2;
 	
-	color: dimgray;
+	/*color: dimgray;*/
+	background-color: #555;
 	line-height: 1;
 }
 
 #menu ul {
 	padding: 0;
 	margin: 0;
+	
+	background-color: #555;
 }
 
 #menu > ul {
@@ -64,7 +76,7 @@ body {
 	display: inline-block;
 	position: relative;
 	list-style-type: none;
-	background-color: white;
+	background-color: #555;
 }
 
 #menu li > a {
@@ -76,6 +88,7 @@ body {
 }
 
 #menu ul ul {
+	z-index: 3;
 	position: absolute;
 	display: none;
 	box-shadow: 0 0 0.25em 0 #ddd;
@@ -91,7 +104,7 @@ body {
 
 #menu li.hr {
 	display: block;
-	border-top: 0.1em solid #ddd;
+	border-top: 2px groove gray;
 	padding: 0 1.25em;
 }
 
@@ -101,7 +114,12 @@ body {
 }
 
 #menu li:hover {
-	background-color: #eee;
+	/*background-color: #eee;*/
+	cursor: pointer;
+}
+
+#menu li:hover > a {
+	text-decoration: underline;
 	cursor: pointer;
 }
 
@@ -159,7 +177,7 @@ body {
 	height: calc(100% - 3.25em);
 	overflow: hidden;
 	
-	border: solid #ddd;
+	border: solid #333;
 	border-width: 1px 0;
 	
 	white-space: nowrap;
@@ -180,16 +198,16 @@ body {
 	height: 16em;
 	width: 0;
 	left: 16em;
-	border-right: 1px solid #ddd;
+	border-right: 1px solid #333;
 }
 
 #properties {
 	height: calc(100% - 16em - 1px);
 	position: relative;
-	border-top: 1px solid #ddd;
-	border-right: 1px solid #ddd;
+	border-top: 1px solid #333;
+	border-right: 1px solid #333;
 	width: 16em;
-	background-color: white;
+	background-color: #555;
 }
 
 #preview {
@@ -206,7 +224,7 @@ body {
 	width: calc(100% - 14em - 2px);
 	
 	margin-left: calc(-16em - 1px);
-	border: solid #ddd;
+	border: solid #333;
 	border-width: 0 1px 0 0;
 }
 
@@ -225,13 +243,13 @@ body {
 	white-space: normal;
 }
 
-#right > div + div {
-	
-	margin-top: 1em;
+#right > div {
+	border-top: 2px groove #777;
+	margin-bottom: 1em;
 }
 
 #right > div > label {
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #333;
 }
 
 #right > div > input {
@@ -256,7 +274,8 @@ body {
 }
 
 #right fieldset {
-	border: 1px solid #eee;
+	border: 1px solid #333;
+	margin-top: 0.5em;
 }
 
 #right fieldset.hideRadios > input[type=radio] {
@@ -275,8 +294,38 @@ body {
 	max-height: 2.5em;
 }
 
-#right > div > div > fieldset > input[type=number] {
-	width: 100%;
+#right select {
+	background-color: #444;
+	color: white;
+	border: 1px solid #333;
+}
+
+#right .range {
+	background-color: #555;
+	display: block;
+}
+
+#right .range > output {
+	display: inline-block;
+	background-color: #444;
+	border: 1px solid #333;
+	font-size: 80%;
+	width: 1em;
+	text-align: right;
+	padding: 0.2em 0.75em;
+}
+
+#right .range > input {
+	width: 5em;
+	height: 1em;
+	
+	-webkit-appearance: none;
+	
+	display: none;
+}
+
+#right .range:hover > input {
+	display: inline-block;
 }
 
 /******************************************************************************

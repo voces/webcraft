@@ -30,7 +30,7 @@ Graphic = function(canvas) {
 	this.loader = new THREE.JSONLoader();
 	
 	//Time tracking for light movement
-	this.dayLength = 4.80 * 500 / Math.PI;
+	this.dayLength = 480 * 500 / Math.PI;
 	this.timeDayStarted;
 	this.sunDown = false;
 	
@@ -174,7 +174,7 @@ Graphic.prototype.animateLights = function(elapsed) {
 	
 	//These points are just illustrative to show where the sun/moon are
 	
-	if (!this.sunPoint) {
+	/*if (!this.sunPoint) {
 		this.sunPoint = new Point(16, 0xffff00);
 		this.scene.add(this.sunPoint);
 	}
@@ -190,7 +190,7 @@ Graphic.prototype.animateLights = function(elapsed) {
 	
 	this.moonPoint.position.x = this.moon.position.x / 10;
 	this.moonPoint.position.y = this.moon.position.y / 10;
-	this.moonPoint.position.z = this.moon.position.z / 10;
+	this.moonPoint.position.z = this.moon.position.z / 10;*/
 	
 };
 

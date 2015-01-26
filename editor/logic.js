@@ -154,6 +154,14 @@ var logic = {
 		this.point = new Point(8, 0xffffff);
 		this.graphic.scene.add(this.point);
 		
+		/**************************************************************************
+		 **	Contained UI (things to short to warrant functions)
+		 **************************************************************************/
+		
+		document.getElementById('tbSizeIn').addEventListener('input', function(e) {
+			document.getElementById('tbSizeOut').value = e.target.value;
+		});
+		
 	}
 };
 
@@ -194,6 +202,9 @@ logic.loadTerrain = function(modId) {
 	//OK, let's apply the height map...
 	for (var i = 0; i < terrain.heightMap.length; i++)
 		geometry.attributes.position.array[i*3+2] = terrain.heightMap[i];
+	
+	//Calculate our normals (for lighting)
+	geometry.computeVertexNormals();
 	
 	//Build our active canvas layer (shows live selection, etc)
 	this.activeTileMap.canvas = document.createElement('canvas');
@@ -529,7 +540,6 @@ logic.heightTransform = function(vertex) {
 	arr[(vertex+width+2)*3+2] += 8;
 	
 	this.plane.geometry.computeVertexNormals();
-	//this.plane.geometry.computeFaceNormals();
 	
 	this.plane.geometry.attributes.position.needsUpdate = true;
 	

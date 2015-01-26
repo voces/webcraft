@@ -5,6 +5,7 @@
 	<head>
 		<title>Terrain Editor</title> 
 		<link rel="stylesheet" href="style.css" type="text/css"/>
+		<link rel="stylesheet" href="elementStyle.css" type="text/css"/>
 		
 		<!-- General support classes -->
 		<script src="../os/three.min.js"></script>
@@ -30,7 +31,7 @@
 		
 	</head>
 
-	<body>
+	<body class="lightSwitch">
 		<nav id="menu">
 			<ul>
 				<li>
@@ -119,21 +120,21 @@
 						</fieldset>
 						<fieldset>
 							
-							<legend>
-								<input type="checkbox" id="terrainBrush"
-								><label for="terrainBrush">Brush</label>
-							</legend>
+							<legend>Brush</legend>
 							
-							<div>Size</div>
-							<input id="terrainBrushSize" type="number" min="1" value="1">
+							<p class="range">
+								<span>Size:</span>
+								<output id="tbSizeOut">1</output>
+								<input id="tbSizeIn" type="range" min="1" max="10" value="1" />
+							</p>
 							
-							<div>Type</div>
-							
-							<input id="terrainBrushTypeCircle" name="terrainBrushType" type="radio" checked
-							><label for="terrainBrushTypeCircle">Circle</label>
-							
-							<input id="terrainBrushTypeSquare" name="terrainBrushType" type="radio"
-							><label for="terrainBrushTypeSquare">Square</label>
+							<p>
+								<span>Type:</span>
+								<select>
+									<option>Circle</option>
+									<option>Square</option>
+								</select>
+							</p>
 							
 						</fieldset>
 					</div>
