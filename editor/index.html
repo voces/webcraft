@@ -4,8 +4,8 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no">
 	<head>
 		<title>Terrain Editor</title> 
-		<link rel="stylesheet" href="style.css" type="text/css"/>
-		<link rel="stylesheet" href="elementStyle.css" type="text/css"/>
+		<link rel="stylesheet" href="terrain/style.css" type="text/css"/>
+		<link rel="stylesheet" href="terrain/elementStyle.css" type="text/css"/>
 		
 		<!-- General support classes -->
 		<script src="../os/three.min.js"></script>
@@ -14,20 +14,26 @@
 		<script src="support.js"></script>
 		
 		<!-- Graphics -->
-		<script src="graphics/graphic.js"></script>
-		<script src="graphics/key.js"></script>
+		<script src="terrain/Graphic.js"></script>
+		<script src="terrain/Key.js"></script>
     
-    <script src="graphics/shaders.js"></script>
-		<script src="graphics/TileTexture.js"></script>
-		<script src="graphics/TileMaterial.js"></script>
-		<script src="graphics/CanvasMerge.js"></script>
+    <script src="terrain/shaders.js"></script>
+		<script src="terrain/TileTexture.js"></script>
+		<script src="terrain/TileMaterial.js"></script>
+		<script src="terrain/CanvasMerge.js"></script>
 		
 		<!-- Mods -->
 		<script src="Emitter.js"></script>
 		<script src="Mod.js"></script>
 		
 		<!-- Driver -->
-		<script src="logic.js"></script>
+		<script src="terrain/logic.js"></script>
+		<script src="terrain/terrain.js"></script>
+		<script src="terrain/menu.js"></script>
+		<script src="terrain/camera.js"></script>
+		<script src="terrain/mods.js"></script>
+		<script src="terrain/transformers.js"></script>
+		<script src="terrain/terrainPalette.js"></script>
 		
 	</head>
 
@@ -92,9 +98,9 @@
 				<canvas id="world"></canvas>
 			</div
 			><div id="right">
-				<div>
-					<input type="checkbox" id="terrain" checked>
-					<label for="terrain">Terrain <span class="caret"></label>
+				<form name="terrain">
+					<input type="checkbox" id="terrainPalette" checked>
+					<label for="terrainPalette">Terrain <span class="caret"></label>
 					<div>
 						<fieldset>
 							<legend>
@@ -108,14 +114,14 @@
 								><label for="taCliff">Apply Cliff</label>
 							</legend>
 						</fieldset>
-						<fieldset class="hideRadios">
+						<fieldset class="hideRadios" id="taHeightRadio" name="height">
 							<legend>
 								<input type="checkbox" id="taHeight"
 								><label for="taHeight">Apply Height: <span id="taHeightMode">Raise</span></label>
 							</legend>
-							<input type="radio" name="taHeightRadio" id="taHeightRaise" checked
+							<input type="radio" name="heightRadios" id="taHeightRaise" checked
 							><label for="taHeightRaise"><img src="img/raise.png"/></label>
-							<input type="radio" name="taHeightRadio" id="taHeightLower"
+							<input type="radio" name="heightRadios" id="taHeightLower"
 							><label for="taHeightLower"><img src="img/lower.png"/></label>
 						</fieldset>
 						<fieldset>
@@ -125,7 +131,13 @@
 							<p class="range">
 								<span>Size:</span>
 								<output id="tbSizeOut">1</output>
-								<input id="tbSizeIn" type="range" min="1" max="10" value="1" />
+								<input id="tbSizeIn" type="range" min="1" max="10" step="0.25" value="1" />
+							</p>
+							
+							<p class="range">
+								<span>Strength:</span>
+								<output id="tbStrengthOut">1</output>
+								<input id="tbStrengthIn" type="range" min="-10" max="10" step="0.25" value="1" />
 							</p>
 							
 							<p>
@@ -138,17 +150,17 @@
 							
 						</fieldset>
 					</div>
-				</div>
-				<div>
+				</form>
+				<form>
 					<input type="checkbox" id="widgets">
 					<label for="widgets">Widgets <span class="caret"></label>
 					<div>Content b</div>
-				</div>
-				<div>
+				</form>
+				<form>
 					<input type="checkbox" id="geometry">
 					<label for="geometry">Geometry <span class="caret"></label>
 					<div>Content c</div>
-				</div>
+				</form>
 			</div>
 		</div>
 		<div id="status">row 3</div>

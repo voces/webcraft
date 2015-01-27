@@ -30,7 +30,7 @@ Graphic = function(canvas) {
 	this.loader = new THREE.JSONLoader();
 	
 	//Time tracking for light movement
-	this.dayLength = 480 * 500 / Math.PI;
+	this.dayLength = 4.80 * 500 / Math.PI;
 	this.timeDayStarted;
 	this.sunDown = false;
 	
@@ -83,7 +83,7 @@ Graphic.prototype.loadBaseScene = function() {
 	
 	//Sun
 	
-	this.sun = new THREE.DirectionalLight(0xffffff, .64);
+	this.sun = new THREE.DirectionalLight(0xffffff, 0.80);
 	
 	this.sun.castShadow = true;
 	//this.sun.shadowCameraVisible = true;
@@ -104,7 +104,8 @@ Graphic.prototype.loadBaseScene = function() {
 	
 	//Moon & stars
 	
-	this.moon = new THREE.DirectionalLight(0xeeeeff, .33);
+	this.moon = new THREE.DirectionalLight(0xeeeeff, 0.30);
+	
 	this.scene.add(this.moon);
 	
 	this.stars = new THREE.AmbientLight(0x9A9A9A);
@@ -147,9 +148,9 @@ Graphic.prototype.animateLights = function(elapsed) {
 				3);
 		
 		//Make stars somewhat match (i.e., stars + simple sun reflections)
-		this.stars.color.r = this.sun.color.r * 0.2 + 0.4;
-		this.stars.color.g = this.sun.color.g * 0.2 + 0.4;
-		this.stars.color.b = this.sun.color.b * 0.2 + 0.4;
+		this.stars.color.r = this.sun.color.r * 0.4 + 0.1;
+		this.stars.color.g = this.sun.color.g * 0.4 + 0.1;
+		this.stars.color.b = this.sun.color.b * 0.4 + 0.1;
 		
 		//Only change shadows once (IDK if it's expensive otherwise) on sunrise
 		if (this.sunDown) {
@@ -169,8 +170,9 @@ Graphic.prototype.animateLights = function(elapsed) {
 	this.moon.position.z = Math.cos(dayTime/1.0366 + Math.PI) * 5000;
 	
 	//Dim moon when it sets (so it doesn't light from the bottom)
-	if (this.moon.position.z < 1000 && this.moon.position.z > 0)
-		this.moon.intensity = Math.sin((this.moon.position.z/1000)/2*Math.PI) / 4;
+	if (this.moon.position.z < 2000 && this.moon.position.z > 0)
+		this.moon.intensity =
+				Math.sin((this.moon.position.z/2000)/2*Math.PI) * 0.30;
 	
 	//These points are just illustrative to show where the sun/moon are
 	

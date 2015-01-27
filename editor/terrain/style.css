@@ -243,33 +243,33 @@ body.lightSwitch {
 	white-space: normal;
 }
 
-#right > div {
+#right > form {
 	border-top: 2px groove #777;
 	margin-bottom: 1em;
 }
 
-#right > div > label {
+#right > form > label {
 	border-bottom: 1px solid #333;
 }
 
-#right > div > input {
+#right > form > input {
 	display: none;
 }
 
-#right > div > input ~ label {
+#right > form > input ~ label {
 	display: block;
 	padding: 0.25em 0.5em;
 }
 
-#right > div > input ~ div {
+#right > form > input ~ div {
 	display: none;
 }
 
-#right > div > input:checked ~ div {
+#right > form > input:checked ~ div {
 	display: block;
 }
 
-#right > div > input:checked ~ label > .caret {
+#right > form > input:checked ~ label > .caret {
 	transform: rotate(-45deg);
 }
 
@@ -310,7 +310,7 @@ body.lightSwitch {
 	background-color: #444;
 	border: 1px solid #333;
 	font-size: 80%;
-	width: 1em;
+	width: 1.25em;
 	text-align: right;
 	padding: 0.2em 0.75em;
 }
