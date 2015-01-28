@@ -1,68 +1,107 @@
 
+(function(logic) {
+
 /******************************************************************************
  ******************************************************************************
  *	Transformers
  ******************************************************************************
  ******************************************************************************/
 
-logic.transformers.list[0].func = 
-logic.heightTransform = function(vertex) {
+var transformers = {
 	
-	var width = mods[this.currentMod].terrain.width;
-	var arr = this.plane.geometry.attributes.position.array;
+	//Modifies the height of vertices
+	height: {
+		enabled: false,
+		active: false,
+		direction: 1,
+		func: function(vertex) {
+			
+			//Grab all our stuff (positions to be modified, how much, and one for
+			//		easy access)
+			var positions = getPositions(vertex);
+			var modifier = brush.strength * transformers.height.direction;
+			var positionArray = logic.plane.geometry.attributes.position.array;
+			
+			//Modify them
+			for (var i = 0, position; position = positions[i]; i++)
+				positionArray[position] += modifier;
+			
+			//Make sure geometry is updated
+			logic.plane.geometry.computeVertexNormals();
+			logic.plane.geometry.attributes.position.needsUpdate = true;
+			
+		}
+	},
 	
-	arr[vertex*3+2] += 8;
-	arr[(vertex+1)*3+2] += 8;
-	arr[(vertex+width+1)*3+2] += 8;
-	arr[(vertex+width+2)*3+2] += 8;
 	
-	this.plane.geometry.computeVertexNormals();
-	
-	this.plane.geometry.attributes.position.needsUpdate = true;
-	
-}.bind(logic);
+	texture: {
+		enabled: false,
+		active: false,
+		index: 0,
+		func: function(vertex) {
+				
+				
+				
+		}
+	}
+};
+
+//Send our transformers to an array for easy & efficient use
+var transformersArray = [];
+for (var transformer in transformers)
+	if(transformers.hasOwnProperty(transformer))
+		transformersArray.push(transformers[transformer]);;
 
 /******************************************************************************
  ******************************************************************************
- *	Misc (support)
+ *	Objects
  ******************************************************************************
  ******************************************************************************/
 
-logic.getVertices = function(primary) {
-	
+var brush = {
+	size: 1,
+	strength: 8,
+	type: 'circle'
 };
 
-logic.getIntersect = function(mouse) {
+//Objects from outside (DOM or otherwise)
+var box;
+var camera;
+var uiPoint;
+
+/******************************************************************************
+ ******************************************************************************
+ *	Support
+ ******************************************************************************
+ ******************************************************************************/
+
+//Takes a corner vertex and gives all the positions that should be modified
+//	At the moment it returns a 1x1 square...
+function getPositions(vertex) {
 	
-	//Set our raycaster
-	this.raycaster.setFromCamera(mouse, this.graphic.camera);
+	//For easy access
+	var width = mods[logic.currentMod].terrain.width;
+	var positions = logic.plane.geometry.attributes.position.array;
 	
-	//Cast it against the plane and grab the intersect
-	var intersect = this.raycaster.intersectObjects([this.plane])[0];
+	//The array to be returned
+	var arr = [];
 	
-	//Quit if no intersect
-	if (!intersect) return;
+	//Build it (the 1x1 ATM)
+	arr.push(vertex*3+2, (vertex+1)*3+2,
+			(vertex+width+1)*3+2, (vertex+width+2)*3+2);
 	
-	//Adjust location of our UI point
-	this.point.position.copy(intersect.point);
-	document.getElementById('status').textContent = 'Point (' +
-			Math.round(intersect.point.x) + ', ' +
-			Math.round(intersect.point.y) + ', ' +
-			Math.round(intersect.point.z) + ')';
+	//And return
+	return arr;
+}
+
+//Eventually this will take a primary vertex and return a list of vertices
+function getVertices(primary) {
 	
-	//Set position (vertex) array for easy access
-	var arr = this.plane.geometry.attributes.position.array;
+	var arr = [primary];
 	
-	//Grab the corresponding vertex (top left)
-	var vertex;
-	if ((intersect.face.a + intersect.face.b + intersect.face.c) % 3 == 2)
-		vertex = intersect.face.a;
-	else
-		vertex = intersect.face.c - 1;
+	return arr;
 	
-	return vertex;// - Math.floor(vertex / (mods[this.currentMod].terrain.width + 1));
-	
-};
+}
 
 /******************************************************************************
  ******************************************************************************
@@ -70,95 +109,103 @@ logic.getIntersect = function(mouse) {
  ******************************************************************************
  ******************************************************************************/
 
-logic.onMouseMove = function(e) {
-	
-	//Store the raw location of the mouse
-	this.mouseRaw.x = e.pageX;
-	this.mouseRaw.y = e.pageY;
-	
-	//A switcher to determine if we're in preoview or world camera
-	//	Used for camera movements/tilts
-	if (this.mouseRaw.y > 33 && this.mouseRaw.y < 290 && this.mouseRaw.x < 257) {
-		if (this.currentCamera == 'world') {
-			this.currentCamera = 'preview';
-			
-			this.panLRKey.obj = this.graphic.previewCamera.position;
-			this.panUDKey.obj = this.graphic.previewCamera.position;
-			this.angleKey.obj = this.graphic.previewCamera.rotation;
-			this.zoomKey.obj = this.graphic.previewCamera.position;
-		}
-	} else if (this.currentCamera == 'preview') {
-		this.currentCamera = 'world';
-		
-		this.panLRKey.obj = this.graphic.camera.position;
-		this.panUDKey.obj = this.graphic.camera.position;
-		this.angleKey.obj = this.graphic.camera.rotation;
-		this.zoomKey.obj = this.graphic.camera.position;
-	}
+//Calls when the mouse presses down (world bound);
+function onClick(e) {
 	
 	//Normalize the mouse coordinates ([-1, 1], [-1, 1])
-	this.mouse.x = ((e.clientX - 257) / (this.graphic.box.clientWidth - 257)) * 2 - 1;
-	this.mouse.y = ((e.clientY - 33) / this.graphic.box.clientHeight) * -2 + 1;
+	var mouse = new THREE.Vector2(
+		((e.clientX - 257) / (box.clientWidth - 257)) * 2 - 1,
+		((e.clientY - 33) / box.clientHeight) * -2 + 1
+	);
 	
 	//Grab the vertex
-	var vertex = this.getIntersect(this.mouse);
+	var vertex = logic.getIntersect(mouse);
 	
-	//Grab the width and height (width is + 1 for later calculations)
-	var width = mods[this.currentMod].terrain.width;
-	var height = mods[this.currentMod].terrain.height;
-	
-	//Convert vertex into tile
-	tile = vertex - Math.floor(vertex / (width+1));
-	
-	//Get the coordinates of the tile
-	var x = tile % width;
-	var y = Math.floor(tile / width);
-	
-	//Clear the entire active canvas
-	this.activeTileMap.context.clearRect(0, 0, width, height);
-	
-	//Set our color to green (selection)
-	this.activeTileMap.context.fillStyle = '#010100';
-	
-	//Draw it
-	this.activeTileMap.context.fillRect(x, y, 1, 1);
-	
-	//Recalc & update
-	this.activeTileMap.merger.recalc();
-	this.activeTileMap.texture.needsUpdate = true;
-	
-	for (var i = 0, transformer; transformer = this.transformers.list[i]; i++)
-		if (transformer.active)
-			transformer.func(vertex);
+	for (var i = 0; i < transformersArray.length; i++)
+		if (transformersArray[i].enabled)
+			transformersArray[i].func(vertex);
 	
 }
 
-logic.onClick = function(e) {
-	
-	//Normalize the mouse coordinates ([-1, 1], [-1, 1])
-	this.mouse.x = ((e.clientX - 257) / (this.graphic.box.clientWidth - 257)) * 2 - 1;
-	this.mouse.y = ((e.clientY - 33) / this.graphic.box.clientHeight) * -2 + 1;
-	
-	//Grab the vertex
-	var vertex = this.getIntersect(this.mouse);
-	
-	for (var i = 0; i < this.transformers.list.length; i++)
-		this.transformers.list[i].func(vertex);
-	
-};
-
-logic.onMouseDown = function(e) {
+//Calls when the mouse presses down (world bound)
+function onMouseDown(e) {
 	
 	if (e.target.id != 'world') return;
 	
-	this.transformers.list[0].active = true;
+	for (var i = 0; i < transformersArray.length; i++)
+		if (transformersArray[i].enabled)
+			transformersArray[i].active = true;
 	
 };
 
-logic.onMouseUp = function(e) {
+//Called when the mouse picks up (window bound)
+function onMouseUp(e) {
 	
-	if (e.target.id != 'world') return;
-	
-	this.transformers.list[0].active = false;
+	for (var i = 0; i < transformersArray.length; i++)
+		if (transformersArray[i].enabled)
+			transformersArray[i].active = false;
 	
 };
+
+//Called when the page loads
+function init() {
+	
+	//For easy access
+	var world = document.getElementById('world');
+	
+	//Set some objects that we have to wait for init for
+	box = document.getElementById('box');
+	camera = logic.graphic.camera;
+	uiPoint = logic.point;
+	
+	//Attach events
+	world.addEventListener('click', onClick);
+	world.addEventListener('mousedown', onMouseDown);
+	window.addEventListener('mouseup', onMouseUp);
+}
+
+/******************************************************************************
+ ******************************************************************************
+ *	Export
+ ******************************************************************************
+ ******************************************************************************/
+
+//Calls our init when the page loads
+logic.initializers.push(init);
+
+//User to fire transforms, generally called from an external onMouseMove
+//	Only fires those that are enabled and active
+logic.fireTransformers = function(vertex) {
+	for (var i = 0, transformer; transformer = transformersArray[i]; i++)
+		if (transformer.enabled && transformer.active)
+			transformer.func(vertex);
+};
+
+//Used to set the size of the brush (must be an integer > 0)
+logic.setBrushSize = function(size) {
+	if (typeof size === 'number' && (size%1) === 0 && size > 0)
+			brush.size = size;
+};
+
+//Used to set the size of the brush (must be an integer)
+logic.setBrushStrength = function(strength) {
+	if (typeof strength === 'number' && (strength%1) === 0)
+			brush.strength = strength;
+};
+
+//Used to enable/disable transformers
+logic.setTransformer = function(which, state) {
+	if (typeof transformers[which] === 'object' &&
+			typeof transformers[which].enabled === 'boolean' &&
+			typeof state === 'boolean')
+		transformers[which].enabled = state;
+};
+
+//Used to set the direction on the height transformer
+logic.setTransformerHeightDirection = function(direction) {
+	if (direction === -1 || direction === 1)
+		transformers.height.direction = direction;
+}
+
+})(logic);
+

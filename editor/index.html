@@ -38,6 +38,7 @@
 	</head>
 
 	<body class="lightSwitch">
+		
 		<nav id="menu">
 			<ul>
 				<li>
@@ -90,42 +91,49 @@
 		</nav>
 		
 		<div id="content">
+			
 			<div id="left">
 				<div class="spacer"></div>
 				<div id="properties">Properties</div>
 			</div
+			
 			><div id="box">
 				<canvas id="world"></canvas>
 			</div
+			
 			><div id="right">
+				
 				<form name="terrain">
 					<input type="checkbox" id="terrainPalette" checked>
 					<label for="terrainPalette">Terrain <span class="caret"></label>
 					<div>
+						
 						<fieldset>
 							<legend>
 								<input type="checkbox" id="taTex"
 								><label for="taTex">Apply Texture</label>
 							</legend>
 						</fieldset>
+						
 						<fieldset>
 							<legend>
 								<input type="checkbox" id="taCliff"
 								><label for="taCliff">Apply Cliff</label>
 							</legend>
 						</fieldset>
+						
 						<fieldset class="hideRadios" id="taHeightRadio" name="height">
 							<legend>
 								<input type="checkbox" id="taHeight"
 								><label for="taHeight">Apply Height: <span id="taHeightMode">Raise</span></label>
 							</legend>
-							<input type="radio" name="heightRadios" id="taHeightRaise" checked
+							<input type="radio" name="heightRadios" id="taHeightRaise"
 							><label for="taHeightRaise"><img src="img/raise.png"/></label>
 							<input type="radio" name="heightRadios" id="taHeightLower"
 							><label for="taHeightLower"><img src="img/lower.png"/></label>
 						</fieldset>
+						
 						<fieldset>
-							
 							<legend>Brush</legend>
 							
 							<p class="range">
@@ -136,8 +144,8 @@
 							
 							<p class="range">
 								<span>Strength:</span>
-								<output id="tbStrengthOut">1</output>
-								<input id="tbStrengthIn" type="range" min="-10" max="10" step="0.25" value="1" />
+								<output id="tbStrengthOut">8</output>
+								<input id="tbStrengthIn" type="range" min="1" max="10" step="0.25" value="2.75" />
 							</p>
 							
 							<p>
@@ -151,18 +159,22 @@
 						</fieldset>
 					</div>
 				</form>
+				
 				<form>
 					<input type="checkbox" id="widgets">
 					<label for="widgets">Widgets <span class="caret"></label>
 					<div>Content b</div>
 				</form>
+				
 				<form>
 					<input type="checkbox" id="geometry">
 					<label for="geometry">Geometry <span class="caret"></label>
 					<div>Content c</div>
 				</form>
+				
 			</div>
 		</div>
+		
 		<div id="status">row 3</div>
 		
 		<script>

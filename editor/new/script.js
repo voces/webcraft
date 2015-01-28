@@ -1,5 +1,7 @@
 
-var mods = window.opener.mods || new Emitter([]);
+var mods = window.opener ?
+		window.opener.mods || new Emitter([]) :
+		new Emitter([]);
 
 $(document).ready(function() {
 	

@@ -9,6 +9,8 @@ logic.setMod = function(modId) {
 	
 	this.currentMod = modId;
 	
+	this.loadTerrain(modId);
+	
 };
 
 //Called when the push event is emitted for mods
@@ -32,7 +34,7 @@ logic.newMod = function(e) {
 	
 	//Okay, let's load the terrain if required
 	if (this.windowActive || this.plane == null)
-		this.loadTerrain(e.detail.id);
+		this.setMod(e.detail.id);
 	
 };
 

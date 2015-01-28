@@ -355,8 +355,9 @@ logic.menuSwitch = function(e) {
 	if (modId && modId.indexOf('_') >= 0) {
 		modId = modId.split('_')[1];
 		
-		this.currentMod = modId;
-    this.loadTerrain(modId);
+		this.setMod(modId);
+		/*this.currentMod = modId;
+    this.loadTerrain(modId);*/
 		
 		return;
 	}

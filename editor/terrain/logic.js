@@ -5,6 +5,8 @@ var mods = window.opener ?
 
 var logic = {
 	
+	initializers: [],
+	
 	graphic: null,
 	
 	//Objects we need
@@ -30,26 +32,6 @@ var logic = {
 	settings: {
 		showPathingMap: false,
 		transformations: [
-		]
-	},
-	
-	/****************************************************************************
-	 *	Transformers
-	 ****************************************************************************/
-	
-	transformers: {
-		brush: {
-			size: 1,
-			type: 'circle'
-		},
-		list: [
-			{
-				which: 'height',
-				enabled: false,
-				active: false,
-				strength: 8,
-				func: null
-			}
 		]
 	},
 	
@@ -126,10 +108,6 @@ var logic = {
 		//Mouse
 		window.addEventListener('wheel', this.onScroll.bind(this));
 		window.addEventListener('mousemove', this.onMouseMove.bind(this));
-		window.addEventListener('click', this.onClick.bind(this));
-		
-		window.addEventListener('mousedown', this.onMouseDown.bind(this));
-		window.addEventListener('mouseup', this.onMouseUp.bind(this));
 		
 		//Menu
 		document.getElementById('menu')
@@ -143,6 +121,25 @@ var logic = {
 		//Window
 		window.addEventListener('focus', this.windowFocus.bind(this));
 		window.addEventListener('blur', this.windowBlur.bind(this));
+		
+		/**************************************************************************
+		 **	Some UI stuff (will probably remove)
+		 **************************************************************************/
+		
+    var box = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), new THREE.MeshPhongMaterial());
+    box.castShadow = true;
+    box.position.z = 192;
+    this.graphic.scene.add(box);
+    
+		this.point = new Point(8, 0xffffff);
+		this.graphic.scene.add(this.point);
+		
+		/**************************************************************************
+		 **	Load attached initilizers
+		 **************************************************************************/
+		
+		for (var i = 0; i < this.initializers.length; i++)
+			this.initializers[i]();
 		
     /**************************************************************************
 		 **	Load our mods
@@ -172,33 +169,106 @@ var logic = {
 			detail: {mod: mod, id: id}
 		}));
 		
-    var box = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), new THREE.MeshPhongMaterial());
-    box.castShadow = true;
-    box.position.z = 192;
-    this.graphic.scene.add(box);
-    
-		this.point = new Point(8, 0xffffff);
-		this.graphic.scene.add(this.point);
-		
-		/**************************************************************************
-		 **	Contained UI (things to short to warrant functions)
-		 **************************************************************************/
-		
-		var rangeInputs = document.querySelectorAll('#right .range > input');
-		var rangeOutputs = document.querySelectorAll('#right .range > output');
-		
-		for (var i = 0; i < rangeInputs.length; i++) {
-			rangeInputs[i].output = rangeOutputs[i];
-			rangeInputs[i].addEventListener('input', function(e) {
-				
-				var value = Math.floor(e.target.value);
-				
-				sign = typeof value === 'number' ? value ? value < 0 ? -1 : 1 : value
-						=== value ? 0 : NaN : NaN;
-				
-				e.target.output.value = sign * Math.round(Math.pow(value, 2));
-			}.bind(this));
-		}
-		
 	}
 };
+
+logic.getIntersect = function(mouse) {
+	
+	//Set our raycaster
+	logic.raycaster.setFromCamera(mouse, logic.graphic.camera);
+	
+	//Cast it against the plane and grab the intersect
+	var intersect = logic.raycaster.intersectObjects([logic.plane])[0];
+	
+	//Quit if no intersect
+	if (!intersect) return null;
+	
+	//Adjust location of our UI point
+	logic.point.position.copy(intersect.point);
+	document.getElementById('status').textContent = 'Point (' +
+			Math.round(intersect.point.x) + ', ' +
+			Math.round(intersect.point.y) + ', ' +
+			Math.round(intersect.point.z) + ')';
+	
+	//Grab the corresponding vertex (top left)
+	var vertex;
+	if (intersect.face.a + 1 == intersect.face.c)
+		vertex = intersect.face.a;
+	else
+		vertex = intersect.face.c - 1;
+	
+	return vertex;
+	
+};
+
+/******************************************************************************
+ ******************************************************************************
+ *	Events
+ ******************************************************************************
+ ******************************************************************************/
+
+logic.onMouseMove = function(e) {
+	
+	//Store the raw location of the mouse
+	this.mouseRaw.x = e.pageX;
+	this.mouseRaw.y = e.pageY;
+	
+	//A switcher to determine if we're in preoview or world camera
+	//	Used for camera movements/tilts
+	if (this.mouseRaw.y > 33 && this.mouseRaw.y < 290 && this.mouseRaw.x < 257) {
+		if (this.currentCamera == 'world') {
+			this.currentCamera = 'preview';
+			
+			this.panLRKey.obj = this.graphic.previewCamera.position;
+			this.panUDKey.obj = this.graphic.previewCamera.position;
+			this.angleKey.obj = this.graphic.previewCamera.rotation;
+			this.zoomKey.obj = this.graphic.previewCamera.position;
+		}
+	} else if (this.currentCamera == 'preview') {
+		this.currentCamera = 'world';
+		
+		this.panLRKey.obj = this.graphic.camera.position;
+		this.panUDKey.obj = this.graphic.camera.position;
+		this.angleKey.obj = this.graphic.camera.rotation;
+		this.zoomKey.obj = this.graphic.camera.position;
+	}
+	
+	//Normalize the mouse coordinates ([-1, 1], [-1, 1])
+	this.mouse.x = ((e.clientX - 257) / (this.graphic.box.clientWidth - 257)) * 2 - 1;
+	this.mouse.y = ((e.clientY - 33) / this.graphic.box.clientHeight) * -2 + 1;
+	
+	//Grab the vertex
+	var vertex = this.getIntersect(this.mouse);
+	
+	//Quit if vertex is empty
+	if (vertex == null) return;
+	
+	//Grab the width and height (width is + 1 for later calculations)
+	var width = mods[this.currentMod].terrain.width;
+	var height = mods[this.currentMod].terrain.height;
+	
+	//Convert vertex into tile
+	tile = vertex - Math.floor(vertex / (width+1));
+	
+	//console.log(tile, vertex);
+	
+	//Get the coordinates of the tile
+	var x = tile % width;
+	var y = Math.floor(tile / width);
+	
+	//Clear the entire active canvas
+	this.activeTileMap.context.clearRect(0, 0, width, height);
+	
+	//Set our color to green (selection)
+	this.activeTileMap.context.fillStyle = '#010100';
+	
+	//Draw it
+	this.activeTileMap.context.fillRect(x, y, 1, 1);
+	
+	//Recalc & update
+	this.activeTileMap.merger.recalc();
+	this.activeTileMap.texture.needsUpdate = true;
+	
+	logic.fireTransformers(vertex);
+	
+}
