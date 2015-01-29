@@ -282,16 +282,27 @@ body.lightSwitch {
 	display: none;
 }
 
-#right fieldset.hideRadios > label > img {
+#right fieldset.hideRadios > label > img,
+#right fieldset.hideRadios > label.img {
 	border: 0.2em inset lightgray;
 }
 
-#right fieldset.hideRadios > input[type=radio]:checked + label > img {
+#right fieldset.hideRadios > input[type=radio]:checked + label > img,
+#right fieldset.hideRadios > input[type=radio]:checked + label.img {
 	border-color: lightblue;
 }
 
 #right img {
-	max-height: 2.5em;
+	height: 2.4em;
+	width: 2.4em;
+}
+
+#right label.img {
+	display: inline-block;
+	height: 2.4em;
+	width: 2.4em;
+	
+	margin-right: 0.25em;
 }
 
 #right select {

@@ -41,17 +41,28 @@ logic.loadTerrain = function(modId) {
 	
 	this.activeTileMap.texture = new THREE.Texture(this.activeTileMap.canvas);
 	
+	//Build the bottom tile layer
+	this.tileMapBottomCanvas = this.uintToCanvas(
+		terrain.height, terrain.width, terrain.tileMapBottom, 3
+	);
+	
+	this.tileMapBottomTexture = new THREE.Texture(this.tileMapBottomCanvas);
+	
+	//Build the top tile layer
+	this.tileMapTopCanvas = this.uintToCanvas(
+		terrain.height, terrain.width, terrain.tileMapTop, 3
+	);
+	this.tileMapTopContext = this.tileMapTopCanvas.getContext('2d');
+	
+	this.tileMapTopTexture = new THREE.Texture(this.tileMapTopCanvas);
+	
   //Create our material, loading in our textures and tile maps
 	var material = TileMaterial({
     width: terrain.width,
 		height: terrain.height,
 		tileTextures: terrain.tileTextures,
-    tileMapBottom: new THREE.Texture(this.uintToCanvas(
-        terrain.height, terrain.width, terrain.tileMapBottom, 3
-    )),
-    tileMapTop: new THREE.Texture(this.uintToCanvas(
-        terrain.height, terrain.width, terrain.tileMapTop, 3
-    )),
+    tileMapBottom: this.tileMapBottomTexture,
+    tileMapTop: this.tileMapTopTexture,
     tileMapInfo: this.activeTileMap.texture
     //tileMapInfo: terrain.tileMapActiveTexture
   });

@@ -14,11 +14,12 @@ var transformers = {
 		enabled: false,
 		active: false,
 		direction: 1,
-		func: function(vertex) {
+		func: function(cornerVertex) {
 			
 			//Grab all our stuff (positions to be modified, how much, and one for
 			//		easy access)
-			var positions = getPositions(vertex);
+			var tiles = getTiles(cornerVertex);
+			var positions = getPositions(tiles);
 			var modifier = brush.strength * transformers.height.direction;
 			var positionArray = logic.plane.geometry.attributes.position.array;
 			
@@ -33,15 +34,42 @@ var transformers = {
 		}
 	},
 	
-	
+	//Modifies the texture assigned to tiles
 	texture: {
 		enabled: false,
 		active: false,
-		index: 0,
-		func: function(vertex) {
+		index: 1,
+		func: function(cornerVertex) {
+			
+			//Grab our tiles to change
+			var tiles = getTiles(cornerVertex);
+			//var pixelRGB = (0x000300 + transformers.texture.index).toString(16);
+			
+			//Grab the width and height
+			var width = mods[logic.currentMod].terrain.width;
+			var height = mods[logic.currentMod].terrain.height;
+			
+			//Set our color to green (selection)
+			logic.tileMapTopContext.fillStyle = '#0003' +
+					pad(transformers.texture.index, 2, 16);
+			
+			//Convert raw tile into one for the tileMap
+			for (var i = 0, tile, x, y; (tile = tiles[i]) != null; i++) {
+				console.log(tile);
+				tile = tile - Math.floor(tile / (width+1));
+				console.log(tile);
+				//Get the coordinates of the tile
+				x = tile % width;
+				y = Math.floor(tile / width);
 				
+				//Draw it
+				logic.tileMapTopContext.fillRect(x, y, 1, 1);
 				
-				
+			}
+			
+			//Recalc & update
+			logic.tileMapTopTexture.needsUpdate = true;
+			
 		}
 	}
 };
@@ -75,9 +103,32 @@ var uiPoint;
  ******************************************************************************
  ******************************************************************************/
 
-//Takes a corner vertex and gives all the positions that should be modified
-//	At the moment it returns a 1x1 square...
-function getPositions(vertex) {
+function pad(num, length, type) {
+	var num = num.toString(type || 10);
+	
+	return num.length >= length ?
+		num :
+		new Array(length - num.length + 1).join('0') + num;
+}
+
+//from georg@Stack; http://stackoverflow.com/a/9229821
+function uniq_fast(a) {
+	var seen = {};
+	var out = [];
+	var len = a.length;
+	var j = 0;
+	for (var i = 0; i < len; i++) {
+		var item = a[i];
+		if (seen[item] !== 1) {
+			seen[item] = 1;
+			out[j++] = item;
+		}
+	}
+	return out;
+}
+ 
+//Takes a list of vertices and returns the position indices within the geometry
+function getPositions(vertices) {
 	
 	//For easy access
 	var width = mods[logic.currentMod].terrain.width;
@@ -86,18 +137,20 @@ function getPositions(vertex) {
 	//The array to be returned
 	var arr = [];
 	
-	//Build it (the 1x1 ATM)
-	arr.push(vertex*3+2, (vertex+1)*3+2,
-			(vertex+width+1)*3+2, (vertex+width+2)*3+2);
+	//Build it (four for each vertex)
+	for (var i = 0; i < vertices.length; i++)
+		arr.push(vertices[i]*3+2, (vertices[i]+1)*3+2,
+				(vertices[i]+width+1)*3+2, (vertices[i]+width+2)*3+2);
 	
 	//And return
-	return arr;
+	return uniq_fast(arr);
 }
 
 //Eventually this will take a primary vertex and return a list of vertices
-function getVertices(primary) {
+//	At the moment it returns the primary (a 1x1 square)
+function getTiles(cornerVertex) {
 	
-	var arr = [primary];
+	var arr = [cornerVertex];
 	
 	return arr;
 	
@@ -199,7 +252,15 @@ logic.setTransformer = function(which, state) {
 			typeof transformers[which].enabled === 'boolean' &&
 			typeof state === 'boolean')
 		transformers[which].enabled = state;
+	else
+		throw 'ArgumentError: Transformer unknown ' + which;
 };
+
+//Used to set the texture index
+logic.setTransformerTexture = function(textureIndex) {
+	if (typeof textureIndex === 'number' && textureIndex > 0)
+		transformers.texture.index = textureIndex;
+}
 
 //Used to set the direction on the height transformer
 logic.setTransformerHeightDirection = function(direction) {

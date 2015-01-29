@@ -10,6 +10,7 @@ logic.setMod = function(modId) {
 	this.currentMod = modId;
 	
 	this.loadTerrain(modId);
+	this.loadPaletteTextures(mods[modId].terrain.tileTextures);
 	
 };
 

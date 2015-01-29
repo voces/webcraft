@@ -69,12 +69,6 @@ var logic = {
 	init: function() {
 		
 		/**************************************************************************
-		 **	terrainPalette
-		 **************************************************************************/
-		
-		this.initTerrainPalette();
-		
-		/**************************************************************************
 		 **	UI stuff
 		 **************************************************************************/
 		
@@ -106,8 +100,10 @@ var logic = {
 		window.addEventListener('keyup', this.onKeyUp.bind(this));
 		
 		//Mouse
-		window.addEventListener('wheel', this.onScroll.bind(this));
-		window.addEventListener('mousemove', this.onMouseMove.bind(this));
+		document.getElementById('world')
+				.addEventListener('wheel', this.onScroll.bind(this));
+		document.getElementById('world')
+				.addEventListener('mousemove', this.onMouseMove.bind(this));
 		
 		//Menu
 		document.getElementById('menu')
@@ -243,14 +239,12 @@ logic.onMouseMove = function(e) {
 	//Quit if vertex is empty
 	if (vertex == null) return;
 	
-	//Grab the width and height (width is + 1 for later calculations)
+	//Grab the width and height
 	var width = mods[this.currentMod].terrain.width;
 	var height = mods[this.currentMod].terrain.height;
 	
 	//Convert vertex into tile
-	tile = vertex - Math.floor(vertex / (width+1));
-	
-	//console.log(tile, vertex);
+	var tile = vertex - Math.floor(vertex / (width+1));
 	
 	//Get the coordinates of the tile
 	var x = tile % width;
