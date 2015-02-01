@@ -8,6 +8,6 @@ The other portions of the project include Nova and WCHost. Nova is the server th
 
 ### Usage ###
 
-A local deployment of WebCraft is not necessary for clients, as they are expected to use a centralized or privately hosted copy on any webserver. However, a local deployment can be done so as to increase load times, specifically for any large files such as textures and models.
+A local deployment of WebCraft is not necessary for clients, as they are expected to use a centralized or privately hosted copy on any webserver. However, a local deployment can be done so as to increase load speed, specifically for any large files such as textures and models.
 
-To run it locally, simply placed the entire directory in a webserver. The project does not require PHP or any server-side processing. To project must be hosted by a webserver due to same-origin policy issues.
+To run it locally, simply placed the entire directory in a webserver. The project does not require PHP or any server-side processing. The project must be hosted by a webserver due to same-origin policy issues.
