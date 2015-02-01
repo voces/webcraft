@@ -168,6 +168,70 @@ var logic = {
 	}
 };
 
+logic.intersectCornerVertex = function(intersect) {
+	
+	//Quit if no intersect
+	if (!intersect) return null;
+	
+	//Grab the corresponding vertex (top left)
+	var vertex;
+	if (intersect.face.a + 1 == intersect.face.c)
+		vertex = intersect.face.a;
+	else
+		vertex = intersect.face.c - 1;
+	
+	//Return the top-left corner vertex
+	return vertex;
+	
+};
+
+logic.intersectClosestVertex = function(intersect) {
+	
+	//Quit if no intersect
+	if (!intersect) return null;
+	
+	//Grab the four possible candidates (two triangles make up a face)
+	var candidates;
+	if (intersect.face.a + 1 == intersect.face.c)
+		candidates = [intersect.face.a, intersect.face.c,
+				intersect.face.b, intersect.face.b + 1];
+		
+	else
+		candidates = [intersect.face.c - 1, intersect.face.c,
+				intersect.face.b - 1, intersect.face.b];
+	
+	//Grab the positions array [x1, y1, z1, x2, y2, z2, ... etc]
+	var arr = logic.plane.geometry.attributes.position.array;
+	
+	//Set our vertex to the first one
+	var vertex = candidates[0];
+	var minDistance = Math.sqrt(
+		((intersect.point.x - arr[candidates[0]*3])*
+				(intersect.point.x - arr[candidates[0]*3])) + 
+		((intersect.point.y - arr[candidates[0]*3+1])*
+				(intersect.point.y - arr[candidates[0]*3+1]))
+	);
+	
+	//Now compare against the other three
+	for (var i = 1, attempt; i < 4; i++) {
+		attempt = Math.sqrt(
+			(intersect.point.x - arr[candidates[i]*3])*
+					(intersect.point.x - arr[candidates[i]*3]) + 
+			(intersect.point.y - arr[candidates[i]*3+1])*
+					(intersect.point.y - arr[candidates[i]*3+1])
+		);
+		
+		if (attempt < minDistance) {
+			minDistance = attempt;
+			vertex = candidates[i];
+		}
+	}
+	
+	//Return the closest vertex
+	return vertex;
+	
+};
+
 logic.getIntersect = function(mouse) {
 	
 	//Set our raycaster
@@ -186,14 +250,7 @@ logic.getIntersect = function(mouse) {
 			Math.round(intersect.point.y) + ', ' +
 			Math.round(intersect.point.z) + ')';
 	
-	//Grab the corresponding vertex (top left)
-	var vertex;
-	if (intersect.face.a + 1 == intersect.face.c)
-		vertex = intersect.face.a;
-	else
-		vertex = intersect.face.c - 1;
-	
-	return vertex;
+	return intersect;
 	
 };
 
@@ -233,25 +290,24 @@ logic.onMouseMove = function(e) {
 	this.mouse.x = ((e.clientX - 257) / (this.graphic.box.clientWidth - 257)) * 2 - 1;
 	this.mouse.y = ((e.clientY - 33) / this.graphic.box.clientHeight) * -2 + 1;
 	
+	var intersect = this.getIntersect(this.mouse);
+	
 	//Grab the vertex
-	var vertex = this.getIntersect(this.mouse);
+	var closestVertex = this.intersectClosestVertex(intersect);
 	
 	//Quit if vertex is empty
-	if (vertex == null) return;
+	if (closestVertex == null) return;
 	
 	//Grab the width and height
-	var width = mods[this.currentMod].terrain.width;
-	var height = mods[this.currentMod].terrain.height;
+	var width = mods[this.currentMod].terrain.width + 1;
+	var height = mods[this.currentMod].terrain.height + 1;
 	
-	//Convert vertex into tile
-	var tile = vertex - Math.floor(vertex / (width+1));
-	
-	//Get the coordinates of the tile
-	var x = tile % width;
-	var y = Math.floor(tile / width);
+	//Get the coordinates of the vertex
+	var x = closestVertex % width;
+	var y = Math.floor(closestVertex / width);
 	
 	//Clear the entire active canvas
-	this.activeTileMap.context.clearRect(0, 0, width, height);
+	this.activeTileMap.context.clearRect(0, 0, width, height+1);
 	
 	//Set our color to green (selection)
 	this.activeTileMap.context.fillStyle = '#010100';
@@ -263,6 +319,6 @@ logic.onMouseMove = function(e) {
 	this.activeTileMap.merger.recalc();
 	this.activeTileMap.texture.needsUpdate = true;
 	
-	logic.fireTransformers(vertex);
+	logic.fireTransformers(intersect, closestVertex);
 	
 }

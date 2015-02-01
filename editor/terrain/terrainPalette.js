@@ -69,7 +69,7 @@ function sizeChange(e) {
 function strengthChange(e) {
 	
 	//Grab the new value
-	var newValue = Math.round(Math.pow(document.terrain.tbStrengthIn.value, 2));
+	var newValue = Math.round(Math.pow(document.terrain.tbStrengthIn.value, 3));
 	
 	//Update UI & transformer
 	document.terrain.tbStrengthOut.value = newValue;

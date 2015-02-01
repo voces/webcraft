@@ -14,18 +14,21 @@ var transformers = {
 		enabled: false,
 		active: false,
 		direction: 1,
-		func: function(cornerVertex) {
+		func: function(closestVertex, cornerVertex) {
 			
-			//Grab all our stuff (positions to be modified, how much, and one for
-			//		easy access)
-			var tiles = getTiles(cornerVertex);
-			var positions = getPositions(tiles);
+			//Grab the width
+			var width = mods[logic.currentMod].terrain.width;
+			
+			//How much to change the height
 			var modifier = brush.strength * transformers.height.direction;
+			
+			//Grab our arrays for easy modification
 			var positionArray = logic.plane.geometry.attributes.position.array;
+			var modPositions = mods[logic.currentMod].terrain.heightMap;
 			
 			//Modify them
-			for (var i = 0, position; position = positions[i]; i++)
-				positionArray[position] += modifier;
+			positionArray[closestVertex*3+2] += modifier;
+			modPositions[closestVertex] += modifier;
 			
 			//Make sure geometry is updated
 			logic.plane.geometry.computeVertexNormals();
@@ -39,33 +42,35 @@ var transformers = {
 		enabled: false,
 		active: false,
 		index: 1,
-		func: function(cornerVertex) {
+		func: function(closestVertex, cornerVertex) {
 			
-			//Grab our tiles to change
-			var tiles = getTiles(cornerVertex);
-			//var pixelRGB = (0x000300 + transformers.texture.index).toString(16);
-			
-			//Grab the width and height
-			var width = mods[logic.currentMod].terrain.width;
-			var height = mods[logic.currentMod].terrain.height;
+			//Grab the width
+			var width = mods[logic.currentMod].terrain.width+1;
 			
 			//Set our color to green (selection)
-			logic.tileMapTopContext.fillStyle = '#0003' +
-					pad(transformers.texture.index, 2, 16);
+			var tileTextureIndex = pad(transformers.texture.index, 2, 16);
 			
-			//Convert raw tile into one for the tileMap
-			for (var i = 0, tile, x, y; (tile = tiles[i]) != null; i++) {
-				console.log(tile);
-				tile = tile - Math.floor(tile / (width+1));
-				console.log(tile);
-				//Get the coordinates of the tile
-				x = tile % width;
-				y = Math.floor(tile / width);
-				
-				//Draw it
-				logic.tileMapTopContext.fillRect(x, y, 1, 1);
-				
-			}
+			//Get the coordinates of the tile
+			x = closestVertex % width;
+			y = Math.floor(closestVertex / width);
+			
+			//Draw it
+			
+			//Top left
+			logic.tileMapTopContext.fillStyle = '#0103' + tileTextureIndex;
+			logic.tileMapTopContext.fillRect(x-1, y-1, 1, 1);
+			
+			//Top right
+			logic.tileMapTopContext.fillStyle = '#0203' + tileTextureIndex;
+			logic.tileMapTopContext.fillRect(x, y-1, 1, 1);
+			
+			//Bottom left
+			logic.tileMapTopContext.fillStyle = '#0002' + tileTextureIndex;
+			logic.tileMapTopContext.fillRect(x-1, y, 1, 1);
+			
+			//Bottom right
+			logic.tileMapTopContext.fillStyle = '#0001' + tileTextureIndex;
+			logic.tileMapTopContext.fillRect(x, y, 1, 1);
 			
 			//Recalc & update
 			logic.tileMapTopTexture.needsUpdate = true;
@@ -89,7 +94,7 @@ for (var transformer in transformers)
 var brush = {
 	size: 1,
 	strength: 8,
-	type: 'circle'
+	type: 'square'
 };
 
 //Objects from outside (DOM or otherwise)
@@ -128,7 +133,7 @@ function uniq_fast(a) {
 }
  
 //Takes a list of vertices and returns the position indices within the geometry
-function getPositions(vertices) {
+function getPositions(cornerVertex) {
 	
 	//For easy access
 	var width = mods[logic.currentMod].terrain.width;
@@ -139,21 +144,11 @@ function getPositions(vertices) {
 	
 	//Build it (four for each vertex)
 	for (var i = 0; i < vertices.length; i++)
-		arr.push(vertices[i]*3+2, (vertices[i]+1)*3+2,
-				(vertices[i]+width+1)*3+2, (vertices[i]+width+2)*3+2);
+		arr.push(cornerVertex[i], (cornerVertex[i]+1),
+				(cornerVertex[i]+width+1), (cornerVertex[i]+width+2));
 	
 	//And return
 	return uniq_fast(arr);
-}
-
-//Eventually this will take a primary vertex and return a list of vertices
-//	At the moment it returns the primary (a 1x1 square)
-function getTiles(cornerVertex) {
-	
-	var arr = [cornerVertex];
-	
-	return arr;
-	
 }
 
 /******************************************************************************
@@ -172,11 +167,16 @@ function onClick(e) {
 	);
 	
 	//Grab the vertex
-	var vertex = logic.getIntersect(mouse);
+	var intersect = logic.getIntersect(mouse);
 	
-	for (var i = 0; i < transformersArray.length; i++)
-		if (transformersArray[i].enabled)
-			transformersArray[i].func(vertex);
+	//Grab our normalized vertices
+	var closestVertex = logic.intersectClosestVertex(intersect);
+	var cornerVertex = logic.intersectCornerVertex(intersect);
+	
+	//Fire the enabled transformers
+	for (var i = 0, transformer; transformer = transformersArray[i]; i++)
+		if (transformer.enabled)
+			transformer.func(closestVertex, cornerVertex);
 	
 }
 
@@ -228,10 +228,17 @@ logic.initializers.push(init);
 
 //User to fire transforms, generally called from an external onMouseMove
 //	Only fires those that are enabled and active
-logic.fireTransformers = function(vertex) {
+logic.fireTransformers = function(intersect, closestVertex, cornerVertex) {
+	
+	if (typeof closestVertex == 'undefined')
+		closestVertex = logic.intersectClosestVertex(intersect);
+	
+	if (typeof cornerVertex == 'undefined')
+		cornerVertex = logic.intersectCornerVertex(intersect);
+	
 	for (var i = 0, transformer; transformer = transformersArray[i]; i++)
 		if (transformer.enabled && transformer.active)
-			transformer.func(vertex);
+			transformer.func(closestVertex, cornerVertex);
 };
 
 //Used to set the size of the brush (must be an integer > 0)
@@ -269,4 +276,3 @@ logic.setTransformerHeightDirection = function(direction) {
 }
 
 })(logic);
-

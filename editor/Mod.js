@@ -43,7 +43,7 @@ function Mod(props) {
 			
 			tileMapBottom: new Uint8ClampedArray(ssize*3),
 			tileMapTop: new Uint8ClampedArray(ssize*3),
-			tileMapPathing: new Uint8ClampedArray(ssize*2),
+			tileMapPathing: new Uint8ClampedArray(bsize*2),
 			
 			tileTextures: [
         ['/r/img/terrain/info.png', 4, 4],
@@ -58,9 +58,6 @@ function Mod(props) {
 		var rand;
     for (var i = 0; i < ssize; i++) {
       
-			//Set top to dirt
-      this.terrain.tileMapTop[i*3+2] = 1;
-			
 			//Set top to random whole variation
 			rand = Math.random();
 			if (rand < 0.03)
@@ -72,14 +69,15 @@ function Mod(props) {
 			else if (rand < 0.75)
 				rand = THREE.Math.randInt(2, 6);
 			else
-				rand = THREE.Math.randInt(0, 2);	
+				rand = THREE.Math.randInt(0, 2);
 			
-      this.terrain.tileMapTop[i*3] = Mod.wholeTiles[rand][0];
-      this.terrain.tileMapTop[i*3+1] = Mod.wholeTiles[rand][1];
-      
 			//Set to dirt & basic
       this.terrain.tileMapBottom[i*3+2] = 1;
-      this.terrain.tileMapBottom[i*3+1] = 3;
+      
+			//And set the x/y values to the random variation
+			this.terrain.tileMapBottom[i*3] = Mod.wholeTiles[rand][0];
+      this.terrain.tileMapBottom[i*3+1] = Mod.wholeTiles[rand][1];
+			
       
     }
     

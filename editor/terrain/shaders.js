@@ -64,6 +64,8 @@ shaders.fragmentShader = [
 	
 	//(1/width, 1/height)
 	'uniform vec2 uInvTiles;',
+	'uniform vec2 uInvTilesArray[3];',
+	'uniform vec2 uTilesOffsetArray[3];',
 	
 	//3 for each layer (bottom, top, info)
 	'uniform sampler2D uTileMapArray[3];',
@@ -115,18 +117,43 @@ shaders.fragmentShader = [
 		'int textureIndex;',
 		'vec2 variationOffset;',
 		'vec2 uUv;',
+		'vec2 adjustedUv;',
 		
 		//Loop through our layers (fixed size, 0,1,2)
 		'for (int i = 0; i < 3; i++) {',
 			
-			//Skip if we're on the info layer and it's hidden
-			'if (uShowInfo < 1 && i == 2) break;',
+			//Grab the matching tile; the info layer is slightly larger and offset
+			'if (i == 2) {',
+				
+				//Skip if we're on the info layer and it's hidden
+				'if (uShowInfo == 0) break;',
+				
+				'if (vPixelCoord.x < uInvTiles.x / 2.0) {',
+					'adjustedUv.x = 0.0;',
+				'} else if (1.0 - vPixelCoord.x < uInvTiles.x / 2.0) {',
+					'adjustedUv.x = 1.0;',
+				'} else {',
+					'adjustedUv.x = (vPixelCoord.x - uInvTiles.x / 2.0) *',
+							'(uInvTilesArray[2].x / uInvTilesArray[0].x) + uInvTiles.x;',
+				'}',
+				
+				'if (vPixelCoord.y < uInvTiles.y / 2.0) {',
+					'adjustedUv.y = 0.0;',
+				'} else if (1.0 - vPixelCoord.y < uInvTiles.y / 2.0) {',
+					'adjustedUv.y = 1.0;',
+				'} else {',
+					'adjustedUv.y = (vPixelCoord.y - uInvTiles.y / 2.0) *',
+							'(uInvTilesArray[2].y / uInvTilesArray[0].y) + uInvTiles.y;',
+				'}',
+				
+				'tile = texture2D(uTileMapArray[i], adjustedUv);',
 			
 			//Grab the matching tile (remember vPixelCoord is (0-1, 0-1), so the tile
 			//	maps are a direct correspondence)
-			'tile = texture2D(uTileMapArray[i], vec2(',
-				'vPixelCoord.x, vPixelCoord.y',
-			'));',
+			'} else {',
+				'tile = texture2D(uTileMapArray[i], vec2(vPixelCoord.x,',
+						'vPixelCoord.y));',
+			'}',
 			
 			//Texture is stored in the b value of rgb; multiple by 255 to make it
 			//	0-255 instead of 0-1
@@ -151,10 +178,18 @@ shaders.fragmentShader = [
 					//	slightly modified due to a picking issue with texture2D sampling.
 					//	1/510 is 1/255/2 (i.e., half a "pixel"), multiply by uInvTiles.y
 					//	because IDK (it works!) TODO: check if 1/510 calculated each time
-					'vec2 pixelOffset = vec2(',
+					'vec2 pixelOffset;',
+					'if (n == 0) {',
+					'pixelOffset = vec2(',
 						'mod(vPixelCoord.x, uInvTiles.x) / uTileTexMultiplierArray[n].x,',
 						'(mod(vPixelCoord.y, uInvTiles.y - 1.0/510.0 * uInvTiles.y)) / uTileTexMultiplierArray[n].y',
 					');',
+					'} else {',
+					'pixelOffset = vec2(',
+						'mod(vPixelCoord.x, uInvTiles.x) / uTileTexMultiplierArray[n].x,',
+						'(mod(vPixelCoord.y, uInvTiles.y)) / uTileTexMultiplierArray[n].y',
+					');',
+					'}',
 					
 					//Add our variation and pixel offsets to get the final location in the
 					//	texture

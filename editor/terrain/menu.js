@@ -203,42 +203,6 @@ logic.importTerrain = function() {
 	
 };
 
-logic.uintToCanvas = function(height, width, data, samples) {
-  
-  if (typeof height == 'undefined' || typeof width == 'undefined' ||
-      typeof data == 'undefined' || typeof samples == 'undefined') return;
-  
-  //Define a canvas
-	var canvas = document.createElement('canvas');
-	canvas.height = height;
-	canvas.width = width;
-	
-	//Grab the context
-	var context = canvas.getContext('2d');
-	
-	//And some image data to manipulate
-	var imageData = context.createImageData(width, height);
-  
-  //Manipulate the image data with height/level data
-	for (var i = 0; i < data.length/samples; i++) {
-		
-    if (samples >= 1) imageData.data[i*4] = data[i*samples];
-    if (samples >= 2) imageData.data[i*4+1] = data[i*samples+1];
-    if (samples >= 3) imageData.data[i*4+2] = data[i*samples+2];
-    
-    //Set alpha to 255 if not defined
-    if (samples >= 4) imageData.data[i*4+3] = data[i*samples+3];
-    else imageData.data[i*4+3] = 255;
-		
-	}
-  
-  //And now paint our data
-  context.putImageData(imageData, 0, 0);
-  
-  return canvas;
-  
-};
-
 logic.exportTerrain = function() {
 	
 	//Can only export if we got a mod

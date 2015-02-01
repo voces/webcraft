@@ -30,12 +30,13 @@ logic.loadTerrain = function(modId) {
 	
 	//Build our active canvas layer (shows live selection, etc)
 	this.activeTileMap.canvas = document.createElement('canvas');
-	this.activeTileMap.canvas.width = terrain.width;
-	this.activeTileMap.canvas.height = terrain.height;
+	this.activeTileMap.canvas.width = terrain.width+1;
+	this.activeTileMap.canvas.height = terrain.height+1;
 	this.activeTileMap.context = this.activeTileMap.canvas.getContext('2d');
 	
 	this.activeTileMap.merger = new CanvasMerge(
-		this.uintToCanvas(terrain.height, terrain.width, terrain.tileMapPathing, 2),
+		this.uintToCanvas(terrain.height+1, terrain.width+1,
+				terrain.tileMapPathing, 2),
 		this.activeTileMap.canvas
 	);
 	
@@ -45,6 +46,7 @@ logic.loadTerrain = function(modId) {
 	this.tileMapBottomCanvas = this.uintToCanvas(
 		terrain.height, terrain.width, terrain.tileMapBottom, 3
 	);
+	this.tileMapBottomContext = this.tileMapBottomCanvas.getContext('2d');
 	
 	this.tileMapBottomTexture = new THREE.Texture(this.tileMapBottomCanvas);
 	
@@ -80,10 +82,47 @@ logic.loadTerrain = function(modId) {
 	
 	//Update our keys...
 	
-	this.panUDKey.min = terrain.height*-64 - 1024;
-	this.panUDKey.max = terrain.height*64;// - 1024;
+	this.panUDKey.min = terrain.height*-128 - 1024;
+	this.panUDKey.max = terrain.height*128;// - 1024;
 	
-	this.panLRKey.min = terrain.width*-64 - 128;
-	this.panLRKey.max = terrain.width*64 + 128;
+	this.panLRKey.min = terrain.width*-128 - 128;
+	this.panLRKey.max = terrain.width*128 + 128;
 	
 };
+
+logic.uintToCanvas = function(height, width, data, samples) {
+  
+  if (typeof height == 'undefined' || typeof width == 'undefined' ||
+      typeof data == 'undefined' || typeof samples == 'undefined') return;
+  
+  //Define a canvas
+	var canvas = document.createElement('canvas');
+	canvas.height = height;
+	canvas.width = width;
+	
+	//Grab the context
+	var context = canvas.getContext('2d');
+	
+	//And some image data to manipulate
+	var imageData = context.createImageData(width, height);
+  
+  //Manipulate the image data with height/level data
+	for (var i = 0; i < data.length/samples; i++) {
+		
+    if (samples >= 1) imageData.data[i*4] = data[i*samples];
+    if (samples >= 2) imageData.data[i*4+1] = data[i*samples+1];
+    if (samples >= 3) imageData.data[i*4+2] = data[i*samples+2];
+    
+    //Set alpha to 255 if not defined
+    if (samples >= 4) imageData.data[i*4+3] = data[i*samples+3];
+    else imageData.data[i*4+3] = 255;
+		
+	}
+  
+  //And now paint our data
+  context.putImageData(imageData, 0, 0);
+  
+  return canvas;
+  
+};
+
