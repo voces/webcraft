@@ -55,29 +55,20 @@ function Mod(props) {
 		};
     
     //Set both the top and bottom layers to plain dirt
-		var rand;
+		var randTile;
     for (var i = 0; i < ssize; i++) {
       
 			//Set top to random whole variation
-			rand = Math.random();
-			if (rand < 0.03)
-				rand = THREE.Math.randInt(14, 18);
-			else if (rand < 0.10)
-				rand = THREE.Math.randInt(10, 14);
-			else if (rand < 0.25)
-				rand = THREE.Math.randInt(6, 10);
-			else if (rand < 0.75)
-				rand = THREE.Math.randInt(2, 6);
-			else
-				rand = THREE.Math.randInt(0, 2);
+			randTile = Mod.randomTile();
 			
 			//Set to dirt & basic
-      this.terrain.tileMapBottom[i*3+2] = 1;
+      this.terrain.tileMapBottom[i*3+2] = this.terrain.tileMapTop[i*3+2] = 1;
       
 			//And set the x/y values to the random variation
-			this.terrain.tileMapBottom[i*3] = Mod.wholeTiles[rand][0];
-      this.terrain.tileMapBottom[i*3+1] = Mod.wholeTiles[rand][1];
-			
+			this.terrain.tileMapBottom[i*3] = this.terrain.tileMapTop[i*3] =
+					randTile[0];
+      this.terrain.tileMapBottom[i*3+1] = this.terrain.tileMapTop[i*3+1] =
+					randTile[1];
       
     }
     
@@ -129,6 +120,29 @@ Mod.Uint8toJSON = function() {
   
   return JSON.stringify(arr);
 }
+
+Mod.wholeTiles = [
+	[0, 3], [3, 0], [4, 0], [4, 1], [4, 2], [4, 3],
+	[5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1],
+	[6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3]
+];
+
+Mod.randomTile = function() {
+	var rand = Math.random();
+	if (rand < 0.03)
+		rand = THREE.Math.randInt(14, 18);
+	else if (rand < 0.10)
+		rand = THREE.Math.randInt(10, 14);
+	else if (rand < 0.25)
+		rand = THREE.Math.randInt(6, 10);
+	else if (rand < 0.75)
+		rand = THREE.Math.randInt(2, 6);
+	else
+		rand = THREE.Math.randInt(0, 2);
+	
+	return Mod.wholeTiles[rand];
+	
+};
 
 Mod.load = function(file) {
 	
@@ -252,12 +266,6 @@ Mod.load = function(file) {
 	return mod;
 	
 };
-
-Mod.wholeTiles = [
-	[0, 3], [3, 0], [4, 0], [4, 1], [4, 2], [4, 3],
-	[5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1],
-	[6, 2], [6, 3], [7, 0], [7, 1], [7, 2], [7, 3]
-];
 
 //Recursively save our code
 Mod.prototype.rCodeSave = function(obj, header, level) {

@@ -57,14 +57,14 @@ function init() {
 function sizeChange(e) {
 	
 	//Grab the new value
-	var newValue = Math.round(Math.pow(document.terrain.tbSizeIn.value, 2));
+	var newValue = Math.round(Math.pow(document.terrain.tbSizeIn.value, 1.8));
 	
 	//Update UI & transformer
 	document.terrain.tbSizeOut.value = newValue;
 	logic.setBrushSize(newValue);
 	
 };
- 
+
 //Strength
 function strengthChange(e) {
 	

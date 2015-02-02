@@ -14,10 +14,10 @@ var transformers = {
 		enabled: false,
 		active: false,
 		direction: 1,
-		func: function(closestVertex, cornerVertex) {
+		func: function(closestVertex) {
 			
 			//Grab the width
-			var width = mods[logic.currentMod].terrain.width;
+			var width = mods[logic.currentMod].terrain.width+1;
 			
 			//How much to change the height
 			var modifier = brush.strength * transformers.height.direction;
@@ -26,9 +26,14 @@ var transformers = {
 			var positionArray = logic.plane.geometry.attributes.position.array;
 			var modPositions = mods[logic.currentMod].terrain.heightMap;
 			
-			//Modify them
-			positionArray[closestVertex*3+2] += modifier;
-			modPositions[closestVertex] += modifier;
+			//Modify the vertices
+			for (var i = -brush.size + 1; i <= brush.size - 1; i++)
+				for (var n = -brush.size + 1; n <= brush.size - 1; n++)
+					if (Math.floor((closestVertex+i*width) / width) ==
+							Math.floor((closestVertex+i*width+n) / width)) {
+						positionArray[(closestVertex+i*width+n)*3+2] += modifier;
+						modPositions[closestVertex+i*width+n] += modifier;
+					}
 			
 			//Make sure geometry is updated
 			logic.plane.geometry.computeVertexNormals();
@@ -38,11 +43,13 @@ var transformers = {
 	},
 	
 	//Modifies the texture assigned to tiles
+	//	TODO: clean this shit up, so hard to understand
+	//				Width shouldn't be +1 as closestVertex should be converted right away...
 	texture: {
 		enabled: false,
 		active: false,
 		index: 1,
-		func: function(closestVertex, cornerVertex) {
+		func: function(closestVertex) {
 			
 			//Grab the width
 			var width = mods[logic.currentMod].terrain.width+1;
@@ -51,26 +58,107 @@ var transformers = {
 			var tileTextureIndex = pad(transformers.texture.index, 2, 16);
 			
 			//Get the coordinates of the tile
-			x = closestVertex % width;
-			y = Math.floor(closestVertex / width);
+			var x = closestVertex % width;
+			var y = Math.floor(closestVertex / width);
 			
-			//Draw it
+			//Grab our arrays for easy modification
+			var top = mods[logic.currentMod].terrain.tileMapTop;
+			var bottom = mods[logic.currentMod].terrain.tileMapBottom;
 			
-			//Top left
-			logic.tileMapTopContext.fillStyle = '#0103' + tileTextureIndex;
-			logic.tileMapTopContext.fillRect(x-1, y-1, 1, 1);
+			var size = brush.size;
 			
-			//Top right
-			logic.tileMapTopContext.fillStyle = '#0203' + tileTextureIndex;
-			logic.tileMapTopContext.fillRect(x, y-1, 1, 1);
+			//First set the tile index to w/e
+			for (var i = -size, index, randTile; i < size; i++)
+				for (var n = -size; n < size; n++) {
+					
+					index = closestVertex+i*width+n;
+					
+					//Make sure rows do not carry over and that we are within bounds
+					if (Math.floor((closestVertex+i*width) / width) ==
+							Math.floor(index / width) &&
+							index >= 0 && index*3+2 < top.length) {
+						
+						//Tile indices have -1 values per row, so modify accordingly
+						index = index - Math.floor(index / width);
+						
+						//Push the top down
+						if (top[index*3+2] != 0) {
+							bottom[index*3] = top[index*3];
+							bottom[index*3+1] = top[index*3+1];
+							bottom[index*3+2] = top[index*3+2];
+						}
+						
+						//Replace the top texture
+						top[index*3+2] = transformers.texture.index;
+						
+						//Middle square, set to random variation
+						if (i > -size && i < size-1 && n > -size && n < size-1) {
+							
+							//Grab a random tile
+							randTile = Mod.randomTile();
+							
+							//Set our variations
+							top[index*3] = randTile[0];
+							top[index*3+1] = randTile[1];
+							
+							//Paint the tile
+							logic.tileMapTopContext.fillStyle =
+									buildColorFromTopTileMap(index*3);
+							logic.tileMapTopContext.fillRect(x-i-1, y-n-1, 1, 1);
+							
+						}
+						
+					}
+				}
 			
-			//Bottom left
-			logic.tileMapTopContext.fillStyle = '#0002' + tileTextureIndex;
-			logic.tileMapTopContext.fillRect(x-1, y, 1, 1);
+			//Run a second time to do edges (need a second pass because of internal
+			//		dependency)
+			for (var i = -size, index, randTile; i < size; i++)
+				for (var n = -size; n < size; n++) {
+					
+					//Set the index for easy access
+					index = closestVertex+i*width+n;
+					
+					console.log(x-i-1, y-n-1, Math.floor((closestVertex+i*width) / width) ==
+							Math.floor(index / width),
+						(index >= 0 && index*3+2 < top.length),
+						(i == -size || i == size-1 || n == -size || n == size-1));
+					
+					//Not overflow, within bounds, and part of the edge
+					if (Math.floor((closestVertex+i*width) / width) ==
+							Math.floor(index / width) &&
+							index >= 0 && index*3+2 < top.length &&
+							(i == -size || i == size-1 || n == -size || n == size-1)) {
+						
+						//Modify index (less tiles than vertices)
+						index = index - Math.floor(index / width);
+						
+						//TODO: Add logic for correct edge variations
+						//			Implement this using binary flagging (max eight, min four?)
+						
+						//Grab a random tile
+						randTile = Mod.randomTile();
+						
+						//Set our variations
+						top[index*3] = randTile[0];
+						top[index*3+1] = randTile[1];
+						
+						//Paint the tile
+						logic.tileMapTopContext.fillStyle =
+								buildColorFromTopTileMap(index*3);
+						logic.tileMapTopContext.fillRect(x-i-1, y-n-1, 1, 1);
+						
+					}
+				}
 			
-			//Bottom right
-			logic.tileMapTopContext.fillStyle = '#0001' + tileTextureIndex;
-			logic.tileMapTopContext.fillRect(x, y, 1, 1);
+			
+			
+			//Now we need to calculate the variation of the outer tiles
+			/*for (var i = -size; i < size; i++)
+				for (var n = -size; n < size; n = n + size*2)
+					console.log(i*width+n);*/
+			
+			
 			
 			//Recalc & update
 			logic.tileMapTopTexture.needsUpdate = true;
@@ -107,6 +195,16 @@ var uiPoint;
  *	Support
  ******************************************************************************
  ******************************************************************************/
+
+//And the award for most descriptive function goes to...
+function buildColorFromTopTileMap(index) {
+	
+	//Grab our arrays for easy modification
+	var top = mods[logic.currentMod].terrain.tileMapTop;
+	
+	return '#' + pad(top[index], 2, 16) + pad(top[index+1], 2, 16) +
+			pad(top[index+2], 2, 16);
+}
 
 function pad(num, length, type) {
 	var num = num.toString(type || 10);

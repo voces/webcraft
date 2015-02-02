@@ -312,8 +312,11 @@ logic.onMouseMove = function(e) {
 	//Set our color to green (selection)
 	this.activeTileMap.context.fillStyle = '#010100';
 	
+	//Grab the size of the area
+	var size = document.terrain.tbSizeOut.value - 1;
+	
 	//Draw it
-	this.activeTileMap.context.fillRect(x, y, 1, 1);
+	this.activeTileMap.context.fillRect(x-size, y-size, 1+size*2, 1+size*2);
 	
 	//Recalc & update
 	this.activeTileMap.merger.recalc();
