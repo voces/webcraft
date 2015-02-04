@@ -122,28 +122,29 @@ shaders.fragmentShader = [
 		//Loop through our layers (fixed size, 0,1,2)
 		'for (int i = 0; i < 3; i++) {',
 			
-			//Grab the matching tile; the info layer is slightly larger and offset
+			//We're on the info layer, which is offset
 			'if (i == 2) {',
 				
-				//Skip if we're on the info layer and it's hidden
+				//Skip if the info layer is hidden
 				'if (uShowInfo == 0) break;',
 				
+				//
 				'if (vPixelCoord.x < uInvTiles.x / 2.0) {',
 					'adjustedUv.x = 0.0;',
-				'} else if (1.0 - vPixelCoord.x < uInvTiles.x / 2.0) {',
+				'} else if (1.0 - vPixelCoord.x <= uInvTiles.x / 2.0) {',
 					'adjustedUv.x = 1.0;',
 				'} else {',
 					'adjustedUv.x = (vPixelCoord.x - uInvTiles.x / 2.0) *',
-							'(uInvTilesArray[2].x / uInvTilesArray[0].x) + uInvTiles.x;',
+							'(uInvTilesArray[2].x / uInvTilesArray[0].x) + uInvTilesArray[2].x;',
 				'}',
 				
 				'if (vPixelCoord.y < uInvTiles.y / 2.0) {',
 					'adjustedUv.y = 0.0;',
-				'} else if (1.0 - vPixelCoord.y < uInvTiles.y / 2.0) {',
+				'} else if (1.0 - vPixelCoord.y <= uInvTiles.y / 2.0) {',
 					'adjustedUv.y = 1.0;',
 				'} else {',
 					'adjustedUv.y = (vPixelCoord.y - uInvTiles.y / 2.0) *',
-							'(uInvTilesArray[2].y / uInvTilesArray[0].y) + uInvTiles.y;',
+							'(uInvTilesArray[2].y / uInvTilesArray[0].y) + uInvTilesArray[2].y;',
 				'}',
 				
 				'tile = texture2D(uTileMapArray[i], adjustedUv);',

@@ -51,90 +51,94 @@ var transformers = {
 		index: 1,
 		func: function(closestVertex) {
 			
-			//Grab the width
-			var width = mods[logic.currentMod].terrain.width+1;
+			//Grab the width and height
+			var width = mods[logic.currentMod].terrain.width;
+			var height = mods[logic.currentMod].terrain.height;
+			var wWidth = width+1;
 			
-			//Set our color to green (selection)
-			var tileTextureIndex = pad(transformers.texture.index, 2, 16);
+			//Grab our brush size
+			var size = brush.size;
 			
-			//Get the coordinates of the tile
-			var x = closestVertex % width;
-			var y = Math.floor(closestVertex / width);
+			//Set our new tile
+			var tileTextureIndex = transformers.texture.index;
 			
 			//Grab our arrays for easy modification
 			var top = mods[logic.currentMod].terrain.tileMapTop;
 			var bottom = mods[logic.currentMod].terrain.tileMapBottom;
 			
-			var size = brush.size;
+			//Grab the prime location (center, where for even we're in bot right
+			//		center)
+			var primeIndex = closestVertex - Math.floor(closestVertex / wWidth);
+			var primeRow = Math.floor(closestVertex / wWidth);
+			var primeColumn = closestVertex % wWidth;
 			
-			//First set the tile index to w/e
-			for (var i = -size, index, randTile; i < size; i++)
-				for (var n = -size; n < size; n++) {
+			//Grab our row min/max [+center]
+			var minRow = primeRow - size,
+					minRowCenter = Math.max(minRow+1, 0),
 					
-					index = closestVertex+i*width+n;
+					maxRow = primeRow + size - 1,
+					maxRowCenter = Math.min(maxRow-1, height - 1);
+			
+			//Grab our column min/max [+center]
+			var minColumn = primeColumn - size,
+					minColumnCenter = Math.max(minColumn+1, 0),
 					
-					//Make sure rows do not carry over and that we are within bounds
-					if (Math.floor((closestVertex+i*width) / width) ==
-							Math.floor(index / width) &&
-							index >= 0 && index*3+2 < top.length) {
-						
-						//Tile indices have -1 values per row, so modify accordingly
-						index = index - Math.floor(index / width);
+					maxColumn = primeColumn + size - 1,
+					maxColumnCenter = Math.min(maxColumn-1, width - 1);
+			
+			//Reduce the row range (do this after, for sake of center)
+			minRow = Math.max(minRow, 0);
+			maxRow = Math.min(maxRow, height-1);
+			
+			//Reduce the column range (again, after, for sake of center)
+			minColumn = Math.max(minColumn, 0);
+			maxColumn = Math.min(maxColumn, width-1);
+			
+			//So we don't calculate it every time
+			var centerExists = minColumnCenter <= maxColumnCenter &&
+					minRowCenter <= maxRowCenter;
+			
+			//Variables we'll need in the loop
+			var index, variation, randTile;
+			
+			//Loop through the entire brush area (we're limited to inbounds)
+			for (var column = minColumn; column <= maxColumn; column++)
+				for (var row = minRow; row <= maxRow; row++) {
+					
+					//Grab the index
+					index = row*width + column;
+					
+					//A center doesn't exist or we're outside of it
+					if (!centerExists || edgeOfBrush(row, column, minRow, maxRow,
+							minRowCenter, maxRowCenter, minColumn, maxColumn, minColumnCenter,
+							maxColumnCenter)) {
 						
 						//Push the top down
-						if (top[index*3+2] != 0) {
-							bottom[index*3] = top[index*3];
-							bottom[index*3+1] = top[index*3+1];
-							bottom[index*3+2] = top[index*3+2];
-						}
+						//paintTile(bottom, logic.tileMapBottomContext, index*3, column, row, top[index*3], top[index*3+1], top[index*3+2]);
+						
+						//Get the variation; the rect defined by min/max row/column is
+						//		treated as the the passed tile
+						variation = getVariation(index, row, column, minRow, maxRow, minColumn, maxColumn);
+						
+						//Replace the top texture
+						top[index*3+2] = variation[0];
+						
+						//Set our variations
+						top[index*3] = variation[1];
+						top[index*3+1] = variation[2];
+						
+						//Paint the tile
+						logic.tileMapTopContext.fillStyle =
+								buildColorFromTopTileMap(index*3);
+						logic.tileMapTopContext.fillRect(column, row, 1, 1);
+						
+					//Center exists and we're in it
+					} else {
+						
+						
 						
 						//Replace the top texture
 						top[index*3+2] = transformers.texture.index;
-						
-						//Middle square, set to random variation
-						if (i > -size && i < size-1 && n > -size && n < size-1) {
-							
-							//Grab a random tile
-							randTile = Mod.randomTile();
-							
-							//Set our variations
-							top[index*3] = randTile[0];
-							top[index*3+1] = randTile[1];
-							
-							//Paint the tile
-							logic.tileMapTopContext.fillStyle =
-									buildColorFromTopTileMap(index*3);
-							logic.tileMapTopContext.fillRect(x-i-1, y-n-1, 1, 1);
-							
-						}
-						
-					}
-				}
-			
-			//Run a second time to do edges (need a second pass because of internal
-			//		dependency)
-			for (var i = -size, index, randTile; i < size; i++)
-				for (var n = -size; n < size; n++) {
-					
-					//Set the index for easy access
-					index = closestVertex+i*width+n;
-					
-					console.log(x-i-1, y-n-1, Math.floor((closestVertex+i*width) / width) ==
-							Math.floor(index / width),
-						(index >= 0 && index*3+2 < top.length),
-						(i == -size || i == size-1 || n == -size || n == size-1));
-					
-					//Not overflow, within bounds, and part of the edge
-					if (Math.floor((closestVertex+i*width) / width) ==
-							Math.floor(index / width) &&
-							index >= 0 && index*3+2 < top.length &&
-							(i == -size || i == size-1 || n == -size || n == size-1)) {
-						
-						//Modify index (less tiles than vertices)
-						index = index - Math.floor(index / width);
-						
-						//TODO: Add logic for correct edge variations
-						//			Implement this using binary flagging (max eight, min four?)
 						
 						//Grab a random tile
 						randTile = Mod.randomTile();
@@ -146,22 +150,15 @@ var transformers = {
 						//Paint the tile
 						logic.tileMapTopContext.fillStyle =
 								buildColorFromTopTileMap(index*3);
-						logic.tileMapTopContext.fillRect(x-i-1, y-n-1, 1, 1);
+						logic.tileMapTopContext.fillRect(column, row, 1, 1);
 						
 					}
+					
 				}
-			
-			
-			
-			//Now we need to calculate the variation of the outer tiles
-			/*for (var i = -size; i < size; i++)
-				for (var n = -size; n < size; n = n + size*2)
-					console.log(i*width+n);*/
-			
-			
 			
 			//Recalc & update
 			logic.tileMapTopTexture.needsUpdate = true;
+			logic.tileMapBottomTexture.needsUpdate = true;
 			
 		}
 	}
@@ -188,13 +185,189 @@ var brush = {
 //Objects from outside (DOM or otherwise)
 var box;
 var camera;
-var uiPoint;
 
 /******************************************************************************
  ******************************************************************************
  *	Support
  ******************************************************************************
  ******************************************************************************/
+
+function paintTile(uint, context, index, column, row, r, g, b) {
+	uint[index] = r;
+	uint[index+1] = g;
+	uint[index+2] = b;
+	
+	//console.log(r, g, b);
+	
+	context.fillStyle = '#' + pad(r, 2, 16) + pad(g, 2, 16) + pad(b, 2, 16);
+	context.fillRect(column, row, 1, 1);
+}
+
+//Corner for flags
+var TOP_LEFT = 1,
+		TOP_RIGHT = 2,
+		BOTTOM_LEFT = 4,
+		BOTTOM_RIGHT = 8,
+		
+		//Combined directions
+		TOP = TOP_LEFT | TOP_RIGHT,
+		BOTTOM = BOTTOM_LEFT | BOTTOM_RIGHT,
+		LEFT = TOP_LEFT | BOTTOM_LEFT,
+		RIGHT = TOP_RIGHT | BOTTOM_RIGHT,
+		ALL = TOP | BOTTOM;
+
+//The corners a tile variation has (look at a texture)
+//	[column][row], where [0][0] is the bottom left
+var tileRelations = [
+	[TOP, TOP_LEFT, TOP_RIGHT, ALL],
+	[TOP | BOTTOM_RIGHT, TOP_LEFT | BOTTOM_RIGHT, RIGHT, BOTTOM_RIGHT],
+	[TOP | BOTTOM_LEFT, LEFT, TOP_RIGHT | BOTTOM_LEFT, BOTTOM_LEFT],
+	[ALL, BOTTOM | TOP_LEFT, BOTTOM | TOP_RIGHT, BOTTOM]
+];
+
+//The neighbouring tiles laid out in an octothorpe and the corners/directions we're interested in
+var neighbors = [
+	[-1, -1, BOTTOM_RIGHT], [-1, 0, BOTTOM], [-1, 1, BOTTOM_LEFT],
+	[ 0, -1, RIGHT],                         [ 0, 1, LEFT],
+	[ 1, -1, TOP_RIGHT],    [ 1, 0, TOP],    [ 1, 1, TOP_LEFT]
+];
+
+//The possible flags we get
+var tileVariationMap = [];
+tileVariationMap[11] = [0, 1];
+tileVariationMap[15] = [0, 1];
+tileVariationMap[22] = [0, 2];
+tileVariationMap[23] = [0, 2];
+tileVariationMap[31] = [0, 0];
+tileVariationMap[43] = [0, 1];
+tileVariationMap[63] = [0, 0];
+tileVariationMap[104] = [2, 3];
+tileVariationMap[105] = [2, 3];
+tileVariationMap[107] = [2, 1];
+tileVariationMap[111] = [2, 1];
+tileVariationMap[126] = [2, 2];
+tileVariationMap[127] = [2, 0];
+tileVariationMap[150] = [0, 2];
+tileVariationMap[159] = [0, 0];
+tileVariationMap[208] = [1, 3];
+tileVariationMap[212] = [1, 3];
+tileVariationMap[214] = [1, 2];
+tileVariationMap[215] = [1, 2];
+tileVariationMap[219] = [1, 1];
+tileVariationMap[223] = [1, 0];
+tileVariationMap[235] = [2, 1];
+tileVariationMap[246] = [1, 2];
+tileVariationMap[248] = [3, 3];
+tileVariationMap[249] = [3, 3];
+tileVariationMap[251] = [3, 1];
+tileVariationMap[252] = [3, 3];
+tileVariationMap[254] = [3, 2];
+
+function getVariation(index, row, column, minRow, maxRow, minColumn, maxColumn) {
+	
+	//Grab the width and height
+	var width = mods[logic.currentMod].terrain.width;
+	var height = mods[logic.currentMod].terrain.height;
+	
+	//Grab our arrays for easy modification
+	var top = mods[logic.currentMod].terrain.tileMapTop;
+	var bottom = mods[logic.currentMod].terrain.tileMapBottom;
+	
+	var topIndex, bottomIndex, takesTop;
+	if (top[index*3+2] <= transformers.texture.index) {
+		takesTop = true;
+		
+		topIndex = transformers.texture.index;
+		bottomIndex = top[index*3+2];
+		
+	} else {
+		takesTop = false;
+		
+		topIndex = top[index*3+2];
+		bottomIndex = transformers.texture.index;
+	}
+	
+	//Flag for neighbours, a binary value (eight-bit, for each neighbour)
+	var flag = 0;
+	
+	//Define variables we'll be using in the loop
+	var tRow, tCol, tDirection, tIndex, tileRelation;
+	
+	//Loop through each neighbouring tile to see if it's touching
+	for (var i = 0; i < 8; i++) {
+		
+		//Get our offset row/column
+		tRow = row + neighbors[i][0];
+		tCol = column + neighbors[i][1];
+		
+		//And the corner/direction of the neighbour we're checking
+		tDirection = neighbors[i][2];
+		
+		//Any neighbours in the brush area are of the same type as well as those outside the map
+		if ((tRow >= minRow && tRow <= maxRow && tCol >= minColumn && tCol <= maxColumn) || tRow < 0 || tRow >= width || tCol < 0 || tCol >= height)
+			flag += 1 << i;
+		
+		//A neighbour outside the brush area
+		else {
+			
+			//Calculate the tile's index
+			tIndex = (tRow*width + tCol)*3;
+			
+			//Returns the col array
+			tileRelation = tileRelations[top[tIndex]];
+			
+			//The row doesn't exist, 
+			if (typeof tileRelation == 'undefined') {
+				if (top[tIndex+2] == transformers.texture.index)
+					flag += 1 << i;
+				
+			} else {
+				
+				tileRelation = tileRelation[top[tIndex+1]];
+				
+				if (tileRelation & tDirection)
+					if (top[tIndex+2] == transformers.texture.index)
+						flag += 1 << i;
+				else
+					if (bottom[tIndex+2] == transformers.texture.index)
+						flag += 1 << i;
+			}
+		}
+	}
+	
+	
+	var tileVar, randTile;
+	
+	//Surrounded by similar, use a random full
+	if (flag == 255) {
+		randTile = Mod.randomTile();
+		randTile.unshift(transformers.texture.index);
+		
+		return randTile;
+	
+	//A defined surrounding
+	} else if (tileVar = tileVariationMap[flag]) {
+		
+		//Destructure instead of unshift so we don't modify the map
+		return [transformers.texture.index, tileVar[0], tileVar[1]];
+		
+	} else {
+		console.log(row, column, flag);
+		
+		return [4, 0, 3];
+	}
+}
+
+//Award for most arguments goes to...
+function edgeOfBrush(row, column, minRow, maxRow, minRowCenter, maxRowCenter, minColumn, maxColumn, minColumnCenter, maxColumnCenter) {
+	
+	return	(row == minRow && minRow != minRowCenter) ||
+					(row == maxRow && maxRow != maxRowCenter) ||
+	
+					(column == minColumn && minColumn != minColumnCenter) ||
+					(column == maxColumn && maxColumn != maxColumnCenter);
+	
+}
 
 //And the award for most descriptive function goes to...
 function buildColorFromTopTileMap(index) {
@@ -307,7 +480,6 @@ function init() {
 	//Set some objects that we have to wait for init for
 	box = document.getElementById('box');
 	camera = logic.graphic.camera;
-	uiPoint = logic.point;
 	
 	//Attach events
 	world.addEventListener('click', onClick);

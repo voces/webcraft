@@ -122,13 +122,15 @@ var logic = {
 		 **	Some UI stuff (will probably remove)
 		 **************************************************************************/
 		
+		//Either the box or the point must be visible, else shadows cry
+		
     var box = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), new THREE.MeshPhongMaterial());
     box.castShadow = true;
     box.position.z = 192;
     this.graphic.scene.add(box);
     
 		this.point = new Point(8, 0xffffff);
-		this.graphic.scene.add(this.point);
+		//this.graphic.scene.add(this.point);
 		
 		/**************************************************************************
 		 **	Load attached initilizers
@@ -155,8 +157,8 @@ var logic = {
 			title: 'Untitled',
 			author: 'Unknown',
 			geoType: 'flat',
-			height: 10,
-			width: 15
+			height: 20,
+			width: 20
 		});
 		var id = mods.push(mod) - 1;
 		
@@ -243,13 +245,6 @@ logic.getIntersect = function(mouse) {
 	//Quit if no intersect
 	if (!intersect) return null;
 	
-	//Adjust location of our UI point
-	logic.point.position.copy(intersect.point);
-	document.getElementById('status').textContent = 'Point (' +
-			Math.round(intersect.point.x) + ', ' +
-			Math.round(intersect.point.y) + ', ' +
-			Math.round(intersect.point.z) + ')';
-	
 	return intersect;
 	
 };
@@ -291,6 +286,14 @@ logic.onMouseMove = function(e) {
 	this.mouse.y = ((e.clientY - 33) / this.graphic.box.clientHeight) * -2 + 1;
 	
 	var intersect = this.getIntersect(this.mouse);
+	
+	if (!intersect) return;
+	
+	//Display location
+	document.getElementById('status').textContent = 'Point (' +
+			Math.round(intersect.point.x) + ', ' +
+			Math.round(intersect.point.y) + ', ' +
+			Math.round(intersect.point.z) + ')';
 	
 	//Grab the vertex
 	var closestVertex = this.intersectClosestVertex(intersect);

@@ -140,7 +140,8 @@ Mod.randomTile = function() {
 	else
 		rand = THREE.Math.randInt(0, 2);
 	
-	return Mod.wholeTiles[rand];
+	//Restructure the array so we pass by value rather than reference
+	return [Mod.wholeTiles[rand][0], Mod.wholeTiles[rand][1]];
 	
 };
 
