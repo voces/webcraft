@@ -64,11 +64,10 @@ shaders.fragmentShader = [
 	
 	//(1/width, 1/height)
 	'uniform vec2 uInvTiles;',
-	'uniform vec2 uInvTilesArray[3];',
-	'uniform vec2 uTilesOffsetArray[3];',
+	'uniform vec2 uInvInfoTiles;',
 	
 	//3 for each layer (bottom, top, info)
-	'uniform sampler2D uTileMapArray[3];',
+	'uniform sampler2D uTileMapArray[5];',
 	
 	//Arrays for our texture
 	
@@ -120,10 +119,10 @@ shaders.fragmentShader = [
 		'vec2 adjustedUv;',
 		
 		//Loop through our layers (fixed size, 0,1,2)
-		'for (int i = 0; i < 3; i++) {',
+		'for (int i = 0; i < 5; i++) {',
 			
 			//We're on the info layer, which is offset
-			'if (i == 2) {',
+			'if (i == 4) {',
 				
 				//Skip if the info layer is hidden
 				'if (uShowInfo == 0) break;',
@@ -135,7 +134,7 @@ shaders.fragmentShader = [
 					'adjustedUv.x = 1.0;',
 				'} else {',
 					'adjustedUv.x = (vPixelCoord.x - uInvTiles.x / 2.0) *',
-							'(uInvTilesArray[2].x / uInvTilesArray[0].x) + uInvTilesArray[2].x;',
+							'(uInvInfoTiles.x / uInvTiles.x) + uInvTiles.x;',
 				'}',
 				
 				'if (vPixelCoord.y < uInvTiles.y / 2.0) {',
@@ -144,7 +143,7 @@ shaders.fragmentShader = [
 					'adjustedUv.y = 1.0;',
 				'} else {',
 					'adjustedUv.y = (vPixelCoord.y - uInvTiles.y / 2.0) *',
-							'(uInvTilesArray[2].y / uInvTilesArray[0].y) + uInvTilesArray[2].y;',
+							'(uInvInfoTiles.y / uInvTiles.y) + uInvTiles.y;',
 				'}',
 				
 				'tile = texture2D(uTileMapArray[i], adjustedUv);',

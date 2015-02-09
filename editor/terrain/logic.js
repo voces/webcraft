@@ -157,7 +157,7 @@ var logic = {
 			title: 'Untitled',
 			author: 'Unknown',
 			geoType: 'flat',
-			height: 20,
+			height: 15,
 			width: 20
 		});
 		var id = mods.push(mod) - 1;

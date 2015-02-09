@@ -36,35 +36,28 @@ logic.loadTerrain = function(modId) {
 	
 	this.activeTileMap.merger = new CanvasMerge(
 		this.uintToCanvas(terrain.height+1, terrain.width+1,
-				terrain.tileMapPathing, 2),
+				terrain.pathingMap, 2),
 		this.activeTileMap.canvas
 	);
 	
 	this.activeTileMap.texture = new THREE.Texture(this.activeTileMap.canvas);
 	
-	//Build the bottom tile layer
-	this.tileMapBottomCanvas = this.uintToCanvas(
-		terrain.height, terrain.width, terrain.tileMapBottom, 3
-	);
-	this.tileMapBottomContext = this.tileMapBottomCanvas.getContext('2d');
-	
-	this.tileMapBottomTexture = new THREE.Texture(this.tileMapBottomCanvas);
-	
-	//Build the top tile layer
-	this.tileMapTopCanvas = this.uintToCanvas(
-		terrain.height, terrain.width, terrain.tileMapTop, 3
-	);
-	this.tileMapTopContext = this.tileMapTopCanvas.getContext('2d');
-	
-	this.tileMapTopTexture = new THREE.Texture(this.tileMapTopCanvas);
+	//Build the texture layers
+	this.canvases = [];
+	this.contexts = [];
+	this.textures = [];
+	for (var i = 0; i < 4; i++) {
+		this.canvases[i] = this.uintToCanvas(terrain.height, terrain.width, terrain.tileMaps[i], 3);
+		this.contexts[i] = this.canvases[i].getContext('2d');
+		this.textures[i] = new THREE.Texture(this.canvases[i]);
+	}
 	
   //Create our material, loading in our textures and tile maps
 	var material = TileMaterial({
     width: terrain.width,
 		height: terrain.height,
 		tileTextures: terrain.tileTextures,
-    tileMapBottom: this.tileMapBottomTexture,
-    tileMapTop: this.tileMapTopTexture,
+		tileMaps: this.textures,
     tileMapInfo: this.activeTileMap.texture
     //tileMapInfo: terrain.tileMapActiveTexture
   });

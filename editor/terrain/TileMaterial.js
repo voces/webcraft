@@ -28,8 +28,10 @@ function TileMaterial(prop) {
   
 	//Define the tile map array...
   var uTileMapArray = [
-    prop.tileMapBottom,
-    prop.tileMapTop,
+    prop.tileMaps[0],
+    prop.tileMaps[1],
+    prop.tileMaps[2],
+    prop.tileMaps[3],
     prop.tileMapInfo
 	];
   
@@ -43,21 +45,6 @@ function TileMaterial(prop) {
 		uTileMapArray[i].needsUpdate = true;
 	}
   
-	//Define our uInvTiles (info & bottom layers have half the resolution as the
-	//		top
-	var uInvTilesArray = [
-		new THREE.Vector2(1/prop.width, 1/prop.height),
-		new THREE.Vector2(1/prop.width, 1/prop.height),
-		new THREE.Vector2(1/(prop.width+1), 1/(prop.height+1))
-	];
-	
-	//Define our uTilesOffset
-	var uTilesOffsetArray = [
-		new THREE.Vector2(0, 0),
-		new THREE.Vector2(0, 0),
-		new THREE.Vector2(1/prop.width/2, 1/prop.height/2)
-	];
-	
   // uniforms
 	//For some reason THREE.UniformsUtils.merge breaks shit...
 	var uniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.phong.uniforms);
@@ -68,20 +55,20 @@ function TileMaterial(prop) {
 	
 	//Load our tile-specific uniforms
 	
-	uniforms.uInvTiles = {type: 'v2', value: new THREE.Vector2(
-			1/prop.width, 1/prop.height
-	)};
+	//The number of tiles
+	uniforms.uInvTiles = {type: 'v2', value: new THREE.Vector2(1/prop.width, 1/prop.height)};
+	uniforms.uInvInfoTiles = {type: 'v2', value: new THREE.Vector2(1/(prop.width+1), 1/(prop.height+1))};
 	
-	uniforms.uInvTilesArray = {type: 'v2v', value: uInvTilesArray};
-	
-	uniforms.uTilesOffsetArray = {type: 'v2v', value: uTilesOffsetArray};
-	
+	//Our actual mappings
 	uniforms.uTileMapArray = {type: 'tv', value: uTileMapArray};
+	
+	//Our textures
 	uniforms.uTexArray = {type: 'tv', value: uTexArray};
   uniforms.uTexMultiplierArray = {type: 'v2v', value: uTexMultiplierArray},
 	uniforms.uTileTexMultiplierArray = {type: 'v2v',
 			value: uTileTexMultiplierArray},
 	
+	//Whether to display info layer
 	uniforms.uShowInfo = {type: 'i', value: 1};
 	
 	// shaders (sets first, uses second)

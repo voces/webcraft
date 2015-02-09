@@ -30,7 +30,7 @@ Graphic = function(canvas) {
 	this.loader = new THREE.JSONLoader();
 	
 	//Time tracking for light movement
-	this.dayLength = 480 * 500 / Math.PI;
+	this.dayLength = 4800 * 500 / Math.PI;
 	this.timeDayStarted;
 	this.sunDown = false;
 	

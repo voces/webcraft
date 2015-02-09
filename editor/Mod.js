@@ -41,16 +41,21 @@ function Mod(props) {
 			
 			heightMap: new Int16Array(bsize),
 			
-			tileMapBottom: new Uint8ClampedArray(ssize*3),
-			tileMapTop: new Uint8ClampedArray(ssize*3),
-			tileMapPathing: new Uint8ClampedArray(bsize*2),
+			tileMaps: [
+				new Uint8ClampedArray(ssize*3),
+				new Uint8ClampedArray(ssize*3),
+				new Uint8ClampedArray(ssize*3),
+				new Uint8ClampedArray(ssize*3)
+			],
+			
+			pathingMap: new Uint8ClampedArray(bsize*2),
 			
 			tileTextures: [
         ['/r/img/terrain/info.png', 4, 4],
         ['/r/img/terrain/Lords/Dirt.png', 8, 4],
+				['/r/img/terrain/Lords/Rock.png', 8, 4],
         ['/r/img/terrain/Lords/Grass.png', 8, 4],
-        ['/r/img/terrain/Lords/GrassDark.png', 8, 4],
-        ['/r/img/terrain/Lords/Rock.png', 8, 4]
+        ['/r/img/terrain/Lords/GrassDark.png', 8, 4]
 			]
 		};
     
@@ -61,17 +66,18 @@ function Mod(props) {
 			//Set top to random whole variation
 			randTile = Mod.randomTile();
 			
-			//Set to dirt & basic
-      this.terrain.tileMapBottom[i*3+2] = this.terrain.tileMapTop[i*3+2] = 1;
-      
-			//And set the x/y values to the random variation
-			this.terrain.tileMapBottom[i*3] = this.terrain.tileMapTop[i*3] =
-					randTile[0];
-      this.terrain.tileMapBottom[i*3+1] = this.terrain.tileMapTop[i*3+1] =
-					randTile[1];
-      
+			//Loop through all four layers
+			for (var n = 0; n < 4; n++) {
+				
+				//Set to dirt & basic
+				this.terrain.tileMaps[n][i*3+2] = 1;
+				
+				//And set the x/y values to the random variation
+				this.terrain.tileMaps[n][i*3] = randTile[0];
+				this.terrain.tileMaps[n][i*3+1] = randTile[1];
+				
+			}
     }
-    
 	}
 	
 	/***********************************************
@@ -172,11 +178,13 @@ Mod.load = function(file) {
 			terrain.lastIndexOf(',') - terrain.indexOf('\n'));
 	mod.terrain = JSON.parse("{" + terrain + "}").terrain;
 	
-	//Now convert the b64 encoded data into uint arrays
+	//Type our arrays
 	mod.terrain.heightMap = new Int16Array(mod.terrain.heightMap);
-	mod.terrain.bottomTileMap = new Uint8ClampedArray(mod.terrain.bottomTileMap);
-	mod.terrain.topTileMap = new Uint8ClampedArray(mod.terrain.topTileMap);
-	mod.terrain.tileMapPathing = new Uint8ClampedArray(mod.terrain.tileMapPathing);
+	
+	for (var i = 0; i < 4; i++)
+		mod.terrain.tileMaps[i] = new Uint8ClampedArray(mod.terrain.tileMaps[i])
+	
+	mod.terrain.pathingMap = new Uint8ClampedArray(mod.terrain.pathingMap);
 	
 	/****************************************************************************
 	 **	Geometry
@@ -332,9 +340,10 @@ Mod.prototype.save = function() {
 			'\t\t"heightBias": ' + this.terrain.heightBias + ',\n\n' +
 			
 			'\t\t"heightMap": ' + JSON.stringify(this.t2g(this.terrain.heightMap)) + ',\n' +
-			'\t\t"tileMapBottom": ' + JSON.stringify(this.t2g(this.terrain.tileMapBottom)) + ',\n' +
-			'\t\t"tileMapTop": ' + JSON.stringify(this.t2g(this.terrain.tileMapTop)) + ',\n' +
-			'\t\t"tileMapPathing": ' + JSON.stringify(this.t2g(this.terrain.tileMapPathing)) + ',\n\n' +
+			
+			'\t\t"tileMaps": ' + JSON.stringify([this.t2g(this.terrain.tileMaps[0]), this.t2g(this.terrain.tileMaps[1]), this.t2g(this.terrain.tileMaps[2]), this.t2g(this.terrain.tileMaps[3])]) + ',\n' +
+			
+			'\t\t"pathingMap": ' + JSON.stringify(this.t2g(this.terrain.tileMapPathing)) + ',\n\n' +
 			
 			'\t\t"tileTextures": ' + JSON.stringify(this.terrain.tileTextures) + '\n\n' +
 			

@@ -42,14 +42,26 @@ var transformers = {
 		}
 	},
 	
+	/****************************************************************************
+	 ****************************************************************************
+	 *	Texture
+	 ****************************************************************************
+	 ****************************************************************************/
+	
 	//Modifies the texture assigned to tiles
-	//	TODO: clean this shit up, so hard to understand
-	//				Width shouldn't be +1 as closestVertex should be converted right away...
 	texture: {
 		enabled: false,
 		active: false,
 		index: 1,
 		func: function(closestVertex) {
+			
+			/*console.log(new Array(16).join("*"));
+			console.log(new Array(5).join("*") + "Texture" + new Array(5).join("*"));
+			console.log(new Array(16).join("*"));*/
+			
+			/************************************************************************
+			 *	Grab everything we need
+			 ************************************************************************/
 			
 			//Grab the width and height
 			var width = mods[logic.currentMod].terrain.width;
@@ -63,8 +75,8 @@ var transformers = {
 			var tileTextureIndex = transformers.texture.index;
 			
 			//Grab our arrays for easy modification
-			var top = mods[logic.currentMod].terrain.tileMapTop;
-			var bottom = mods[logic.currentMod].terrain.tileMapBottom;
+			var tileMaps = mods[logic.currentMod].terrain.tileMaps;
+			var contexts = logic.contexts;
 			
 			//Grab the prime location (center, where for even we're in bot right
 			//		center)
@@ -95,70 +107,304 @@ var transformers = {
 			maxColumn = Math.min(maxColumn, width-1);
 			
 			//So we don't calculate it every time
-			var centerExists = minColumnCenter <= maxColumnCenter &&
-					minRowCenter <= maxRowCenter;
+			var centerExists = minColumnCenter <= maxColumnCenter && minRowCenter <= maxRowCenter;
 			
 			//Variables we'll need in the loop
 			var index, variation, randTile;
 			
+			/************************************************************************
+			 *	Loop through the tiles being updated
+			 ************************************************************************/
+			
+			//console.log(minColumn, maxColumn, minRow, maxRow);
+			
 			//Loop through the entire brush area (we're limited to inbounds)
-			for (var column = minColumn; column <= maxColumn; column++)
+			for (var col = minColumn; col <= maxColumn; col++)
 				for (var row = minRow; row <= maxRow; row++) {
 					
+					//console.log(col, row);
+					
 					//Grab the index
-					index = row*width + column;
+					index = (row*width + col)*3;
+					
+					//console.log('**', index/3, new Array(25).join('*'));
+					
+					/********************************************************************
+					 *	Edge
+					 ********************************************************************/
 					
 					//A center doesn't exist or we're outside of it
-					if (!centerExists || edgeOfBrush(row, column, minRow, maxRow,
-							minRowCenter, maxRowCenter, minColumn, maxColumn, minColumnCenter,
-							maxColumnCenter)) {
-						
-						//Push the top down
-						//paintTile(bottom, logic.tileMapBottomContext, index*3, column, row, top[index*3], top[index*3+1], top[index*3+2]);
+					if (!centerExists || edgeOfBrush(row, col, minRow, maxRow, minRowCenter, maxRowCenter, minColumn, maxColumn, minColumnCenter, maxColumnCenter)) {
 						
 						//Get the variation; the rect defined by min/max row/column is
 						//		treated as the the passed tile
-						variation = getVariation(index, row, column, minRow, maxRow, minColumn, maxColumn);
+						variation = getVariation(index, row, col, minRow, maxRow, minColumn, maxColumn);
 						
-						//Replace the top texture
-						top[index*3+2] = variation[0];
+						//Extra info from variation
+						var newLayerIndex = variation[0],
+								existingLayer = variation[1],
+								newLayer = {
+									y: variation[2],
+									x: variation[3],
+									tile: transformers.texture.index,
+									coverage: tileCoverage[variation[2]][variation[3]]
+								};
 						
-						//Set our variations
-						top[index*3] = variation[1];
-						top[index*3+1] = variation[2];
+						var layer;
 						
-						//Paint the tile
-						logic.tileMapTopContext.fillStyle =
-								buildColorFromTopTileMap(index*3);
-						logic.tileMapTopContext.fillRect(column, row, 1, 1);
+						//Merged coverages
+						//	workingCoverage is first of layer[3], then [2], etc.
+						//	newWorkingcoverage is as above, except inits at newLayerCoverage
+						var workingCoverage = 0,
+								
+						//Holds the coverage for the active layer (when looping)
+								modifiedLayerCoverage,
+								
+						//For when we are pushing layers down
+								aboveLayer = null, tAboveLayer,
+								aboveLayerCoverage;
 						
+						//Loop through the layers
+						layerLoop: for (var i = 3; i >= 0; i--) {
+							
+							//Grab the details of the active layer
+							layer = {
+								y: tileMaps[i][index],
+								x: tileMaps[i][index+1],
+								tile: tileMaps[i][index+2],
+								coverage: tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]]
+							};
+							
+							//Make sure this layer updates
+							logic.textures[i].needsUpdate = true;
+							
+							/****************************************************************
+							 *	Updating above
+							******************************************************************/
+							
+							//Above our layer insert
+							if (i > newLayerIndex) {
+								
+								//Calculate how much the layer should be covering (the layer minus coverage, which is the new layer + any layers above even this one)
+								layer.modifiedCoverage = layer.coverage & ~workingCoverage & ~newLayer.coverage;
+								workingCoverage |= layer.coverage;
+								
+								//Layer has been killed, so pull EVERYTHING up
+								if (layer.modifiedCoverage == 0) {
+									
+									//Loop down, don't include 0 because nothing is below it
+									for (var n = i; n > 0; n--) {
+										
+										//Grab the details of the layer below
+										if (n == newLayerIndex) {
+											layer = newLayer;
+											layer.coverage |= workingCoverage;
+										} else
+											layer = {
+												y: tileMaps[n-1][index],
+												x: tileMaps[n-1][index+1],
+												tile: tileMaps[n-1][index+2],
+												coverage: (tileCoverage[tileMaps[n-1][index]][tileMaps[n-1][index+1]] | workingCoverage) & ~newLayer.coverage
+											};
+										
+										//Update the variation to include the above coverage
+										if (layer.coverage == 15) {
+											randTile = Mod.randomTile();
+											
+											layer.y = randTile[0];
+											layer.x = randTile[1];
+										
+										//This layer is dead...
+										} else if (layer.coverage == 0) {
+											
+											layer = newLayer;
+											layer.coverage |= workingCoverage;
+											
+										} else {
+											layer.y = tileVariationMap[layer.coverage][0];
+											layer.x = tileVariationMap[layer.coverage][1];
+										}
+										
+										//Paint it
+										//console.log('player', n, newLayerIndex, index/3, layer);
+										paintTile(tileMaps[n], contexts[n], index, col, row, layer.y, layer.x, layer.tile);
+										
+										if (layer.coverage == 15) {
+											//console.log('break a');
+											break layerLoop;
+										}
+										
+									}
+									
+								//The layer survives
+								} else {
+									
+									//Grab the variation
+									layer.y = tileVariationMap[layer.modifiedCoverage][0];
+									layer.x = tileVariationMap[layer.modifiedCoverage][1];
+									
+									//And update
+									//console.log('ulayer', i, 'index', index/3, 'r', layer.y, 'g', layer.x, 'b', layer.tile);
+									paintTile(tileMaps[i], contexts[i], index, col, row, layer.y, layer.x, layer.tile);
+									
+								}
+							
+							/****************************************************************
+							 *	Updating current
+							*****************************************************************/
+							
+							//We're on the target tile layer
+							} else if (i == newLayerIndex) {
+								
+								//Bottom layer, just make it full
+								if (i == 0 && newLayer.coverage != 15) {
+									randTile = Mod.randomTile();
+									
+									newLayer.y = randTile[0];
+									newLayer.x = randTile[1];
+									newLayer.coverage = 15;	//REMOVE
+									
+								}
+								
+								workingCoverage |= newLayer.coverage
+								
+								//If the workingCoverage doesn't match the layer coverage, expand it
+								if (newLayer.coverage != workingCoverage) {
+									
+									//Full, generate random
+									if (workingCoverage == 15) {
+										randTile = Mod.randomTile();
+										
+										newLayer.y = randTile[0];
+										newLayer.x = randTile[1];
+										newLayer.coverage = 15;	//REMOVE
+										
+									//Not full, grab from table
+									} else {
+										
+										newLayer.y = tileVariationMap[workingCoverage][0];
+										newLayer.x = tileVariationMap[workingCoverage][1];
+										newLayer.coverage = workingCoverage;	//REMOVE
+										
+									}
+								}
+								
+								//Preserve the current layer
+								aboveLayer = {
+									y: tileMaps[i][index],
+									x: tileMaps[i][index+1],
+									tile: tileMaps[i][index+2],
+									coverage: tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]]
+								};
+								
+								//Paint on it
+								//console.log('tlayer', i, index/3, newLayer);
+								paintTile(tileMaps[i], contexts[i], index, col, row, newLayer.y, newLayer.x, newLayer.tile);
+								
+								if (existingLayer) {
+									//console.log('break c');
+									break;
+								}
+								
+							/****************************************************************
+							 *	Updating below
+							*****************************************************************/
+							
+							//Below our tile
+							} else if (i < newLayerIndex) {
+								
+								//Preserve the layer
+								tAboveLayer = {
+									y: tileMaps[i][index],
+									x: tileMaps[i][index+1],
+									tile: tileMaps[i][index+2],
+									coverage: tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]]
+								};
+								
+								//Calculate if the above layer is replacing this and add the new coverage to the working coverage
+								newCoverage = aboveLayer.coverage & ~workingCoverage;
+								workingCoverage |= aboveLayer.coverage;
+								
+								//Still some coverage left, so we push it down
+								if (newCoverage != 0) {
+									
+									//Bottom layer, just make it full
+									if (i == 0) {
+										randTile = Mod.randomTile();
+										
+										aboveLayer.y = randTile[0];
+										aboveLayer.x = randTile[1];
+									
+									//If the workingCoverage doesn't match the layer coverage, expand it
+									} else if (aboveLayer.coverage != workingCoverage) {
+										
+										//Full, generate random
+										if (workingCoverage == 15) {
+											randTile = Mod.randomTile();
+											
+											aboveLayer.y = randTile[0];
+											aboveLayer.x = randTile[1];
+										
+										//Not full, grab from table
+										} else {
+											
+											aboveLayer.y = tileVariationMap[workingCoverage][0];
+											aboveLayer.x = tileVariationMap[workingCoverage][1];
+											
+										}
+									}
+									
+									//Replace 
+									//console.log('blayer', i, index/3, aboveLayer);
+									paintTile(tileMaps[i], contexts[i], index, col, row, aboveLayer.y, aboveLayer.x, aboveLayer.tile);
+									
+									aboveLayer = tAboveLayer;
+									
+								//Everything is covered; elevate the last layer to being full
+								} else {
+									
+									//console.log('last', paintTileLast[5], paintTileLast[6], paintTileLast[7], tileCoverage[paintTileLast[5]][paintTileLast[6]]);
+									
+									/*if (tileCoverage[paintTileLast[5]][paintTileLast[6]] != 15 || paintTileLast[5] > 3) {
+									
+										randTile = Mod.randomTile();
+										
+										console.log('flayer', 'index', paintTileLast[2], 'r', randTile[0], 'g', randTile[1], 'b', paintTileLast[7]);
+										paintTile(paintTileLast[0], paintTileLast[1], paintTileLast[2], paintTileLast[3], paintTileLast[4], randTile[0], randTile[1], paintTileLast[7]);
+									}*/
+									
+									//console.log('break b');
+									break;
+									
+								}
+								
+							}
+						}
+					
+					/********************************************************************
+					 *	Center
+					 ********************************************************************/
+					
 					//Center exists and we're in it
 					} else {
-						
-						
-						
-						//Replace the top texture
-						top[index*3+2] = transformers.texture.index;
 						
 						//Grab a random tile
 						randTile = Mod.randomTile();
 						
-						//Set our variations
-						top[index*3] = randTile[0];
-						top[index*3+1] = randTile[1];
+						//console.log('layer', 3, 'index', index, 'r', randTile[0], 'g', randTile[1], 'b', transformers.texture.index);
+						paintTile(tileMaps[3], contexts[3], index, col, row, randTile[0], randTile[1], transformers.texture.index);
 						
-						//Paint the tile
-						logic.tileMapTopContext.fillStyle =
-								buildColorFromTopTileMap(index*3);
-						logic.tileMapTopContext.fillRect(column, row, 1, 1);
+						logic.textures[3].needsUpdate = true;
 						
 					}
 					
 				}
 			
 			//Recalc & update
-			logic.tileMapTopTexture.needsUpdate = true;
-			logic.tileMapBottomTexture.needsUpdate = true;
+			/*for (var i = 0; i < 4; i++)
+				logic.textures[i].needsUpdate = true;*/
+			
+			//logic.tileMapBottomTexture.needsUpdate = true;
 			
 		}
 	}
@@ -192,15 +438,19 @@ var camera;
  ******************************************************************************
  ******************************************************************************/
 
+var paintTileLast;
 function paintTile(uint, context, index, column, row, r, g, b) {
-	uint[index] = r;
-	uint[index+1] = g;
-	uint[index+2] = b;
 	
-	//console.log(r, g, b);
+	uint.set([r, g, b], index);
+	/*uint[index] = color[0];
+	uint[index+1] = color[1];
+	uint[index+2] = color[2];*/
 	
+	//context.fillStyle = '#' + pad(color[0], 2, 16) + pad(color[1], 2, 16) + pad(color[2], 2, 16);
 	context.fillStyle = '#' + pad(r, 2, 16) + pad(g, 2, 16) + pad(b, 2, 16);
 	context.fillRect(column, row, 1, 1);
+	
+	paintTileLast = [uint, context, index, column, row, r, g, b];
 }
 
 //Corner for flags
@@ -218,143 +468,170 @@ var TOP_LEFT = 1,
 
 //The corners a tile variation has (look at a texture)
 //	[column][row], where [0][0] is the bottom left
-var tileRelations = [
+var tileCoverage = [
 	[TOP, TOP_LEFT, TOP_RIGHT, ALL],
 	[TOP | BOTTOM_RIGHT, TOP_LEFT | BOTTOM_RIGHT, RIGHT, BOTTOM_RIGHT],
 	[TOP | BOTTOM_LEFT, LEFT, TOP_RIGHT | BOTTOM_LEFT, BOTTOM_LEFT],
-	[ALL, BOTTOM | TOP_LEFT, BOTTOM | TOP_RIGHT, BOTTOM]
-];
-
-//The neighbouring tiles laid out in an octothorpe and the corners/directions we're interested in
-var neighbors = [
-	[-1, -1, BOTTOM_RIGHT], [-1, 0, BOTTOM], [-1, 1, BOTTOM_LEFT],
-	[ 0, -1, RIGHT],                         [ 0, 1, LEFT],
-	[ 1, -1, TOP_RIGHT],    [ 1, 0, TOP],    [ 1, 1, TOP_LEFT]
+	[ALL, BOTTOM | TOP_LEFT, BOTTOM | TOP_RIGHT, BOTTOM],
+	[ALL, ALL, ALL, ALL],
+	[ALL, ALL, ALL, ALL],
+	[ALL, ALL, ALL, ALL],
+	[ALL, ALL, ALL, ALL]
 ];
 
 //The possible flags we get
-var tileVariationMap = [];
-tileVariationMap[11] = [0, 1];
-tileVariationMap[15] = [0, 1];
-tileVariationMap[22] = [0, 2];
-tileVariationMap[23] = [0, 2];
-tileVariationMap[31] = [0, 0];
-tileVariationMap[43] = [0, 1];
-tileVariationMap[63] = [0, 0];
-tileVariationMap[104] = [2, 3];
-tileVariationMap[105] = [2, 3];
-tileVariationMap[107] = [2, 1];
-tileVariationMap[111] = [2, 1];
-tileVariationMap[126] = [2, 2];
-tileVariationMap[127] = [2, 0];
-tileVariationMap[150] = [0, 2];
-tileVariationMap[159] = [0, 0];
-tileVariationMap[208] = [1, 3];
-tileVariationMap[212] = [1, 3];
-tileVariationMap[214] = [1, 2];
-tileVariationMap[215] = [1, 2];
-tileVariationMap[219] = [1, 1];
-tileVariationMap[223] = [1, 0];
-tileVariationMap[235] = [2, 1];
-tileVariationMap[246] = [1, 2];
-tileVariationMap[248] = [3, 3];
-tileVariationMap[249] = [3, 3];
-tileVariationMap[251] = [3, 1];
-tileVariationMap[252] = [3, 3];
-tileVariationMap[254] = [3, 2];
+var tileVariationMap = [
+	  null, [0, 1], [0, 2], [0, 0],
+	[2, 3], [2, 1], [2, 2], [2, 0],
+	[1, 3], [1, 1], [1, 2], [1, 0],
+	[3, 3], [3, 1], [3, 2]
+];
 
-function getVariation(index, row, column, minRow, maxRow, minColumn, maxColumn) {
+function getCornerIndices(index) {
+	
+	//Grab our arrays for easy access
+	var tileMaps = mods[logic.currentMod].terrain.tileMaps;
+	
+	var cornerIndices = [], count = 0;
+	//console.log('setting');
+	for (var i = 3; i >= 0 && count != 4; i--) {
+		
+		//Top left
+		//console.log(i, cornerIndices[0] == null, tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]]);
+		if (cornerIndices[0] == null && (tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]] & TOP_LEFT) === TOP_LEFT) {
+			cornerIndices[0] = [i, tileMaps[i][index+2]];
+			count++;
+		}
+		
+		//Top right
+		//console.log(i, cornerIndices[1] == null, tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]]);
+		if (cornerIndices[1] == null && (tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]] & TOP_RIGHT) === TOP_RIGHT) {
+			//console.log('tr success');
+			cornerIndices[1] = [i, tileMaps[i][index+2]];
+			count++;
+		}
+		
+		//Bottom left
+		//console.log(i, cornerIndices[2] == null, tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]]);
+		if (cornerIndices[2] == null && (tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]] & BOTTOM_LEFT) === BOTTOM_LEFT) {
+			cornerIndices[2] = [i, tileMaps[i][index+2]];
+			count++;
+		}
+		
+		//Bottom right
+		//console.log(i, cornerIndices[3] == null, tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]]);
+		if (cornerIndices[3] == null && (tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]] & BOTTOM_RIGHT) === BOTTOM_RIGHT) {
+			//console.log('win', i, cornerIndices[3] == null, (tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]] & BOTTOM_RIGHT) === BOTTOM_RIGHT);
+			cornerIndices[3] = [i, tileMaps[i][index+2]];
+			count++;
+		}//console.log('round', count);
+	}
+	//console.log('set', cornerIndices);
+	return cornerIndices;
+	
+}
+
+function getVariation(index, row, col, minRow, maxRow, minCol, maxCol) {
+	
+	/****************************************************************************
+	 *	Setup
+	 ****************************************************************************/
 	
 	//Grab the width and height
 	var width = mods[logic.currentMod].terrain.width;
 	var height = mods[logic.currentMod].terrain.height;
 	
 	//Grab our arrays for easy modification
-	var top = mods[logic.currentMod].terrain.tileMapTop;
-	var bottom = mods[logic.currentMod].terrain.tileMapBottom;
+	var tileMaps = mods[logic.currentMod].terrain.tileMaps;
 	
-	var topIndex, bottomIndex, takesTop;
-	if (top[index*3+2] <= transformers.texture.index) {
-		takesTop = true;
-		
-		topIndex = transformers.texture.index;
-		bottomIndex = top[index*3+2];
-		
-	} else {
-		takesTop = false;
-		
-		topIndex = top[index*3+2];
-		bottomIndex = transformers.texture.index;
-	}
+	var tile = transformers.texture.index;
+	
+	/****************************************************************************
+	 *	Get flag & order
+	 ****************************************************************************/
 	
 	//Flag for neighbours, a binary value (eight-bit, for each neighbour)
 	var flag = 0;
 	
-	//Define variables we'll be using in the loop
-	var tRow, tCol, tDirection, tIndex, tileRelation;
+	//Get the corner tile indices
+	var cornerIndices = getCornerIndices(index);
 	
-	//Loop through each neighbouring tile to see if it's touching
-	for (var i = 0; i < 8; i++) {
-		
-		//Get our offset row/column
-		tRow = row + neighbors[i][0];
-		tCol = column + neighbors[i][1];
-		
-		//And the corner/direction of the neighbour we're checking
-		tDirection = neighbors[i][2];
-		
-		//Any neighbours in the brush area are of the same type as well as those outside the map
-		if ((tRow >= minRow && tRow <= maxRow && tCol >= minColumn && tCol <= maxColumn) || tRow < 0 || tRow >= width || tCol < 0 || tCol >= height)
-			flag += 1 << i;
-		
-		//A neighbour outside the brush area
-		else {
-			
-			//Calculate the tile's index
-			tIndex = (tRow*width + tCol)*3;
-			
-			//Returns the col array
-			tileRelation = tileRelations[top[tIndex]];
-			
-			//The row doesn't exist, 
-			if (typeof tileRelation == 'undefined') {
-				if (top[tIndex+2] == transformers.texture.index)
-					flag += 1 << i;
-				
-			} else {
-				
-				tileRelation = tileRelation[top[tIndex+1]];
-				
-				if (tileRelation & tDirection)
-					if (top[tIndex+2] == transformers.texture.index)
-						flag += 1 << i;
-				else
-					if (bottom[tIndex+2] == transformers.texture.index)
-						flag += 1 << i;
-			}
+	//Figure out which layer we're putting this on...
+	var layer = 3, existingLayer = false;
+	for (var i = 0; i < 4; i++)
+		if (tile == cornerIndices[i][1]) {
+			//console.log('layer_', layer, i);
+			layer = cornerIndices[i][0];
+			existingLayer = true;
+			break;
+		} else if (tile <= cornerIndices[i][1] && layer >= cornerIndices[i][0]) {
+			//console.log('layer__', layer, cornerIndices[i][0]-1);
+			layer = cornerIndices[i][0];
 		}
-	}
 	
+	//console.log(row, col, width, height);
+	
+	//Set the flag to represent the new corners
+	/*if (row == 0 && col == 0) flag = TOP_LEFT;
+	else if (row == 0 && col == width-1) flag = TOP_RIGHT;
+	else if (row == height-1 && col == 0) flag = BOTTOM_LEFT;
+	else if (row == height-1 && col == width-1) flag = BOTTOM_RIGHT;
+	
+	else if (row == 0 && col == minCol) flag = TOP_RIGHT;
+	else if (row == 0 && col == maxCol) flag = TOP_LEFT;
+	else if (row == height-1 && col == minCol) flag = BOTTOM_RIGHT;
+	else if (row == height-1 && col == maxCol) flag = BOTTOM_LEFT;
+	
+	else if (col == 0 && row == minRow) flag = BOTTOM_LEFT;
+	else if (col == 0 && row == maxRow) flag = TOP_LEFT;
+	
+	else if (col == width-1 && row == minRow) flag = BOTTOM_LEFT;
+	else if (col == width-1 && row == maxRow) flag = BOTTOM_RIGHT;
+	
+	else */if (row == minRow && col == minCol) flag = BOTTOM_RIGHT;
+	else if (row == minRow && col == maxCol) flag = BOTTOM_LEFT;
+	else if (row == maxRow && col == minCol) flag = TOP_RIGHT;
+	else if (row == maxRow && col == maxCol) flag = TOP_LEFT;
+	else if (row == minRow) flag = BOTTOM;
+	else if (row == maxRow) flag = TOP;
+	else if (col == minCol) flag = RIGHT;
+	else if (col == maxCol) flag = LEFT;
+	
+	//Combine the flag with the tiles that already exist
+	for (var i = 0; i < 4; i++)
+		if (cornerIndices[i][1] == tile)
+			flag |= 1 << i;
+	
+	//Ascend the layer if the one above is to be entirely covered
+	/*for (var i = layer+1; i < 4; i++)
+		if ((tileCoverage[tileMaps[i][index]][tileMaps[i][index+1]] & ~flag) === 0)
+			layer++;
+		else
+			break;*/
+	
+	/****************************************************************************
+	 *	Get the variation and return
+	 ****************************************************************************/
 	
 	var tileVar, randTile;
 	
 	//Surrounded by similar, use a random full
-	if (flag == 255) {
+	if (flag == 15) {
 		randTile = Mod.randomTile();
-		randTile.unshift(transformers.texture.index);
-		
-		return randTile;
+		return [layer, existingLayer, randTile[0], randTile[1]];
 	
 	//A defined surrounding
 	} else if (tileVar = tileVariationMap[flag]) {
 		
-		//Destructure instead of unshift so we don't modify the map
-		return [transformers.texture.index, tileVar[0], tileVar[1]];
+		//Destructure instead of unshift so we don't modify the mappings
+		return [layer, existingLayer, tileVar[0], tileVar[1], transformers.texture.index];
 		
+	//An undefined surrounding (0... shouldn't happen here)
 	} else {
-		console.log(row, column, flag);
+		console.log(row, col, flag, cornerIndices);
 		
-		return [4, 0, 3];
+		randTile = Mod.randomTile();
+		return [layer, existingLayer, randTile[0], randTile[1]];
 	}
 }
 
@@ -373,10 +650,9 @@ function edgeOfBrush(row, column, minRow, maxRow, minRowCenter, maxRowCenter, mi
 function buildColorFromTopTileMap(index) {
 	
 	//Grab our arrays for easy modification
-	var top = mods[logic.currentMod].terrain.tileMapTop;
+	var tileMaps = mods[logic.currentMod].terrain.tileMaps;
 	
-	return '#' + pad(top[index], 2, 16) + pad(top[index+1], 2, 16) +
-			pad(top[index+2], 2, 16);
+	return '#' + pad(tileMaps[3][index], 2, 16) + pad(tileMaps[3][index+1], 2, 16) + pad(tileMaps[3][index+2], 2, 16);
 }
 
 function pad(num, length, type) {
