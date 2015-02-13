@@ -10,7 +10,6 @@ var logic = {
 	graphic: null,
 	
 	//Objects we need
-	keys: [],
 	mouse: new THREE.Vector2(),
 	mouseRaw: new THREE.Vector2(),
 	raycaster: new THREE.Raycaster(),
@@ -21,12 +20,6 @@ var logic = {
 	//Integer value of the currently loaded mod
 	currentMod: null,
 	
-	//UI
-	modCaret: null,
-	modList: null,
-	openMethod: null,
-	saveMethod: null,
-	
 	windowActive: true,
 	
 	settings: {
@@ -34,31 +27,6 @@ var logic = {
 		transformations: [
 		]
 	},
-	
-	/****************************************************************************
-	 *	Build any keys we might want
-	 ****************************************************************************/
-	
-	currentCamera: 'world',
-	
-	//Default linear methods (we scroll the camera until key up)
-	panLRKey: new Key({property: 'x'}),
-	panUDKey: new Key({property: 'y'}),
-	
-	//Approaches, handle detaching themselves
-	angleKey: new Key({
-		property: 'x',
-		method: 'approach',
-		minRate: .01,
-		rate: 0.01,
-		target: Math.PI * 17/90
-	}),
-	zoomKey: new Key({
-		property: 'z',
-		method: 'approach',
-		minRate: 1,
-		target: 1792
-	}),
 	
 	/****************************************************************************
 	 ****************************************************************************
@@ -69,54 +37,18 @@ var logic = {
 	init: function() {
 		
 		/**************************************************************************
-		 **	UI stuff
-		 **************************************************************************/
-		
-		this.modCaret = document.getElementById('mod').children[0].children[0];
-		this.modList = document.getElementById('mod').children[1];
-		
-		this.openMethod = document.getElementById('open').children[0].firstChild;
-		this.saveMethod = document.getElementById('save').children[0].firstChild;
-		
-		/**************************************************************************
 		 **	Build our graphics and attach graphic-related values
 		 **************************************************************************/
 		
 		//The object
 		this.graphic = new Graphic(document.getElementById('world'));
 		
-		//Related keys
-		this.panLRKey.obj = this.graphic.camera.position;
-		this.panUDKey.obj = this.graphic.camera.position;
-		this.angleKey.obj = this.graphic.camera.rotation;
-		this.zoomKey.obj = this.graphic.camera.position;
-		
 		/**************************************************************************
 		 **	Events
 		 **************************************************************************/
 		
-		//Keys
-		window.addEventListener('keydown', this.onKeyDown.bind(this));
-		window.addEventListener('keyup', this.onKeyUp.bind(this));
-		
 		//Mouse
-		document.getElementById('world')
-				.addEventListener('wheel', this.onScroll.bind(this));
-		document.getElementById('world')
-				.addEventListener('mousemove', this.onMouseMove.bind(this));
-		
-		//Menu
-		document.getElementById('menu')
-				.addEventListener('click', this.menuSwitch.bind(this));
-		
-		//Mods (other windows)
-		mods.on("push", this.newMod.bind(this));
-		mods.on("close", this.closeMod.bind(this));
-		mods.on("savedStateChange", this.onSavedStateChange.bind(this));
-		
-		//Window
-		window.addEventListener('focus', this.windowFocus.bind(this));
-		window.addEventListener('blur', this.windowBlur.bind(this));
+		document.getElementById('world').addEventListener('mousemove', this.onMouseMove.bind(this));
 		
 		/**************************************************************************
 		 **	Some UI stuff (will probably remove)
@@ -143,8 +75,9 @@ var logic = {
 		 **	Load our mods
 		 **************************************************************************/
     
-    for (var i = 0, mod; mod = mods[i]; i++)
-			this.newMod({detail: {mod: mod}}, i);
+    for (var i = 0; i < mods.length; i++)
+			if (mods[i] != null)
+				this.menu.newMod({detail: {mod: mods[i], id: i}}, i);
 		
 		/**************************************************************************
 		 **	Initial mod
@@ -264,22 +197,12 @@ logic.onMouseMove = function(e) {
 	//A switcher to determine if we're in preoview or world camera
 	//	Used for camera movements/tilts
 	if (this.mouseRaw.y > 33 && this.mouseRaw.y < 290 && this.mouseRaw.x < 257) {
-		if (this.currentCamera == 'world') {
-			this.currentCamera = 'preview';
-			
-			this.panLRKey.obj = this.graphic.previewCamera.position;
-			this.panUDKey.obj = this.graphic.previewCamera.position;
-			this.angleKey.obj = this.graphic.previewCamera.rotation;
-			this.zoomKey.obj = this.graphic.previewCamera.position;
-		}
-	} else if (this.currentCamera == 'preview') {
-		this.currentCamera = 'world';
-		
-		this.panLRKey.obj = this.graphic.camera.position;
-		this.panUDKey.obj = this.graphic.camera.position;
-		this.angleKey.obj = this.graphic.camera.rotation;
-		this.zoomKey.obj = this.graphic.camera.position;
-	}
+		if (this.camera.current == 'world') this.camera.current = 'preview';
+	} else if (this.camera.current == 'preview')
+		this.camera.current = 'world';
+	
+	//Don't bother if there is no plane
+	if (!logic.plane) return;
 	
 	//Normalize the mouse coordinates ([-1, 1], [-1, 1])
 	this.mouse.x = ((e.clientX - 257) / (this.graphic.box.clientWidth - 257)) * 2 - 1;

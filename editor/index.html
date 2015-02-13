@@ -5,32 +5,33 @@
 	<head>
 		<title>Terrain Editor</title> 
 		<link rel="stylesheet" href="terrain/style.css" type="text/css"/>
-		<link rel="stylesheet" href="terrain/elementStyle.css" type="text/css"/>
 		
 		<!-- General support classes -->
 		<script src="../os/three.min.js"></script>
 		
 		<!-- Support -->
-		<script src="support.js"></script>
-		
-		<!-- Graphics -->
-		<script src="terrain/Graphic.js"></script>
-		<script src="terrain/Key.js"></script>
-    
-    <script src="terrain/shaders.js"></script>
-		<script src="terrain/TileTexture.js"></script>
-		<script src="terrain/TileMaterial.js"></script>
-		<script src="terrain/CanvasMerge.js"></script>
+		<script src="shared/support.js"></script>
 		
 		<!-- Mods -->
-		<script src="Emitter.js"></script>
-		<script src="Mod.js"></script>
+		<script src="shared/Emitter.js"></script>
+		<script src="shared/Mod.js"></script>
 		
-		<!-- Driver -->
+		<!-- Graphics -->
+		<script src="terrain/graphic/Graphic.js"></script>
+		<script src="terrain/graphic/Key.js"></script>
+    
+    <script src="terrain/graphic/shaders.js"></script>
+		<script src="terrain/graphic/TileTexture.js"></script>
+		<script src="terrain/graphic/TileMaterial.js"></script>
+		<script src="terrain/graphic/CanvasMerge.js"></script>
+		
+		<!-- Terrain -->
 		<script src="terrain/logic.js"></script>
+		<script src="shared/menu.js"></script>
+		
 		<script src="terrain/terrain.js"></script>
-		<script src="terrain/menu.js"></script>
 		<script src="terrain/camera.js"></script>
+		<script src="terrain/menu.js"></script>
 		<script src="terrain/mods.js"></script>
 		<script src="terrain/transformers.js"></script>
 		<script src="terrain/terrainPalette.js"></script>
@@ -128,9 +129,9 @@
 								><label for="taHeight">Apply Height: <span id="taHeightMode">Raise</span></label>
 							</legend>
 							<input type="radio" name="heightRadios" id="taHeightRaise"
-							><label for="taHeightRaise"><img src="img/raise.png"/></label>
+							><label for="taHeightRaise"><img src="/r/img/editor/raise.png"/></label>
 							<input type="radio" name="heightRadios" id="taHeightLower"
-							><label for="taHeightLower"><img src="img/lower.png"/></label>
+							><label for="taHeightLower"><img src="/r/img/editor/lower.png"/></label>
 						</fieldset>
 						
 						<fieldset>

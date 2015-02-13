@@ -38,6 +38,23 @@ body.lightSwitch {
 	vertical-align: middle;
 }
 
+input[type="range"] {
+	-webkit-appearance: none;
+	outline: none;
+	background-color: black;
+	height: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 0;
+	height: 0;
+	border-left: 0.5em solid transparent;
+	border-right: 0.5em solid transparent;
+	border-bottom: 1em solid white;
+	
+}
+
 /******************************************************************************
  ******************************************************************************
  *	Menu

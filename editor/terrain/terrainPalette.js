@@ -145,7 +145,7 @@ logic.loadPaletteTextures = function(tileTextures) {
 			.querySelectorAll('input[type=radio], input[type=radio] + label');
 	
 	//Remove them
-	for (var i = 0; i < prevTextures; i++)
+	for (var i = 0; i < prevTextures.length; i++)
 		prevTextures[i].remove();
 	
 	//Add all our textures (start at 1 to skip the info one)

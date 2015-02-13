@@ -117,16 +117,6 @@ Object.defineProperty(Mod.prototype, 'saved', {
 	}
 });
 
-Mod.Uint8toJSON = function() {
-  
-  var arr = [];
-  
-  for (var i = 0; i < this.length; i++)
-    arr[i] = this[i];
-  
-  return JSON.stringify(arr);
-}
-
 Mod.wholeTiles = [
 	[0, 3], [3, 0], [4, 0], [4, 1], [4, 2], [4, 3],
 	[5, 0], [5, 1], [5, 2], [5, 3], [6, 0], [6, 1],
@@ -155,6 +145,8 @@ Mod.load = function(file) {
 	
 	//Define an empty mod
 	mod = new Mod();
+	
+	mod._saved = true;
 	
 	//Split the file into major sections
 	parts = file.split('\n//!! ');
@@ -343,7 +335,7 @@ Mod.prototype.save = function() {
 			
 			'\t\t"tileMaps": ' + JSON.stringify([this.t2g(this.terrain.tileMaps[0]), this.t2g(this.terrain.tileMaps[1]), this.t2g(this.terrain.tileMaps[2]), this.t2g(this.terrain.tileMaps[3])]) + ',\n' +
 			
-			'\t\t"pathingMap": ' + JSON.stringify(this.t2g(this.terrain.tileMapPathing)) + ',\n\n' +
+			'\t\t"pathingMap": ' + JSON.stringify(this.t2g(this.terrain.pathingMap)) + ',\n\n' +
 			
 			'\t\t"tileTextures": ' + JSON.stringify(this.terrain.tileTextures) + '\n\n' +
 			

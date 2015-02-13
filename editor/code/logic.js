@@ -5,11 +5,9 @@ var mods = window.opener ?
 
 var logic = {
 	
-	currentMod: null,
+	initializers: [],
 	
-	//UI objects
-  openMethod: null,
-	saveMethod: null,
+	currentMod: -1,
 	
 	lastRenameEvent: 0,
 	
@@ -24,9 +22,6 @@ var logic = {
     
 		//Bind elements
 		
-		this.openMethod = document.getElementById('open').firstChild;
-		this.saveMethod = document.getElementById('save').firstChild;
-		
 		this.tree = document.getElementById('tree').children[0];
     
 		this.coder = ace.edit('code');
@@ -36,25 +31,24 @@ var logic = {
 		 **	Events
 		 **************************************************************************/
 		
-		//UI
-		
-		//When a menu item is clicked
-		document.getElementById('menu').addEventListener('click', 
-				this.menuSwitch.bind(this));
-		
 		//User types something in the code window, update UI (saved/unsaved)
 		document.getElementById('code').addEventListener('keydown',
 				this.codeChange.bind(this));
 		
-		//Mods (other windows)
-		mods.on("push", this.newMod.bind(this));
+		/**************************************************************************
+		 **	Load attached initilizers
+		 **************************************************************************/
+		
+		for (var i = 0; i < this.initializers.length; i++)
+			this.initializers[i]();
 		
     /**************************************************************************
 		 **	Load our mods
 		 **************************************************************************/
     
-    for (var i = 0, mod; mod = mods[i]; i++)
-			this.newMod({detail: {mod: mod}}, i);
+    for (var i = 0; i < mods.length; i++)
+			if (mods[i] != null)
+				this.menu.newMod({detail: {mod: mods[i], id: i}}, i);
 		
 	}
 };
@@ -191,7 +185,8 @@ logic.finishRename = function(e) {
 			parentId + '_' + newName);
 	
 	//Update the saved status/title
-	this.setSavedStatus(false);
+	mods[this.currentMod].saved = false;
+	
 	
 };
 
@@ -215,12 +210,14 @@ logic.codeChange = function(e) {
 	if (this.currentMod == null) return;
 	
 	//Update the saved status/title
-	this.setSavedStatus(false);
+	mods[this.currentMod].saved = false;
 	
 };
 
 //Occurs when the section label is clicked; loads the section into code
 logic.selectSection = function(e) {
+	
+	var oldMod = this.currentMod;
 	
 	//Get the id and update currentMod
 	var id = e.target.parentNode.children[0].id;
@@ -246,8 +243,9 @@ logic.selectSection = function(e) {
 	
 	//Set the session
 	this.coder.setSession(section._session);
-
-	this.setSavedStatus(mods[this.currentMod]._saved);
+	
+	if (this.currentMod != oldMod)
+		mods[this.currentMod].saved = mods[this.currentMod].saved;
 	
 };
 
@@ -359,7 +357,7 @@ logic.newMod = function(e, version) {
 	//Okay, let's load the code
 	this.loadSection(
 			'm' + version,
-			(mod._saved ? '' : '*') + mod.meta.title,
+			(mod.saved ? '' : '*') + mod.meta.title,
 			mod.code.children
 	);
 	
@@ -468,136 +466,15 @@ logic.loadSection = function(id, value, children, parent) {
  **	Window
  ******************************************************************************/
 
-logic.setSavedStatus = function(saved) {
+logic.onSavedStateChange = function(e, id) {
 	if (this.currentMod == null) return;
 	
 	var mod = mods[this.currentMod];
 	
-	mod._saved = saved;
+	if (id == this.currentMod)
+		document.title = (mod.saved ? '' : '*') + mod.meta.title + ' - Code Editor';
 	
-	document.title = (saved ? '' : '*') + mod.meta.title + ' - Code Editor';
+	document.getElementById('m' + id).parentNode.children[3]
+			.firstChild.nodeValue = (mod.saved ? '' : '*') + mod.meta.title;
 	
-	document.getElementById('m' + this.currentMod).parentNode.children[3]
-			.firstChild.nodeValue = (saved ? '' : '*') + mod.meta.title;
-	
-};
-
-/******************************************************************************
- ******************************************************************************
- **	Menu
- ******************************************************************************
- ******************************************************************************/
-
-//Will prompt for a file then load the file contents, pushing to mods and
-//		emitting an event
-logic.openFile = function() {
-	
-	//Create input element for file upload
-	var fileInput = document.createElement('input');
-	fileInput.setAttribute('type', 'file');
-	
-	//Open the dialog
-	fileInput.click();
-	
-	//Attach an event listener for when file is selected
-	fileInput.addEventListener('change', function(e) {
-		
-		//Grab the file object
-		var file = e.target.files[0];
-		
-		//Create a reader
-		var fileReader = new FileReader();
-		
-		//When the file is finished reading
-		fileReader.onload = function() {
-			
-			//Grab the contents
-			var file = fileReader.result;
-			
-			//Load the mod and add the mods
-			var mod = Mod.load(file);
-			var id = mods.push(mod) - 1;
-			
-			//Emit the push event
-			mods.emit('push', new CustomEvent('push', {
-				detail: {mod: mod, id: id}
-			}));
-		}.bind(this);
-		
-		//Read the file
-		fileReader.readAsText(file);
-		
-	}.bind(this), false);
-	
-};
-
-//If a mod is selected, will convert the mod into a .wcm file and start a
-//		download
-logic.saveFile = function() {
-	
-	//Reject if no mod selected
-	if (this.currentMod == null) {
-		message({
-			error: true,
-			text: 'You must select a mod to add a selection to.'
-		});
-		
-		return;
-	}
-	
-	//Set mod for easy access
-	var mod = mods[this.currentMod];
-	
-	//Set window of mod and convert to file text
-	mod.window = window;
-	file = mod.save();
-	
-	//Download for user
-	download(mod.path() + '.wcm', file);
-	
-	//Set the mod state to saved
-	this.setSavedStatus(true);
-	
-};
-
-logic.menuSwitch = function(e) {
-	var which = e.target;
-	if (which.tagName == 'LI')
-		which = which.children[0];
-	
-	which = which.innerText.trim();
-	
-	var ele = e.target;
-	while (ele.tagName != 'UL')
-		ele = ele.parentNode
-	
-	if (ele.parentNode.tagName != 'NAV')
-		ele.style.display = 'none';
-	
-	switch (which) {
-		
-		//File
-		case 'New': window.open('../new', 'New Mod',
-				'width=250,height=500,scrollbars=no,location=no'); break;
-		
-		case 'Open file':
-			this.openMethod.nodeValue = 'Open file ';
-			this.openFile();
-			break;
-		case 'Save file':
-			this.saveMethod.nodeValue = 'Save file ';
-			this.saveFile();
-			break;
-		
-		//window
-		case 'Terrain Editor': window.open('..'); break;
-		case 'Code Editor': window.open('../code'); break;
-		
-		default: console.log('woot', which);
-	}
-	
-	if (ele.parentNode.tagName != 'NAV')
-		setTimeout(function() {
-			ele.style.display = null;
-		}, 50);
 };

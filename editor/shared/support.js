@@ -55,6 +55,7 @@ function message(props) {
 		var color1 = '#fff',
 				color2 = '#ddd';
 	
+	messageWindow.style.color = 'black';
 	messageWindow.style.width = '12em';
 	messageWindow.style.border = '1px solid ' + color2;
 	messageWindow.style.borderRadius = '0.33em';

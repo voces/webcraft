@@ -1,4 +1,10 @@
 
+(function(blah) {
+
+var apples = 12;
+
+})(logic);
+
 (function(logic) {
 
 /******************************************************************************
@@ -707,6 +713,13 @@ function getPositions(cornerVertex) {
 //Calls when the mouse presses down (world bound);
 function onClick(e) {
 	
+	//Don't bother if a mod isn't loaded
+	if (logic.currentMod == -1) return;
+	
+	//Set saved status
+	if (mods[logic.currentMod].saved)
+			mods[logic.currentMod].saved = false;
+	
 	//Normalize the mouse coordinates ([-1, 1], [-1, 1])
 	var mouse = new THREE.Vector2(
 		((e.clientX - 257) / (box.clientWidth - 257)) * 2 - 1,
@@ -715,6 +728,9 @@ function onClick(e) {
 	
 	//Grab the vertex
 	var intersect = logic.getIntersect(mouse);
+	
+	//Quit if no intersection
+	if (!intersect) return;
 	
 	//Grab our normalized vertices
 	var closestVertex = logic.intersectClosestVertex(intersect);

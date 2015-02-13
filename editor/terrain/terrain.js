@@ -71,15 +71,10 @@ logic.loadTerrain = function(modId) {
   this.graphic.scene.add(this.plane);
   
 	//Update save status/title
-	this.setSavedStatus(mods[modId]._saved);
+	mods[modId].saved = mods[modId].saved;
 	
 	//Update our keys...
-	
-	this.panUDKey.min = terrain.height*-128 - 1024;
-	this.panUDKey.max = terrain.height*128;// - 1024;
-	
-	this.panLRKey.min = terrain.width*-128 - 128;
-	this.panLRKey.max = terrain.width*128 + 128;
+	logic.camera.dimensions = {height: terrain.height, width: terrain.width};
 	
 };
 
