@@ -1,4 +1,16 @@
 
+function randomString(length) {
+	var possible = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`" + "abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐ" + "ÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
+	
+	var id = '';
+	
+	while (length--)
+		id += possible.charAt(Math.floor(Math.random() * possible.length));
+	
+	return id;
+	
+}
+
 function Mod(props) {
 	
 	props = props || {};
@@ -15,10 +27,11 @@ function Mod(props) {
 	this.meta.author = props.author || 'Unknown';
 	this.meta.description = props.description;
 	
-	var d = new Date();
-	this.meta.date = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+	this.meta.date = new Date().toISOString();
 	
 	this.meta.version = 0;
+	
+	this.meta.identifier = randomString(8);
 	
 	this.window = window;
 	
@@ -299,8 +312,7 @@ Mod.prototype.save = function() {
 	
 	//Update stuff first
 	
-	var d = new Date();
-	this.meta.date = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+	this.meta.date = new Date().toISOString();
 	
 	this.meta.version++;
 	
@@ -362,5 +374,5 @@ Mod.prototype.save = function() {
 };
 
 Mod.prototype.path = function() {
-	return this.meta.title + ' ' + this.meta.date + ' ' + this.meta.version;
+	return this.meta.title + ' ' + this.meta.date;
 };

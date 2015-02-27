@@ -15,8 +15,11 @@ var menuActions = {
 	"New": function(){window.open('/editor/new', 'New Mod', 'width=250,height=500,scrollbars=no,location=no')},
 	"Close": close,
 	
-	"Open file": openFile,
-	"Save file": saveFile,
+	'Open remote': openRemote,
+	'Save remote': saveRemote,
+	
+	'Open file': openFile,
+	'Save file': saveFile,
 	
 	//Window
 	
@@ -67,7 +70,87 @@ function close() {
 }
 
 /******************************************************************************
+ ******************************************************************************
  **	Open
+ ******************************************************************************
+ ******************************************************************************/
+
+/******************************************************************************
+ **	Functions for opening
+ ******************************************************************************/
+
+function loadRemoteMod(mod) {
+	
+	
+	
+}
+ 
+function openModList() {
+	
+	logic.nova.modList('.', function(e) {
+		
+		if (e.list.length == 0) {
+			message({
+				error: true,
+				text: 'No mods on remote.'
+			});
+			
+			return;
+		}
+		
+		logic.menu.loadRemoteModList(e.list, loadRemoteMod);
+	});
+}
+
+function openRemote() {
+	
+	//Not connected, do that first
+	if (logic.nova.status != 5) {
+		logic.menu.login(openModList);
+	
+	//Already logged in, start opening the mod list
+	} else openModList();
+}
+
+function _saveRemote() {
+	
+	//Set mod for easy access
+	var mod = mods[logic.currentMod];
+	
+	//Set window of mod and convert to file text
+	mod.window = window;
+	file = mod.save();
+	
+	logic.nova.saveMod(mod.meta, file);
+	
+	//Set the mod state to saved
+	setSavedStatus(true);
+	
+}
+
+function saveRemote() {
+	
+	//Reject if no mod selected
+	if (logic.currentMod == null) {
+		message({
+			error: true,
+			text: 'You must select a mod to add a selection to.'
+		});
+		
+		return;
+	}
+	
+	//Not connected, do that first
+	if (logic.nova.status != 5) {
+		logic.menu.login(_saveRemote);
+	
+	//Already logged in, start opening the mod list
+	} else _saveRemote();
+	
+}
+
+/******************************************************************************
+ **	File > [Open >] Open file
  ******************************************************************************/
 
 //Will prompt for a file then load the file contents, pushing to mods and
