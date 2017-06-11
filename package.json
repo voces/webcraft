@@ -1,0 +1,23 @@
+{
+  "name": "webcraft",
+  "version": "1.0.1",
+  "main": "build/webcraft.js",
+  "module": "build/webcraft.module.js",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w -m inline",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "verit",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-mdcs": "^4.2.2",
+    "eslint-plugin-html": "^2.0.3",
+    "rollup": "^0.41.6",
+    "rollup-watch": "^3.2.2"
+  },
+  "dependencies": {
+    "ws": "^3.0.0"
+  }
+}

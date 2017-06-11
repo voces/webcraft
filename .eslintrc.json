@@ -1,0 +1,29 @@
+{
+  "extends": "mdcs",
+  "parserOptions": {
+      "ecmaVersion": 8
+    },
+    "globals": {
+        "EventEmitter2": true
+    },
+    "plugins": ["html"],
+  "rules": {
+	"comma-dangle": [
+	  "error",
+	  "never"
+	],
+	"quotes": [
+	  "error",
+	  "double"
+	],
+	"no-multiple-empty-lines": [
+	  "error",
+	  {
+		"max": 1
+	  }
+	],
+	"strict": [
+	  "error"
+	]
+  }
+}
