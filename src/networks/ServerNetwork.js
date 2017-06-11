@@ -19,7 +19,7 @@ class ServerNetwork extends EventDispatcher {
 
 	send( data ) {
 
-		if ( this.timestamp ) data.timestamp = this.timestamp;
+		if ( this.app && data.time === undefined ) data.time = this.app.time;
 
 		data = JSON.stringify( data, this.replacer );
 
@@ -50,7 +50,7 @@ class ServerNetwork extends EventDispatcher {
 
 				try {
 
-					data = JSON.parse( data, this.reviver );
+					data = JSON.parse( data.data, this.reviver );
 
 				} catch ( err ) {
 

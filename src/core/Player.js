@@ -49,9 +49,10 @@ class Player {
 	toJSON() {
 
 		return {
-			id: this.id,
-			color: Player.colors.indexOf( this.color ),
-			_collection: "Player"
+			// id: this.id,
+			_key: this.key,
+			// color: Player.colors.indexOf( this.color ),
+			_collection: "players"
 		};
 
 	}

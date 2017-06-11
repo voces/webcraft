@@ -3,9 +3,6 @@
   "parserOptions": {
       "ecmaVersion": 8
     },
-    "globals": {
-        "EventEmitter2": true
-    },
     "plugins": ["html"],
   "rules": {
 	"comma-dangle": [

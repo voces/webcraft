@@ -1,5 +1,6 @@
 
 import EventDispatcher from "../core/EventDispatcher.js";
+import { isBrowser } from "../misc/env.js";
 
 import models from "./models.js";
 
@@ -15,12 +16,18 @@ class Unit extends EventDispatcher {
 
 		this.shadowProps = {};
 
-		Object.assign( this, props );
+		Object.assign( this, { x: 0, y: 0 }, props );
 
 		if ( this.id === undefined )
 			this.id = unitId ++;
 
-		this.key = "u" + this.id;
+		this._dirty = 0;
+
+	}
+
+	get key() {
+
+		return "u" + this.id;
 
 	}
 
@@ -71,20 +78,31 @@ class Unit extends EventDispatcher {
 
 	get x() {
 
+		if ( typeof this.shadowProps.x === "function" )
+			return this.shadowProps.x( this.app ? this.app.time : 0 );
+
 		return this.shadowProps.x;
 
 	}
 
 	set x( x ) {
 
-		this.shadowProps.x = x;
+		if ( typeof x === "function" && typeof this.shadowProps.x !== "function" ) ++ this.dirty;
+		else if ( typeof x !== "function" ) {
 
-		if ( typeof x === "function" ) this.track( () => this.mesh ? this.mesh.position.x = x() : null );
-		else if ( this.mesh ) this.mesh.position.x = x;
+			if ( this.mesh ) this.mesh.position.x = x;
+			if ( typeof this.shadowProps.x === "function" )++ this.dirty;
+
+		}
+
+		this.shadowProps.x = x;
 
 	}
 
 	get y() {
+
+		if ( typeof this.shadowProps.y === "function" )
+			return this.shadowProps.y( this.app ? this.app.time : 0 );
 
 		return this.shadowProps.y;
 
@@ -92,23 +110,48 @@ class Unit extends EventDispatcher {
 
 	set y( y ) {
 
-		this.shadowProps.y = y;
+		if ( typeof y === "function" && typeof this.shadowProps.y !== "function" ) ++ this.dirty;
+		else if ( typeof y !== "function" ) {
 
-		if ( typeof y === "function" ) this.track( () => this.mesh ? this.mesh.position.y = y() : null );
-		else if ( this.mesh ) this.mesh.position.y = y;
-
-	}
-
-	track( func ) {
-
-		if ( this.updates.length === 0 ) {
-
-			console.log( "dirty" );
-			this.dispatchEvent( { type: "dirty" } );
+			if ( this.mesh ) this.mesh.position.y = y;
+			if ( typeof this.shadowProps.y === "function" )++ this.dirty;
 
 		}
 
-		this.updates.push( func );
+		this.shadowProps.y = y;
+
+	}
+
+	get dirty() {
+
+		return this._dirty;
+
+	}
+
+	set dirty( dirt ) {
+
+		if ( isNaN( dirt ) ) dirt = 0;
+
+		if ( ! this._dirty && dirt ) this.dispatchEvent( { type: "dirty" } );
+		else if ( this._dirty && ! dirt ) this.dispatchEvent( { type: "clean" } );
+
+		this._dirty = dirt;
+
+	}
+
+	update( time ) {
+
+		// console.log( "update" );
+
+		if ( isBrowser && this.mesh ) {
+
+			if ( typeof this.shadowProps.x === "function" ) this.mesh.position.x = this.shadowProps.x( time );
+			if ( typeof this.shadowProps.y === "function" ) this.mesh.position.y = this.shadowProps.y( time );
+
+		}
+
+		for ( let i = 0; i < this.updates.length; i ++ )
+			this.updates[ i ]( time );
 
 	}
 

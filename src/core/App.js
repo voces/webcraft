@@ -11,6 +11,8 @@ import fetchFile from "../misc/fetchFile.js";
 import ServerNetwork from "../networks/ServerNetwork.js";
 import ClientNetwork from "../networks/ClientNetwork.js";
 
+import * as tweens from "../tweens/tweens.js";
+
 import models from "../entities/models.js";
 
 const eval2 = eval;
@@ -21,6 +23,9 @@ class App extends EventDispatcher {
 
 		super();
 
+		this.time = 0;
+		this.lastNow = Date.now();
+
 		this.players = props.players || new Collection();
 		this.units = props.units || new Collection();
 		this.updates = props.updates || new Collection();
@@ -28,6 +33,22 @@ class App extends EventDispatcher {
 		this.initTerrain( props.terrain );
 		this.initIntentSystem( props.intentSystem );
 		this.initScene( props.scene );
+
+		if ( props.network === undefined ) props.network = {};
+
+		if ( props.network.reviver === undefined )
+			props.network.reviver = ( key, value ) => {
+
+				if ( typeof value !== "object" || value._collection === undefined || value._key === undefined ) return value;
+
+				// console.log( value._collection, value._key );
+
+				return this[ value._collection ].dict[ value._key ];
+
+			};
+
+		if ( props.network.replacer === undefined )
+			props.network.replacer = ( key, value ) => value;
 
 		if ( App.isServer ) {
 
@@ -42,8 +63,12 @@ class App extends EventDispatcher {
 
 			window.addEventListener( "resize", () => this.camera.resize() );
 			window.addEventListener( "keydown", e => this.intentSystem.keydown && this.intentSystem.keydown( e ) );
+			window.addEventListener( "keyup", e => this.intentSystem.keyup && this.intentSystem.keyup( e ) );
 
 		}
+
+		for ( const tween in tweens )
+			this[ tween ] = obj => tweens[ tween ]( Object.assign( { startTime: this.time }, obj ) );
 
 		if ( props.types ) this.loadTypes( props.types );
 
@@ -130,6 +155,8 @@ class App extends EventDispatcher {
 
 		this.sun = new THREE.DirectionalLight( 0xffffff, 0.5 );
 		this.sun.position.z = 5;
+		this.sun.position.x = - 3;
+		this.sun.position.y = - 7;
 		this.scene.add( this.sun );
 
 	}
@@ -160,8 +187,9 @@ class App extends EventDispatcher {
 			props :
 			new ServerNetwork( Object.assign( { players: this.players }, props ) );
 
-		this.network.reviver = props.reviver || ( ( key, value ) => value );
-		this.network.replacer = props.replacer || ( ( key, value ) => value );
+		this.network.app = this;
+		this.network.reviver = props.reviver;
+		this.network.replacer = props.replacer;
 
 		this.network.addEventListener( "clientJoin", props.clientJoin || ( e => this.clientJoinHandler( e ) ) );
 		this.network.addEventListener( "clientLeave", props.clientLeave || ( e => this.clientLeaveHandler( e ) ) );
@@ -176,12 +204,13 @@ class App extends EventDispatcher {
 			props :
 			new ClientNetwork( props );
 
-		this.network.reviver = props.reviver || ( ( key, value ) => value );
-		this.network.replacer = props.replacer || ( ( key, value ) => value );
+		this.network.app = this;
+		this.network.reviver = props.reviver || App.defaultReviver();
+		this.network.replacer = props.replacer || App.defaultReplacer();
 
 		this.network.addEventListener( "localPlayer", props.localPlayer || ( e => this.localPlayerHandler( e ) ) );
 		this.network.addEventListener( "playerJoin", props.playerJoin || ( e => this.playerJoinHandler( e ) ) );
-		this.network.addEventListener( "message", props.playerJoin || ( e => this.messageHandler( e ) ) );
+		// this.network.addEventListener( "message", props.playerJoin || ( e => this.messageHandler( e ) ) );
 
 	}
 
@@ -189,12 +218,28 @@ class App extends EventDispatcher {
 
 		const player = new Player( Object.assign( { key: "p" + e.client.id }, e.client ) );
 
-		player.send( { type: "localPlayer", player } );
+		player.send( { type: "localPlayer", time: this.time, player: {
+			id: player.id,
+			color: player.color
+		} } );
+
+		for ( let i = 0; i < this.players.length; i ++ ) {
+
+			player.send( { type: "playerJoin", player: {
+				id: this.players[ i ].id,
+				color: this.players[ i ].color
+			} } );
+
+			this.players[ i ].send( { type: "playerJoin", player: {
+				id: player.id,
+				color: player.color
+			} } );
+
+		}
 
 		this.players.add( player );
 
 		this.network.dispatchEvent( { type: "playerJoin", player } );
-		this.network.send( { type: "playerJoin", player } );
 
 	}
 
@@ -211,21 +256,29 @@ class App extends EventDispatcher {
 
 	}
 
-	clientMessage( e ) {
+	// This modifies the actual event, replacing client with player
+	clientMessageHandler( e ) {
+
+		if ( e.client ) {
+
+			e.player = this.players.dict[ "p" + e.client.id ];
+			delete e.client;
+
+		}
 
 	}
 
 	messageHandler( e ) {
 
-		const message = JSON.parse( e.message, this.reviver || ( ( key, value ) => value ) );
-
-		console.log( message );
+		const message = JSON.parse( e.data, this.reviver || ( ( key, value ) => value ) );
 
 		this.network.dispatchEvent( message );
 
 	}
 
 	localPlayerHandler( e ) {
+
+		this.time = e.time;
 
 		const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
 
@@ -287,10 +340,12 @@ class App extends EventDispatcher {
 				super( Object.assign( {}, type, props ) );
 
 				app.units.add( this );
+				this.app = app;
 
 				this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
 				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
-				this.addEventListener( "dirty", () => ( console.log( "dirty add" ), app.updates.add( this ) ) );
+				this.addEventListener( "dirty", () => app.updates.add( this ) );
+				this.addEventListener( "clean", () => app.updates.remove( this ) );
 
 			}
 
@@ -300,18 +355,6 @@ class App extends EventDispatcher {
 
 	}
 
-	// get terrain() {
-    //
-	// 	return this._terrain;
-    //
-	// }
-    //
-	// set terrain( value ) {
-    //
-	// 	this._terrain = value;
-    //
-	// }
-
 	add( entity ) {
 
 		this.units.add( entity );
@@ -320,14 +363,16 @@ class App extends EventDispatcher {
 
 	update() {
 
+		const now = Date.now(),
+			delta = now - this.lastNow;
+
+		this.lastNow = now;
+		this.time += delta;
+
 		for ( let i = 0; i < this.updates.length; i ++ )
-			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]();
-			else if ( typeof this.updates[ i ].updates === "object" && this.updates[ i ].updates instanceof Array ) {
-
-				for ( let n = 0; n < this.updates[ i ].updates.length; n ++ )
-					this.updates[ i ].updates[ n ]();
-
-			}
+			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );
+			else if ( typeof this.updates[ i ].updates === "object" && this.updates[ i ].update )
+				this.updates[ i ].update( this.time );
 
 		if ( App.isClient ) {
 

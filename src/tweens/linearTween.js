@@ -1,26 +1,30 @@
 
-function linearTween( { start = 0, end = 1, rate, duration = 1, startTime = Date.now() } = {} ) {
+function linearTween( { start = 0, end = 1, rate, duration, startTime = Date.now() } = {} ) {
 
 	const diff = end - start;
 
 	if ( rate === undefined ) {
 
 		if ( duration === Infinity ) rate = 1;
-		rate = diff / duration;
+		else rate = diff / duration;
 
 	}
 
-	return ( time = Date.now() ) => {
+	if ( duration === undefined ) duration = diff / rate;
 
-		time = ( time - startTime ) / 1000;
+	const func = ( time = Date.now() ) => {
 
-		if ( time >= duration ) return end;
+		const delta = ( time - startTime ) / 1000;
 
-		// console.log( "run", time );
+		if ( delta >= duration ) return end;
 
-		return start + diff * time / rate;
+		return start + delta * rate;
 
 	};
+
+	Object.assign( func, { start, end, rate, duration, startTime, diff, seek: value => ( value - start ) / rate * 1000 + startTime } );
+
+	return func;
 
 }
 

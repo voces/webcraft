@@ -50,7 +50,7 @@ class EventDispatcher {
 
 		if ( listenerArray !== undefined ) {
 
-			event.target = this;
+			// event.target = this;
 
 			const array = [],
 				length = listenerArray.length;
