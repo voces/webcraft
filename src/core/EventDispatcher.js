@@ -11,6 +11,17 @@ class EventDispatcher {
 
 	}
 
+	get _listenerCount() {
+
+		let count = 0;
+
+		for ( const prop in this._listeners )
+			count += this._listeners[ prop ].length;
+
+		return count;
+
+	}
+
 	addEventListener( type, listener ) {
 
 		const listeners = this._listeners;

@@ -1,19 +1,20 @@
 
+// Actually used by App
 import EventDispatcher from "./EventDispatcher.js";
 import Terrain from "../entities/Terrain.js";
-import RTSIntentSystem from "../intent-systems/RTSIntentSystem.js";
+import RTSIntentSystem from "../intents/RTSIntentSystem.js";
 import ditto from "./ditto.js";
 import Collection from "./Collection.js";
 import Player from "./Player.js";
 import Unit from "../entities/Unit.js";
 import fetchFile from "../misc/fetchFile.js";
-
 import ServerNetwork from "../networks/ServerNetwork.js";
 import ClientNetwork from "../networks/ClientNetwork.js";
-
-import * as tweens from "../tweens/tweens.js";
-
 import models from "../entities/models.js";
+
+// Wrapped by App
+import * as tweens from "../tweens/tweens.js";
+import Region from "../misc/Region.js";
 
 const eval2 = eval;
 
@@ -69,6 +70,21 @@ class App extends EventDispatcher {
 
 		for ( const tween in tweens )
 			this[ tween ] = obj => tweens[ tween ]( Object.assign( { startTime: this.time }, obj ) );
+
+		const app = this;
+
+		this.Region = class extends Region {
+
+			constructor( props = {}, ...args ) {
+
+				super( Object.assign( { app }, props ), ...args );
+
+				this.addEventListener( "dirty", () => ( console.log( "dirty" ), app.updates.add( this ) ) );
+				this.addEventListener( "clean", () => app.updates.remove( this ) );
+
+			}
+
+		};
 
 		if ( props.types ) this.loadTypes( props.types );
 
@@ -133,7 +149,7 @@ class App extends EventDispatcher {
 
 	initTerrain( props ) {
 
-		this.terrain = props && props.constructor !== Object ? props : new Terrain( props );
+		this.terrain = props && props.constructor !== Object ? props : new Terrain( Object.assign( { app: this }, props ) );
 
 	}
 
@@ -337,10 +353,9 @@ class App extends EventDispatcher {
 
 			constructor( props ) {
 
-				super( Object.assign( {}, type, props ) );
+				super( Object.assign( { app }, type, props ) );
 
 				app.units.add( this );
-				this.app = app;
 
 				this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
 				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
@@ -355,12 +370,6 @@ class App extends EventDispatcher {
 
 	}
 
-	add( entity ) {
-
-		this.units.add( entity );
-
-	}
-
 	update() {
 
 		const now = Date.now(),
@@ -371,8 +380,17 @@ class App extends EventDispatcher {
 
 		for ( let i = 0; i < this.updates.length; i ++ )
 			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );
-			else if ( typeof this.updates[ i ].updates === "object" && this.updates[ i ].update )
-				this.updates[ i ].update( this.time );
+			else if ( typeof this.updates[ i ] === "object" ) {
+
+				if ( this.updates[ i ].update ) this.updates[ i ].update( this.time );
+				else if ( this.updates[ i ].updates ) {
+
+					for ( let n = 0; n < this.updates[ i ].updates.length; n ++ )
+						this.uodates[ i ].updates[ n ]( this.time );
+
+				}
+
+			}
 
 		if ( App.isClient ) {
 
