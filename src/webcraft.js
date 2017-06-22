@@ -6,9 +6,9 @@ import Unit from "./entities/Unit.js";
 
 import RTSIntentSystem from "./intents/RTSIntentSystem.js";
 
-import Region from "./misc/Region.js";
+import Rect from "./misc/Rect.js";
 
 import linearTween from "./tweens/linearTween.js";
 
-export { App, EventDispatcher, Unit, RTSIntentSystem, Region, linearTween };
+export { App, EventDispatcher, Unit, RTSIntentSystem, Rect, linearTween };
 export * from "./misc/env.js";

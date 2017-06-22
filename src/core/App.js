@@ -14,7 +14,7 @@ import models from "../entities/models.js";
 
 // Wrapped by App
 import * as tweens from "../tweens/tweens.js";
-import Region from "../misc/Region.js";
+import Rect from "../misc/Rect.js";
 
 const eval2 = eval;
 
@@ -30,6 +30,8 @@ class App extends EventDispatcher {
 		this.players = props.players || new Collection();
 		this.units = props.units || new Collection();
 		this.updates = props.updates || new Collection();
+		this.subevents = props.subevents || [];
+		this.rects = props.rects || new Collection();
 
 		this.initTerrain( props.terrain );
 		this.initIntentSystem( props.intentSystem );
@@ -73,11 +75,13 @@ class App extends EventDispatcher {
 
 		const app = this;
 
-		this.Region = class extends Region {
+		this.Rect = class extends Rect {
 
-			constructor( props = {}, ...args ) {
+			constructor( ...args ) {
 
-				super( Object.assign( { app }, props ), ...args );
+				super( ...args );
+
+				if ( this.app === undefined ) this.app = app;
 
 				this.addEventListener( "dirty", () => ( console.log( "dirty" ), app.updates.add( this ) ) );
 				this.addEventListener( "clean", () => app.updates.remove( this ) );
@@ -391,6 +395,28 @@ class App extends EventDispatcher {
 				}
 
 			}
+
+		if ( this.subevents.length ) {
+
+			const oldTime = this.time;
+
+			this.subevents.sort( ( a, b ) => a.time - b.time );
+
+			if ( App.isServer ) this.network.send( this.subevents );
+
+			for ( let i = 0; i < this.subevents.length; i ++ ) {
+
+				if ( this.subevents[ i ].time ) this.time = this.subevents[ i ].time;
+
+				if ( this.subevents[ i ].target ) this.subevents[ i ].target.dispatchEvent( this.subevents[ i ] );
+				else this.dispatchEvent( this.subevents[ i ] );
+
+			}
+
+			this.time = oldTime;
+			this.subevents = [];
+
+		}
 
 		if ( App.isClient ) {
 

@@ -19,7 +19,16 @@ class ServerNetwork extends EventDispatcher {
 
 	send( data ) {
 
-		if ( this.app && data.time === undefined ) data.time = this.app.time;
+		if ( this.app ) {
+
+			if ( data instanceof Array ) {
+
+				for ( let i = 0; i < data.length; i ++ )
+					if ( data[ i ].time === undefined ) data[ i ].time = this.app.time;
+
+			} else if ( data.time === undefined ) data.time = this.app.time;
+
+		}
 
 		data = JSON.stringify( data, this.replacer );
 

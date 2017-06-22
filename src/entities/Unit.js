@@ -139,6 +139,15 @@ class Unit extends EventDispatcher {
 
 	}
 
+	toJSON() {
+
+		return {
+			_key: this.key,
+			_collection: "units"
+		};
+
+	}
+
 	update( time ) {
 
 		// console.log( "update" );

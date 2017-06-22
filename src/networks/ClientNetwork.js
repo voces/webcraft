@@ -25,9 +25,22 @@ class ClientNetwork extends EventDispatcher {
 
 			e = JSON.parse( e.data, this.reviver );
 
-			if ( this.app && e.time ) this.app.time = e.time;
+			if ( e instanceof Array ) {
 
-			this.dispatchEvent( e );
+				for ( let i = 0; i < e.length; i ++ ) {
+
+					if ( this.app && e[ i ].time ) this.app.time = e[ i ].time;
+					this.dispatchEvent( e[ i ] );
+
+				}
+
+			} else {
+
+				if ( this.app && e.time ) this.app.time = e.time;
+
+				this.dispatchEvent( e );
+
+			}
 
 		} );
 		this.socket.addEventListener( "open", () => this.dispatchEvent( "open" ) );
