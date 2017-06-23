@@ -15,25 +15,43 @@ class ServerNetwork extends EventDispatcher {
 		this.clients = props.clients || new Collection();
 		this.ws = props.ws && props.ws.constructor !== Object && props.ws || this.createWS( props.ws );
 
+		this.charsSent = 0;
+
+		setInterval( () => {
+
+			if ( ! this.charsSent ) return;
+			console.log( this.charsSent );
+			this.charsSent = 0;
+
+		}, 1000 );
+
 	}
 
 	send( data ) {
 
-		if ( this.app ) {
+		if ( typeof data === "object" ) {
 
-			if ( data instanceof Array ) {
+			if ( this.app ) {
 
-				for ( let i = 0; i < data.length; i ++ )
-					if ( data[ i ].time === undefined ) data[ i ].time = this.app.time;
+				if ( data instanceof Array ) {
 
-			} else if ( data.time === undefined ) data.time = this.app.time;
+					for ( let i = 0; i < data.length; i ++ )
+						if ( data[ i ].time === undefined ) data[ i ].time = this.app.time;
+
+				} else if ( data.time === undefined ) data.time = this.app.time;
+
+			}
+
+			data = JSON.stringify( data, this.replacer );
+
+		} else if ( typeof data !== "string" ) data = data.toString();
+
+		for ( let i = 0; i < this.clients.length; i ++ ) {
+
+			this.clients[ i ].send( data );
+			this.charsSent += data.length;
 
 		}
-
-		data = JSON.stringify( data, this.replacer );
-
-		for ( let i = 0; i < this.clients.length; i ++ )
-			this.clients[ i ].send( data );
 
 	}
 
@@ -51,7 +69,7 @@ class ServerNetwork extends EventDispatcher {
 
 				this.clients.remove( socket );
 
-				this.dispatchEvent( { type: "clientLeave", client: { id: socket.id } } );
+				this.app.dispatchEvent( { type: "clientLeave", client: { id: socket.id } } );
 
 			};
 
@@ -68,11 +86,11 @@ class ServerNetwork extends EventDispatcher {
 
 				}
 
-				this.dispatchEvent( { type: "clientMessage", client: { id: socket.id }, message: data } );
+				this.app.dispatchEvent( { type: "clientMessage", client: { id: socket.id }, message: data } );
 
 			};
 
-			this.dispatchEvent( { type: "clientJoin", client: { id: socket.id, send: data => {
+			this.app.dispatchEvent( { type: "clientJoin", client: { id: socket.id, send: data => {
 
 				if ( typeof data !== "string" ) data = JSON.stringify( data, this.replacer );
 

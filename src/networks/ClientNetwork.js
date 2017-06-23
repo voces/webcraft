@@ -20,17 +20,23 @@ class ClientNetwork extends EventDispatcher {
 
 		this.socket = new WebSocket( `${this.protocol}://${this.host}:${this.port}` );
 
-		this.socket.addEventListener( "message", console.log );
 		this.socket.addEventListener( "message", e => {
 
 			e = JSON.parse( e.data, this.reviver );
 
-			if ( e instanceof Array ) {
+			if ( typeof e === "number" ) {
+
+				this.app.dispatchEvent( { type: "sync", time: e }, true );
+
+			} else if ( e instanceof Array ) {
+
+				console.log( e );
 
 				for ( let i = 0; i < e.length; i ++ ) {
 
 					if ( this.app && e[ i ].time ) this.app.time = e[ i ].time;
-					this.dispatchEvent( e[ i ] );
+					console.log( e[ i ] );
+					this.app.dispatchEvent( e[ i ], true );
 
 				}
 
@@ -38,11 +44,12 @@ class ClientNetwork extends EventDispatcher {
 
 				if ( this.app && e.time ) this.app.time = e.time;
 
-				this.dispatchEvent( e );
+				this.app.dispatchEvent( e, true );
 
 			}
 
 		} );
+
 		this.socket.addEventListener( "open", () => this.dispatchEvent( "open" ) );
 		this.socket.addEventListener( "close", () => this.onClose() );
 

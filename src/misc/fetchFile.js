@@ -1,5 +1,5 @@
 
-const isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )();
+import { isBrowser } from "./env.js";
 
 let fetchFile;
 

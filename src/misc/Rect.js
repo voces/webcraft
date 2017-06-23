@@ -1,6 +1,8 @@
 
 import EventDispatcher from "../core/EventDispatcher.js";
 
+import * as env from "../misc/env.js";
+
 let rectId = 0;
 
 class Rect extends EventDispatcher {
@@ -55,7 +57,7 @@ class Rect extends EventDispatcher {
 
 		console.log( "Rect.addEventListener", type );
 
-		if ( ( type === "unitEnter" || type === "unitLeave" ) && ( ! this._listeners.unitEnter || ! this._listeners.unitEnter.length ) && ( ! this._listeners.unitLeave || ! this._listeners.unitLeave.length ) )
+		if ( env.isServer && ( type === "unitEnter" || type === "unitLeave" ) && ( ! this._listeners.unitEnter || ! this._listeners.unitEnter.length ) && ( ! this._listeners.unitLeave || ! this._listeners.unitLeave.length ) )
 			this.dispatchEvent( { type: "dirty" } );
 
 		super.addEventListener( type, ...args );

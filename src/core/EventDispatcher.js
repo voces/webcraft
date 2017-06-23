@@ -1,15 +1,9 @@
 
 // Adapted from THREE.js
 
+import * as env from "../misc/env.js";
+
 class EventDispatcher {
-
-	constructor() {
-
-		Object.defineProperties( this, {
-			_listeners: { value: {} }
-		} );
-
-	}
 
 	get _listenerCount() {
 
@@ -24,55 +18,58 @@ class EventDispatcher {
 
 	addEventListener( type, listener ) {
 
-		const listeners = this._listeners;
+		if ( this._listeners === undefined ) this._listeners = {};
 
-		if ( listeners[ type ] === undefined )
-			listeners[ type ] = [];
+		if ( this._listeners[ type ] === undefined )
+			this._listeners[ type ] = [];
 
-		if ( listeners[ type ].indexOf( listener ) === - 1 )
-			listeners[ type ].push( listener );
+		if ( this._listeners[ type ].indexOf( listener ) === - 1 )
+			this._listeners[ type ].push( listener );
 
 	}
 
 	hasEventListener( type, listener ) {
 
-		const listeners = this._listeners;
+		if ( this._listeners === undefined ) return;
 
-		return listeners[ type ] !== undefined && listeners[ type ].indexOf( listener ) !== - 1;
+		return this._listeners[ type ] !== undefined && this._listeners[ type ].indexOf( listener ) !== - 1;
 
 	}
 
 	removeEventListener( type, listener ) {
 
-		const listenerArray = this._listeners[ type ];
+		if ( this._listeners === undefined ) return;
 
-		if ( listenerArray !== undefined ) {
+		if ( this._listeners[ type ] === undefined ) return;
 
-			const index = listenerArray.indexOf( listener );
-			if ( index !== - 1 ) listenerArray.splice( index, 1 );
-
-		}
+		const index = this._listeners[ type ].indexOf( listener );
+		if ( index !== - 1 ) this._listeners[ type ].splice( index, 1 );
 
 	}
 
-	dispatchEvent( event ) {
+	dispatchEvent( event, received ) {
 
-		const listenerArray = this._listeners[ event.type ];
+		if ( this._listeners === undefined ) return;
 
-		if ( listenerArray !== undefined ) {
+		const arr = this._listeners[ event.type ];
+		if ( arr === undefined || arr.length === 0 ) return;
 
-			// event.target = this;
+		if ( env.isClient && ! received )
+			event.type = event.type + "Prediction";
 
-			const array = [],
-				length = listenerArray.length;
+		const clone = arr.slice( 0 );
 
-			for ( let i = 0; i < length; i ++ )
-				array[ i ] = listenerArray[ i ];
+		for ( let i = 0; i < clone.length; i ++ )
+			try {
 
-			for ( let i = 0; i < length; i ++ )
-				array[ i ].call( this, event );
+				clone[ i ].call( this, event );
 
-		}
+			} catch ( err ) {
+
+				// Report user errors but continue on
+				console.error( err );
+
+			}
 
 	}
 
