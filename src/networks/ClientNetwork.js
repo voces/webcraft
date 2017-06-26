@@ -26,6 +26,7 @@ class ClientNetwork extends EventDispatcher {
 
 			if ( typeof e === "number" ) {
 
+				this.app.officialTime = e;
 				this.app.dispatchEvent( { type: "sync", time: e }, true );
 
 			} else if ( e instanceof Array ) {
@@ -34,7 +35,12 @@ class ClientNetwork extends EventDispatcher {
 
 				for ( let i = 0; i < e.length; i ++ ) {
 
-					if ( this.app && e[ i ].time ) this.app.time = e[ i ].time;
+					if ( this.app && e[ i ].time ) {
+
+						this.app.time = e[ i ].time;
+						this.app.officialTime = e[ i ].time;
+
+					}
 					console.log( e[ i ] );
 					this.app.dispatchEvent( e[ i ], true );
 
@@ -42,7 +48,14 @@ class ClientNetwork extends EventDispatcher {
 
 			} else {
 
-				if ( this.app && e.time ) this.app.time = e.time;
+				console.log( e );
+
+				if ( this.app && e.time ) {
+
+					this.app.time = e.time;
+					this.app.officialTime = e.time;
+
+				}
 
 				this.app.dispatchEvent( e, true );
 

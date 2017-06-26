@@ -10,6 +10,8 @@ import ServerNetwork from "../networks/ServerNetwork.js";
 import ClientNetwork from "../networks/ClientNetwork.js";
 import models from "../entities/models.js";
 import * as env from "../misc/env.js";
+import timeProperty from "./timeProperty.js";
+import Random from "../../lib/seedrandom-alea.js";
 
 import * as rts from "../presets/rts.js";
 
@@ -27,6 +29,12 @@ class App extends EventDispatcher {
 
 		this.time = 0;
 		this.lastNow = Date.now();
+
+		this.initialSeed = props.seed || "webcraft";
+		timeProperty( this, this, "random", true );
+		this.random = new Random( this.initialSeed );
+
+		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
 
 		this.players = props.players || new Collection();
 		this.units = props.units || new Collection();
@@ -253,12 +261,31 @@ class App extends EventDispatcher {
 
 	}
 
-	dispatchEvent( event, received ) {
+	// dispatchEvent( event, received ) {
+	//
+	// 	if ( env.isClient && this.network )
+	// 		this.network.send( event );
+	//
+	// 	super.dispatchEvent( event, received );
+	//
+	// }
 
-		if ( ( env.isClient || event.networked ) && this.network )
-			this.network.send( event );
+	setTimeout( callback, time = 0 ) {
 
-		super.dispatchEvent( event, received );
+		this.subevents.push( { time: this.time + time, callback } );
+
+	}
+
+	setInterval( callback, time = 0 ) {
+
+		const wrappedCallback = time => {
+
+			callback( time );
+			this.subevents.push( { time: this.time + time, callback: wrappedCallback } );
+
+		};
+
+		this.subevents.push( { time: this.time + time, callback: wrappedCallback } );
 
 	}
 
@@ -287,19 +314,35 @@ class App extends EventDispatcher {
 
 			this.subevents.sort( ( a, b ) => a.time - b.time );
 
-			if ( env.isServer ) this.network.send( this.subevents );
+			// Use a clone to prevent infinite loops
+			const subevents = this.subevents.slice( 0 );
 
-			for ( let i = 0; i < this.subevents.length; i ++ ) {
+			let index = 0;
+			while ( true ) {
 
-				if ( this.subevents[ i ].time ) this.time = this.subevents[ i ].time;
+				if ( index === subevents.length ) {
 
-				if ( this.subevents[ i ].target ) this.subevents[ i ].target.dispatchEvent( this.subevents[ i ] );
-				else this.dispatchEvent( this.subevents[ i ] );
+					this.subevents = [];
+					break;
+
+				} else if ( subevents[ index ].time > this.officialTime ) {
+
+					this.subevents.splice( 0, index );
+					break;
+
+				}
+
+				this.time = subevents[ index ].time;
+
+				if ( subevents[ index ].callback ) subevents[ index ].callback( subevents[ index ].time );
+				else if ( subevents[ index ].target ) subevents[ index ].target.dispatchEvent( subevents[ index ] );
+				else this.dispatchEvent( subevents[ index ] );
+
+				index ++;
 
 			}
 
 			this.time = oldTime;
-			this.subevents = [];
 
 		}
 
@@ -310,7 +353,7 @@ class App extends EventDispatcher {
 
 		} else {
 
-			// this.network.send( this.time );
+			this.network.send( this.time );
 			setTimeout( () => this.update(), 1000 / 60 );
 
 		}

@@ -1,4 +1,5 @@
 build
+#lib
 webcraft.server.js
 three.min.js
 node_modules

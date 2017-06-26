@@ -20,7 +20,7 @@ class ServerNetwork extends EventDispatcher {
 		setInterval( () => {
 
 			if ( ! this.charsSent ) return;
-			console.log( this.charsSent );
+			// console.log( this.charsSent );
 			this.charsSent = 0;
 
 		}, 1000 );
@@ -45,6 +45,9 @@ class ServerNetwork extends EventDispatcher {
 			data = JSON.stringify( data, this.replacer );
 
 		} else if ( typeof data !== "string" ) data = data.toString();
+
+		// if ( this.clients.length )
+		// 	console.log( "SEND", data );
 
 		for ( let i = 0; i < this.clients.length; i ++ ) {
 
@@ -75,6 +78,9 @@ class ServerNetwork extends EventDispatcher {
 
 			socket.onmessage = data => {
 
+				// Ignore large messages
+				if ( data.length > 1000 ) return;
+
 				try {
 
 					data = JSON.parse( data.data, this.reviver );
@@ -92,7 +98,22 @@ class ServerNetwork extends EventDispatcher {
 
 			this.app.dispatchEvent( { type: "clientJoin", client: { id: socket.id, send: data => {
 
-				if ( typeof data !== "string" ) data = JSON.stringify( data, this.replacer );
+				if ( typeof data === "object" ) {
+
+					if ( this.app ) {
+
+						if ( data instanceof Array ) {
+
+							for ( let i = 0; i < data.length; i ++ )
+								if ( data[ i ].time === undefined ) data[ i ].time = this.app.time;
+
+						} else if ( data.time === undefined ) data.time = this.app.time;
+
+					}
+
+					data = JSON.stringify( data, this.replacer );
+
+				}
 
 				socket.send( data );
 

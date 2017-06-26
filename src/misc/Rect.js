@@ -1,8 +1,6 @@
 
 import EventDispatcher from "../core/EventDispatcher.js";
 
-import * as env from "../misc/env.js";
-
 let rectId = 0;
 
 class Rect extends EventDispatcher {
@@ -57,7 +55,7 @@ class Rect extends EventDispatcher {
 
 		console.log( "Rect.addEventListener", type );
 
-		if ( env.isServer && ( type === "unitEnter" || type === "unitLeave" ) && ( ! this._listeners.unitEnter || ! this._listeners.unitEnter.length ) && ( ! this._listeners.unitLeave || ! this._listeners.unitLeave.length ) )
+		if ( ( type === "unitEnter" || type === "unitLeave" ) && ( ! this._listeners.unitEnter || ! this._listeners.unitEnter.length ) && ( ! this._listeners.unitLeave || ! this._listeners.unitLeave.length ) )
 			this.dispatchEvent( { type: "dirty" } );
 
 		super.addEventListener( type, ...args );
@@ -181,7 +179,7 @@ class Rect extends EventDispatcher {
 
 	calculateLeave( obj ) {
 
-		console.log( obj.shadowProps === undefined, typeof obj.shadowProps.x !== "function", typeof obj.shadowProps.y !== "function" );
+		// console.log( obj.shadowProps === undefined, typeof obj.shadowProps.x !== "function", typeof obj.shadowProps.y !== "function" );
 
 		// Also, check when the shadowProps were defined (start)
 		if ( obj.shadowProps === undefined || ( typeof obj.shadowProps.x !== "function" && typeof obj.shadowProps.y !== "function" ) )
@@ -189,26 +187,26 @@ class Rect extends EventDispatcher {
 
 		if ( typeof obj.shadowProps.x !== "function" ) {
 
-			console.log( "a" );
+			// console.log( "a" );
 
 			if ( obj.shadowProps.y.rate < 0 ) return obj.shadowProps.y.seek( this.minY );
 			return obj.shadowProps.y.seek( this.maxY );
 
 		} else if ( typeof obj.shadowProps.y !== "function" ) {
 
-			console.log( "b" );
+			// console.log( "b" );
 
 			if ( obj.shadowProps.x.rate < 0 ) return obj.shadowProps.x.seek( this.minX );
 			return obj.shadowProps.x.seek( this.maxX );
 
 		}
 
-		console.log( "c" );
+		// console.log( "c" );
 
 		const xDelta = obj.shadowProps.x.rate < 0 ? Math.abs( obj.x - this.minX ) : Math.abs( obj.x - this.maxX ),
 			yDelta = obj.shadowProps.y.rate < 0 ? Math.abs( obj.y - this.minY ) : Math.abs( obj.y - this.maxY );
 
-		console.log( xDelta, yDelta );
+		// console.log( xDelta, yDelta );
 
 		return xDelta < yDelta ?
 			obj.shadowProps.x.seek( obj.shadowProps.x.rate < 0 ? this.minX : this.maxX ) :
@@ -254,7 +252,7 @@ class Rect extends EventDispatcher {
 		for ( let i = 0; i < leaves.length; i ++ )
 			subevents.push( { type: "unitLeave", unit: leaves[ i ], time: this.calculateLeave( leaves[ i ] ), target: this } );
 
-		console.log( "detect", time, enters.length, leaves.length, subevents.map( e => e.time ) );
+		// console.log( "detect", time, enters.length, leaves.length, subevents.map( e => e.time ) );
 
 		if ( this.app ) return this.app.subevents.push( ...subevents );
 

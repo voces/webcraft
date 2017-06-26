@@ -1,17 +1,26 @@
 
 import Player from "../../core/Player.js";
 import * as env from "../../misc/env.js";
+import Random from "../../../lib/seedrandom-alea.js";
 
+const reservedEventTypes = [ "playerJoin", "playerLeave", "localPlayer", "sync", "init" ];
+
+// Server
 function clientJoinHandler( app, e ) {
-
-	console.log( "clientJoinHandler" );
 
 	const player = new Player( Object.assign( { key: "p" + e.client.id }, e.client ) );
 
-	player.send( { type: "localPlayer", time: app.time, player: {
-		id: player.id,
-		color: player.color
-	} } );
+	const seed = app.initialSeed + player.id;
+	app.random = new Random( seed );
+
+	player.send( {
+		type: "localPlayer",
+		time: app.time,
+		seed,
+		player: {
+			id: player.id,
+			color: player.color
+		} } );
 
 	for ( let i = 0; i < app.players.length; i ++ ) {
 
@@ -20,41 +29,56 @@ function clientJoinHandler( app, e ) {
 			color: app.players[ i ].color
 		} } );
 
-		app.players[ i ].send( { type: "playerJoin", player: {
-			id: player.id,
-			color: player.color
-		} } );
+		app.players[ i ].send( {
+			type: "playerJoin",
+			seed,
+			player: {
+				id: player.id,
+				color: player.color
+			} } );
 
 	}
 
 	app.players.add( player );
 
-	app.dispatchEvent( { type: "playerJoin", player, networked: true } );
+	app.dispatchEvent( { type: "playerJoin", player } );
 
 }
 
+// Server
 function clientLeaveHandler( app, e ) {
 
 	const player = app.players.dict[ "p" + e.client.id ];
 
-	app.dispatchEvent( { type: "playerLeave", player, networked: true } );
+	app.network.send( { type: "playerLeave", player } );
+	app.dispatchEvent( { type: "playerLeave", player } );
 
 	app.players.remove( player );
 	player.color.taken = false;
 
 }
 
+// Server
 // This modifies the actual event, replacing client with player
 function clientMessageHandler( app, e ) {
 
 	if ( ! e.client ) return;
 
-	e.player = app.players.dict[ "p" + e.client.id ];
-	delete e.client;
+	// Ignore unsafe messages
+	if ( ! e.message.type || reservedEventTypes.indexOf( e.message.type ) !== - 1 ) return;
+
+	// Set reserved values
+	e.message.player = app.players.dict[ "p" + e.client.id ];
+	e.message.time = app.time;
+
+	app.network.send( e.message );
 
 }
 
+// Server + Local
 function playerJoinHandler( app, e ) {
+
+	if ( env.isClient && e.seed ) app.random = new Random( e.seed );
 
 	if ( env.isServer ) return;
 	if ( app.players.dict[ "p" + e.player.id ] ) return;
@@ -65,9 +89,11 @@ function playerJoinHandler( app, e ) {
 
 }
 
+// Local
 function localPlayerHandler( app, e ) {
 
 	app.time = e.time;
+	app.random = new Random( e.seed );
 
 	const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
 
@@ -78,4 +104,4 @@ function localPlayerHandler( app, e ) {
 }
 
 export { clientJoinHandler, clientLeaveHandler, clientMessageHandler, playerJoinHandler,
- 	localPlayerHandler };
+ 	localPlayerHandler, reservedEventTypes };
