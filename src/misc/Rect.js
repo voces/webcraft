@@ -53,8 +53,6 @@ class Rect extends EventDispatcher {
 
 	addEventListener( type, ...args ) {
 
-		console.log( "Rect.addEventListener", type );
-
 		if ( ( type === "unitEnter" || type === "unitLeave" ) && ( ! this._listeners.unitEnter || ! this._listeners.unitEnter.length ) && ( ! this._listeners.unitLeave || ! this._listeners.unitLeave.length ) )
 			this.dispatchEvent( { type: "dirty" } );
 
@@ -179,34 +177,28 @@ class Rect extends EventDispatcher {
 
 	calculateLeave( obj ) {
 
-		// console.log( obj.shadowProps === undefined, typeof obj.shadowProps.x !== "function", typeof obj.shadowProps.y !== "function" );
-
 		// Also, check when the shadowProps were defined (start)
-		if ( obj.shadowProps === undefined || ( typeof obj.shadowProps.x !== "function" && typeof obj.shadowProps.y !== "function" ) )
+		if ( obj.shadowProps === undefined || ( typeof obj.shadowProps.x !== "function" && typeof obj.shadowProps.y !== "function" ) ) {
+
+			if ( this.app ) return this.app.time;
 			return NaN;
 
-		if ( typeof obj.shadowProps.x !== "function" ) {
+		}
 
-			// console.log( "a" );
+		if ( typeof obj.shadowProps.x !== "function" ) {
 
 			if ( obj.shadowProps.y.rate < 0 ) return obj.shadowProps.y.seek( this.minY );
 			return obj.shadowProps.y.seek( this.maxY );
 
 		} else if ( typeof obj.shadowProps.y !== "function" ) {
 
-			// console.log( "b" );
-
 			if ( obj.shadowProps.x.rate < 0 ) return obj.shadowProps.x.seek( this.minX );
 			return obj.shadowProps.x.seek( this.maxX );
 
 		}
 
-		// console.log( "c" );
-
 		const xDelta = obj.shadowProps.x.rate < 0 ? Math.abs( obj.x - this.minX ) : Math.abs( obj.x - this.maxX ),
 			yDelta = obj.shadowProps.y.rate < 0 ? Math.abs( obj.y - this.minY ) : Math.abs( obj.y - this.maxY );
-
-		// console.log( xDelta, yDelta );
 
 		return xDelta < yDelta ?
 			obj.shadowProps.x.seek( obj.shadowProps.x.rate < 0 ? this.minX : this.maxX ) :
@@ -225,7 +217,7 @@ class Rect extends EventDispatcher {
 
 	}
 
-	update( time ) {
+	update() {
 
 		if ( ! this.area ) return;
 
@@ -238,7 +230,7 @@ class Rect extends EventDispatcher {
 
 		units.sort( ( a, b ) => a.id > b.id );
 
-		const [ enters, leaves ] = this.diff( units, this.units );
+		const [ enters, leaves ] = this.diff( units, this.units, "id" );
 
 		this.units = units;
 
@@ -251,8 +243,6 @@ class Rect extends EventDispatcher {
 
 		for ( let i = 0; i < leaves.length; i ++ )
 			subevents.push( { type: "unitLeave", unit: leaves[ i ], time: this.calculateLeave( leaves[ i ] ), target: this } );
-
-		// console.log( "detect", time, enters.length, leaves.length, subevents.map( e => e.time ) );
 
 		if ( this.app ) return this.app.subevents.push( ...subevents );
 

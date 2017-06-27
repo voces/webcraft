@@ -53,8 +53,6 @@ class App extends EventDispatcher {
 
 				if ( typeof value !== "object" || value._collection === undefined || value._key === undefined ) return value;
 
-				// console.log( value._collection, value._key );
-
 				return this[ value._collection ].dict[ value._key ];
 
 			};
@@ -102,7 +100,7 @@ class App extends EventDispatcher {
 
 				if ( this.app === undefined ) this.app = app;
 
-				this.addEventListener( "dirty", () => ( console.log( "dirty" ), app.updates.add( this ) ) );
+				this.addEventListener( "dirty", () => app.updates.add( this ) );
 				this.addEventListener( "clean", () => app.updates.remove( this ) );
 
 			}
