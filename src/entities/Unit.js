@@ -148,16 +148,16 @@ class Unit extends EventDispatcher {
 
 	}
 
+	render( time ) {
+
+		if ( ! isBrowser || ! this.mesh ) return;
+
+		if ( typeof this.shadowProps.x === "function" ) this.mesh.position.x = this.shadowProps.x( time );
+		if ( typeof this.shadowProps.y === "function" ) this.mesh.position.y = this.shadowProps.y( time );
+
+	}
+
 	update( time ) {
-
-		// console.log( "update" );
-
-		if ( isBrowser && this.mesh ) {
-
-			if ( typeof this.shadowProps.x === "function" ) this.mesh.position.x = this.shadowProps.x( time );
-			if ( typeof this.shadowProps.y === "function" ) this.mesh.position.y = this.shadowProps.y( time );
-
-		}
 
 		for ( let i = 0; i < this.updates.length; i ++ )
 			this.updates[ i ]( time );

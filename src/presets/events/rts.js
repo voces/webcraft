@@ -72,15 +72,18 @@ function clientMessageHandler( app, e ) {
 	e.message.time = app.time;
 
 	app.network.send( e.message );
+	app.dispatchEvent( e.message );
 
 }
 
 // Server + Local
 function playerJoinHandler( app, e ) {
 
-	if ( env.isClient && e.seed ) app.random = new Random( e.seed );
-
+	// Don't do anything on the server
 	if ( env.isServer ) return;
+
+	if ( e.seed ) app.random = new Random( e.seed );
+
 	if ( app.players.dict[ "p" + e.player.id ] ) return;
 
 	const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );

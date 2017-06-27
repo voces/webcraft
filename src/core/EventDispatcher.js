@@ -16,15 +16,17 @@ class EventDispatcher {
 
 	}
 
-	addEventListener( type, listener ) {
+	addEventListener( types, listener ) {
+
+		if ( types.indexOf( " " ) !== - 1 ) types.split( " " ).map( type => this.addEventListener( type, listener ) );
 
 		if ( this._listeners === undefined ) this._listeners = {};
 
-		if ( this._listeners[ type ] === undefined )
-			this._listeners[ type ] = [];
+		if ( this._listeners[ types ] === undefined )
+			this._listeners[ types ] = [];
 
-		if ( this._listeners[ type ].indexOf( listener ) === - 1 )
-			this._listeners[ type ].push( listener );
+		if ( this._listeners[ types ].indexOf( listener ) === - 1 )
+			this._listeners[ types ].push( listener );
 
 	}
 

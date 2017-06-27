@@ -31,8 +31,6 @@ class ClientNetwork extends EventDispatcher {
 
 			} else if ( e instanceof Array ) {
 
-				console.log( e );
-
 				for ( let i = 0; i < e.length; i ++ ) {
 
 					if ( this.app && e[ i ].time ) {
@@ -41,14 +39,12 @@ class ClientNetwork extends EventDispatcher {
 						this.app.officialTime = e[ i ].time;
 
 					}
-					console.log( e[ i ] );
+
 					this.app.dispatchEvent( e[ i ], true );
 
 				}
 
 			} else {
-
-				console.log( e );
 
 				if ( this.app && e.time ) {
 

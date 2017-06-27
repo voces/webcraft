@@ -28,7 +28,9 @@ class App extends EventDispatcher {
 		super();
 
 		this.time = 0;
+		this.renderTime = 0;
 		this.lastNow = Date.now();
+		this.lastRender = this.lastNow;
 
 		this.initialSeed = props.seed || "webcraft";
 		timeProperty( this, this, "random", true );
@@ -39,11 +41,12 @@ class App extends EventDispatcher {
 		this.players = props.players || new Collection();
 		this.units = props.units || new Collection();
 		this.updates = props.updates || new Collection();
+		this.renders = props.renders || new Collection();
 		this.subevents = props.subevents || [];
 		this.rects = props.rects || new Collection();
 
 		this.initTerrain( props.terrain );
-		this.initIntentSystem( props.intentSystem );
+		// this.initIntentSystem( props.intentSystem );
 		this.initScene( props.scene );
 
 		if ( props.network === undefined ) props.network = {};
@@ -61,6 +64,7 @@ class App extends EventDispatcher {
 			props.network.replacer = ( key, value ) => value;
 
 		this.eventSystem = Object.assign( {}, rts.eventSystem, props.eventSystem );
+		this.intentSystem = Object.assign( {}, props.intentSystem );
 
 		if ( env.isServer ) {
 
@@ -110,6 +114,7 @@ class App extends EventDispatcher {
 		if ( props.types ) this.loadTypes( props.types );
 
 		this.update();
+		if ( env.isBrowser ) this.render();
 
 	}
 
@@ -248,8 +253,12 @@ class App extends EventDispatcher {
 
 				this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
 				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
-				this.addEventListener( "dirty", () => app.updates.add( this ) );
+
+				this.addEventListener( "dirty", () => ( app.updates.add( this ), app.renders.add( this ) ) );
 				this.addEventListener( "clean", () => app.updates.remove( this ) );
+
+				// this.addEventListener( "dirty", () => app.renders.add( this ) );
+				this.addEventListener( "clean", () => app.renders.remove( this ) );
 
 			}
 
@@ -258,15 +267,6 @@ class App extends EventDispatcher {
 		Object.defineProperty( this[ type.name ].constructor, "name", { value: type.name, configurable: true } );
 
 	}
-
-	// dispatchEvent( event, received ) {
-	//
-	// 	if ( env.isClient && this.network )
-	// 		this.network.send( event );
-	//
-	// 	super.dispatchEvent( event, received );
-	//
-	// }
 
 	setTimeout( callback, time = 0 ) {
 
@@ -287,6 +287,31 @@ class App extends EventDispatcher {
 
 	}
 
+	render() {
+
+		window.requestAnimationFrame( () => this.render() );
+
+		const now = Date.now();
+		const delta = now - this.lastRender;
+
+		this.lastRender = now;
+		this.renderTime += delta;
+
+		for ( let i = 0; i < this.renders.length; i ++ )
+			if ( typeof this.renders[ i ] === "function" ) this.renders[ i ]( this.renderTime );
+			else if ( typeof this.renders[ i ] === "object" ) {
+
+				if ( this.renders[ i ].render ) this.renders[ i ].render( this.renderTime );
+				else if ( this.renders[ i ].renders )
+					for ( let n = 0; n < this.renders[ i ].renders.length; n ++ )
+						this.uodates[ i ].renders[ n ]( this.renderTime );
+
+			}
+
+		this.renderer.render( this.scene, this.camera );
+
+	}
+
 	update() {
 
 		const now = Date.now(),
@@ -294,6 +319,7 @@ class App extends EventDispatcher {
 
 		this.lastNow = now;
 		this.time += delta;
+		this.renderTime = this.time;
 
 		for ( let i = 0; i < this.updates.length; i ++ )
 			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );
@@ -344,20 +370,24 @@ class App extends EventDispatcher {
 
 		}
 
-		if ( env.isClient ) {
-
-			this.renderer.render( this.scene, this.camera );
-			requestAnimationFrame( () => this.update() );
-
-		} else {
-
-			this.network.send( this.time );
-			setTimeout( () => this.update(), 1000 / 60 );
-
-		}
+		if ( env.isServer ) this.network.send( this.time );
+		setTimeout( () => this.update(), 1000 / 1 );
 
 	}
 
 }
+
+// let frames = 0;
+// const start = Date.now();
+// const render = () => {
+//
+// 	frames ++;
+//
+// 	console.log( frames / ( Date.now() - start ) * 1000 );
+// 	requestAnimationFrame( render );
+//
+// };
+//
+// render();
 
 export default App;
