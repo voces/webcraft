@@ -40,6 +40,7 @@ function clientJoinHandler( app, e ) {
 	}
 
 	app.players.add( player );
+	app.handles.add( player );
 
 	app.dispatchEvent( { type: "playerJoin", player } );
 
@@ -54,6 +55,7 @@ function clientLeaveHandler( app, e ) {
 	app.dispatchEvent( { type: "playerLeave", player } );
 
 	app.players.remove( player );
+	app.handles.remove( player );
 	player.color.taken = false;
 
 }
@@ -66,6 +68,12 @@ function clientMessageHandler( app, e ) {
 
 	// Ignore unsafe messages
 	if ( ! e.message.type || reservedEventTypes.indexOf( e.message.type ) !== - 1 ) return;
+
+	// Update the game clock
+	const now = Date.now();
+	const delta = now - app.lastNow;
+	app.lastNow = now;
+	app.time += delta;
 
 	// Set reserved values
 	e.message.player = app.players.dict[ "p" + e.client.id ];
@@ -89,6 +97,7 @@ function playerJoinHandler( app, e ) {
 	const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
 
 	app.players.add( player );
+	app.handles.add( player );
 
 }
 
@@ -101,6 +110,7 @@ function localPlayerHandler( app, e ) {
 	const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
 
 	app.players.add( player );
+	app.handles.add( player );
 
 	app.localPlayer = player;
 

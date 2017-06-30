@@ -1,8 +1,8 @@
 
 import { Server } from "ws";
 
-import EventDispatcher from "../core/EventDispatcher";
-import Collection from "../core/Collection.js";
+import EventDispatcher from "../../../core/EventDispatcher";
+import Collection from "../../../core/Collection.js";
 
 let clientId = 0;
 

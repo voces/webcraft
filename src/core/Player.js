@@ -1,7 +1,11 @@
 
-class Player {
+import Handle from "./Handle.js";
+
+class Player extends Handle {
 
 	constructor( props = {} ) {
+
+		super( true );
 
 		this.shadowProps = {};
 
@@ -43,17 +47,6 @@ class Player {
 	destroy() {
 
 		this.color.taken = false;
-
-	}
-
-	toJSON() {
-
-		return {
-			// id: this.id,
-			_key: this.key,
-			// color: Player.colors.indexOf( this.color ),
-			_collection: "players"
-		};
 
 	}
 

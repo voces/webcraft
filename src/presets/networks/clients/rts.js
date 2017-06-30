@@ -1,5 +1,6 @@
 
-import EventDispatcher from "../core/EventDispatcher";
+import EventDispatcher from "../../../core/EventDispatcher.js";
+// import EventDispatcher from "../../../../core/EventDispatcher";
 
 class ClientNetwork extends EventDispatcher {
 
@@ -11,6 +12,7 @@ class ClientNetwork extends EventDispatcher {
 		this.host = props.host || "localhost";
 		this.port = props.port || 8081;
 		this.app = props.app;
+		this.reviver = props.reviver;
 
 		this.connect();
 
@@ -27,6 +29,7 @@ class ClientNetwork extends EventDispatcher {
 			if ( typeof e === "number" ) {
 
 				this.app.officialTime = e;
+				this.app.update();
 				this.app.dispatchEvent( { type: "sync", time: e }, true );
 
 			} else if ( e instanceof Array ) {
@@ -45,6 +48,8 @@ class ClientNetwork extends EventDispatcher {
 				}
 
 			} else {
+
+				console.log( e );
 
 				if ( this.app && e.time ) {
 

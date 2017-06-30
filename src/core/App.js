@@ -2,12 +2,9 @@
 // Actually used by App
 import EventDispatcher from "./EventDispatcher.js";
 import Terrain from "../entities/Terrain.js";
-import ditto from "./ditto.js";
 import Collection from "./Collection.js";
 import Unit from "../entities/Unit.js";
 import fetchFile from "../misc/fetchFile.js";
-import ServerNetwork from "../networks/ServerNetwork.js";
-import ClientNetwork from "../networks/ClientNetwork.js";
 import models from "../entities/models.js";
 import * as env from "../misc/env.js";
 import timeProperty from "./timeProperty.js";
@@ -27,17 +24,18 @@ class App extends EventDispatcher {
 
 		super();
 
+		// Time keeping
 		this.time = 0;
 		this.renderTime = 0;
 		this.lastNow = Date.now();
 		this.lastRender = this.lastNow;
 
+		// Randomness
 		this.initialSeed = props.seed || "webcraft";
 		timeProperty( this, this, "random", true );
 		this.random = new Random( this.initialSeed );
 
-		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
-
+		this.handles = props.handles || new Collection();
 		this.players = props.players || new Collection();
 		this.units = props.units || new Collection();
 		this.updates = props.updates || new Collection();
@@ -45,35 +43,41 @@ class App extends EventDispatcher {
 		this.subevents = props.subevents || [];
 		this.rects = props.rects || new Collection();
 
+		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
+
+		// Initialize the app components
 		this.initTerrain( props.terrain );
-		// this.initIntentSystem( props.intentSystem );
 		this.initScene( props.scene );
+		this.eventSystem = Object.assign( {}, rts.eventSystem, props.eventSystem );
+		this.intentSystem = Object.assign( {}, props.intentSystem );
+
+		this.initFactories( props.types );
+
+		this.addEventListener( "playerJoin", e => this.eventSystem.playerJoinHandler( this, e ) );
 
 		if ( props.network === undefined ) props.network = {};
 
 		if ( props.network.reviver === undefined )
 			props.network.reviver = ( key, value ) => {
 
-				if ( typeof value !== "object" || value._collection === undefined || value._key === undefined ) return value;
+			   if ( typeof value !== "object" || value._collection === undefined || value._key === undefined ) return value;
 
-				return this[ value._collection ].dict[ value._key ];
+			   return this[ value._collection ].dict[ value._key ];
 
-			};
+		   };
 
-		if ( props.network.replacer === undefined )
-			props.network.replacer = ( key, value ) => value;
-
-		this.eventSystem = Object.assign( {}, rts.eventSystem, props.eventSystem );
-		this.intentSystem = Object.assign( {}, props.intentSystem );
+		// if ( props.network.replacer === undefined )
+		// 	props.network.replacer = ( key, value ) => value;
 
 		if ( env.isServer ) {
 
 			this.initServerNetwork( props.network );
-			this.renderer = props.renderer && props.renderer.constructor !== Object ? props.renderer : ditto();
 
 			this.addEventListener( "clientJoin", e => this.eventSystem.clientJoinHandler( this, e ) );
 			this.addEventListener( "clientLeave", e => this.eventSystem.clientLeaveHandler( this, e ) );
 			this.addEventListener( "clientMessage", e => this.eventSystem.clientMessageHandler( this, e ) );
+
+			this.update();
 
 		} else {
 
@@ -87,34 +91,9 @@ class App extends EventDispatcher {
 
 			this.addEventListener( "localPlayer", e => this.eventSystem.localPlayerHandler( this, e ) );
 
+			this.render();
+
 		}
-
-		this.addEventListener( "playerJoin", e => this.eventSystem.playerJoinHandler( this, e ) );
-
-		for ( const tween in tweens )
-			this[ tween ] = obj => tweens[ tween ]( Object.assign( { startTime: this.time }, obj ) );
-
-		const app = this;
-
-		this.Rect = class extends Rect {
-
-			constructor( ...args ) {
-
-				super( ...args );
-
-				if ( this.app === undefined ) this.app = app;
-
-				this.addEventListener( "dirty", () => app.updates.add( this ) );
-				this.addEventListener( "clean", () => app.updates.remove( this ) );
-
-			}
-
-		};
-
-		if ( props.types ) this.loadTypes( props.types );
-
-		this.update();
-		if ( env.isBrowser ) this.render();
 
 	}
 
@@ -189,11 +168,9 @@ class App extends EventDispatcher {
 
 		this.network = props.constructor !== Object ?
 			props :
-			new ServerNetwork( Object.assign( { players: this.players }, props ) );
+			new rts.ServerNetwork( Object.assign( { players: this.players }, props ) );
 
 		this.network.app = this;
-		this.network.reviver = props.reviver;
-		this.network.replacer = props.replacer;
 
 	}
 
@@ -201,11 +178,34 @@ class App extends EventDispatcher {
 
 		this.network = props && props.constructor !== Object ?
 			props :
-			new ClientNetwork( props );
+			new rts.ClientNetwork( props );
 
 		this.network.app = this;
-		this.network.reviver = props.reviver || App.defaultReviver();
-		this.network.replacer = props.replacer || App.defaultReplacer();
+
+	}
+
+	initFactories( types ) {
+
+		const app = this;
+
+		for ( const tween in tweens ) this[ tween ] = obj => tweens[ tween ]( Object.assign( { startTime: this.time }, obj ) );
+
+		this.Rect = class extends Rect {
+
+			constructor( ...args ) {
+
+				super( ...args );
+
+				if ( this.app === undefined ) this.app = app;
+
+				this.addEventListener( "dirty", () => app.updates.add( this ) );
+				this.addEventListener( "clean", () => app.updates.remove( this ) );
+
+			}
+
+		};
+
+		if ( types ) this.loadTypes( types );
 
 	}
 
@@ -255,10 +255,13 @@ class App extends EventDispatcher {
 				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
 
 				this.addEventListener( "dirty", () => ( app.updates.add( this ), app.renders.add( this ) ) );
-				this.addEventListener( "clean", () => app.updates.remove( this ) );
+				this.addEventListener( "clean", () => ( app.updates.remove( this ), app.renders.remove( this ) ) );
 
-				// this.addEventListener( "dirty", () => app.renders.add( this ) );
-				this.addEventListener( "clean", () => app.renders.remove( this ) );
+			}
+
+			static get name() {
+
+				return type.name;
 
 			}
 
@@ -319,7 +322,8 @@ class App extends EventDispatcher {
 
 		this.lastNow = now;
 		this.time += delta;
-		this.renderTime = this.time;
+
+		if ( env.isBrowser ) this.renderTime = this.time;
 
 		for ( let i = 0; i < this.updates.length; i ++ )
 			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );
@@ -346,7 +350,8 @@ class App extends EventDispatcher {
 
 				if ( index === subevents.length ) {
 
-					this.subevents = [];
+					if ( index === this.subevents.length ) this.subevents = [];
+					else this.subevents.splice( 0, index );
 					break;
 
 				} else if ( subevents[ index ].time > this.officialTime ) {
@@ -371,23 +376,10 @@ class App extends EventDispatcher {
 		}
 
 		if ( env.isServer ) this.network.send( this.time );
-		setTimeout( () => this.update(), 1000 / 1 );
+		setTimeout( () => this.update(), 25 );
 
 	}
 
 }
-
-// let frames = 0;
-// const start = Date.now();
-// const render = () => {
-//
-// 	frames ++;
-//
-// 	console.log( frames / ( Date.now() - start ) * 1000 );
-// 	requestAnimationFrame( render );
-//
-// };
-//
-// render();
 
 export default App;
