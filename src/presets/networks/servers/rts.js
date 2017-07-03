@@ -13,7 +13,7 @@ class ServerNetwork extends EventDispatcher {
 		super();
 
 		this.clients = props.clients || new Collection();
-		this.ws = props.ws && props.ws.constructor !== Object && props.ws || this.createWS( props.ws );
+		this.ws = props.ws && props.ws.constructor !== Object && props.ws || this.createWS( props );
 
 		this.charsSent = 0;
 
@@ -51,7 +51,12 @@ class ServerNetwork extends EventDispatcher {
 
 		for ( let i = 0; i < this.clients.length; i ++ ) {
 
-			this.clients[ i ].send( data );
+			try {
+
+				this.clients[ i ].send( data );
+
+			} catch ( err ) {}
+
 			this.charsSent += data.length;
 
 		}
@@ -60,13 +65,15 @@ class ServerNetwork extends EventDispatcher {
 
 	createWS( props = {} ) {
 
-		const ws = new Server( Object.assign( { port: 8081 }, props ) );
+		const ws = new Server( { port: props.port || 3000 } );
+		console.log( "Listening on", props.port || 3000 );
 
 		ws.on( "connection", socket => {
 
 			socket.id = clientId ++;
 			socket.key = "c" + socket.id;
-			this.clients.push( socket );
+			this.clients.add( socket );
+			console.log( "Connection from", socket._socket.remoteAddress, "on", socket._socket.remotePort, "as", socket.id );
 
 			socket.onclose = () => {
 
@@ -115,7 +122,11 @@ class ServerNetwork extends EventDispatcher {
 
 				}
 
-				socket.send( data );
+				try {
+
+					socket.send( data );
+
+				} catch ( err ) {}
 
 			} } } );
 

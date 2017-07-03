@@ -55,6 +55,15 @@ class Unit extends EventDispatcher {
 			this.mesh.position.y = this.shadowProps.y || 0;
 			this.mesh.position.z = this.shadowProps.z || 0;
 
+			if ( this.owner && this.mesh.accentFaces ) {
+
+				for ( let i = 0; i < this.mesh.accentFaces.length; i ++ )
+					this.mesh.geometry.faces[ this.mesh.accentFaces[ i ] ].color.set( this.owner.color.hex );
+
+				this.mesh.geometry.colorsNeedUpdate = true;
+
+			}
+
 		} );
 
 	}
@@ -136,6 +145,29 @@ class Unit extends EventDispatcher {
 		else if ( this._dirty && ! dirt ) this.dispatchEvent( { type: "clean" } );
 
 		this._dirty = dirt;
+
+	}
+
+	set owner( owner ) {
+
+		if ( this.shadowProps.owner === owner ) return;
+
+		this.shadowProps.owner = owner;
+
+		if ( this.mesh && this.mesh.accentFaces ) {
+
+			for ( let i = 0; i < this.mesh.accentFaces.length; i ++ )
+				this.mesh.geometry.faces[ this.mesh.accentFaces[ i ] ].color.set( owner.color.hex );
+
+			this.mesh.geometry.colorsNeedUpdate = true;
+
+		}
+
+	}
+
+	get owner() {
+
+		return this.shadowProps.owner;
 
 	}
 

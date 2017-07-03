@@ -24,13 +24,16 @@ function clientJoinHandler( app, e ) {
 
 	for ( let i = 0; i < app.players.length; i ++ ) {
 
-		player.send( { type: "playerJoin", player: {
-			id: app.players[ i ].id,
-			color: app.players[ i ].color
-		} } );
+		player.send( {
+			type: "playerJoin",
+			player: {
+				id: app.players[ i ].id,
+				color: app.players[ i ].color
+			} } );
 
 		app.players[ i ].send( {
 			type: "playerJoin",
+			time: app.time,
 			seed,
 			player: {
 				id: player.id,
@@ -40,6 +43,7 @@ function clientJoinHandler( app, e ) {
 	}
 
 	app.players.add( player );
+	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
 	app.handles.add( player );
 
 	app.dispatchEvent( { type: "playerJoin", player } );
@@ -53,10 +57,6 @@ function clientLeaveHandler( app, e ) {
 
 	app.network.send( { type: "playerLeave", player } );
 	app.dispatchEvent( { type: "playerLeave", player } );
-
-	app.players.remove( player );
-	app.handles.remove( player );
-	player.color.taken = false;
 
 }
 
@@ -97,7 +97,18 @@ function playerJoinHandler( app, e ) {
 	const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
 
 	app.players.add( player );
+	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
 	app.handles.add( player );
+
+}
+
+// Server + Local
+function playerLeaveHandler( app, e ) {
+
+	e.player.color.taken = false;
+
+	app.players.remove( e.player );
+	app.handles.remove( e.player );
 
 }
 
@@ -110,6 +121,7 @@ function localPlayerHandler( app, e ) {
 	const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
 
 	app.players.add( player );
+	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
 	app.handles.add( player );
 
 	app.localPlayer = player;
@@ -117,4 +129,4 @@ function localPlayerHandler( app, e ) {
 }
 
 export { clientJoinHandler, clientLeaveHandler, clientMessageHandler, playerJoinHandler,
- 	localPlayerHandler, reservedEventTypes };
+ 	localPlayerHandler, reservedEventTypes, playerLeaveHandler };

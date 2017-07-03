@@ -54,6 +54,7 @@ class App extends EventDispatcher {
 		this.initFactories( props.types );
 
 		this.addEventListener( "playerJoin", e => this.eventSystem.playerJoinHandler( this, e ) );
+		this.addEventListener( "playerLeave", e => this.eventSystem.playerLeaveHandler( this, e ) );
 
 		if ( props.network === undefined ) props.network = {};
 
@@ -273,7 +274,11 @@ class App extends EventDispatcher {
 
 	setTimeout( callback, time = 0 ) {
 
-		this.subevents.push( { time: this.time + time, callback } );
+		const subevent = { time: this.time + time, callback };
+
+		this.subevents.push( subevent );
+
+		return subevent;
 
 	}
 
@@ -282,11 +287,16 @@ class App extends EventDispatcher {
 		const wrappedCallback = time => {
 
 			callback( time );
-			this.subevents.push( { time: this.time + time, callback: wrappedCallback } );
+			subevent.time = this.time + time;
+			this.subevents.push( subevent );
 
 		};
 
-		this.subevents.push( { time: this.time + time, callback: wrappedCallback } );
+		const subevent = { time: this.time + time, callback: wrappedCallback };
+
+		this.subevents.push( subevent );
+
+		return subevent;
 
 	}
 
@@ -317,13 +327,15 @@ class App extends EventDispatcher {
 
 	update() {
 
-		const now = Date.now(),
-			delta = now - this.lastNow;
+		if ( env.isServer ) {
 
-		this.lastNow = now;
-		this.time += delta;
+			const now = Date.now();
+			const delta = now - this.lastNow;
 
-		if ( env.isBrowser ) this.renderTime = this.time;
+			this.lastNow = now;
+			this.time += delta;
+
+		} else if ( env.isBrowser ) this.renderTime = this.time;
 
 		for ( let i = 0; i < this.updates.length; i ++ )
 			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );

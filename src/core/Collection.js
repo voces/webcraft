@@ -31,12 +31,8 @@ class Collection extends Array {
 
 	remove( item ) {
 
-		// console.log( "remove item1", item );
-
 		const index = this.indexOf( item );
 		if ( index >= 0 ) this.splice( index, 1 );
-
-		// console.log( "remove item2", item );
 
 		//Is the second condition required? How does it effect speed?
 		if ( item[ this.key ] !== undefined && this.dict[ item[ this.key ] ] )
