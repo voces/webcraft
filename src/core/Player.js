@@ -15,6 +15,19 @@ class Player extends Handle {
 
 	}
 
+	static getNextColor() {
+
+		let i = 0;
+		while ( i < Player.colors.length && Player.colors[ i ].taken )
+			i ++;
+
+		if ( i === Player.colors.length )
+			console.error( "This is awkward" );
+
+		return i;
+
+	}
+
 	get key() {
 
 		return "p" + this.id;
@@ -50,16 +63,21 @@ class Player extends Handle {
 
 	}
 
-	static getNextColor() {
+	toState() {
 
-		let i = 0;
-		while ( i < Player.colors.length && Player.colors[ i ].taken )
-			i ++;
+		return Object.assign( this.toJSON(), {
+			_constructor: this.constructor.name,
+			color: Player.colors.indexOf( this.color )
+		} );
 
-		if ( i === Player.colors.length )
-			console.error( "This is awkward" );
+	}
 
-		return i;
+	toJSON() {
+
+		return {
+			_key: this.key,
+			_collection: "players"
+		};
 
 	}
 

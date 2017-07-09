@@ -3,6 +3,7 @@ import { Server } from "ws";
 
 import EventDispatcher from "../../../core/EventDispatcher";
 import Collection from "../../../core/Collection.js";
+import stringify from "../../../misc/stringify.js";
 
 let clientId = 0;
 
@@ -27,7 +28,7 @@ class ServerNetwork extends EventDispatcher {
 
 	}
 
-	send( data ) {
+	send( data, toJSON ) {
 
 		if ( typeof data === "object" ) {
 
@@ -42,7 +43,8 @@ class ServerNetwork extends EventDispatcher {
 
 			}
 
-			data = JSON.stringify( data, this.replacer );
+			if ( toJSON ) data = stringify( data, this.replacer, toJSON );
+			else data = JSON.stringify( data, this.replacer );
 
 		} else if ( typeof data !== "string" ) data = data.toString();
 
@@ -103,7 +105,7 @@ class ServerNetwork extends EventDispatcher {
 
 			};
 
-			this.app.dispatchEvent( { type: "clientJoin", client: { id: socket.id, send: data => {
+			this.app.dispatchEvent( { type: "clientJoin", client: { id: socket.id, send: ( data, toJSON ) => {
 
 				if ( typeof data === "object" ) {
 
@@ -118,7 +120,8 @@ class ServerNetwork extends EventDispatcher {
 
 					}
 
-					data = JSON.stringify( data, this.replacer );
+					if ( toJSON ) data = stringify( data, this.replacer, toJSON );
+					else data = JSON.stringify( data, this.replacer );
 
 				}
 

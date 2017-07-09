@@ -1,5 +1,12 @@
 
+const stringify = value => value === Infinity ? "__Infinity" : value === - Infinity ? "__-Infinity" : value;
+const parse = value => value === "__Infinity" ? Infinity : value === "__-Infinity" ? - Infinity : value;
+
 function linearTween( { start = 0, end = 1, rate, duration, startTime = Date.now() } = {} ) {
+
+	// console.log( "linearTween" );
+
+	if ( typeof duration === "string" ) duration = parse( duration );
 
 	const diff = end - start;
 
@@ -22,7 +29,11 @@ function linearTween( { start = 0, end = 1, rate, duration, startTime = Date.now
 
 	};
 
-	Object.assign( func, { start, end, rate, duration, startTime, diff, seek: value => ( value - start ) / rate * 1000 + startTime } );
+	Object.assign( func, {
+		start, end, rate, duration, startTime, diff,
+		seek: value => ( value - start ) / rate * 1000 + startTime,
+		toState: () => ( { _function: "linearTween", start, end, rate, duration: stringify( duration ), startTime } )
+	} );
 
 	return func;
 

@@ -1,6 +1,7 @@
 
 import Player from "../../core/Player.js";
 import * as env from "../../misc/env.js";
+
 import Random from "../../../lib/seedrandom-alea.js";
 
 const reservedEventTypes = [ "playerJoin", "playerLeave", "localPlayer", "sync", "init" ];
@@ -24,12 +25,12 @@ function clientJoinHandler( app, e ) {
 
 	for ( let i = 0; i < app.players.length; i ++ ) {
 
-		player.send( {
-			type: "playerJoin",
-			player: {
-				id: app.players[ i ].id,
-				color: app.players[ i ].color
-			} } );
+		// player.send( {
+		// 	type: "playerJoin",
+		// 	player: {
+		// 		id: app.players[ i ].id,
+		// 		color: app.players[ i ].color
+		// 	} } );
 
 		app.players[ i ].send( {
 			type: "playerJoin",
@@ -44,7 +45,13 @@ function clientJoinHandler( app, e ) {
 
 	app.players.add( player );
 	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
-	app.handles.add( player );
+
+	// console.log( app.state );
+	player.send( {
+		type: "state",
+		time: app.time,
+		state: app.state
+	}, "toState" );
 
 	app.dispatchEvent( { type: "playerJoin", player } );
 

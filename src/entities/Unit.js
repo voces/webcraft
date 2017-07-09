@@ -96,6 +96,8 @@ class Unit extends EventDispatcher {
 
 	set x( x ) {
 
+		// console.log( this.constructor.name, x );
+
 		if ( typeof x === "function" && typeof this.shadowProps.x !== "function" ) ++ this.dirty;
 		else if ( typeof x !== "function" ) {
 
@@ -154,6 +156,9 @@ class Unit extends EventDispatcher {
 
 		this.shadowProps.owner = owner;
 
+		// Null and undefined
+		if ( owner == undefined ) return;
+
 		if ( this.mesh && this.mesh.accentFaces ) {
 
 			for ( let i = 0; i < this.mesh.accentFaces.length; i ++ )
@@ -168,6 +173,18 @@ class Unit extends EventDispatcher {
 	get owner() {
 
 		return this.shadowProps.owner;
+
+	}
+
+	toState() {
+
+		return Object.assign( this.toJSON(), {
+			_constructor: this.constructor.name,
+			owner: this.owner,
+			x: this.shadowProps.x || this.x,
+			y: this.shadowProps.y || this.y,
+			facing: this.facing
+		} );
 
 	}
 

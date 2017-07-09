@@ -1,20 +1,24 @@
 
 // Actually used by App
-import EventDispatcher from "./EventDispatcher.js";
-import Terrain from "../entities/Terrain.js";
+
 import Collection from "./Collection.js";
-import Unit from "../entities/Unit.js";
-import fetchFile from "../misc/fetchFile.js";
-import models from "../entities/models.js";
-import * as env from "../misc/env.js";
+import EventDispatcher from "./EventDispatcher.js";
+import Player from "./Player.js";
 import timeProperty from "./timeProperty.js";
+
+import models from "../entities/models.js";
+import Terrain from "../entities/Terrain.js";
+import Unit from "../entities/Unit.js";
+import * as env from "../misc/env.js";
+import fetchFile from "../misc/fetchFile.js";
+
 import Random from "../../lib/seedrandom-alea.js";
 
 import * as rts from "../presets/rts.js";
 
 // Wrapped by App
-import * as tweens from "../tweens/tweens.js";
 import Rect from "../misc/Rect.js";
+import * as tweens from "../tweens/tweens.js";
 
 const eval2 = eval;
 
@@ -23,6 +27,8 @@ class App extends EventDispatcher {
 	constructor( props = {} ) {
 
 		super();
+
+		this.state = {};
 
 		// Time keeping
 		this.time = 0;
@@ -61,11 +67,63 @@ class App extends EventDispatcher {
 		if ( props.network.reviver === undefined )
 			props.network.reviver = ( key, value ) => {
 
-			   if ( typeof value !== "object" || value._collection === undefined || value._key === undefined ) return value;
+				// if ( key || typeof value !== "number" )
+				// 	console.log( "reviver", key, value );
 
-			   return this[ value._collection ].dict[ value._key ];
+				// Primitive
+				if ( value == null || typeof value !== "object" ) return value;
 
-		   };
+				if ( value._collection !== undefined && value._key !== undefined ) {
+
+					// Try fetching from collection
+					let obj = this[ value._collection ].dict[ value._key ];
+
+					// Create it if recongized constructor
+					if ( ! obj && value._constructor )
+						obj = new this[ value._constructor ]( { key: value._key } );
+
+					// Expand out properties
+					for ( const prop in value )
+						if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( prop ) === - 1 )
+							value[ prop ] = props.network.reviver( prop, value[ prop ] );
+
+					// Apply properties
+					if ( obj )
+						for ( const prop in value )
+							if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( "prop" ) === - 1 )
+								obj[ prop ] = value[ prop ];
+
+					return obj;
+
+				}
+
+				// Not collectable, but still a constructable
+				if ( value._constructor ) {
+
+					const obj = new this[ value._constructor ]( { key: value._key } );
+
+					for ( const prop in value )
+						if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( prop ) === - 1 )
+							value[ prop ] = props.network.reviver( prop, value[ prop ] );
+
+					if ( obj )
+						for ( const prop in value )
+							if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( "prop" ) === - 1 )
+								obj[ prop ] = value[ prop ];
+
+					return obj;
+
+				}
+
+				// A function without applied properties
+				if ( value._function ) return this[ value._function ]( value );
+
+				return value;
+
+			};
+
+		// if ( props.toState === undefined ) this.toState = () => this.state;
+		// else this.toState = props.toState;
 
 		// if ( props.network.replacer === undefined )
 		// 	props.network.replacer = ( key, value ) => value;
@@ -189,7 +247,21 @@ class App extends EventDispatcher {
 
 		const app = this;
 
-		for ( const tween in tweens ) this[ tween ] = obj => tweens[ tween ]( Object.assign( { startTime: this.time }, obj ) );
+		this.Player = class extends Player {
+
+			constructor( props ) {
+
+				super( Object.assign( { app }, props ) );
+
+				app.players.add( this );
+				app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
+
+			}
+
+		};
+
+		for ( const tween in tweens )
+			this[ tween ] = obj => tweens[ tween ]( Object.assign( { startTime: this.time }, obj ) );
 
 		this.Rect = class extends Rect {
 

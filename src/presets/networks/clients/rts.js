@@ -14,8 +14,6 @@ class ClientNetwork extends EventDispatcher {
 		this.app = props.app;
 		this.reviver = props.reviver;
 
-		console.log( this );
-
 		this.connect();
 
 	}
@@ -25,6 +23,8 @@ class ClientNetwork extends EventDispatcher {
 		this.socket = new WebSocket( `${this.protocol}://${this.host}:${this.port}` );
 
 		this.socket.addEventListener( "message", e => {
+
+			if ( isNaN( e.data ) ) console.log( e.data );
 
 			e = JSON.parse( e.data, this.reviver );
 
