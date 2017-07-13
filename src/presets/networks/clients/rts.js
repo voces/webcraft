@@ -10,7 +10,7 @@ class ClientNetwork extends EventDispatcher {
 
 		this.protocol = props.protocol || "ws";
 		this.host = props.host || "localhost";
-		this.port = props.port || 8081;
+		this.port = props.port || 3000;
 		this.app = props.app;
 		this.reviver = props.reviver;
 
@@ -27,6 +27,8 @@ class ClientNetwork extends EventDispatcher {
 			if ( isNaN( e.data ) ) console.log( e.data );
 
 			e = JSON.parse( e.data, this.reviver );
+
+			if ( typeof e !== "number" ) console.log( e );
 
 			if ( typeof e === "number" ) {
 

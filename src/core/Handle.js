@@ -1,16 +1,15 @@
 
 import EventDispatcher from "./EventDispatcher.js";
-import { isServer } from "../misc/env.js";
 
-let id;
+let id = 0;
 
 class Handle extends EventDispatcher {
 
-	constructor( serverOnly ) {
+	constructor( props ) {
 
 		super();
 
-		if ( ! serverOnly || isServer )
+		if ( props.id === undefined )
 			this.id = id ++;
 
 	}
@@ -21,15 +20,46 @@ class Handle extends EventDispatcher {
 
 	}
 
+	set key( value ) {
+
+		this.id = value.slice( 1 );
+
+	}
+
+	get entityType() {
+
+		let proto = this;
+
+		while ( proto && Handle.entityTypes.indexOf( proto.constructor.name ) === - 1 )
+			proto = Object.getPrototypeOf( proto );
+
+		if ( ! proto ) return;
+
+		return proto.constructor.name;
+
+	}
+
+	toState() {
+
+		return Object.assign( {
+			_key: this.key,
+			_collection: this.entityType.toLowerCase() + "s",
+			_constructor: this.constructor.name
+		} );
+
+	}
+
 	toJSON() {
 
 		return {
 			_key: this.key,
-			_collection: "handles"
+			_collection: this.entityType.toLowerCase() + "s"
 		};
 
 	}
 
 }
+
+Handle.entityTypes = [ "Doodad", "Unit", "Player", "Rect" ];
 
 export default Handle;

@@ -5,7 +5,7 @@ class Player extends Handle {
 
 	constructor( props = {} ) {
 
-		super( true );
+		super( props );
 
 		this.shadowProps = {};
 

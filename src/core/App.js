@@ -9,6 +9,7 @@ import timeProperty from "./timeProperty.js";
 import models from "../entities/models.js";
 import Terrain from "../entities/Terrain.js";
 import Unit from "../entities/Unit.js";
+import Doodad from "../entities/Doodad.js";
 import * as env from "../misc/env.js";
 import fetchFile from "../misc/fetchFile.js";
 
@@ -41,9 +42,11 @@ class App extends EventDispatcher {
 		timeProperty( this, this, "random", true );
 		this.random = new Random( this.initialSeed );
 
+		// Collection
 		this.handles = props.handles || new Collection();
 		this.players = props.players || new Collection();
 		this.units = props.units || new Collection();
+		this.doodads = props.doodads || new Collection();
 		this.updates = props.updates || new Collection();
 		this.renders = props.renders || new Collection();
 		this.subevents = props.subevents || [];
@@ -55,121 +58,15 @@ class App extends EventDispatcher {
 		this.initTerrain( props.terrain );
 		this.initScene( props.scene );
 		this.eventSystem = Object.assign( {}, rts.eventSystem, props.eventSystem );
-		this.intentSystem = Object.assign( {}, props.intentSystem );
-
 		this.initFactories( props.types );
+		this.initNetwork( props.network );
 
-		this.addEventListener( "playerJoin", e => this.eventSystem.playerJoinHandler( this, e ) );
-		this.addEventListener( "playerLeave", e => this.eventSystem.playerLeaveHandler( this, e ) );
+		// Initialze the app browser components (graphics, ui, intents)
+		if ( env.isBrowser ) this.initBrowserComponents( props );
 
-		if ( props.network === undefined ) props.network = {};
-
-		if ( props.network.reviver === undefined )
-			props.network.reviver = ( key, value ) => {
-
-				// if ( key || typeof value !== "number" )
-				// 	console.log( "reviver", key, value );
-
-				// Primitive
-				if ( value == null || typeof value !== "object" ) return value;
-
-				if ( value._collection !== undefined && value._key !== undefined ) {
-
-					// Try fetching from collection
-					let obj = this[ value._collection ].dict[ value._key ];
-
-					// Create it if recongized constructor
-					if ( ! obj && value._constructor )
-						obj = new this[ value._constructor ]( { key: value._key } );
-
-					// Expand out properties
-					for ( const prop in value )
-						if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( prop ) === - 1 )
-							value[ prop ] = props.network.reviver( prop, value[ prop ] );
-
-					// Apply properties
-					if ( obj )
-						for ( const prop in value )
-							if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( "prop" ) === - 1 )
-								obj[ prop ] = value[ prop ];
-
-					return obj;
-
-				}
-
-				// Not collectable, but still a constructable
-				if ( value._constructor ) {
-
-					const obj = new this[ value._constructor ]( { key: value._key } );
-
-					for ( const prop in value )
-						if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( prop ) === - 1 )
-							value[ prop ] = props.network.reviver( prop, value[ prop ] );
-
-					if ( obj )
-						for ( const prop in value )
-							if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( "prop" ) === - 1 )
-								obj[ prop ] = value[ prop ];
-
-					return obj;
-
-				}
-
-				// A function without applied properties
-				if ( value._function ) return this[ value._function ]( value );
-
-				return value;
-
-			};
-
-		// if ( props.toState === undefined ) this.toState = () => this.state;
-		// else this.toState = props.toState;
-
-		// if ( props.network.replacer === undefined )
-		// 	props.network.replacer = ( key, value ) => value;
-
-		if ( env.isServer ) {
-
-			this.initServerNetwork( props.network );
-
-			this.addEventListener( "clientJoin", e => this.eventSystem.clientJoinHandler( this, e ) );
-			this.addEventListener( "clientLeave", e => this.eventSystem.clientLeaveHandler( this, e ) );
-			this.addEventListener( "clientMessage", e => this.eventSystem.clientMessageHandler( this, e ) );
-
-			this.update();
-
-		} else {
-
-			this.initClientNetwork( props.network );
-			this.initCamera( props.camera );
-			this.renderer = props.renderer && props.renderer.constructor !== Object ? props.renderer : App.defaultRenderer( props.renderer );
-
-			window.addEventListener( "resize", () => this.camera.resize() );
-			window.addEventListener( "keydown", e => this.intentSystem.keydown && this.intentSystem.keydown( e ) );
-			window.addEventListener( "keyup", e => this.intentSystem.keyup && this.intentSystem.keyup( e ) );
-
-			this.addEventListener( "localPlayer", e => this.eventSystem.localPlayerHandler( this, e ) );
-
-			this.render();
-
-		}
-
-	}
-
-	static defaultRenderer() {
-
-		const renderer = new THREE.WebGLRenderer( { antialias: true } );
-		renderer.shadowMap.enabled = true;
-		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-		renderer.setSize( window.innerWidth, window.innerHeight );
-
-		if ( document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive" )
-			document.body.appendChild( renderer );
-
-		else document.addEventListener( "DOMContentLoaded", () => document.body.appendChild( renderer.domElement ) );
-
-		return renderer;
+		// Start our primary loop
+		if ( env.isServer ) this.update();
+		if ( env.isBrowser ) this.render();
 
 	}
 
@@ -203,6 +100,19 @@ class App extends EventDispatcher {
 
 	}
 
+	initBrowserComponents( props ) {
+
+		this.intentSystem = Object.assign( {}, props.intentSystem );
+
+		this.initCamera( props.camera );
+		this.renderer = props.renderer && props.renderer.constructor !== Object ? props.renderer : rts.renderer( props.renderer );
+
+		window.addEventListener( "resize", () => this.camera.resize() );
+		window.addEventListener( "keydown", e => this.intentSystem.keydown && this.intentSystem.keydown( e ) );
+		window.addEventListener( "keyup", e => this.intentSystem.keyup && this.intentSystem.keyup( e ) );
+
+	}
+
 	initCamera( props ) {
 
 		this.camera = props && props instanceof THREE.Camera ?
@@ -223,11 +133,84 @@ class App extends EventDispatcher {
 
 	}
 
+	initNetwork( props = {} ) {
+
+		if ( props.reviver === undefined )
+			props.reviver = ( key, value ) => {
+
+				// if ( key || typeof value !== "number" )
+				// 	console.log( "reviver", key, value );
+
+				// Primitive
+				if ( value == null || typeof value !== "object" ) return value;
+
+				if ( value._collection !== undefined && value._key !== undefined ) {
+
+					// Try fetching from collection
+					let obj = this[ value._collection ].dict[ value._key ];
+
+					// Create it if recongized constructor
+					if ( ! obj && value._constructor )
+						obj = new this[ value._constructor ]( { key: value._key } );
+
+					// Expand out properties
+					for ( const prop in value )
+						if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( prop ) === - 1 )
+							value[ prop ] = props.reviver( prop, value[ prop ] );
+
+					// Apply properties
+					if ( obj )
+						for ( const prop in value )
+							if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( "prop" ) === - 1 )
+								obj[ prop ] = value[ prop ];
+
+					return obj;
+
+				}
+
+				// Not collectable, but still a constructable
+				if ( value._constructor ) {
+
+					const obj = new this[ value._constructor ]( { key: value._key } );
+
+					for ( const prop in value )
+						if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( prop ) === - 1 )
+							value[ prop ] = props.reviver( prop, value[ prop ] );
+
+					if ( obj )
+						for ( const prop in value )
+							if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( "prop" ) === - 1 )
+								obj[ prop ] = value[ prop ];
+
+					return obj;
+
+				}
+
+				// A function without applied properties
+				if ( value._function ) return this[ value._function ]( value );
+
+				return value;
+
+			};
+
+		if ( env.isServer ) this.initServerNetwork( props );
+		else this.initClientNetwork( props );
+
+		this.addEventListener( "playerJoin", e => this.eventSystem.playerJoinHandler( this, e ) );
+		this.addEventListener( "playerLeave", e => this.eventSystem.playerLeaveHandler( this, e ) );
+		this.addEventListener( "state", e => this.eventSystem.state( this, e ) );
+
+	}
+
 	initServerNetwork( props = {} ) {
 
 		this.network = props.constructor !== Object ?
 			props :
 			new rts.ServerNetwork( Object.assign( { players: this.players }, props ) );
+
+		this.addEventListener( "clientJoin", e => this.eventSystem.clientJoinHandler( this, e ) );
+		this.addEventListener( "clientLeave", e => this.eventSystem.clientLeaveHandler( this, e ) );
+		this.addEventListener( "clientMessage", e => this.eventSystem.clientMessageHandler( this, e ) );
 
 		this.network.app = this;
 
@@ -238,6 +221,8 @@ class App extends EventDispatcher {
 		this.network = props && props.constructor !== Object ?
 			props :
 			new rts.ClientNetwork( props );
+
+		this.addEventListener( "localPlayer", e => this.eventSystem.localPlayerHandler( this, e ) );
 
 		this.network.app = this;
 
@@ -285,6 +270,7 @@ class App extends EventDispatcher {
 	loadTypes( types ) {
 
 		if ( types.units ) this.loadUnitTypes( types.units );
+		if ( types.doodads ) this.loadDoodadTypes( types.doodads );
 
 	}
 
@@ -292,6 +278,13 @@ class App extends EventDispatcher {
 
 		for ( let i = 0; i < types.length; i ++ )
 			this.loadUnitType( types[ i ] );
+
+	}
+
+	loadDoodadTypes( types ) {
+
+		for ( let i = 0; i < types.length; i ++ )
+			this.loadDoodadType( types[ i ] );
 
 	}
 
@@ -323,6 +316,55 @@ class App extends EventDispatcher {
 				super( Object.assign( { app }, type, props ) );
 
 				app.units.add( this );
+
+				this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
+				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
+
+				this.addEventListener( "dirty", () => ( app.updates.add( this ), app.renders.add( this ) ) );
+				this.addEventListener( "clean", () => ( app.updates.remove( this ), app.renders.remove( this ) ) );
+
+			}
+
+			static get name() {
+
+				return type.name;
+
+			}
+
+		};
+
+		Object.defineProperty( this[ type.name ].constructor, "name", { value: type.name, configurable: true } );
+
+	}
+
+	loadDoodadType( type ) {
+
+		const app = this;
+
+		if ( models[ type.model ] === undefined ) {
+
+			models[ type.model ] = new EventDispatcher();
+			fetchFile( type.model )
+				.then( file => {
+
+					const eventDispatcher = models[ type.model ];
+
+					models[ type.model ] = eval2( file );
+
+					eventDispatcher.dispatchEvent( { type: "ready", model: models[ type.model ] } );
+
+				} )
+				.catch( err => console.error( err ) );
+
+		}
+
+		this[ type.name ] = class extends Doodad {
+
+			constructor( props ) {
+
+				super( Object.assign( { app }, type, props ) );
+
+				app.doodads.add( this );
 
 				this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
 				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );

@@ -112,8 +112,8 @@ class Rect extends EventDispatcher {
 	// Assumes ordered
 	diff( setA, setB, compare ) {
 
-		if ( setA.length === 0 ) return [[], setA.slice( 0 ), []];
-		else if ( setB.length === 0 ) return [ setB.slice( 0 ), [], []];
+		if ( setA.length === 0 ) return [[], setB.slice( 0 ), []];
+		if ( setB.length === 0 ) return [ setA.slice( 0 ), [], []];
 
 		if ( typeof compare !== "function" ) return this._diffOptimized( setA, setB, compare );
 
@@ -209,9 +209,7 @@ class Rect extends EventDispatcher {
 	toJSON() {
 
 		return {
-			// id: this.id,
 			_key: this.key,
-			// color: Player.colors.indexOf( this.color ),
 			_collection: "rects"
 		};
 
@@ -232,9 +230,14 @@ class Rect extends EventDispatcher {
 
 		const [ enters, leaves ] = this.diff( units, this.units, "id" );
 
+		// console.log( this.units.length, units.length, enters.length, leaves.length, same.length );
+
 		this.units = units;
 
 		if ( enters.length === 0 && leaves.length === 0 ) return;
+
+		// console.log( enters.reduce( ( col, u ) => ( col[ u.constructor.name ] ? ++ col[ u.constructor.name ] : col[ u.constructor.name ] = 1, col ), {} ),
+		// 	leaves.reduce( ( col, u ) => ( col[ u.constructor.name ] ? ++ col[ u.constructor.name ] : col[ u.constructor.name ] = 1, col ), {} ) );
 
 		const subevents = [];
 

@@ -135,5 +135,12 @@ function localPlayerHandler( app, e ) {
 
 }
 
+function state( app, e ) {
+
+	for ( const prop in e.state )
+		app.state[ prop ] = e.state[ prop ];
+
+}
+
 export { clientJoinHandler, clientLeaveHandler, clientMessageHandler, playerJoinHandler,
- 	localPlayerHandler, reservedEventTypes, playerLeaveHandler };
+ 	localPlayerHandler, reservedEventTypes, playerLeaveHandler, state };
