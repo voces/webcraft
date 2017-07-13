@@ -35,7 +35,7 @@ class Handle extends EventDispatcher {
 
 		if ( ! proto ) return;
 
-		return proto.constructor.name;
+		return proto.constructor;
 
 	}
 
@@ -43,7 +43,7 @@ class Handle extends EventDispatcher {
 
 		return Object.assign( {
 			_key: this.key,
-			_collection: this.entityType.toLowerCase() + "s",
+			_collection: this.entityType.name.toLowerCase() + "s",
 			_constructor: this.constructor.name
 		} );
 
@@ -53,7 +53,7 @@ class Handle extends EventDispatcher {
 
 		return {
 			_key: this.key,
-			_collection: this.entityType.toLowerCase() + "s"
+			_collection: this.entityType.name.toLowerCase() + "s"
 		};
 
 	}

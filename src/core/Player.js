@@ -9,9 +9,8 @@ class Player extends Handle {
 
 		this.shadowProps = {};
 
-		Object.assign( this, {
-			color: Player.getNextColor()
-		}, props );
+		if ( this.entityType === Player )
+			Object.assign( this, { color: Player.getNextColor() }, props );
 
 	}
 

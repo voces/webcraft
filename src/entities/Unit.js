@@ -11,7 +11,8 @@ class Unit extends Doodad {
 
 		this.shadowProps = {};
 
-		Object.assign( this, { x: 0, y: 0 }, props );
+		if ( this.entityType === Unit )
+			Object.assign( this, { x: 0, y: 0 }, props );
 
 		this._dirty = 0;
 
@@ -54,15 +55,6 @@ class Unit extends Doodad {
 		return Object.assign( super.toState(), {
 			owner: this.owner
 		} );
-
-	}
-
-	toJSON() {
-
-		return {
-			_key: this.key,
-			_collection: "units"
-		};
 
 	}
 

@@ -14,7 +14,8 @@ class Doodad extends Handle {
 
 		this.shadowProps = {};
 
-		Object.assign( this, { x: 0, y: 0 }, props );
+		if ( this.entityType === Doodad )
+			Object.assign( this, { x: 0, y: 0 }, props );
 
 		this._dirty = 0;
 
@@ -148,7 +149,6 @@ class Doodad extends Handle {
 	toState() {
 
 		return Object.assign( super.toState(), {
-			_constructor: this.constructor.name,
 			x: this.shadowProps.x || this.x,
 			y: this.shadowProps.y || this.y,
 			facing: this.facing
