@@ -48,6 +48,10 @@ class Player extends Handle {
 	set color( color ) {
 
 		if ( typeof color === "number" ) color = Player.colors[ color ];
+		else if ( typeof color === "string" ) color = Player.colors.find( c => c.name === color || c.hex === color );
+		else return;
+
+		if ( ! color ) return;
 
 		if ( this.shadowProps.color ) this.shadowProps.color.taken = false;
 

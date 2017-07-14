@@ -4,44 +4,23 @@ import * as env from "../../misc/env.js";
 
 import Random from "../../../lib/seedrandom-alea.js";
 
-const reservedEventTypes = [ "playerJoin", "playerLeave", "localPlayer", "sync", "init" ];
+const reservedEventTypes = [ "playerJoin", "playerLeave", "sync", "state" ];
 
 // Server
 function clientJoinHandler( app, e ) {
 
 	const player = new Player( Object.assign( { key: "p" + e.client.id }, e.client ) );
+	const playerState = player.toState();
 
 	const seed = app.initialSeed + player.id;
 	app.random = new Random( seed );
 
-	player.send( {
-		type: "localPlayer",
-		time: app.time,
-		seed,
-		player: {
-			id: player.id,
-			color: player.color
-		} } );
-
-	for ( let i = 0; i < app.players.length; i ++ ) {
-
-		// player.send( {
-		// 	type: "playerJoin",
-		// 	player: {
-		// 		id: app.players[ i ].id,
-		// 		color: app.players[ i ].color
-		// 	} } );
-
+	for ( let i = 0; i < app.players.length; i ++ )
 		app.players[ i ].send( {
 			type: "playerJoin",
 			time: app.time,
 			seed,
-			player: {
-				id: player.id,
-				color: player.color
-			} } );
-
-	}
+			player: playerState } );
 
 	app.players.add( player );
 	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
@@ -50,7 +29,9 @@ function clientJoinHandler( app, e ) {
 	player.send( {
 		type: "state",
 		time: app.time,
-		state: app.state
+		state: app.state,
+		seed,
+		local: player.toJSON()
 	}, "toState" );
 
 	app.dispatchEvent( { type: "playerJoin", player } );
@@ -101,11 +82,7 @@ function playerJoinHandler( app, e ) {
 
 	if ( app.players.dict[ "p" + e.player.id ] ) return;
 
-	const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
-
-	app.players.add( player );
-	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
-	app.handles.add( player );
+	new app.Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
 
 }
 
@@ -115,32 +92,18 @@ function playerLeaveHandler( app, e ) {
 	e.player.color.taken = false;
 
 	app.players.remove( e.player );
-	app.handles.remove( e.player );
-
-}
-
-// Local
-function localPlayerHandler( app, e ) {
-
-	app.time = e.time;
-	app.random = new Random( e.seed );
-
-	const player = new Player( Object.assign( { key: "p" + e.player.id }, e.player ) );
-
-	app.players.add( player );
-	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
-	app.handles.add( player );
-
-	app.localPlayer = player;
 
 }
 
 function state( app, e ) {
 
+	if ( e.local ) app.localPlayer = e.local;
+	if ( e.seed ) app.random = new Random( e.seed );
+
 	for ( const prop in e.state )
-		app.state[ prop ] = e.state[ prop ];
+		if ( typeof e.state[ prop ] !== "object" )
+			app.state[ prop ] = e.state[ prop ];
 
 }
 
-export { clientJoinHandler, clientLeaveHandler, clientMessageHandler, playerJoinHandler,
- 	localPlayerHandler, reservedEventTypes, playerLeaveHandler, state };
+export { clientJoinHandler, clientLeaveHandler, clientMessageHandler, playerJoinHandler, reservedEventTypes, playerLeaveHandler, state };

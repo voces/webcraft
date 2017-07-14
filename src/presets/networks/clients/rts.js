@@ -24,6 +24,8 @@ class ClientNetwork extends EventDispatcher {
 
 		this.socket.addEventListener( "message", e => {
 
+			// if ( isNaN( e.data ) ) console.log( JSON.parse( e.data ) );
+
 			e = JSON.parse( e.data, this.reviver );
 
 			if ( typeof e === "number" ) {

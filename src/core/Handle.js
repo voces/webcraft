@@ -1,8 +1,6 @@
 
 import EventDispatcher from "./EventDispatcher.js";
 
-let id = 0;
-
 class Handle extends EventDispatcher {
 
 	constructor( props ) {
@@ -10,7 +8,7 @@ class Handle extends EventDispatcher {
 		super();
 
 		if ( props.id === undefined )
-			this.id = id ++;
+			this.id = ( Handle.id ) ++;
 
 	}
 
@@ -61,5 +59,6 @@ class Handle extends EventDispatcher {
 }
 
 Handle.entityTypes = [ "Doodad", "Unit", "Player", "Rect" ];
+Handle.id = 0;
 
 export default Handle;

@@ -42,15 +42,15 @@ class App extends EventDispatcher {
 		timeProperty( this, this, "random", true );
 		this.random = new Random( this.initialSeed );
 
-		// Collection
+		// Collections & Arrays
 		this.handles = props.handles || new Collection();
 		this.players = props.players || new Collection();
 		this.units = props.units || new Collection();
 		this.doodads = props.doodads || new Collection();
+		this.rects = props.rects || new Collection();
 		this.updates = props.updates || new Collection();
 		this.renders = props.renders || new Collection();
 		this.subevents = props.subevents || [];
-		this.rects = props.rects || new Collection();
 
 		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
 
@@ -222,8 +222,6 @@ class App extends EventDispatcher {
 			props :
 			new rts.ClientNetwork( props );
 
-		this.addEventListener( "localPlayer", e => this.eventSystem.localPlayerHandler( this, e ) );
-
 		this.network.app = this;
 
 	}
@@ -386,9 +384,14 @@ class App extends EventDispatcher {
 
 	}
 
-	setTimeout( callback, time = 0 ) {
+	setTimeout( callback, time = 0, absolute = false ) {
 
-		const subevent = { time: this.time + time, callback };
+		const subevent = { time: absolute ? time : this.time + time, callback, clear: () => {
+
+			const index = this.subevents.indexOf( subevent );
+			if ( index >= 0 ) this.subevents.splice( index, 1 );
+
+		} };
 
 		this.subevents.push( subevent );
 
@@ -396,7 +399,7 @@ class App extends EventDispatcher {
 
 	}
 
-	setInterval( callback, time = 0 ) {
+	setInterval( callback, time = 1 ) {
 
 		const wrappedCallback = time => {
 
@@ -406,7 +409,12 @@ class App extends EventDispatcher {
 
 		};
 
-		const subevent = { time: this.time + time, callback: wrappedCallback };
+		const subevent = { time: this.time + time, callback: wrappedCallback, clear: () => {
+
+			const index = this.subevents.indexOf( subevent );
+			if ( index >= 0 ) this.subevents.splice( index, 1 );
+
+		} };
 
 		this.subevents.push( subevent );
 

@@ -2,10 +2,9 @@
 import { Server } from "ws";
 
 import EventDispatcher from "../../../core/EventDispatcher";
+import Handle from "../../../core/Handle";
 import Collection from "../../../core/Collection.js";
 import stringify from "../../../misc/stringify.js";
-
-let clientId = 0;
 
 class ServerNetwork extends EventDispatcher {
 
@@ -72,7 +71,7 @@ class ServerNetwork extends EventDispatcher {
 
 		ws.on( "connection", socket => {
 
-			socket.id = clientId ++;
+			socket.id = ( Handle.id )++;
 			socket.key = "c" + socket.id;
 			this.clients.add( socket );
 			console.log( "Connection from", socket._socket.remoteAddress, "on", socket._socket.remotePort, "as", socket.id );
