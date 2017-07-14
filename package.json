@@ -1,6 +1,6 @@
 {
   "name": "webcraft",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "build/webcraft.js",
   "module": "build/webcraft.module.js",
   "scripts": {
