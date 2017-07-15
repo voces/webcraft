@@ -8,14 +8,16 @@ class Doodad extends Handle {
 
 	constructor( props ) {
 
+		if ( props.x === undefined ) props.x = 0;
+		if ( props.y === undefined ) props.y = 0;
+
 		super( props );
 
 		this.updates = [];
 
 		this.shadowProps = {};
 
-		if ( this.entityType === Doodad )
-			Object.assign( this, { x: 0, y: 0 }, props );
+		if ( this.entityType === Doodad ) Object.assign( this, props );
 
 		this._dirty = 0;
 
@@ -35,14 +37,16 @@ class Doodad extends Handle {
 
 	set model( model ) {
 
+		const modelPath = typeof model === "string" ? model : model.path;
+
 		this.shadowProps.model = model;
 
-		if ( models[ model ].prototype instanceof THREE.Mesh ) {
+		if ( models[ modelPath ].prototype instanceof THREE.Mesh ) {
 
-			this.mesh = new models[ model ]( model );
+			this.mesh = new models[ modelPath ]( model );
 			this.mesh.userData = this.id;
 
-		} else models[ model ].addEventListener( "ready", ( { model: modelClass } ) => {
+		} else models[ modelPath ].addEventListener( "ready", ( { model: modelClass } ) => {
 
 			this.mesh = new modelClass( model );
 

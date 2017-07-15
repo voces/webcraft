@@ -286,26 +286,32 @@ class App extends EventDispatcher {
 
 	}
 
+	loadModel( model ) {
+
+		if ( typeof model === "object" ) model = model.path;
+
+		if ( models[ model ] !== undefined ) return;
+
+		models[ model ] = new EventDispatcher();
+		fetchFile( model )
+			.then( file => {
+
+				const eventDispatcher = models[ model ];
+
+				models[ model ] = eval2( file );
+
+				eventDispatcher.dispatchEvent( { type: "ready", model: models[ model ] } );
+
+			} )
+			.catch( err => console.error( err ) );
+
+	}
+
 	loadUnitType( type ) {
 
 		const app = this;
 
-		if ( models[ type.model ] === undefined ) {
-
-			models[ type.model ] = new EventDispatcher();
-			fetchFile( type.model )
-				.then( file => {
-
-					const eventDispatcher = models[ type.model ];
-
-					models[ type.model ] = eval2( file );
-
-					eventDispatcher.dispatchEvent( { type: "ready", model: models[ type.model ] } );
-
-				} )
-				.catch( err => console.error( err ) );
-
-		}
+		if ( type.model ) this.loadModel( type.model );
 
 		this[ type.name ] = class extends Unit {
 
@@ -315,7 +321,9 @@ class App extends EventDispatcher {
 
 				app.units.add( this );
 
-				this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
+				if ( this.mesh ) app.scene.add( this.mesh );
+				else this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
+
 				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
 
 				this.addEventListener( "dirty", () => ( app.updates.add( this ), app.renders.add( this ) ) );
@@ -339,22 +347,7 @@ class App extends EventDispatcher {
 
 		const app = this;
 
-		if ( models[ type.model ] === undefined ) {
-
-			models[ type.model ] = new EventDispatcher();
-			fetchFile( type.model )
-				.then( file => {
-
-					const eventDispatcher = models[ type.model ];
-
-					models[ type.model ] = eval2( file );
-
-					eventDispatcher.dispatchEvent( { type: "ready", model: models[ type.model ] } );
-
-				} )
-				.catch( err => console.error( err ) );
-
-		}
+		if ( type.model ) this.loadModel( type.model );
 
 		this[ type.name ] = class extends Doodad {
 
@@ -384,9 +377,9 @@ class App extends EventDispatcher {
 
 	}
 
-	setTimeout( callback, time = 0, absolute = false ) {
+	setTimeout( callback, wait = 0, absolute = false ) {
 
-		const subevent = { time: absolute ? time : this.time + time, callback, clear: () => {
+		const subevent = { time: absolute ? wait : this.time + wait, callback, clear: () => {
 
 			const index = this.subevents.indexOf( subevent );
 			if ( index >= 0 ) this.subevents.splice( index, 1 );
@@ -399,17 +392,17 @@ class App extends EventDispatcher {
 
 	}
 
-	setInterval( callback, time = 1 ) {
+	setInterval( callback, interval = 1 ) {
 
 		const wrappedCallback = time => {
 
 			callback( time );
-			subevent.time = this.time + time;
+			subevent.time = this.time + interval;
 			this.subevents.push( subevent );
 
 		};
 
-		const subevent = { time: this.time + time, callback: wrappedCallback, clear: () => {
+		const subevent = { time: this.time + interval, callback: wrappedCallback, clear: () => {
 
 			const index = this.subevents.indexOf( subevent );
 			if ( index >= 0 ) this.subevents.splice( index, 1 );

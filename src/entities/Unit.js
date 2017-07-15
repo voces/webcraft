@@ -5,14 +5,16 @@ class Unit extends Doodad {
 
 	constructor( props ) {
 
+		if ( props.maxLife === undefined ) props.maxLife = 1;
+		if ( props.life === undefined ) props.life = props.maxLife;
+
 		super( props );
 
 		this.updates = [];
 
 		this.shadowProps = {};
 
-		if ( this.entityType === Unit )
-			Object.assign( this, { x: 0, y: 0 }, props );
+		if ( this.entityType === Unit ) Object.assign( this, props );
 
 		this._dirty = 0;
 
@@ -47,6 +49,28 @@ class Unit extends Doodad {
 	get owner() {
 
 		return this.shadowProps.owner;
+
+	}
+
+	get alive() {
+
+		return this.life > 0;
+
+	}
+
+	get dead() {
+
+		return this.life <= 0;
+
+	}
+
+	kill() {
+
+		this.life = 0;
+		this.x = this.x;
+		this.y = this.y;
+
+		if ( this.app && this.app.scene && this.mesh ) this.app.scene.remove( this.mesh );
 
 	}
 
