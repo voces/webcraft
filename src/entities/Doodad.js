@@ -29,6 +29,12 @@ class Doodad extends Handle {
 
 	}
 
+	set key( key ) {
+
+		this.id = parseInt( key.slice( 1 ) );
+
+	}
+
 	get model() {
 
 		return this.shadowProps.model;
@@ -150,6 +156,14 @@ class Doodad extends Handle {
 
 	}
 
+	remove() {
+
+		if ( this.mesh ) this.dispatchEvent( { type: "meshUnloaded" } );
+
+		if ( this.app ) this.app.units.remove( this );
+
+	}
+
 	toState() {
 
 		return Object.assign( super.toState(), {
@@ -177,5 +191,7 @@ class Doodad extends Handle {
 	}
 
 }
+
+Handle.entityTypes.push( Doodad );
 
 export default Doodad;

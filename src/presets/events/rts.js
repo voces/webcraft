@@ -1,5 +1,6 @@
 
 import Player from "../../core/Player.js";
+import Doodad from "../../entities/Doodad.js";
 import * as env from "../../misc/env.js";
 
 import Random from "../../../lib/seedrandom-alea.js";
@@ -89,7 +90,8 @@ function playerJoinHandler( app, e ) {
 // Server + Local
 function playerLeaveHandler( app, e ) {
 
-	e.player.color.taken = false;
+	console.log( e );
+	if ( e.player.color ) e.player.color.taken = false;
 
 	app.players.remove( e.player );
 
@@ -101,7 +103,7 @@ function state( app, e ) {
 	if ( e.seed ) app.random = new Random( e.seed );
 
 	for ( const prop in e.state )
-		if ( typeof e.state[ prop ] !== "object" )
+		if ( typeof e.state[ prop ] !== "object" || e.state[ prop ] === null || ! ( e.state[ prop ] instanceof Doodad ) )
 			app.state[ prop ] = e.state[ prop ];
 
 }

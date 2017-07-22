@@ -1,5 +1,6 @@
 
 import Doodad from "./Doodad.js";
+import Handle from "../core/Handle.js";
 
 class Unit extends Doodad {
 
@@ -18,11 +19,19 @@ class Unit extends Doodad {
 
 		this._dirty = 0;
 
+		this.addEventListener( "death", () => this.onDeath() );
+
 	}
 
 	get key() {
 
 		return "u" + this.id;
+
+	}
+
+	set key( key ) {
+
+		this.id = parseInt( key.slice( 1 ) );
 
 	}
 
@@ -54,13 +63,27 @@ class Unit extends Doodad {
 
 	get alive() {
 
-		return this.life > 0;
+		return this._life > 0;
 
 	}
 
 	get dead() {
 
-		return this.life <= 0;
+		return this._life <= 0;
+
+	}
+
+	get life() {
+
+		return this._life;
+
+	}
+
+	set life( value ) {
+
+		this._live = value;
+
+		if ( value <= 0 ) this.dispatchEvent( { type: "death", target: this } );
 
 	}
 
@@ -69,6 +92,10 @@ class Unit extends Doodad {
 		this.life = 0;
 		this.x = this.x;
 		this.y = this.y;
+
+	}
+
+	onDeath() {
 
 		if ( this.app && this.app.scene && this.mesh ) this.app.scene.remove( this.mesh );
 
@@ -83,5 +110,7 @@ class Unit extends Doodad {
 	}
 
 }
+
+Handle.entityTypes.push( Unit );
 
 export default Unit;

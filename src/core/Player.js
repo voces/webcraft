@@ -111,4 +111,6 @@ Player.colors = [
     { name: "black", hex: "#000000" }
 ];
 
+Handle.entityTypes.push( Player );
+
 export default Player;

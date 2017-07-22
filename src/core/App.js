@@ -357,7 +357,9 @@ class App extends EventDispatcher {
 
 				app.doodads.add( this );
 
-				this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
+				if ( this.mesh ) app.scene.add( this.mesh );
+				else this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
+
 				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
 
 				this.addEventListener( "dirty", () => ( app.updates.add( this ), app.renders.add( this ) ) );
@@ -392,17 +394,22 @@ class App extends EventDispatcher {
 
 	}
 
-	setInterval( callback, interval = 1 ) {
+	setInterval( callback, interval = 1, absolute ) {
+
+		console.log( "app.setInterval", !! callback, interval, absolute );
 
 		const wrappedCallback = time => {
 
+			if ( subevent.time === this.time + interval )
+				console.error( "This shouldn't happen" );
+
+			this.subevents.push( subevent );
 			callback( time );
 			subevent.time = this.time + interval;
-			this.subevents.push( subevent );
 
 		};
 
-		const subevent = { time: this.time + interval, callback: wrappedCallback, clear: () => {
+		const subevent = { time: absolute || this.time + interval, callback: wrappedCallback, interval, clear: () => {
 
 			const index = this.subevents.indexOf( subevent );
 			if ( index >= 0 ) this.subevents.splice( index, 1 );

@@ -49,15 +49,15 @@ class EventDispatcher {
 
 	}
 
-	dispatchEvent( event, received ) {
+	dispatchEvent( event/*, received*/ ) {
 
 		if ( this._listeners === undefined ) return;
 
 		const arr = this._listeners[ event.type ];
 		if ( arr === undefined || arr.length === 0 ) return;
 
-		if ( env.isClient && ! received )
-			event.type = event.type + "Prediction";
+		// if ( env.isClient && ! received )
+		// 	event.type = event.type + "Prediction";
 
 		const clone = arr.slice( 0 );
 

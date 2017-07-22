@@ -7,7 +7,7 @@ class Handle extends EventDispatcher {
 
 		super();
 
-		if ( props.id === undefined )
+		if ( props.id === undefined && props.key === undefined )
 			this.id = ( Handle.id ) ++;
 
 	}
@@ -18,9 +18,9 @@ class Handle extends EventDispatcher {
 
 	}
 
-	set key( value ) {
+	set key( key ) {
 
-		this.id = value.slice( 1 );
+		this.id = parseInt( key.slice( 1 ) );
 
 	}
 
@@ -28,7 +28,7 @@ class Handle extends EventDispatcher {
 
 		let proto = this;
 
-		while ( proto && Handle.entityTypes.indexOf( proto.constructor.name ) === - 1 )
+		while ( proto && Handle.entityTypes.indexOf( proto.constructor ) === - 1 )
 			proto = Object.getPrototypeOf( proto );
 
 		if ( ! proto ) return;
@@ -58,7 +58,7 @@ class Handle extends EventDispatcher {
 
 }
 
-Handle.entityTypes = [ "Doodad", "Unit", "Player", "Rect" ];
+Handle.entityTypes = [];
 Handle.id = 0;
 
 export default Handle;
