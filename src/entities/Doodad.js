@@ -169,7 +169,7 @@ class Doodad extends Handle {
 		return Object.assign( super.toState(), {
 			x: this.shadowProps.x || this.x,
 			y: this.shadowProps.y || this.y,
-			facing: this.facing
+			facing: this.shadowProps.facing || this.facing
 		} );
 
 	}

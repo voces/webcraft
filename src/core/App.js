@@ -396,8 +396,6 @@ class App extends EventDispatcher {
 
 	setInterval( callback, interval = 1, absolute ) {
 
-		console.log( "app.setInterval", !! callback, interval, absolute );
-
 		const wrappedCallback = time => {
 
 			if ( subevent.time === this.time + interval )

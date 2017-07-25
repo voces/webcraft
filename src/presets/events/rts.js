@@ -90,7 +90,6 @@ function playerJoinHandler( app, e ) {
 // Server + Local
 function playerLeaveHandler( app, e ) {
 
-	console.log( e );
 	if ( e.player.color ) e.player.color.taken = false;
 
 	app.players.remove( e.player );
