@@ -5,9 +5,9 @@ class Player extends Handle {
 
 	constructor( props = {} ) {
 
-		super( props );
+		props.status = "here";
 
-		this.shadowProps = {};
+		super( props );
 
 		if ( this.entityType === Player )
 			Object.assign( this, { color: Player.getNextColor() }, props );
@@ -60,9 +60,12 @@ class Player extends Handle {
 
 	}
 
-	destroy() {
+	remove() {
 
-		this.color.taken = false;
+		if ( this.color ) this.color.taken = false;
+		this.status = "removed";
+
+		super.remove();
 
 	}
 
@@ -70,7 +73,8 @@ class Player extends Handle {
 
 		return Object.assign( this.toJSON(), {
 			_constructor: this.constructor.name,
-			color: Player.colors.indexOf( this.color )
+			color: Player.colors.indexOf( this.color ),
+			status: this.status
 		} );
 
 	}

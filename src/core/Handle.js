@@ -7,6 +7,8 @@ class Handle extends EventDispatcher {
 
 		super();
 
+		this.shadowProps = {};
+
 		if ( props.id === undefined && props.key === undefined )
 			this.id = ( Handle.id ) ++;
 
@@ -34,6 +36,13 @@ class Handle extends EventDispatcher {
 		if ( ! proto ) return;
 
 		return proto.constructor;
+
+	}
+
+	remove() {
+
+		this.removed = true;
+		this.dispatchEvent( { type: "remove", target: this } );
 
 	}
 

@@ -230,14 +230,9 @@ class Rect extends EventDispatcher {
 
 		const [ enters, leaves ] = this.diff( units, this.units, "id" );
 
-		// console.log( this.units.length, units.length, enters.length, leaves.length, same.length );
-
 		this.units = units;
 
 		if ( enters.length === 0 && leaves.length === 0 ) return;
-
-		// console.log( enters.reduce( ( col, u ) => ( col[ u.constructor.name ] ? ++ col[ u.constructor.name ] : col[ u.constructor.name ] = 1, col ), {} ),
-		// 	leaves.reduce( ( col, u ) => ( col[ u.constructor.name ] ? ++ col[ u.constructor.name ] : col[ u.constructor.name ] = 1, col ), {} ) );
 
 		const subevents = [];
 

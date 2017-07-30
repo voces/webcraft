@@ -4,8 +4,6 @@ const parse = value => value === "__Infinity" ? Infinity : value === "__-Infinit
 
 function linearTween( { start = 0, end = 1, rate, duration, startTime = Date.now() } = {} ) {
 
-	// console.log( "linearTween" );
-
 	if ( typeof duration === "string" ) duration = parse( duration );
 
 	const diff = end - start;

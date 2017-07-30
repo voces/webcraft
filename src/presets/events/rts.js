@@ -26,7 +26,6 @@ function clientJoinHandler( app, e ) {
 	app.players.add( player );
 	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
 
-	// console.log( app.state );
 	player.send( {
 		type: "state",
 		time: app.time,
@@ -90,9 +89,11 @@ function playerJoinHandler( app, e ) {
 // Server + Local
 function playerLeaveHandler( app, e ) {
 
-	if ( e.player.color ) e.player.color.taken = false;
+	// if ( e.player.color ) e.player.color.taken = false;
 
-	app.players.remove( e.player );
+	e.player.status = "left";
+
+	// app.players.remove( e.player );
 
 }
 

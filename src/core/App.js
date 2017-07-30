@@ -52,6 +52,10 @@ class App extends EventDispatcher {
 		this.renders = props.renders || new Collection();
 		this.subevents = props.subevents || [];
 
+		Object.defineProperty( this.players, "here", {
+			get: () => this.players.filter( player => player.status === "here" )
+		} );
+
 		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
 
 		// Initialize the app components
@@ -137,9 +141,6 @@ class App extends EventDispatcher {
 
 		if ( props.reviver === undefined )
 			props.reviver = ( key, value ) => {
-
-				// if ( key || typeof value !== "number" )
-				// 	console.log( "reviver", key, value );
 
 				// Primitive
 				if ( value == null || typeof value !== "object" ) return value;
@@ -239,6 +240,8 @@ class App extends EventDispatcher {
 				app.players.add( this );
 				app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
 
+				this.addEventListener( "remove", () => app.players.remove( this ) );
+
 			}
 
 		};
@@ -307,6 +310,18 @@ class App extends EventDispatcher {
 
 	}
 
+	attachDooodadEvents( doodad ) {
+
+		if ( doodad.mesh ) this.scene.add( doodad.mesh );
+		else doodad.addEventListener( "meshLoaded", () => this.scene.add( doodad.mesh ) );
+
+		doodad.addEventListener( "meshUnloaded", () => this.scene.remove( doodad.mesh ) );
+
+		doodad.addEventListener( "dirty", () => ( this.updates.add( doodad ), this.renders.add( doodad ) ) );
+		doodad.addEventListener( "clean", () => ( this.updates.remove( doodad ), this.renders.remove( doodad ) ) );
+
+	}
+
 	loadUnitType( type ) {
 
 		const app = this;
@@ -321,13 +336,7 @@ class App extends EventDispatcher {
 
 				app.units.add( this );
 
-				if ( this.mesh ) app.scene.add( this.mesh );
-				else this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
-
-				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
-
-				this.addEventListener( "dirty", () => ( app.updates.add( this ), app.renders.add( this ) ) );
-				this.addEventListener( "clean", () => ( app.updates.remove( this ), app.renders.remove( this ) ) );
+				app.attachDooodadEvents( this );
 
 			}
 
@@ -357,13 +366,7 @@ class App extends EventDispatcher {
 
 				app.doodads.add( this );
 
-				if ( this.mesh ) app.scene.add( this.mesh );
-				else this.addEventListener( "meshLoaded", () => app.scene.add( this.mesh ) );
-
-				this.addEventListener( "meshUnloaded", () => app.scene.remove( this.mesh ) );
-
-				this.addEventListener( "dirty", () => ( app.updates.add( this ), app.renders.add( this ) ) );
-				this.addEventListener( "clean", () => ( app.updates.remove( this ), app.renders.remove( this ) ) );
+				app.attachDooodadEvents( this );
 
 			}
 
@@ -397,9 +400,6 @@ class App extends EventDispatcher {
 	setInterval( callback, interval = 1, absolute ) {
 
 		const wrappedCallback = time => {
-
-			if ( subevent.time === this.time + interval )
-				console.error( "This shouldn't happen" );
 
 			this.subevents.push( subevent );
 			callback( time );

@@ -102,8 +102,6 @@ class Doodad extends Handle {
 
 	set x( x ) {
 
-		// console.log( this.constructor.name, x );
-
 		if ( typeof x === "function" && typeof this.shadowProps.x !== "function" ) ++ this.dirty;
 		else if ( typeof x !== "function" ) {
 

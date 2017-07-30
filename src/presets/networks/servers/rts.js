@@ -78,6 +78,8 @@ class ServerNetwork extends EventDispatcher {
 
 			socket.onclose = () => {
 
+				console.log( "Disconnection", socket.id );
+
 				this.clients.remove( socket );
 
 				this.app.dispatchEvent( { type: "clientLeave", client: { id: socket.id } } );
