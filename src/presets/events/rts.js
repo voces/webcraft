@@ -89,11 +89,7 @@ function playerJoinHandler( app, e ) {
 // Server + Local
 function playerLeaveHandler( app, e ) {
 
-	// if ( e.player.color ) e.player.color.taken = false;
-
 	e.player.status = "left";
-
-	// app.players.remove( e.player );
 
 }
 
