@@ -150,59 +150,54 @@ class Rect extends EventDispatcher {
 
 	calculateEnter( obj ) {
 
-		// Also, check when the shadowProps were defined (start)
-		if ( obj.shadowProps === undefined || ( typeof obj.shadowProps.x !== "function" && typeof obj.shadowProps.y !== "function" ) )
+		// Also, check when the _props were defined (start)
+		if ( obj._props === undefined || ( typeof obj._props.x !== "function" && typeof obj._props.y !== "function" ) )
 			return NaN;
 
-		if ( obj.shadowProps.x !== "function" ) {
+		if ( obj._props.x !== "function" ) {
 
-			if ( obj.shadowProps.y.rate < 0 ) return obj.shadowProps.y.seek( this.maxY );
-			return obj.shadowProps.y.seek( this.minY );
+			if ( obj._props.y.rate < 0 ) return obj._props.y.seek( this.maxY );
+			return obj._props.y.seek( this.minY );
 
-		} else if ( obj.shadowProps.y !== "function" ) {
+		} else if ( obj._props.y !== "function" ) {
 
-			if ( obj.shadowProps.x.rate < 0 ) return obj.shadowProps.x.seek( this.maxX );
-			return obj.shadowProps.x.seek( this.minX );
+			if ( obj._props.x.rate < 0 ) return obj._props.x.seek( this.maxX );
+			return obj._props.x.seek( this.minX );
 
 		}
 
-		const xDelta = obj.shadowProps.x.rate < 0 ? Math.abs( obj.x - this.maxX ) : Math.abs( obj.x - this.minX ),
-			yDelta = obj.shadowProps.y.rate < 0 ? Math.abs( obj.y - this.maxY ) : Math.abs( obj.y - this.minY );
+		const xDelta = obj._props.x.rate < 0 ? Math.abs( obj.x - this.maxX ) : Math.abs( obj.x - this.minX ),
+			yDelta = obj._props.y.rate < 0 ? Math.abs( obj.y - this.maxY ) : Math.abs( obj.y - this.minY );
 
 		return xDelta < yDelta ?
-			obj.shadowProps.x.seek( obj.shadowProps.x.rate < 0 ? this.maxX : this.minX ) :
-			obj.shadowProps.y.seek( obj.shadowProps.y.rate < 0 ? this.maxY : this.minY );
+			obj._props.x.seek( obj._props.x.rate < 0 ? this.maxX : this.minX ) :
+			obj._props.y.seek( obj._props.y.rate < 0 ? this.maxY : this.minY );
 
 	}
 
 	calculateLeave( obj ) {
 
-		// Also, check when the shadowProps were defined (start)
-		if ( obj.shadowProps === undefined || ( typeof obj.shadowProps.x !== "function" && typeof obj.shadowProps.y !== "function" ) ) {
+		// Also, check when the _props were defined (start)
+		if ( obj._props === undefined || ( typeof obj._props.x !== "function" && typeof obj._props.y !== "function" ) ) this.time;
 
-			if ( this.app ) return this.app.time;
-			return NaN;
+		if ( typeof obj._props.x !== "function" ) {
 
-		}
+			if ( obj._props.y.rate < 0 ) return obj._props.y.seek( this.minY );
+			return obj._props.y.seek( this.maxY );
 
-		if ( typeof obj.shadowProps.x !== "function" ) {
+		} else if ( typeof obj._props.y !== "function" ) {
 
-			if ( obj.shadowProps.y.rate < 0 ) return obj.shadowProps.y.seek( this.minY );
-			return obj.shadowProps.y.seek( this.maxY );
-
-		} else if ( typeof obj.shadowProps.y !== "function" ) {
-
-			if ( obj.shadowProps.x.rate < 0 ) return obj.shadowProps.x.seek( this.minX );
-			return obj.shadowProps.x.seek( this.maxX );
+			if ( obj._props.x.rate < 0 ) return obj._props.x.seek( this.minX );
+			return obj._props.x.seek( this.maxX );
 
 		}
 
-		const xDelta = obj.shadowProps.x.rate < 0 ? Math.abs( obj.x - this.minX ) : Math.abs( obj.x - this.maxX ),
-			yDelta = obj.shadowProps.y.rate < 0 ? Math.abs( obj.y - this.minY ) : Math.abs( obj.y - this.maxY );
+		const xDelta = obj._props.x.rate < 0 ? Math.abs( obj.x - this.minX ) : Math.abs( obj.x - this.maxX ),
+			yDelta = obj._props.y.rate < 0 ? Math.abs( obj.y - this.minY ) : Math.abs( obj.y - this.maxY );
 
 		return xDelta < yDelta ?
-			obj.shadowProps.x.seek( obj.shadowProps.x.rate < 0 ? this.minX : this.maxX ) :
-			obj.shadowProps.y.seek( obj.shadowProps.y.rate < 0 ? this.minY : this.maxY );
+			obj._props.x.seek( obj._props.x.rate < 0 ? this.minX : this.maxX ) :
+			obj._props.y.seek( obj._props.y.rate < 0 ? this.minY : this.maxY );
 
 	}
 

@@ -15,7 +15,7 @@ class Doodad extends Handle {
 
 		this.updates = [];
 
-		this.shadowProps = {};
+		this._props = {};
 
 		if ( this.entityType === Doodad ) Object.assign( this, props );
 
@@ -37,7 +37,7 @@ class Doodad extends Handle {
 
 	get model() {
 
-		return this.shadowProps.model;
+		return this._props.model;
 
 	}
 
@@ -45,7 +45,7 @@ class Doodad extends Handle {
 
 		const modelPath = typeof model === "string" ? model : model.path;
 
-		this.shadowProps.model = model;
+		this._props.model = model;
 
 		if ( models[ modelPath ].prototype instanceof THREE.Mesh ) {
 
@@ -57,9 +57,9 @@ class Doodad extends Handle {
 			this.mesh = new modelClass( model );
 
 			this.mesh.userData = this.id;
-			this.mesh.position.x = this.shadowProps.x || 0;
-			this.mesh.position.y = this.shadowProps.y || 0;
-			this.mesh.position.z = this.shadowProps.z || 0;
+			this.mesh.position.x = this._props.x || 0;
+			this.mesh.position.y = this._props.y || 0;
+			this.mesh.position.z = this._props.z || 0;
 
 			if ( this.owner && this.mesh.accentFaces ) {
 
@@ -76,16 +76,16 @@ class Doodad extends Handle {
 
 	get mesh() {
 
-		return this.shadowProps.mesh;
+		return this._props.mesh;
 
 	}
 
 	set mesh( mesh ) {
 
-		if ( this.shadowProps.mesh instanceof THREE.Mesh )
+		if ( this._props.mesh instanceof THREE.Mesh )
 			this.dispatchEvent( { type: "meshUnloaded" } );
 
-		this.shadowProps.mesh = mesh;
+		this._props.mesh = mesh;
 
 		this.dispatchEvent( { type: "meshLoaded" } );
 
@@ -93,47 +93,45 @@ class Doodad extends Handle {
 
 	get x() {
 
-		if ( typeof this.shadowProps.x === "function" )
-			return this.shadowProps.x( this.app ? this.app.time : 0 );
+		if ( typeof this._props.x === "function" ) return this._props.x();
 
-		return this.shadowProps.x;
+		return this._props.x;
 
 	}
 
 	set x( x ) {
 
-		if ( typeof x === "function" && typeof this.shadowProps.x !== "function" ) ++ this.dirty;
+		if ( typeof x === "function" && typeof this._props.x !== "function" ) ++ this.dirty;
 		else if ( typeof x !== "function" ) {
 
 			if ( this.mesh ) this.mesh.position.x = x;
-			if ( typeof this.shadowProps.x === "function" )++ this.dirty;
+			if ( typeof this._props.x === "function" )++ this.dirty;
 
 		}
 
-		this.shadowProps.x = x;
+		this._props.x = x;
 
 	}
 
 	get y() {
 
-		if ( typeof this.shadowProps.y === "function" )
-			return this.shadowProps.y( this.app ? this.app.time : 0 );
+		if ( typeof this._props.y === "function" ) return this._props.y();
 
-		return this.shadowProps.y;
+		return this._props.y;
 
 	}
 
 	set y( y ) {
 
-		if ( typeof y === "function" && typeof this.shadowProps.y !== "function" ) ++ this.dirty;
+		if ( typeof y === "function" && typeof this._props.y !== "function" ) ++ this.dirty;
 		else if ( typeof y !== "function" ) {
 
 			if ( this.mesh ) this.mesh.position.y = y;
-			if ( typeof this.shadowProps.y === "function" )++ this.dirty;
+			if ( typeof this._props.y === "function" )++ this.dirty;
 
 		}
 
-		this.shadowProps.y = y;
+		this._props.y = y;
 
 	}
 
@@ -158,16 +156,16 @@ class Doodad extends Handle {
 
 		if ( this.mesh ) this.dispatchEvent( { type: "meshUnloaded" } );
 
-		if ( this.app ) this.app.units.remove( this );
+		super.remove();
 
 	}
 
 	toState() {
 
 		return Object.assign( super.toState(), {
-			x: this.shadowProps.x || this.x,
-			y: this.shadowProps.y || this.y,
-			facing: this.shadowProps.facing || this.facing
+			x: this._props.x || this.x,
+			y: this._props.y || this.y,
+			facing: this._props.facing || this.facing
 		} );
 
 	}
@@ -176,8 +174,8 @@ class Doodad extends Handle {
 
 		if ( ! isBrowser || ! this.mesh ) return;
 
-		if ( typeof this.shadowProps.x === "function" ) this.mesh.position.x = this.shadowProps.x( time );
-		if ( typeof this.shadowProps.y === "function" ) this.mesh.position.y = this.shadowProps.y( time );
+		if ( typeof this._props.x === "function" ) this.mesh.position.x = this._props.x( time );
+		if ( typeof this._props.y === "function" ) this.mesh.position.y = this._props.y( time );
 
 	}
 

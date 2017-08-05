@@ -1,4 +1,6 @@
 
+const PI2 = Math.PI * 2;
+
 // From http://www.mathopenref.com/coordpolygonarea2.html
 function areaOfPolygon( polygon ) {
 
@@ -84,9 +86,26 @@ function pointInSomePolygon( point, polygons ) {
 
 }
 
+//True if n is between a or b inclusively
+function inclusiveBetween( n, a, b ) {
+
+	if ( n < 0 ) n += PI2;
+	if ( a < 0 ) a += PI2;
+	if ( b < 0 ) b += PI2;
+
+	if ( Math.abs( a - n ) < 1e-7 ) return true;
+	if ( Math.abs( b - n ) < 1e-7 ) return true;
+
+	if ( a < b ) return a <= n && n <= b;
+	if ( b < a ) return a <= n || n <= b;
+	return true;
+
+}
+
 export {
     areaOfPolygon,
     areaOfPolygons,
     pointInPolygon,
-    pointInSomePolygon
+    pointInSomePolygon,
+	inclusiveBetween
 };

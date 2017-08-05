@@ -7,7 +7,7 @@ class Handle extends EventDispatcher {
 
 		super();
 
-		this.shadowProps = {};
+		this._props = {};
 
 		if ( props.id === undefined && props.key === undefined )
 			this.id = ( Handle.id ) ++;

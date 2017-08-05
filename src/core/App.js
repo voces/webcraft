@@ -4,7 +4,6 @@
 import Collection from "./Collection.js";
 import EventDispatcher from "./EventDispatcher.js";
 import Player from "./Player.js";
-import timeProperty from "./timeProperty.js";
 
 import models from "../entities/models.js";
 import Terrain from "../entities/Terrain.js";
@@ -39,7 +38,6 @@ class App extends EventDispatcher {
 
 		// Randomness
 		this.initialSeed = props.seed || "webcraft";
-		timeProperty( this, this, "random", true );
 		this.random = new Random( this.initialSeed );
 
 		// Collections & Arrays
@@ -76,7 +74,7 @@ class App extends EventDispatcher {
 
 	initTerrain( props ) {
 
-		this.terrain = props && props.constructor !== Object ? props : new Terrain( Object.assign( { app: this }, props ) );
+		this.terrain = props && props.constructor !== Object ? props : new Terrain( Object.assign( { units: this.units }, props ) );
 
 	}
 
@@ -247,7 +245,14 @@ class App extends EventDispatcher {
 		};
 
 		for ( const tween in tweens )
-			this[ tween ] = obj => tweens[ tween ]( Object.assign( { startTime: this.time }, obj ) );
+			this[ tween ] = obj => {
+
+				const tweenFunc = tweens[ tween ]( Object.assign( { startTime: this.time }, obj ) );
+				Object.defineProperty( tweenFunc, "time", { get: () => app.time } );
+
+				return tweenFunc;
+
+			};
 
 		this.Rect = class extends Rect {
 
@@ -255,7 +260,7 @@ class App extends EventDispatcher {
 
 				super( ...args );
 
-				if ( this.app === undefined ) this.app = app;
+				Object.define( this, "time", { get: () => app.time } );
 
 				this.addEventListener( "dirty", () => app.updates.add( this ) );
 				this.addEventListener( "clean", () => app.updates.remove( this ) );
@@ -319,6 +324,12 @@ class App extends EventDispatcher {
 
 		doodad.addEventListener( "dirty", () => ( this.updates.add( doodad ), this.renders.add( doodad ) ) );
 		doodad.addEventListener( "clean", () => ( this.updates.remove( doodad ), this.renders.remove( doodad ) ) );
+		doodad.addEventListener( "remove", () => {
+
+			if ( doodad instanceof Unit ) this.units.remove( doodad );
+			else this.doodads.remove( doodad );
+
+		} );
 
 	}
 

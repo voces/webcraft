@@ -41,7 +41,7 @@ class Player extends Handle {
 
 	get color() {
 
-		return this.shadowProps.color;
+		return this._props.color;
 
 	}
 
@@ -53,10 +53,10 @@ class Player extends Handle {
 
 		if ( ! color ) return;
 
-		if ( this.shadowProps.color ) this.shadowProps.color.taken = false;
+		if ( this._props.color ) this._props.color.taken = false;
 
-		this.shadowProps.color = color;
-		this.shadowProps.color.taken = true;
+		this._props.color = color;
+		this._props.color.taken = true;
 
 	}
 

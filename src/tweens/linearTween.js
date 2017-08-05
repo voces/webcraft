@@ -17,9 +17,9 @@ function linearTween( { start = 0, end = 1, rate, duration, startTime = Date.now
 
 	if ( duration === undefined ) duration = diff / rate;
 
-	const func = ( time = Date.now() ) => {
+	const func = () => {
 
-		const delta = ( time - startTime ) / 1000;
+		const delta = ( func.time - startTime ) / 1000;
 
 		if ( delta >= duration ) return end;
 

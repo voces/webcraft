@@ -1,4 +1,6 @@
 
+import Collection from "../core/Collection.js";
+
 import { pointInPolygon, pointInSomePolygon } from "../math/geometry.js";
 
 class Terrain {
@@ -7,12 +9,14 @@ class Terrain {
 
 		Object.assign( this, props );
 
+		if ( ! this.units ) this.units = new Collection();
+
 	}
 
-	// THis is meant to be optimized using a quadtree
+	// This is meant to be optimized using a quadtree
 	selectUnitsBoundedByRectangle( rect ) {
 
-		let units = this.units || this.app && this.app.units;
+		let units = this.units;
 
 		if ( ! units || ! units.length ) return [];
 
@@ -22,7 +26,7 @@ class Terrain {
 
 	selectUnitsBoundedByPolygon( polygon ) {
 
-		let units = this.units || this.app && this.app.units;
+		let units = this.units;
 
 		if ( ! units || ! units.length ) return [];
 
@@ -32,7 +36,7 @@ class Terrain {
 
 	selectUnitsBoundedByPolygons( polygons ) {
 
-		let units = this.units || this.app && this.app.units;
+		let units = this.units;
 
 		if ( ! units || ! units.length ) return [];
 

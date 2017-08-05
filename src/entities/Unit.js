@@ -13,7 +13,7 @@ class Unit extends Doodad {
 
 		this.updates = [];
 
-		this.shadowProps = {};
+		this._props = {};
 
 		if ( this.entityType === Unit ) Object.assign( this, props );
 
@@ -37,9 +37,9 @@ class Unit extends Doodad {
 
 	set owner( owner ) {
 
-		if ( this.shadowProps.owner === owner ) return;
+		if ( this._props.owner === owner ) return;
 
-		this.shadowProps.owner = owner;
+		this._props.owner = owner;
 
 		// Null and undefined
 		if ( owner == undefined ) return;
@@ -57,7 +57,7 @@ class Unit extends Doodad {
 
 	get owner() {
 
-		return this.shadowProps.owner;
+		return this._props.owner;
 
 	}
 
@@ -97,7 +97,7 @@ class Unit extends Doodad {
 
 	onDeath() {
 
-		if ( this.app && this.app.scene && this.mesh ) this.app.scene.remove( this.mesh );
+		if ( this.mesh ) this.dispatchEvent( { type: "meshUnloaded" } );
 
 	}
 
