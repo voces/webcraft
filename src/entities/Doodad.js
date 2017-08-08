@@ -10,6 +10,19 @@ class Doodad extends Handle {
 
 		if ( props.x === undefined ) props.x = 0;
 		if ( props.y === undefined ) props.y = 0;
+		if ( props.radius === undefined ) props.radius = 0;
+		if ( props.min === undefined ) {
+
+			props.min = {};
+			Object.defineProperties( props.min, { x: { get: () => this.x - this.radius }, y: { get: () => this.y + this.radius } } );
+
+		}
+		if ( props.max === undefined ) {
+
+			props.max = {};
+			Object.defineProperties( props.max, { y: { get: () => this.x - this.radius }, y: { get: () => this.y + this.radius } } );
+
+		}
 
 		super( props );
 

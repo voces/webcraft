@@ -214,14 +214,8 @@ class Rect extends EventDispatcher {
 
 		if ( ! this.area ) return;
 
-		let units;
-
-		if ( this.terrain ) units = this.terrain.selectUnitsBoundedByRectangle( this );
-		else if ( this.app && this.app.terrain ) units = this.app.terrain.selectUnitsBoundedByRectangle( this );
-		else if ( this.candidateUnits ) units = this.candidateUnits.filter( unit => this.contains( unit ) );
-		else return console.error( "No source of units." );
-
-		units.sort( ( a, b ) => a.id > b.id );
+		// console.log( this.candidateUnits );
+		const units = this.candidateUnits.filter( unit => this.contains( unit ) ).sort( ( a, b ) => a.id > b.id );
 
 		const [ enters, leaves ] = this.diff( units, this.units, "id" );
 
@@ -237,7 +231,7 @@ class Rect extends EventDispatcher {
 		for ( let i = 0; i < leaves.length; i ++ )
 			subevents.push( { type: "unitLeave", unit: leaves[ i ], time: this.calculateLeave( leaves[ i ] ), target: this } );
 
-		if ( this.app ) return this.app.subevents.push( ...subevents );
+		this.dispatchEvent( { type: "subevents", subevents } );
 
 		subevents.sort( ( a, b ) => a.time - b.time );
 

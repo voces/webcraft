@@ -258,12 +258,18 @@ class App extends EventDispatcher {
 
 			constructor( ...args ) {
 
+				args[ 4 ] = Object.assign( {
+					candidateUnits: app.units,
+					candidateDoodads: app.doodads
+				}, args[ 4 ] );
+
 				super( ...args );
 
-				Object.define( this, "time", { get: () => app.time } );
+				Object.defineProperty( this, "time", { get: () => app.time } );
 
 				this.addEventListener( "dirty", () => app.updates.add( this ) );
 				this.addEventListener( "clean", () => app.updates.remove( this ) );
+				this.addEventListener( "subevents", ( { subevents } ) => app.subevents.push( ...subevents ) );
 
 			}
 

@@ -1,26 +1,12 @@
 {
-  "extends": "mdcs",
-  "parserOptions": {
-      "ecmaVersion": 8
-    },
-    "plugins": ["html"],
-  "rules": {
-	"comma-dangle": [
-	  "error",
-	  "never"
-	],
-	"quotes": [
-	  "error",
-	  "double"
-	],
-	"no-multiple-empty-lines": [
-	  "error",
-	  {
-		"max": 1
-	  }
-	],
-	"strict": [
-	  "error"
-	]
-  }
+	"extends": "mdcs",
+	"parserOptions": { "ecmaVersion": 8 },
+	"plugins": ["html"],
+	"rules": {
+		"comma-dangle": [ "error", "never" ],
+		"quotes": [ "error", "double" ],
+		"no-multiple-empty-lines": [ "error", { "max": 1 } ],
+		"strict": [ "error" ],
+		"linebreak-style": [ "error", "unix" ]
+	}
 }

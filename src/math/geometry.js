@@ -102,6 +102,14 @@ function inclusiveBetween( n, a, b ) {
 
 }
 
+export default {
+	areaOfPolygon,
+	areaOfPolygons,
+	pointInPolygon,
+	pointInSomePolygon,
+	inclusiveBetween
+};
+
 export {
     areaOfPolygon,
     areaOfPolygons,

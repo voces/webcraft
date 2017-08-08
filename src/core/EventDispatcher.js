@@ -1,7 +1,7 @@
 
 // Adapted from THREE.js
 
-import * as env from "../misc/env.js";
+// import * as env from "../misc/env.js";
 
 class EventDispatcher {
 

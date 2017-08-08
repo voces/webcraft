@@ -20,15 +20,6 @@ class Collection extends Array {
 
 	}
 
-	replace( arr ) {
-
-		this.splice( 0 );
-		this.dict = {};
-
-		this.add( ...arr );
-
-	}
-
 	remove( item ) {
 
 		const index = this.indexOf( item );
