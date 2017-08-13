@@ -1,12 +1,12 @@
 
 import { Server } from "ws";
 
-import EventDispatcher from "../../../core/EventDispatcher";
-import Handle from "../../../core/Handle";
-import Collection from "../../../core/Collection.js";
-import stringify from "../../../misc/stringify.js";
+import EventDispatcher from "../../core/EventDispatcher";
+import Handle from "../../core/Handle";
+import Collection from "../../core/Collection.js";
+import stringify from "../../misc/stringify.js";
 
-class ServerNetwork extends EventDispatcher {
+class GenericServerNetwork extends EventDispatcher {
 
 	constructor( props = {} ) {
 
@@ -82,7 +82,7 @@ class ServerNetwork extends EventDispatcher {
 
 				this.clients.remove( socket );
 
-				this.app.dispatchEvent( { type: "clientLeave", client: { id: socket.id } } );
+				this.app.dispatchEvent( "clientLeave", { client: { id: socket.id } } );
 
 			};
 
@@ -102,11 +102,11 @@ class ServerNetwork extends EventDispatcher {
 
 				}
 
-				this.app.dispatchEvent( { type: "clientMessage", client: { id: socket.id }, message: data } );
+				this.app.dispatchEvent( "clientMessage", { client: { id: socket.id }, message: data } );
 
 			};
 
-			this.app.dispatchEvent( { type: "clientJoin", client: { id: socket.id, send: ( data, toJSON ) => {
+			this.app.dispatchEvent( "clientJoin", { client: { id: socket.id, send: ( data, toJSON ) => {
 
 				if ( typeof data === "object" ) {
 
@@ -142,4 +142,4 @@ class ServerNetwork extends EventDispatcher {
 
 }
 
-export default ServerNetwork;
+export default GenericServerNetwork;

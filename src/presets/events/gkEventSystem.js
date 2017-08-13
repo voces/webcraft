@@ -34,7 +34,7 @@ function clientJoinHandler( app, e ) {
 		local: player.toJSON()
 	}, "toState" );
 
-	app.dispatchEvent( { type: "playerJoin", player } );
+	app.dispatchEvent( "playerJoin", { player } );
 
 }
 
@@ -44,7 +44,7 @@ function clientLeaveHandler( app, e ) {
 	const player = app.players.dict[ "p" + e.client.id ];
 
 	app.network.send( { type: "playerLeave", player } );
-	app.dispatchEvent( { type: "playerLeave", player } );
+	app.dispatchEvent( "playerLeave", { player } );
 
 }
 
@@ -68,7 +68,7 @@ function clientMessageHandler( app, e ) {
 	e.message.time = app.time;
 
 	app.network.send( e.message );
-	app.dispatchEvent( e.message );
+	app.dispatchEvent( e.message.type, e.message );
 
 }
 

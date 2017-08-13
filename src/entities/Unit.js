@@ -83,7 +83,7 @@ class Unit extends Doodad {
 
 		this._live = value;
 
-		if ( value <= 0 ) this.dispatchEvent( { type: "death", target: this } );
+		if ( value <= 0 ) this.dispatchEvent( "death" );
 
 	}
 
@@ -97,7 +97,7 @@ class Unit extends Doodad {
 
 	onDeath() {
 
-		if ( this.mesh ) this.dispatchEvent( { type: "meshUnloaded" } );
+		if ( this.mesh ) this.dispatchEvent( "meshUnloaded" );
 
 	}
 

@@ -1,8 +1,8 @@
 
-import EventDispatcher from "../../../core/EventDispatcher.js";
+import EventDispatcher from "../../core/EventDispatcher.js";
 // import EventDispatcher from "../../../../core/EventDispatcher";
 
-class ClientNetwork extends EventDispatcher {
+class GenericClientNetwork extends EventDispatcher {
 
 	constructor( props = {} ) {
 
@@ -33,7 +33,7 @@ class ClientNetwork extends EventDispatcher {
 				this.app.time = e;
 				this.app.officialTime = e;
 				this.app.update();
-				this.app.dispatchEvent( { type: "time", time: e }, true );
+				this.app.dispatchEvent( "time", { time: e } );
 
 			} else if ( e instanceof Array ) {
 
@@ -47,7 +47,7 @@ class ClientNetwork extends EventDispatcher {
 
 					}
 
-					this.app.dispatchEvent( e[ i ], true );
+					this.app.dispatchEvent( e[ i ].type, e[ i ] );
 
 				}
 
@@ -61,7 +61,7 @@ class ClientNetwork extends EventDispatcher {
 
 				}
 
-				this.app.dispatchEvent( e, true );
+				this.app.dispatchEvent( e.type, e );
 
 			}
 
@@ -90,4 +90,4 @@ class ClientNetwork extends EventDispatcher {
 
 }
 
-export default ClientNetwork;
+export default GenericClientNetwork;

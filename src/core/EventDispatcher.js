@@ -49,29 +49,44 @@ class EventDispatcher {
 
 	}
 
-	dispatchEvent( event/*, received*/ ) {
+	dispatchEvent( type, event, ...args ) {
 
-		if ( this._listeners === undefined ) return;
+		if ( ! type ) return;
 
-		const arr = this._listeners[ event.type ];
-		if ( arr === undefined || arr.length === 0 ) return;
+		if ( typeof type !== "string" ) {
 
-		// if ( env.isClient && ! received )
-		// 	event.type = event.type + "Prediction";
+			// console.warn( "dispatchEvent( <object> ) has been deprecated, please use dispatchEvent( <string>, <object> )" );
+			console.trace( "dispatchEvent( <object> ) has been deprecated, please use dispatchEvent( <string>, <object> )" );
 
-		const clone = arr.slice( 0 );
+			args.unshift( event );
+			event = type;
+			type = type.type;
 
-		for ( let i = 0; i < clone.length; i ++ )
-			try {
+		}
 
-				clone[ i ].call( this, event );
+		if ( typeof event === "object" ) event.target = this;
+		else if ( event === undefined ) event = { target: this };
 
-			} catch ( err ) {
+		let target = this;
+		let stopPropagation = false;
 
-				// Report user errors but continue on
-				console.error( err );
+		while ( target && ! stopPropagation ) {
 
-			}
+			if ( typeof event === "object" ) event.currentTarget = target;
+
+			if ( target._listeners === undefined ) return;
+
+			const arr = target._listeners[ type ];
+			if ( arr === undefined || arr.length === 0 ) return;
+
+			const clone = arr.slice( 0 );
+
+			for ( let i = 0; i < clone.length && ! stopPropagation; i ++ )
+				stopPropagation = clone[ i ].call( target, event, ...args ) === false;
+
+			target = target.parent;
+
+		}
 
 	}
 

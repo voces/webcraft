@@ -42,7 +42,7 @@ class Handle extends EventDispatcher {
 	remove() {
 
 		this.removed = true;
-		this.dispatchEvent( { type: "remove", target: this } );
+		this.dispatchEvent( "remove" );
 
 	}
 
