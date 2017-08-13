@@ -96,11 +96,11 @@ class Doodad extends Handle {
 	set mesh( mesh ) {
 
 		if ( this._props.mesh instanceof THREE.Mesh )
-			this.dispatchEvent( { type: "meshUnloaded" } );
+			this.dispatchEvent( "meshUnloaded" );
 
 		this._props.mesh = mesh;
 
-		this.dispatchEvent( { type: "meshLoaded" } );
+		this.dispatchEvent( "meshLoaded" );
 
 	}
 
@@ -158,8 +158,8 @@ class Doodad extends Handle {
 
 		if ( isNaN( dirt ) ) dirt = 0;
 
-		if ( ! this._dirty && dirt ) this.dispatchEvent( { type: "dirty" } );
-		else if ( this._dirty && ! dirt ) this.dispatchEvent( { type: "clean" } );
+		if ( ! this._dirty && dirt ) this.dispatchEvent( "dirty" );
+		else if ( this._dirty && ! dirt ) this.dispatchEvent( "clean" );
 
 		this._dirty = dirt;
 
@@ -167,7 +167,7 @@ class Doodad extends Handle {
 
 	remove() {
 
-		if ( this.mesh ) this.dispatchEvent( { type: "meshUnloaded" } );
+		if ( this.mesh ) this.dispatchEvent( "meshUnloaded" );
 
 		super.remove();
 

@@ -54,7 +54,7 @@ class Rect extends EventDispatcher {
 	addEventListener( type, ...args ) {
 
 		if ( ( type === "unitEnter" || type === "unitLeave" ) && ( ! this._listeners.unitEnter || ! this._listeners.unitEnter.length ) && ( ! this._listeners.unitLeave || ! this._listeners.unitLeave.length ) )
-			this.dispatchEvent( { type: "dirty" } );
+			this.dispatchEvent( "dirty" );
 
 		super.addEventListener( type, ...args );
 
@@ -225,18 +225,20 @@ class Rect extends EventDispatcher {
 
 		const subevents = [];
 
+		// if ( this._listeners.unitEnter && this._listeners.unitEnter.length )
 		for ( let i = 0; i < enters.length; i ++ )
 			subevents.push( { type: "unitEnter", unit: enters[ i ], time: this.calculateEnter( enters[ i ] ), target: this } );
 
+		// if ( this._listeners.unitLeave && this._listeners.unitLeave.length )
 		for ( let i = 0; i < leaves.length; i ++ )
 			subevents.push( { type: "unitLeave", unit: leaves[ i ], time: this.calculateLeave( leaves[ i ] ), target: this } );
 
-		this.dispatchEvent( { type: "subevents", subevents } );
+		this.dispatchEvent( "subevents", { subevents } );
 
 		subevents.sort( ( a, b ) => a.time - b.time );
 
 		for ( let i = 0; i < subevents.length; i ++ )
-			this.dispatchEvent( subevents[ i ] );
+			this.dispatchEvent( subevents[ i ].type, subevents[ i ] );
 
 	}
 

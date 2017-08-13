@@ -14,7 +14,7 @@ import fetchFile from "../misc/fetchFile.js";
 
 import Random from "../../lib/seedrandom-alea.js";
 
-import * as rts from "../presets/rts.js";
+import * as gk from "../presets/gk.js";
 
 // Wrapped by App
 import Rect from "../misc/Rect.js";
@@ -59,7 +59,7 @@ class App extends EventDispatcher {
 		// Initialize the app components
 		this.initTerrain( props.terrain );
 		this.initScene( props.scene );
-		this.eventSystem = Object.assign( {}, rts.eventSystem, props.eventSystem );
+		this.eventSystem = Object.assign( {}, gk.eventSystem, props.eventSystem );
 		this.initFactories( props.types );
 		this.initNetwork( props.network );
 
@@ -107,7 +107,7 @@ class App extends EventDispatcher {
 		this.intentSystem = Object.assign( {}, props.intentSystem );
 
 		this.initCamera( props.camera );
-		this.renderer = props.renderer && props.renderer.constructor !== Object ? props.renderer : rts.renderer( props.renderer );
+		this.renderer = props.renderer && props.renderer.constructor !== Object ? props.renderer : gk.renderer( props.renderer );
 
 		window.addEventListener( "resize", () => this.camera.resize() );
 		window.addEventListener( "keydown", e => this.intentSystem.keydown && this.intentSystem.keydown( e ) );
@@ -205,7 +205,7 @@ class App extends EventDispatcher {
 
 		this.network = props.constructor !== Object ?
 			props :
-			new rts.ServerNetwork( Object.assign( { players: this.players }, props ) );
+			new gk.ServerNetwork( Object.assign( { players: this.players }, props ) );
 
 		this.addEventListener( "clientJoin", e => this.eventSystem.clientJoinHandler( this, e ) );
 		this.addEventListener( "clientLeave", e => this.eventSystem.clientLeaveHandler( this, e ) );
@@ -219,7 +219,7 @@ class App extends EventDispatcher {
 
 		this.network = props && props.constructor !== Object ?
 			props :
-			new rts.ClientNetwork( props );
+			new gk.ClientNetwork( props );
 
 		this.network.app = this;
 
@@ -314,7 +314,7 @@ class App extends EventDispatcher {
 
 				models[ model ] = eval2( file );
 
-				eventDispatcher.dispatchEvent( { type: "ready", model: models[ model ] } );
+				eventDispatcher.dispatchEvent( "ready", { model: models[ model ] } );
 
 			} )
 			.catch( err => console.error( err ) );
@@ -513,8 +513,13 @@ class App extends EventDispatcher {
 				this.time = subevents[ index ].time;
 
 				if ( subevents[ index ].callback ) subevents[ index ].callback( subevents[ index ].time );
-				else if ( subevents[ index ].target ) subevents[ index ].target.dispatchEvent( subevents[ index ] );
-				else this.dispatchEvent( subevents[ index ] );
+				else {
+
+					const type = subevents[ index ].type || subevents[ index ][ 0 ] && subevents[ index ][ 0 ].type || "subevent";
+					if ( subevents[ index ].target ) subevents[ index ].target.dispatchEvent( type, subevents[ index ] );
+					else this.dispatchEvent( type, subevents[ index ] );
+
+				}
 
 				index ++;
 
