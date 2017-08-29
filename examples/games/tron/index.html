@@ -1,0 +1,51 @@
+<!DOCTYPE>
+<html>
+<head>
+	<title>Tron</title>
+	<script src="../../../node_modules/three/build/three.js"></script>
+    <script src="../../../build/webcraft.js"></script>
+    <style>
+    body { margin: 0; font-style: sans-serif; }
+	canvas {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 0;
+    }
+
+	*:not(canvas) { z-index: 1; }
+
+    .leaderboard {
+		font-size: 1.5em;
+		color: white;
+		position: absolute;
+		right: 1em;
+		top: 0.5em;
+		background-color: rgba(0, 0, 0, 0.5);
+		border: 1px outset gold;
+		border-radius: 0.25em;
+		box-shadow: 0 0 0.25em black;
+	}
+	.leaderboard .row {
+		display: flex;
+		justify-content: space-between;
+	}
+	.leaderboard .row :not(:empty) { padding: 0 0.5em; }
+
+	.row-0 { color: #FF0000; }
+	.row-1 { color: #4385FF; }
+	.row-2 { color: #64FFFF; }
+	.row-3 { color: #820096; }
+	.row-4 { color: #FFEA00; }
+	.row-5 { color: #FF9900; }
+	.row-6 { color: #BEFF00; }
+	.row-7 { color: #FF00FF; }
+    </style>
+</head>
+<body>
+	<div class="leaderboard"></div>
+    <script src="index.js"></script>
+</body>
+</html>
