@@ -7,8 +7,8 @@ The ideal is for most games to have a single codebase that will handle both the 
 
 ## Examples
 
-[Pong](https://github.com/voces/webcraft-pong)  
-[<img src="https://user-images.githubusercontent.com/4513209/28194456-316c4000-67f9-11e7-8442-4e9eb4322ff5.png" width="256">](https://github.com/voces/webcraft-pong)
+[Pong](https://github.com/voces/WebCraft/tree/master/examples/games/pong)  
+[<img src="https://user-images.githubusercontent.com/4513209/28194456-316c4000-67f9-11e7-8442-4e9eb4322ff5.png" width="256">](https://github.com/voces/WebCraft/tree/master/examples/games/pong)
 
-[Tron](https://github.com/voces/webcraft-tron)  
-[<img src="https://user-images.githubusercontent.com/4513209/28998923-92eaed28-79eb-11e7-9825-3b1f5c2e561a.png" width="256">](https://github.com/voces/webcraft-tron)
+[Tron](https://github.com/voces/WebCraft/tree/master/examples/games/tron)  
+[<img src="https://user-images.githubusercontent.com/4513209/28998923-92eaed28-79eb-11e7-9825-3b1f5c2e561a.png" width="256">](https://github.com/voces/WebCraft/tree/master/examples/games/tron)
