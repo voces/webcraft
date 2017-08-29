@@ -15,7 +15,8 @@
     "eslint-config-mdcs": "^4.2.2",
     "eslint-plugin-html": "^2.0.3",
     "rollup": "^0.41.6",
-    "rollup-watch": "^3.2.2"
+    "rollup-watch": "^3.2.2",
+    "three": "^0.87.1"
   },
   "dependencies": {
     "ws": "^3.0.0"

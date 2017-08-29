@@ -235,11 +235,6 @@ class Rect extends EventDispatcher {
 
 		this.dispatchEvent( "subevents", { subevents } );
 
-		subevents.sort( ( a, b ) => a.time - b.time );
-
-		for ( let i = 0; i < subevents.length; i ++ )
-			this.dispatchEvent( subevents[ i ].type, subevents[ i ] );
-
 	}
 
 }

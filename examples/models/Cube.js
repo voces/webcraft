@@ -6,7 +6,11 @@ class CubeModel extends THREE.Mesh {
 	constructor( props = {} ) {
 
 		const scale = props.scale || 1;
-		const materialDef = props.materialDef || { color: 0xeeeeff, vertexColors: THREE.FaceColors, shading: THREE.FlatShading };
+		const width = ( props.width || 1 ) * scale;
+		const height = ( props.height || 1 ) * scale;
+		const depth = ( props.depth || 1 ) * scale;
+
+		const materialDef = props.materialDef || { color: 0xeeeeff, vertexColors: THREE.FaceColors, flatShading: true };
 
 		if ( props.opacity !== undefined ) {
 
@@ -18,7 +22,7 @@ class CubeModel extends THREE.Mesh {
 		if ( materialDef.transparent && materialDef.opacity === undefined ) materialDef.opacity = 1;
 		if ( materialDef.opacity !== undefined && ! materialDef.transparent ) materialDef.transparent = true;
 
-		const geometry = new THREE.BoxGeometry( scale, scale, scale );
+		const geometry = new THREE.BoxGeometry( width, height, depth );
 		const material = new THREE.MeshPhongMaterial( materialDef );
 
 		super( geometry, material );
