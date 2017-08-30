@@ -35,6 +35,7 @@ class App extends EventDispatcher {
 		this.renderTime = 0;
 		this.lastNow = Date.now();
 		this.lastRender = this.lastNow;
+		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
 
 		// Randomness
 		this.initialSeed = props.seed || "webcraft";
@@ -54,11 +55,10 @@ class App extends EventDispatcher {
 			get: () => this.players.filter( player => player.status === "here" )
 		} );
 
-		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
-
 		// Initialize the app components
 		if ( props.eventSystem ) props.eventSystem( this );
 		else gk.eventSystem( this );
+
 		this.initTerrain( props.terrain );
 		this.initScene( props.scene );
 		this.initFactories( props.types );
