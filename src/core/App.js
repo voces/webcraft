@@ -57,9 +57,10 @@ class App extends EventDispatcher {
 		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
 
 		// Initialize the app components
+		if ( props.eventSystem ) props.eventSystem( this );
+		else gk.eventSystem( this );
 		this.initTerrain( props.terrain );
 		this.initScene( props.scene );
-		this.eventSystem = Object.assign( {}, gk.eventSystem, props.eventSystem );
 		this.initFactories( props.types );
 		this.initNetwork( props.network );
 
@@ -195,10 +196,6 @@ class App extends EventDispatcher {
 		if ( env.isServer ) this.initServerNetwork( props );
 		else this.initClientNetwork( props );
 
-		this.addEventListener( "playerJoin", e => this.eventSystem.playerJoinHandler( this, e ) );
-		this.addEventListener( "playerLeave", e => this.eventSystem.playerLeaveHandler( this, e ) );
-		this.addEventListener( "state", e => this.eventSystem.state( this, e ) );
-
 	}
 
 	initServerNetwork( props = {} ) {
@@ -206,10 +203,6 @@ class App extends EventDispatcher {
 		this.network = props.constructor !== Object ?
 			props :
 			new gk.ServerNetwork( Object.assign( { players: this.players }, props ) );
-
-		this.addEventListener( "clientJoin", e => this.eventSystem.clientJoinHandler( this, e ) );
-		this.addEventListener( "clientLeave", e => this.eventSystem.clientLeaveHandler( this, e ) );
-		this.addEventListener( "clientMessage", e => this.eventSystem.clientMessageHandler( this, e ) );
 
 		this.network.app = this;
 
@@ -347,6 +340,12 @@ class App extends EventDispatcher {
 
 		this[ type.name ] = class extends Unit {
 
+			static get name() {
+
+				return type.name;
+
+			}
+
 			constructor( props ) {
 
 				super( Object.assign( { app }, type, props ) );
@@ -357,15 +356,13 @@ class App extends EventDispatcher {
 
 			}
 
-			static get name() {
+			toString() {
 
-				return type.name;
+				return this.name;
 
 			}
 
 		};
-
-		Object.defineProperty( this[ type.name ].constructor, "name", { value: type.name, configurable: true } );
 
 	}
 
@@ -377,6 +374,12 @@ class App extends EventDispatcher {
 
 		this[ type.name ] = class extends Doodad {
 
+			static get name() {
+
+				return type.name;
+
+			}
+
 			constructor( props ) {
 
 				super( Object.assign( { app }, type, props ) );
@@ -384,12 +387,6 @@ class App extends EventDispatcher {
 				app.doodads.add( this );
 
 				app.attachDooodadEvents( this );
-
-			}
-
-			static get name() {
-
-				return type.name;
 
 			}
 

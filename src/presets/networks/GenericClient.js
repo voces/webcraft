@@ -2,7 +2,7 @@
 import EventDispatcher from "../../core/EventDispatcher.js";
 // import EventDispatcher from "../../../../core/EventDispatcher";
 
-class GenericClientNetwork extends EventDispatcher {
+class GenericClient extends EventDispatcher {
 
 	constructor( props = {} ) {
 
@@ -90,4 +90,4 @@ class GenericClientNetwork extends EventDispatcher {
 
 }
 
-export default GenericClientNetwork;
+export default GenericClient;

@@ -6,7 +6,7 @@ import Handle from "../../core/Handle";
 import Collection from "../../core/Collection.js";
 import stringify from "../../misc/stringify.js";
 
-class GenericServerNetwork extends EventDispatcher {
+class GenericServer extends EventDispatcher {
 
 	constructor( props = {} ) {
 
@@ -142,4 +142,4 @@ class GenericServerNetwork extends EventDispatcher {
 
 }
 
-export default GenericServerNetwork;
+export default GenericServer;
