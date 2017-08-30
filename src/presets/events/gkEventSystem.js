@@ -104,4 +104,13 @@ function state( app, e ) {
 
 }
 
-export { clientJoinHandler, clientLeaveHandler, clientMessageHandler, playerJoinHandler, reservedEventTypes, playerLeaveHandler, state };
+export default app => {
+
+	app.addEventListener( "playerJoin", e => playerJoinHandler( app, e ) );
+	app.addEventListener( "playerLeave", e => playerLeaveHandler( app, e ) );
+	app.addEventListener( "state", e => state( app, e ) );
+	app.addEventListener( "clientJoin", e => clientJoinHandler( app, e ) );
+	app.addEventListener( "clientLeave", e => clientLeaveHandler( app, e ) );
+	app.addEventListener( "clientMessage", e => clientMessageHandler( app, e ) );
+
+};
