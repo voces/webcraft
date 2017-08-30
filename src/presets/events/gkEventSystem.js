@@ -114,3 +114,5 @@ export default app => {
 	app.addEventListener( "clientMessage", e => clientMessageHandler( app, e ) );
 
 };
+
+export { playerJoinHandler, playerLeaveHandler, state, clientJoinHandler, clientLeaveHandler, clientMessageHandler };
