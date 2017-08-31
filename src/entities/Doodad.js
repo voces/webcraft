@@ -148,6 +148,28 @@ class Doodad extends Handle {
 
 	}
 
+	get z() {
+
+		if ( typeof this._props.z === "function" ) return this._props.z();
+
+		return this._props.z;
+
+	}
+
+	set z( z ) {
+
+		if ( typeof y === "function" && typeof this._props.z !== "function" ) ++ this.dirty;
+		else if ( typeof z !== "function" ) {
+
+			if ( this.mesh ) this.mesh.position.z = z;
+			if ( typeof this._props.z === "function" )++ this.dirty;
+
+		}
+
+		this._props.z = z;
+
+	}
+
 	get dirty() {
 
 		return this._dirty;

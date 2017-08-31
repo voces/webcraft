@@ -9,8 +9,9 @@ class CubeModel extends THREE.Mesh {
 		const width = ( props.width || 1 ) * scale;
 		const height = ( props.height || 1 ) * scale;
 		const depth = ( props.depth || 1 ) * scale;
+		const color = props.color || 0xeeeeff;
 
-		const materialDef = props.materialDef || { color: 0xeeeeff, vertexColors: THREE.FaceColors, flatShading: true };
+		const materialDef = props.materialDef || { color, vertexColors: THREE.FaceColors, flatShading: true };
 
 		if ( props.opacity !== undefined ) {
 

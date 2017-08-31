@@ -6,7 +6,8 @@ class SphereModel extends THREE.Mesh {
 	constructor( props = {} ) {
 
 		const scale = props.scale / 2 || 0.5;
-		const materialDef = props.materialDef || { color: 0x00ff00, vertexColors: THREE.FaceColors };
+		const color = props.color || 0xeeeeff;
+		const materialDef = props.materialDef || { color, vertexColors: THREE.FaceColors };
 
 		if ( props.opacity !== undefined ) {
 
