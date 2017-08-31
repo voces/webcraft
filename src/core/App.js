@@ -526,8 +526,12 @@ class App extends EventDispatcher {
 
 		}
 
-		if ( env.isServer ) this.network.send( this.time );
-		setTimeout( () => this.update(), 25 );
+		if ( env.isServer ) {
+
+			this.network.send( this.time );
+			setTimeout( () => this.update(), 25 );
+
+		}
 
 	}
 

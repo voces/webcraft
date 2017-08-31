@@ -5,6 +5,7 @@ let rectId = 0;
 
 class Rect extends EventDispatcher {
 
+	// Can pass as two points or four values
 	constructor( p1, p2, x2, y2, props = {} ) {
 
 		super();
