@@ -104,6 +104,26 @@ class Unit extends Doodad {
 
 	}
 
+	nearsAnotherDoodad() {
+
+	}
+
+	onNearsAnotherUnit( delta, callback ) {
+
+		if ( ! this._onNearsAnotherUnit ) {
+
+			++ this.dirty;
+			this.updates.push( () => this.checkNearsAnotherUnit() );
+
+		}
+
+		const listeners = this._onNearsAnotherUnit || ( this._onNearsAnotherUnit = {} );
+		const specificListners = listeners[ delta ] || ( listeners[ delta ] = [] );
+
+		specificListners.push( callback );
+
+	}
+
 	traverseTo( point, keepListeners ) {
 
 		if ( ! keepListeners ) {
