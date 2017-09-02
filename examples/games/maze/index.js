@@ -23,6 +23,8 @@
 
 const keyboard = {};
 
+const SIZE = 0.6;
+
 const app = new WebCraft.App( {
 
 	network: { host: "notextures.io", port: 8086 },
@@ -34,7 +36,7 @@ const app = new WebCraft.App( {
 			{ name: "TileGray", model: { path: "../../models/Cube.js", color: "#E6E6FF" } }
 		],
 		units: [
-			{ name: "Character", model: { path: "../../models/Cube.js", scale: 0.75 }, speed: 2.5 },
+			{ name: "Character", model: { path: "../../models/Cube.js", scale: SIZE }, speed: 3.5 },
 			{ name: "Food", model: { path: "../../models/Sphere.js", color: "#FFFF00" } },
 			{ name: "Enemy", model: { path: "../../models/Sphere.js", color: "#0000FF", scale: 0.7 }, speed: 7.5 }
 		]
@@ -96,8 +98,14 @@ function start() {
 
 	const level = levels[ app.state.levelIndex ];
 
-	for ( let i = 0; i < app.players.length; i ++ )
-		app.players[ i ].character = new app.Character( { owner: app.players[ i ], x: level.spawn.x, y: level.spawn.y, z: 1 } );
+	for ( let i = 0; i < app.players.length; i ++ ) {
+
+		const char = new app.Character( { owner: app.players[ i ], x: level.spawn.x, y: level.spawn.y, z: 1 } );
+		app.players[ i ].character = char;
+
+		char.addEventListener( "nearsAnotherUnit", console.log );
+
+	}
 
 	for ( let y = 0; y < level.floormap.length; y ++ )
 		for ( let x = 0; x < level.floormap[ y ].length; x ++ ) {
@@ -124,29 +132,45 @@ function start() {
 
 }
 
+function roundTo( value, decimals = 0 ) {
+
+	decimals = Math.pow( 10, decimals );
+
+	return Math.round( value * decimals ) / decimals;
+
+}
+
+function canPlace( character, xDelta = 0, yDelta = 0 ) {
+
+	const corners = [
+		worldToTile( roundTo( character.x + xDelta + SIZE / 2, 4 ), roundTo( character.y + yDelta + SIZE / 2, 4 ) ),
+		worldToTile( roundTo( character.x + xDelta + SIZE / 2, 4 ), roundTo( character.y + yDelta - SIZE / 2, 4 ) ),
+		worldToTile( roundTo( character.x + xDelta - SIZE / 2, 4 ), roundTo( character.y + yDelta + SIZE / 2, 4 ) ),
+		worldToTile( roundTo( character.x + xDelta - SIZE / 2, 4 ), roundTo( character.y + yDelta - SIZE / 2, 4 ) )
+	];
+
+	return ! corners.some( corner => levels[ app.state.levelIndex ].floormap[ Math.round( corner.y ) ][ Math.round( corner.x ) ] === "█" );
+
+}
+
 let lastTime;
 app.updates.push( time => {
 
-	const delta = time - lastTime;
+	const delta = ( time - lastTime ) / 1000;
 	lastTime = time;
 
 	for ( let i = 0; i < app.players.length; i ++ )
 		if ( app.players[ i ].character ) {
 
-			const xRate = app.players[ i ].character._props.x.rate || 0;
-			const yRate = app.players[ i ].character._props.y.rate || 0;
+			const player = app.players[ i ];
 
-			if ( ! xRate && ! yRate ) return;
+			const xDelta = ( ( player.ArrowRight ? 1 : 0 ) - ( player.ArrowLeft ? 1 : 0 ) ) * player.character.speed * delta;
+			const yDelta = ( ( player.ArrowUp ? 1 : 0 ) - ( player.ArrowDown ? 1 : 0 ) ) * player.character.speed * delta;
 
-			const tile = worldToTile( app.players[ i ].character.x + Math.sign( xRate ) * 0.376, app.players[ i ].character.y + Math.sign( yRate ) * 0.376 );
+			if ( ! xDelta && ! yDelta ) return;
 
-			const predictX = Math.round( tile.x );
-			const predictY = Math.round( tile.y );
-
-			if ( levels[ app.state.levelIndex ].floormap[ predictY ][ predictX ] !== "█" ) return;
-
-			if ( xRate ) app.players[ i ].character._props.x.start -= xRate * delta;
-			if ( yRate ) app.players[ i ].character._props.y.start -= yRate * delta;
+			if ( xDelta !== 0 && canPlace( player.character, xDelta, 0 ) ) player.character.x = roundTo( player.character.x + xDelta, 4 );
+			if ( yDelta !== 0 && canPlace( player.character, 0, yDelta ) ) player.character.y = roundTo( player.character.y + yDelta, 4 );
 
 		}
 
@@ -176,23 +200,8 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 ///// Player Actions
 /////////////////////////////////////////////////
 
-function updateMovement( player ) {
-
-	if ( ! player.character ) return;
-
-	const x = ( ( player.ArrowRight ? 1 : 0 ) - ( player.ArrowLeft ? 1 : 0 ) ) * player.character.speed;
-	const y = ( ( player.ArrowUp ? 1 : 0 ) - ( player.ArrowDown ? 1 : 0 ) ) * player.character.speed;
-
-	if ( x === 0 ) player.character.x = player.character.x;
-	else player.character.x = app.linearTween( { start: player.character.x, rate: x, duration: Infinity } );
-
-	if ( y === 0 ) player.character.y = player.character.y;
-	else player.character.y = app.linearTween( { start: player.character.y, rate: y, duration: Infinity } );
-
-}
-
-app.addEventListener( "keydown", ( { direction, player } ) => ( player[ direction ] = true, updateMovement( player ) ) );
-app.addEventListener( "keyup", ( { direction, player } ) => ( player[ direction ] = false, updateMovement( player ) ) );
+app.addEventListener( "keydown", ( { direction, player } ) => player[ direction ] = true );
+app.addEventListener( "keyup", ( { direction, player } ) => player[ direction ] = false );
 
 /////////////////////////////////////////////////
 ///// Levels
