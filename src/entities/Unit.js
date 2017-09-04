@@ -1,6 +1,7 @@
 
 import Doodad from "./Doodad.js";
 import Handle from "../core/Handle.js";
+import { diff } from "../math/set.js";
 
 import linearTween from "../tweens/linearTween.js";
 
@@ -104,23 +105,45 @@ class Unit extends Doodad {
 
 	}
 
-	nearsAnotherDoodad() {
+	// TODO: add .time to the events with a guess of when the near/retreat occured
+	checkNear() {
+
+		const listeners = this._onNearsAnotherUnit;
+
+		for ( const distance in listeners )
+			for ( let i = 0; i < listeners[ distance ].length; i ++ ) {
+
+				const { arr, callback, near } = listeners[ distance ][ i ];
+				const newNear = arr.filter( e => ( ( e.x - this.x ) ** 2 + ( e.y - this.y ) ** 2 + ( e.z - this.z ) ** 2 ) ** ( 1 / 2 ) < distance );
+				const [ newNears, newRetreats ] = diff( newNear, near, "id" );
+
+				listeners[ distance ][ i ].near = newNear;
+
+				if ( newNears.length === 0 && newRetreats.length === 0 ) return;
+
+				callback( { type: "near", objects: newNears, target: this } );
+
+			}
 
 	}
 
-	onNearsAnotherUnit( delta, callback ) {
+	onNear( arr, distance, callback ) {
 
 		if ( ! this._onNearsAnotherUnit ) {
 
 			++ this.dirty;
-			this.updates.push( () => this.checkNearsAnotherUnit() );
+			this.updates.push( () => this.checkNear() );
 
 		}
 
 		const listeners = this._onNearsAnotherUnit || ( this._onNearsAnotherUnit = {} );
-		const specificListners = listeners[ delta ] || ( listeners[ delta ] = [] );
+		const specificListners = listeners[ distance ] || ( listeners[ distance ] = [] );
 
-		specificListners.push( callback );
+		specificListners.push( {
+			arr,
+			callback,
+			near: arr.filter( e => ( ( e.x - this.x ) ** 2 + ( e.y - this.y ) ** 2 + ( e.z - this.z ) ** 2 ) ** ( 1 / 2 ) < distance )
+		} );
 
 	}
 
