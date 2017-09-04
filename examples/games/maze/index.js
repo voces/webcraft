@@ -37,8 +37,8 @@ const app = new WebCraft.App( {
 		],
 		units: [
 			{ name: "Character", model: { path: "../../models/Cube.js", scale: SIZE }, speed: 3.5 },
-			{ name: "Food", model: { path: "../../models/Sphere.js", color: "#FFFF00" } },
-			{ name: "Enemy", model: { path: "../../models/Sphere.js", color: "#0000FF", scale: 0.7 }, speed: 7.5 }
+			{ name: "Food", model: { path: "../../models/Sphere.js", color: "#FFFF00", scale: 0.5 } },
+			{ name: "Enemy", model: { path: "../../models/Sphere.js", color: "#0000FF", scale: 0.5 }, speed: 7 }
 		]
 	},
 
@@ -72,40 +72,38 @@ const app = new WebCraft.App( {
 
 app.state = { players: app.players, units: app.units, levelIndex: 0 };
 
-function tileToWorld( x, y ) {
-
-	return {
-		x: x - Math.floor( levels[ app.state.levelIndex ].width / 2 ) + ( levels[ app.state.levelIndex ].width % 2 === 0 ? 0.5 : 0 ),
-		y: - y + Math.floor( levels[ app.state.levelIndex ].height / 2 ) - ( levels[ app.state.levelIndex ].height % 2 === 0 ? 0.5 : 0 )
-	};
-
-}
-
-function worldToTile( x, y ) {
-
-	return {
-		x: x + Math.floor( levels[ app.state.levelIndex ].width / 2 ) - ( levels[ app.state.levelIndex ].width % 2 === 0 ? 0.5 : 0 ),
-		y: - ( y - Math.floor( levels[ app.state.levelIndex ].height / 2 ) + ( levels[ app.state.levelIndex ].height % 2 === 0 ? 0.5 : 0 ) )
-	};
-
-}
-
 /////////////////////////////////////////////////
 ///// Game Logic
 /////////////////////////////////////////////////
 
+function spawn( player ) {
+
+	const char = new app.Character( { owner: player, x: levels[ app.state.levelIndex ].spawn.x, y: levels[ app.state.levelIndex ].spawn.y, z: 1 } );
+	player.character = char;
+	char.onNear( app.units, SIZE, onNear );
+
+}
+
+function cleanup() {
+
+	const units = [ ...app.units ];
+	for ( let i = 0; i < units.length; i ++ )
+		units[ i ].remove();
+
+	const doodads = [ ...app.doodads ];
+	for ( let i = 0; i < doodads.length; i ++ )
+		doodads[ i ].remove();
+
+}
+
 function start() {
+
+	cleanup();
 
 	const level = levels[ app.state.levelIndex ];
 
-	for ( let i = 0; i < app.players.length; i ++ ) {
-
-		const char = new app.Character( { owner: app.players[ i ], x: level.spawn.x, y: level.spawn.y, z: 1 } );
-		app.players[ i ].character = char;
-
-		char.addEventListener( "nearsAnotherUnit", console.log );
-
-	}
+	for ( let i = 0; i < app.players.length; i ++ )
+		spawn( app.players[ i ] );
 
 	for ( let y = 0; y < level.floormap.length; y ++ )
 		for ( let x = 0; x < level.floormap[ y ].length; x ++ ) {
@@ -121,40 +119,55 @@ function start() {
 
 		}
 
-	for ( let i = 0; i < level.patrols.length; i ++ ) {
+	if ( level.patrols )
+		for ( let i = 0; i < level.patrols.length; i ++ ) {
 
-		const unit = new app.Enemy( Object.assign( { z: 1 }, level.patrols[ i ][ 0 ] ) );
-		unit.patrol( level.patrols[ i ] );
+			const unit = new app.Enemy( Object.assign( { z: 1 }, level.patrols[ i ][ 0 ] ) );
+			unit.patrol( level.patrols[ i ] );
 
-	}
+		}
+
+	if ( level.food )
+		for ( let i = 0; i < level.food.length; i ++ )
+			Object.assign( new app.Food( Object.assign( { z: 1 }, level.food[ i ] ) ), { food: i } );
 
 	app.camera.position.z = Math.max( level.width / 2 + 10, level.height );
 
-}
-
-function roundTo( value, decimals = 0 ) {
-
-	decimals = Math.pow( 10, decimals );
-
-	return Math.round( value * decimals ) / decimals;
+	app.updates.push( tick );
 
 }
 
-function canPlace( character, xDelta = 0, yDelta = 0 ) {
+function onNear( e ) {
 
-	const corners = [
-		worldToTile( roundTo( character.x + xDelta + SIZE / 2, 4 ), roundTo( character.y + yDelta + SIZE / 2, 4 ) ),
-		worldToTile( roundTo( character.x + xDelta + SIZE / 2, 4 ), roundTo( character.y + yDelta - SIZE / 2, 4 ) ),
-		worldToTile( roundTo( character.x + xDelta - SIZE / 2, 4 ), roundTo( character.y + yDelta + SIZE / 2, 4 ) ),
-		worldToTile( roundTo( character.x + xDelta - SIZE / 2, 4 ), roundTo( character.y + yDelta - SIZE / 2, 4 ) )
-	];
+	const character = e.target;
+	const player = character.owner;
 
-	return ! corners.some( corner => levels[ app.state.levelIndex ].floormap[ Math.round( corner.y ) ][ Math.round( corner.x ) ] === "█" );
+	for ( let i = 0; i < e.objects.length; i ++ )
+		if ( e.objects[ i ] instanceof app.Enemy ) {
+
+			character.remove();
+
+			for ( let i = 0; i < player.food.length; i ++ )
+				if ( player.food )
+					Object.assign( new app.Food( Object.assign( { z: 1 }, levels[ app.state.levelIndex ].food[ i ] ) ), { food: i } );
+
+			player.food = [];
+
+			spawn( player );
+
+		} else if ( e.objects[ i ] instanceof app.Food ) {
+
+			player.food[ e.objects[ i ].food ] = true;
+			e.objects[ i ].remove();
+
+		}
 
 }
 
 let lastTime;
-app.updates.push( time => {
+function tick( time ) {
+
+	const level = levels[ app.state.levelIndex ];
 
 	const delta = ( time - lastTime ) / 1000;
 	lastTime = time;
@@ -172,19 +185,48 @@ app.updates.push( time => {
 			if ( xDelta !== 0 && canPlace( player.character, xDelta, 0 ) ) player.character.x = roundTo( player.character.x + xDelta, 4 );
 			if ( yDelta !== 0 && canPlace( player.character, 0, yDelta ) ) player.character.y = roundTo( player.character.y + yDelta, 4 );
 
+			if ( level.won( player ) ) point( player );
+
 		}
 
-} );
+}
+
+function point( player ) {
+
+	app.updates.splice( app.updates.indexOf( tick ), 1 );
+
+	for ( let i = 0; i < app.players.length; i ++ )
+		app.players.food = [];
+
+	++ player.points;
+	++ app.state.levelIndex;
+
+	if ( app.state.levelIndex === levels.length ) app.units.forEach( u => ( u.x = u.x, u.y = u.y, console.log( "Game Over" ) ) );
+	else start();
+
+}
 
 /////////////////////////////////////////////////
-///// Game Events
+///// Server Events
 /////////////////////////////////////////////////
+
+function newPlayer( player ) {
+
+	player.food = [];
+	if ( ! player.points ) player.points = 0;
+
+}
 
 app.addEventListener( "playerJoin", ( { player } ) => {
+
+	newPlayer( player );
 
 } );
 
 app.addEventListener( "state", ( { state } ) => {
+
+	for ( let i = 0; i < state.players.length; i ++ )
+		newPlayer( state.players[ i ] );
 
 	start();
 
@@ -228,13 +270,89 @@ const levels = [
 			[ { x: - 4.5, y: 0.5 }, { x: 4.5, y: 0.5 } ],
 			[ { x: 4.5, y: 1.5 }, { x: - 4.5, y: 1.5 } ]
 		],
-		won: unit => unit.y > 6
+		won: player => player.character.x > 6
+	},
+
+	// Level 2
+	{
+		spawn: { x: - 7.5, y: 0 },
+		floormap: [
+			"████████████████████",
+			"████            ████",
+			"████            ████",
+			"█░░░            ░░░█",
+			"█░░░            ░░░█",
+			"████            ████",
+			"████            ████",
+			"████████████████████"
+		],
+		patrols: [
+			[ { x: - 5.5, y: - 2.5 }, { x: - 5.5, y: 2.5 } ],
+			[ { x: - 4.5, y: 2.5 }, { x: - 4.5, y: - 2.5 } ],
+			[ { x: - 3.5, y: - 2.5 }, { x: - 3.5, y: 2.5 } ],
+			[ { x: - 2.5, y: 2.5 }, { x: - 2.5, y: - 2.5 } ],
+			[ { x: - 1.5, y: - 2.5 }, { x: - 1.5, y: 2.5 } ],
+			[ { x: - 0.5, y: 2.5 }, { x: - 0.5, y: - 2.5 } ],
+			[ { x: 0.5, y: - 2.5 }, { x: 0.5, y: 2.5 } ],
+			[ { x: 1.5, y: 2.5 }, { x: 1.5, y: - 2.5 } ],
+			[ { x: 2.5, y: - 2.5 }, { x: 2.5, y: 2.5 } ],
+			[ { x: 3.5, y: 2.5 }, { x: 3.5, y: - 2.5 } ],
+			[ { x: 4.5, y: - 2.5 }, { x: 4.5, y: 2.5 } ],
+			[ { x: 5.5, y: 2.5 }, { x: 5.5, y: - 2.5 } ]
+		],
+		food: [
+			{ x: 0, y: 0 }
+		],
+		won: player => player.character.x > 6 && player.food.filter( food => food ).length >= 1
 	}
 
 ];
 
-for ( let i = 0; i < levels.length; i ++ )
-	Object.defineProperties( levels[ i ], {
-		height: { get: () => levels[ i ]._height || ( levels[ i ]._height = levels[ i ].floormap.length ) },
-		width: { get: () => levels[ i ]._width || ( levels[ i ]._width = levels[ i ].floormap.reduce( ( width, row ) => Math.max( width, row.length ), - Infinity ) ) }
-	} );
+for ( let i = 0; i < levels.length; i ++ ) {
+
+	levels[ i ].height = levels[ i ].floormap.length;
+	levels[ i ].width = levels[ i ].floormap.reduce( ( width, row ) => Math.max( width, row.length ), - Infinity );
+
+}
+/////////////////////////////////////////////////
+///// Misc
+/////////////////////////////////////////////////
+
+function tileToWorld( x, y ) {
+
+	return {
+		x: x - Math.floor( levels[ app.state.levelIndex ].width / 2 ) + ( levels[ app.state.levelIndex ].width % 2 === 0 ? 0.5 : 0 ),
+		y: - y + Math.floor( levels[ app.state.levelIndex ].height / 2 ) - ( levels[ app.state.levelIndex ].height % 2 === 0 ? 0.5 : 0 )
+	};
+
+}
+
+function worldToTile( x, y ) {
+
+	return {
+		x: x + Math.floor( levels[ app.state.levelIndex ].width / 2 ) - ( levels[ app.state.levelIndex ].width % 2 === 0 ? 0.5 : 0 ),
+		y: - ( y - Math.floor( levels[ app.state.levelIndex ].height / 2 ) + ( levels[ app.state.levelIndex ].height % 2 === 0 ? 0.5 : 0 ) )
+	};
+
+}
+
+function roundTo( value, decimals = 0 ) {
+
+	decimals = Math.pow( 10, decimals );
+
+	return Math.round( value * decimals ) / decimals;
+
+}
+
+function canPlace( character, xDelta = 0, yDelta = 0 ) {
+
+	const corners = [
+		worldToTile( roundTo( character.x + xDelta + SIZE / 2, 4 ), roundTo( character.y + yDelta + SIZE / 2, 4 ) ),
+		worldToTile( roundTo( character.x + xDelta + SIZE / 2, 4 ), roundTo( character.y + yDelta - SIZE / 2, 4 ) ),
+		worldToTile( roundTo( character.x + xDelta - SIZE / 2, 4 ), roundTo( character.y + yDelta + SIZE / 2, 4 ) ),
+		worldToTile( roundTo( character.x + xDelta - SIZE / 2, 4 ), roundTo( character.y + yDelta - SIZE / 2, 4 ) )
+	];
+
+	return ! corners.some( corner => levels[ app.state.levelIndex ].floormap[ Math.round( corner.y ) ][ Math.round( corner.x ) ] === "█" );
+
+}

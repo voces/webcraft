@@ -316,6 +316,8 @@ class App extends EventDispatcher {
 
 	attachDooodadEvents( doodad ) {
 
+		doodad.addEventListener( "subevents", ( { subevents } ) => this.subevents.push( ...subevents ) );
+
 		if ( doodad.mesh ) this.scene.add( doodad.mesh );
 		else doodad.addEventListener( "meshLoaded", () => this.scene.add( doodad.mesh ) );
 
@@ -324,6 +326,9 @@ class App extends EventDispatcher {
 		doodad.addEventListener( "dirty", () => ( this.updates.add( doodad ), this.renders.add( doodad ) ) );
 		doodad.addEventListener( "clean", () => ( this.updates.remove( doodad ), this.renders.remove( doodad ) ) );
 		doodad.addEventListener( "remove", () => {
+
+			this.updates.remove( doodad );
+			this.renders.remove( doodad );
 
 			if ( doodad instanceof Unit ) this.units.remove( doodad );
 			else this.doodads.remove( doodad );
@@ -509,7 +514,7 @@ class App extends EventDispatcher {
 
 				this.time = subevents[ index ].time;
 
-				if ( subevents[ index ].callback ) subevents[ index ].callback( subevents[ index ].time );
+				if ( subevents[ index ].callback ) subevents[ index ].callback( subevents[ index ] );
 				else {
 
 					const type = subevents[ index ].type || subevents[ index ][ 0 ] && subevents[ index ][ 0 ].type || "subevent";
