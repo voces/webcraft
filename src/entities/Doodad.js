@@ -10,6 +10,8 @@ class Doodad extends Handle {
 
 		if ( props.x === undefined ) props.x = 0;
 		if ( props.y === undefined ) props.y = 0;
+		if ( props.z === undefined ) props.z = 0;
+		if ( props.facing === undefined ) props.facing = 0;
 		if ( props.radius === undefined ) props.radius = 0;
 		if ( props.min === undefined ) {
 
@@ -200,6 +202,7 @@ class Doodad extends Handle {
 		return Object.assign( super.toState(), {
 			x: this._props.x || this.x,
 			y: this._props.y || this.y,
+			z: this._props.z || this.z,
 			facing: this._props.facing || this.facing
 		} );
 
