@@ -71,20 +71,11 @@ class Player extends Handle {
 
 	toState() {
 
-		return Object.assign( this.toJSON(), {
+		return Object.assign( super.toState(), {
 			_constructor: this.constructor.name,
 			color: Player.colors.indexOf( this.color ),
 			status: this.status
 		} );
-
-	}
-
-	toJSON() {
-
-		return {
-			_key: this.key,
-			_collection: "players"
-		};
 
 	}
 

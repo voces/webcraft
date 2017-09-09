@@ -46,13 +46,25 @@ class Handle extends EventDispatcher {
 
 	}
 
+	_state() {
+
+		const obj = {};
+
+		for ( let i = 0; i < this.state.length; i ++ )
+			obj[ this.state[ i ] ] = this._props[ this.state[ i ] ] || this[ this.state[ i ] ];
+
+		return obj;
+
+	}
+
 	toState() {
 
 		return Object.assign( {
 			_key: this.key,
 			_collection: this.entityType.name.toLowerCase() + "s",
 			_constructor: this.constructor.name
-		} );
+
+		}, this.state ? typeof this.state === "function" ? this.state() : this._state() : null );
 
 	}
 
@@ -60,7 +72,8 @@ class Handle extends EventDispatcher {
 
 		return {
 			_key: this.key,
-			_collection: this.entityType.name.toLowerCase() + "s"
+			_collection: this.entityType.name.toLowerCase() + "s",
+			_constructor: this.constructor.name
 		};
 
 	}

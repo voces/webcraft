@@ -47,9 +47,6 @@ class GenericServer extends EventDispatcher {
 
 		} else if ( typeof data !== "string" ) data = data.toString();
 
-		// if ( this.clients.length )
-		// 	console.log( "SEND", data );
-
 		for ( let i = 0; i < this.clients.length; i ++ ) {
 
 			try {

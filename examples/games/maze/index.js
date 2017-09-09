@@ -51,7 +51,7 @@ const app = new WebCraft.App( {
 
 			if ( [ "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].indexOf( e.key ) === - 1 ) return;
 
-			app.network.send( { type: "keydown", "direction": e.key } );
+			app.network.send( { type: "keydown", direction: e.key } );
 
 		},
 
@@ -62,7 +62,7 @@ const app = new WebCraft.App( {
 
 			if ( [ "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].indexOf( e.key ) === - 1 ) return;
 
-			app.network.send( { type: "keyup", "direction": e.key } );
+			app.network.send( { type: "keyup", direction: e.key } );
 
 		}
 
@@ -70,7 +70,7 @@ const app = new WebCraft.App( {
 
 } );
 
-app.state = { players: app.players, units: app.units, levelIndex: 0 };
+app.state = { players: app.players, units: app.units, doodads: app.doodads, levelIndex: 0 };
 
 /////////////////////////////////////////////////
 ///// Game Logic
@@ -81,6 +81,7 @@ function spawn( player ) {
 	const char = new app.Character( { owner: player, x: levels[ app.state.levelIndex ].spawn.x, y: levels[ app.state.levelIndex ].spawn.y, z: 1 } );
 	player.character = char;
 	char.onNear( app.units, SIZE, onNear );
+	char.addEventListener( "death", onDeath );
 
 }
 
@@ -131,9 +132,25 @@ function start() {
 		for ( let i = 0; i < level.food.length; i ++ )
 			Object.assign( new app.Food( Object.assign( { z: 1 }, level.food[ i ] ) ), { food: i } );
 
-	app.camera.position.z = Math.max( level.width / 2 + 10, level.height );
+	if ( WebCraft.isBrowser ) app.camera.position.z = Math.max( level.width / 2 + 10, level.height );
 
 	app.updates.push( tick );
+
+}
+
+function onDeath() {
+
+	const player = this.owner;
+
+	for ( let i = 0; i < player.food.length; i ++ )
+		if ( player.food )
+			Object.assign( new app.Food( Object.assign( { z: 1 }, levels[ app.state.levelIndex ].food[ i ] ) ), { food: i } );
+
+	player.food = [];
+
+	this.remove();
+
+	spawn( player );
 
 }
 
@@ -143,19 +160,8 @@ function onNear( e ) {
 	const player = character.owner;
 
 	for ( let i = 0; i < e.objects.length; i ++ )
-		if ( e.objects[ i ] instanceof app.Enemy ) {
-
-			character.remove();
-
-			for ( let i = 0; i < player.food.length; i ++ )
-				if ( player.food )
-					Object.assign( new app.Food( Object.assign( { z: 1 }, levels[ app.state.levelIndex ].food[ i ] ) ), { food: i } );
-
-			player.food = [];
-
-			spawn( player );
-
-		} else if ( e.objects[ i ] instanceof app.Food ) {
+		if ( e.objects[ i ] instanceof app.Enemy ) character.kill();
+		else if ( e.objects[ i ] instanceof app.Food ) {
 
 			player.food[ e.objects[ i ].food ] = true;
 			e.objects[ i ].remove();
@@ -168,6 +174,7 @@ let lastTime;
 function tick( time ) {
 
 	const level = levels[ app.state.levelIndex ];
+	if ( ! level ) return;
 
 	const delta = ( time - lastTime ) / 1000;
 	lastTime = time;
@@ -180,7 +187,7 @@ function tick( time ) {
 			const xDelta = ( ( player.ArrowRight ? 1 : 0 ) - ( player.ArrowLeft ? 1 : 0 ) ) * player.character.speed * delta;
 			const yDelta = ( ( player.ArrowUp ? 1 : 0 ) - ( player.ArrowDown ? 1 : 0 ) ) * player.character.speed * delta;
 
-			if ( ! xDelta && ! yDelta ) return;
+			if ( ! xDelta && ! yDelta ) continue;
 
 			if ( xDelta !== 0 && canPlace( player.character, xDelta, 0 ) ) player.character.x = roundTo( player.character.x + xDelta, 4 );
 			if ( yDelta !== 0 && canPlace( player.character, 0, yDelta ) ) player.character.y = roundTo( player.character.y + yDelta, 4 );
@@ -201,8 +208,10 @@ function point( player ) {
 	++ player.points;
 	++ app.state.levelIndex;
 
-	if ( app.state.levelIndex === levels.length ) app.units.forEach( u => ( u.x = u.x, u.y = u.y, console.log( "Game Over" ) ) );
-	else start();
+	if ( app.state.levelIndex !== levels.length ) return start();
+
+	app.units.forEach( u => ( u.x = u.x, u.y = u.y ) );
+	console.log( "Game Over" );
 
 }
 
@@ -213,7 +222,16 @@ function point( player ) {
 function newPlayer( player ) {
 
 	player.food = [];
+	player.state = [ "character" ];
 	if ( ! player.points ) player.points = 0;
+
+	if ( app.players.length === 1 ) start();
+	else {
+
+		if ( player.character === undefined ) spawn( player );
+		if ( player === app.localPlayer ) app.updates.push( tick );
+
+	}
 
 }
 
@@ -228,11 +246,16 @@ app.addEventListener( "state", ( { state } ) => {
 	for ( let i = 0; i < state.players.length; i ++ )
 		newPlayer( state.players[ i ] );
 
-	start();
-
 } );
 
 app.addEventListener( "playerLeave", ( { player } ) => {
+
+	if ( player.character ) {
+
+		player.character.remove();
+		delete player.character;
+
+	}
 
 	player.remove();
 

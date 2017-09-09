@@ -11,6 +11,8 @@ const reservedEventTypes = [ "playerJoin", "playerLeave", "sync", "state" ];
 function clientJoinHandler( app, e ) {
 
 	const player = new Player( Object.assign( { key: "p" + e.client.id }, e.client ) );
+	player.addEventListener( "remove", () => app.players.remove( player ) );
+
 	const playerState = player.toState();
 
 	const seed = app.initialSeed + player.id;

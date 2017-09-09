@@ -4,6 +4,7 @@ import Handle from "../core/Handle.js";
 import { diff } from "../math/set.js";
 
 import linearTween from "../tweens/linearTween.js";
+import stepTween from "../tweens/stepTween.js";
 
 class Unit extends Doodad {
 
@@ -147,14 +148,7 @@ class Unit extends Doodad {
 
 	}
 
-	traverseTo( point, keepListeners ) {
-
-		if ( ! keepListeners ) {
-
-			if ( this._patrolListener ) this.removeEventListener( "traverseFinish", this._patrolListener );
-			if ( this._traverseListener ) this.removeEventListener( "traverseToFinish", this._traverseListener );
-
-		}
+	traverseTo( point ) {
 
 		const myLinearTween = this.app ? this.app.linearTween : linearTween;
 
@@ -163,61 +157,44 @@ class Unit extends Doodad {
 		if ( "x" in point ) this.x = myLinearTween( { start: this.x, end: point.x, rate: Math.cos( angle ) * this.speed } );
 		if ( "y" in point ) this.y = myLinearTween( { start: this.y, end: point.y, rate: Math.sin( angle ) * this.speed } );
 
-		const checker = () => {
-
-			if ( this.x !== point.x || this.y !== point.y ) return;
-
-			this.dispatchEvent( "traverseToFinish" );
-
-			-- this.dirty;
-			this.updates.splice( this.updates.indexOf( checker ), 1 );
-
-		};
-
-		this.updates.push( checker );
-		++ this.dirty;
-
 	}
 
-	traverse( points, keepListeners ) {
+	traverse( points, patrol = false ) {
 
-		// Always erase self
-		if ( this._traverseListener ) this.removeEventListener( "traverseToFinish", this._traverseListener );
+		const myLinearTween = this.app ? this.app.linearTween : linearTween;
+		const myStepTween = this.app ? this.app.stepTween : stepTween;
 
-		if ( ! keepListeners && this._patrolListener )
-			this.removeEventListener( "traverseFinish", this._patrolListener );
+		const start = this.x === points[ 0 ].x && this.y === points[ 0 ].y ? 1 : 0;
 
-		let index = 0;
+		points[ - 1 ] = this;
+		if ( patrol && ( points[ 0 ].x !== points[ points.length - 1 ].x || points[ 0 ].y !== points[ points.length - 1 ].y ) )
+			points.push( points[ start - 1 ] );
 
-		this._traverseListener = () => {
+		const xTweens = [];
+		const yTweens = [];
+		let startTime = this.app ? this.app.time : Date.now();
+		for ( let i = start; i < points.length; i ++ ) {
 
-			if ( index ++ === points.length ) {
+			const angle = Math.atan2( points[ i ].y - points[ i - 1 ].y, points[ i ].x - points[ i - 1 ].x );
+			const xTween = myLinearTween( { start: points[ i - 1 ].x, end: points[ i ].x, rate: Math.cos( angle ) * this.speed, startTime } );
+			const yTween = myLinearTween( { start: points[ i - 1 ].y, end: points[ i ].y, rate: Math.sin( angle ) * this.speed, startTime } );
 
-				this.removeEventListener( "traverseToFinish", this._traverseListener );
-				this.dispatchEvent( "traverseFinish" );
+			startTime += ( xTween.duration || yTween.duration ) * 1000;
 
-				return;
+			if ( xTween.duration ) xTweens.push( xTween );
+			if ( yTween.duration ) yTweens.push( yTween );
 
-			}
+		}
 
-			this.traverseTo( points[ index ++ ], true );
+		if ( xTweens.length ) this.x = myStepTween( { steps: xTweens, loop: patrol } );
+		else this.x = this.x;
 
-		};
-
-		this.addEventListener( "traverseToFinish", this._traverseListener );
-
-		this.traverseTo( points[ index ], true );
+		if ( yTweens.length ) this.y = myStepTween( { steps: yTweens, loop: patrol } );
+		else this.y = this.y;
 
 	}
 
 	patrol( points ) {
-
-		// Always erase self
-		if ( this._patrolListener ) this.removeEventListener( "traverseFinish", this._patrolListener );
-
-		this._patrolListener = () => this.traverse( points, true );
-
-		this.addEventListener( "traverseFinish", this._patrolListener );
 
 		this.traverse( points, true );
 
