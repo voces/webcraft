@@ -12,3 +12,6 @@ The ideal is for most games to have a single codebase that will handle both the 
 
 [Tron](https://github.com/voces/WebCraft/tree/master/examples/games/tron)  
 [<img src="https://user-images.githubusercontent.com/4513209/28998923-92eaed28-79eb-11e7-9825-3b1f5c2e561a.png" width="256">](https://github.com/voces/WebCraft/tree/master/examples/games/tron)
+
+[Maze](https://github.com/voces/WebCraft/tree/maze/examples/games/maze)  
+[<img src="https://user-images.githubusercontent.com/4513209/30244593-ec917a36-9575-11e7-9544-ced972caf8b3.png" width="256">](https://github.com/voces/WebCraft/tree/maze/examples/games/maze)
