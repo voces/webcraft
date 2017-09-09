@@ -1,7 +1,7 @@
-# Tron
+# Maze
 
-Second example project using WebCraft.
+Third example project using WebCraft.
 
-A basic Tron game with networking. Allows up to 8 players to play against each other. Other players watch.
+A maze modeled after the World's Hardest Game. Allows multiple players to play, similar to WC3 mazes.
 
-![tron](https://user-images.githubusercontent.com/4513209/28998923-92eaed28-79eb-11e7-9825-3b1f5c2e561a.png)
+![maze](https://user-images.githubusercontent.com/4513209/30244593-ec917a36-9575-11e7-9544-ced972caf8b3.png)
