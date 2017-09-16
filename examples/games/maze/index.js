@@ -12,6 +12,7 @@
 
 		THREE = require( "three" );
 		WebCraft = require( "../../../build/webcraft.js" );
+		Multiboard = require( "../../shared/ui/Multiboard.js" );
 
 	}
 
@@ -72,6 +73,8 @@ const app = new WebCraft.App( {
 
 app.state = { players: app.players, units: app.units, doodads: app.doodads, levelIndex: 0 };
 
+const multiboard = new Multiboard( { columns: 2, schema: [ "color.name", "points" ], colors: app.Player.colors.map( color => color.hex ) } );
+
 /////////////////////////////////////////////////
 ///// Game Logic
 /////////////////////////////////////////////////
@@ -95,11 +98,16 @@ function cleanup() {
 	for ( let i = 0; i < doodads.length; i ++ )
 		doodads[ i ].remove();
 
+	for ( let i = 0; i < app.players.length; i ++ )
+		app.players[ i ].food = [];
+
 }
 
 function start() {
 
 	cleanup();
+
+	app.state.levelIndex = Math.floor( app.random() * levels.length );
 
 	const level = levels[ app.state.levelIndex ];
 
@@ -143,7 +151,7 @@ function onDeath() {
 	const player = this.owner;
 
 	for ( let i = 0; i < player.food.length; i ++ )
-		if ( player.food )
+		if ( player.food[ i ] )
 			Object.assign( new app.Food( Object.assign( { z: 1 }, levels[ app.state.levelIndex ].food[ i ] ) ), { food: i } );
 
 	player.food = [];
@@ -202,16 +210,10 @@ function point( player ) {
 
 	app.updates.splice( app.updates.indexOf( tick ), 1 );
 
-	for ( let i = 0; i < app.players.length; i ++ )
-		app.players.food = [];
-
 	++ player.points;
-	++ app.state.levelIndex;
+	multiboard.update( app.players );
 
-	if ( app.state.levelIndex !== levels.length ) return start();
-
-	app.units.forEach( u => ( u.x = u.x, u.y = u.y ) );
-	console.log( "Game Over" );
+	start();
 
 }
 
@@ -222,7 +224,7 @@ function point( player ) {
 function newPlayer( player ) {
 
 	player.food = [];
-	player.state = [ "character" ];
+	player.state = [ "character", "points" ];
 	if ( ! player.points ) player.points = 0;
 
 	if ( app.players.length === 1 ) start();
@@ -232,6 +234,9 @@ function newPlayer( player ) {
 		if ( player === app.localPlayer ) app.updates.push( tick );
 
 	}
+
+	++ multiboard.rows;
+	multiboard.update( app.players );
 
 }
 
@@ -258,6 +263,9 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 	}
 
 	player.remove();
+
+	-- multiboard.rows;
+	multiboard.update( app.players );
 
 } );
 
@@ -337,6 +345,7 @@ for ( let i = 0; i < levels.length; i ++ ) {
 	levels[ i ].width = levels[ i ].floormap.reduce( ( width, row ) => Math.max( width, row.length ), - Infinity );
 
 }
+
 /////////////////////////////////////////////////
 ///// Misc
 /////////////////////////////////////////////////
