@@ -41,34 +41,7 @@ const app = new WebCraft.App( {
 			{ name: "Food", model: { path: "../../models/Sphere.js", color: "#FFFF00", scale: 0.5 } },
 			{ name: "Enemy", model: { path: "../../models/Sphere.js", color: "#0000FF", scale: 0.5 }, speed: 7 }
 		]
-	},
-
-	intentSystem: {
-
-		keydown: e => {
-
-			if ( keyboard[ e.key ] ) return;
-			keyboard[ e.key ] = true;
-
-			if ( [ "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].indexOf( e.key ) === - 1 ) return;
-
-			app.network.send( { type: "keydown", direction: e.key } );
-
-		},
-
-		keyup: e => {
-
-			if ( ! keyboard[ e.key ] ) return;
-			keyboard[ e.key ] = false;
-
-			if ( [ "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].indexOf( e.key ) === - 1 ) return;
-
-			app.network.send( { type: "keyup", direction: e.key } );
-
-		}
-
 	}
-
 } );
 
 app.state = { players: app.players, units: app.units, doodads: app.doodads, levelIndex: 0 };
@@ -275,6 +248,30 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 
 app.addEventListener( "keydown", ( { direction, player } ) => player[ direction ] = true );
 app.addEventListener( "keyup", ( { direction, player } ) => player[ direction ] = false );
+
+new WebCraft.presets.intents.Chat( app );
+
+WebCraft.isBrowser && window.addEventListener( "keydown", e => {
+
+	if ( keyboard[ e.key ] ) return;
+	keyboard[ e.key ] = true;
+
+	if ( [ "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].indexOf( e.key ) === - 1 ) return;
+
+	app.network.send( { type: "keydown", direction: e.key } );
+
+} );
+
+WebCraft.isBrowser && window.addEventListener( "keyup", e => {
+
+	if ( ! keyboard[ e.key ] ) return;
+	keyboard[ e.key ] = false;
+
+	if ( [ "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ].indexOf( e.key ) === - 1 ) return;
+
+	app.network.send( { type: "keyup", direction: e.key } );
+
+} );
 
 /////////////////////////////////////////////////
 ///// Levels

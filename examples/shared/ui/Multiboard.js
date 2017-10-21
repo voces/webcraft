@@ -47,6 +47,8 @@ class Multiboard {
 
 		if ( ! this.schema ) throw "Leaderboard must have a schema to use update.";
 
+		if ( ! arr.length ) return;
+
 		if ( arr.length !== this._data.length )
 			this.rows = arr.length;
 
