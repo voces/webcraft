@@ -79,19 +79,12 @@ class App extends EventDispatcher {
 
 	}
 
-	initIntentSystem( props ) {
-
-		this.intentSystem = props && props.constructor !== Object ? props : {};
-
-	}
-
 	initScene( props ) {
 
 		this.scene = props && props instanceof THREE.Scene ?
 			props :
 			new THREE.Scene();
 
-		// this.globalLight = new THREE.HemisphereLight( 0xffffbb, 0x080820 );
 		this.globalLight = new THREE.HemisphereLight( 0xffffbb, 0x080820 );
 		this.scene.add( this.globalLight );
 
@@ -105,14 +98,10 @@ class App extends EventDispatcher {
 
 	initBrowserComponents( props ) {
 
-		this.intentSystem = Object.assign( {}, props.intentSystem );
-
 		this.initCamera( props.camera );
 		this.renderer = props.renderer && props.renderer.constructor !== Object ? props.renderer : gk.renderer( props.renderer );
 
 		window.addEventListener( "resize", () => this.camera.resize() );
-		window.addEventListener( "keydown", e => this.intentSystem.keydown && this.intentSystem.keydown( e ) );
-		window.addEventListener( "keyup", e => this.intentSystem.keyup && this.intentSystem.keyup( e ) );
 
 	}
 
@@ -122,7 +111,6 @@ class App extends EventDispatcher {
 			props :
 			new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10000 );
 
-		// this.camera.resize = () => this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.resize = () => {
 
 			this.camera.aspect = window.innerWidth / window.innerHeight;
