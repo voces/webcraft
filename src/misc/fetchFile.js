@@ -1,4 +1,7 @@
 
+// TODO: nuke this entire approach and switch to true ES6 modules once dynamic imports are made available in Chrome
+// https://tc39.github.io/proposal-dynamic-import/
+
 import { isBrowser } from "./env.js";
 
 let fetchFile;
