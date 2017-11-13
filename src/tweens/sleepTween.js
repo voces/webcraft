@@ -12,7 +12,7 @@ function linearTween( { duration, value, start, end, startTime = Date.now() } = 
 	Object.assign( func, {
 		duration, value, start, end, startTime,
 		seek: () => {},
-		toState: () => ( { _function: "linearTween", value, start, end, duration: stringify( duration ), startTime: func.startTime } )
+		toState: () => ( { _function: "sleepTween", value, start, end, duration: stringify( duration ), startTime: func.startTime } )
 	} );
 
 	return func;
