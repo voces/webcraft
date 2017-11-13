@@ -1,5 +1,5 @@
 
-const isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )();
+var isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )();
 
 class Multiboard {
 
@@ -79,7 +79,7 @@ class Multiboard {
 		if ( ! this._container ) {
 
 			const e = document.createElement( "div" );
-			e.classList.add( "wc", "ui-multiboard", "container" );
+			e.classList.add( "wc", "ui", "multiboard" );
 
 			this._container = e;
 
@@ -131,8 +131,8 @@ if ( ! isBrowser ) module.exports = Multiboard;
 else {
 
 	const style = document.createElement( "style" );
-	style.innerText = `
-		.wc.ui-multiboard.container {
+	style.textContent = `
+		.wc.ui.multiboard {
 			font-size: 1.5em;
 			color: white;
 			position: absolute;
@@ -144,11 +144,11 @@ else {
 			box-shadow: 0 0 0.25em black;
 			z-index: 1;
 		}
-		.wc.ui-multiboard.container .row {
+		.wc.ui.multiboard .row {
 			display: flex;
 			justify-content: space-between;
 		}
-		.wc.ui-multiboard.container .row :not(:empty) { padding: 0 0.5em; }
+		.wc.ui.multiboard .row :not(:empty) { padding: 0 0.5em; }
 	`;
 
 	document.head.appendChild( style );

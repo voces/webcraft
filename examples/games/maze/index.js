@@ -3,6 +3,8 @@
 ///// Overhead
 ////////////////////////////////////////////////
 
+/* globals Multiboard Chat */
+
 {
 
 	const isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )();
@@ -13,6 +15,7 @@
 		THREE = require( "three" );
 		WebCraft = require( "../../../build/webcraft.js" );
 		Multiboard = require( "../../shared/ui/Multiboard.js" );
+		Chat = require( "../../shared/ui/Chat.js" );
 
 	}
 
@@ -46,7 +49,13 @@ const app = new WebCraft.App( {
 
 app.state = { players: app.players, units: app.units, doodads: app.doodads, levelIndex: 0 };
 
-const multiboard = new Multiboard( { columns: 2, schema: [ "color.name", "points" ], colors: app.Player.colors.map( color => color.hex ) } );
+const multiboard = new Multiboard( {
+	columns: 2,
+	schema: [ "color.name", "points" ],
+	colors: app.Player.colors.map( color => color.hex )
+} );
+
+new Chat( app );
 
 /////////////////////////////////////////////////
 ///// Game Logic
@@ -54,7 +63,14 @@ const multiboard = new Multiboard( { columns: 2, schema: [ "color.name", "points
 
 function spawn( player ) {
 
-	const char = new app.Character( { owner: player, x: levels[ app.state.levelIndex ].spawn.x, y: levels[ app.state.levelIndex ].spawn.y, z: 1 } );
+	const level = levels[ app.state.levelIndex ];
+	const xOffset = level.origin ? level.origin.x || 0 : 0;
+	const yOffset = level.origin ? level.origin.y || 0 : 0;
+	const offset = p => ( { x: p.x + xOffset, y: p.y + yOffset } );
+
+	console.log( offset( { x: 0, y: 0 } ), level.spawn, offset( level.spawn ) );
+
+	const char = new app.Character( { owner: player, z: 1 }, offset( level.spawn ) );
 	player.character = char;
 	char.onNear( app.units, SIZE, onNear );
 	char.addEventListener( "death", onDeath );
@@ -80,9 +96,16 @@ function start() {
 
 	cleanup();
 
-	app.state.levelIndex = Math.floor( app.random() * levels.length );
+	app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
+	// app.state.levelIndex = Math.floor( app.random() * levels.length );
 
 	const level = levels[ app.state.levelIndex ];
+	const xOffset = level.origin ? level.origin.x || 0 : 0;
+	const yOffset = level.origin ? level.origin.y || 0 : 0;
+	const offset = p => ( { x: p.x + xOffset, y: p.y + yOffset } );
+
+	const base = {};
+	if ( level.speed ) base.speed = level.speed;
 
 	for ( let i = 0; i < app.players.length; i ++ )
 		spawn( app.players[ i ] );
@@ -104,14 +127,14 @@ function start() {
 	if ( level.patrols )
 		for ( let i = 0; i < level.patrols.length; i ++ ) {
 
-			const unit = new app.Enemy( Object.assign( { z: 1 }, level.patrols[ i ][ 0 ] ) );
-			unit.patrol( level.patrols[ i ] );
+			const unit = new app.Enemy( Object.assign( { z: 1 }, base, offset( level.patrols[ i ][ 0 ] ) ) );
+			unit.patrol( level.patrols[ i ].map( offset ) );
 
 		}
 
 	if ( level.food )
 		for ( let i = 0; i < level.food.length; i ++ )
-			Object.assign( new app.Food( Object.assign( { z: 1 }, level.food[ i ] ) ), { food: i } );
+			Object.assign( new app.Food( Object.assign( { z: 1 }, level.food[ i ], offset( level.food[ i ] ) ) ), { food: i } );
 
 	if ( WebCraft.isBrowser ) app.camera.position.z = Math.max( level.width / 2 + 10, level.height );
 
@@ -240,6 +263,9 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 	-- multiboard.rows;
 	multiboard.update( app.players );
 
+	if ( app.players.length === 0 )
+		cleanup();
+
 } );
 
 /////////////////////////////////////////////////
@@ -248,8 +274,6 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 
 app.addEventListener( "keydown", ( { direction, player } ) => player[ direction ] = true );
 app.addEventListener( "keyup", ( { direction, player } ) => player[ direction ] = false );
-
-new WebCraft.presets.intents.Chat( app );
 
 WebCraft.isBrowser && window.addEventListener( "keydown", e => {
 
@@ -314,6 +338,7 @@ const levels = [
 			"████            ████",
 			"████████████████████"
 		],
+		speed: 5,
 		patrols: [
 			[ { x: - 5.5, y: - 2.5 }, { x: - 5.5, y: 2.5 } ],
 			[ { x: - 4.5, y: 2.5 }, { x: - 4.5, y: - 2.5 } ],
@@ -328,13 +353,78 @@ const levels = [
 			[ { x: 4.5, y: - 2.5 }, { x: 4.5, y: 2.5 } ],
 			[ { x: 5.5, y: 2.5 }, { x: 5.5, y: - 2.5 } ]
 		],
-		food: [
-			{ x: 0, y: 0 }
-		],
+		food: [ { x: 0, y: 0 } ],
 		won: player => player.character.x > 6 && player.food.filter( food => food ).length >= 1
+	},
+
+	// Level 3
+	{
+		spawn: { x: 0, y: - 0.5 },
+		floormap: [
+			"██████",
+			"█ ████",
+			"█    █",
+			"█ ░░ █",
+			"█ ░░ █",
+			"█    █",
+			"██████"
+		],
+		speed: 4,
+		patrols: [
+			[ { x: - 1.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 } ],
+			[ { x: 1.5, y: 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 } ],
+			[ { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 } ],
+			[ { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 } ],
+			[ { x: - 0.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 } ],
+			[ { x: 0.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 } ],
+			[ { x: 1.5, y: 0 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 } ],
+			[ { x: 1.5, y: - 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 } ],
+			[ { x: 0.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 } ],
+			[ { x: - 0.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 } ]
+		],
+		food: [
+			{ x: 0, y: 3 },
+			{ x: 3, y: 0 },
+			{ x: 0, y: - 3 }
+		],
+		winArea: new app.Rect( { x: - 0.5, y: 0.5 }, { x: 0.5, y: - 1.5 } ),
+		won: player => player.food.filter( food => food ).length >= 1 && levels[ app.state.levelIndex ].winArea.contains( player.character )
+	},
+
+	// Level 4
+	{
+		origin: { x: 1.5, y: - 1.5 },
+		spawn: { x: 0, y: 0 },
+		floormap: [
+			"█████████████",
+			"███████░░████",
+			"███████░░████",
+			"███████░░████",
+			"██████    ███",
+			"█████      ██",
+			"████        █",
+			"█░░░        █",
+			"█░░░        █",
+			"████        █",
+			"█████      ██",
+			"██████    ███",
+			"█████████████"
+		],
+		speed: 4,
+		patrols: [
+			[ { x: 0, y: 1 } ],
+			[ { x: 0, y: - 1 } ],
+			[ { x: 1, y: 0 } ],
+			[ { x: - 1, y: 0 } ]
+		],
+		food: [ { x: - 1.5, y: 2 } ],
+		winArea: new app.Rect( { x: - 0.5, y: 0.5 }, { x: 0.5, y: - 1.5 } ),
+		won: player => player.food.filter( food => food ).length >= 1 && levels[ app.state.levelIndex ].winArea.contains( player.character )
 	}
 
 ];
+
+app.state.levelIndex = levels.length - 2;
 
 for ( let i = 0; i < levels.length; i ++ ) {
 

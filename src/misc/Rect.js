@@ -14,7 +14,7 @@ class Rect extends EventDispatcher {
 		this.id = rectId ++;
 
 		// Passed as x1, y1, x2, y2
-		if ( typeof p1 === "nunber" ) {
+		if ( typeof p1 === "number" ) {
 
 			this.minX = Math.min( p1, x2 );
 			this.maxX = Math.max( p1, x2 );
