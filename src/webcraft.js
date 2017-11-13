@@ -17,11 +17,7 @@ import fetchFile from "./misc/fetchFile.js";
 import Rect from "./misc/Rect.js";
 import stringify from "./misc/stringify.js";
 
-import * as intents from "./presets/intents/index.js";
-
-const presets = { intents };
-
-export { App, Collection, EventDispatcher, Handle, Player, Doodad, models, Terrain, Unit, fetchFile, Rect, stringify, presets };
+export { App, Collection, EventDispatcher, Handle, Player, Doodad, models, Terrain, Unit, fetchFile, Rect, stringify };
 export * from "./math/geometry.js";
 export * from "./misc/env.js";
 export * from "./tweens/tweens.js";

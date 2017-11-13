@@ -4,6 +4,7 @@ import Handle from "../core/Handle.js";
 import { diff } from "../math/set.js";
 
 import linearTween from "../tweens/linearTween.js";
+import sleepTween from "../tweens/sleepTween.js";
 import stepTween from "../tweens/stepTween.js";
 
 class Unit extends Doodad {
@@ -162,6 +163,7 @@ class Unit extends Doodad {
 	traverse( points, patrol = false ) {
 
 		const myLinearTween = this.app ? this.app.linearTween : linearTween;
+		const mySleepTween = this.app ? this.app.sleepTween : sleepTween;
 		const myStepTween = this.app ? this.app.stepTween : stepTween;
 
 		const start = this.x === points[ 0 ].x && this.y === points[ 0 ].y ? 1 : 0;
@@ -179,10 +181,13 @@ class Unit extends Doodad {
 			const xTween = myLinearTween( { start: points[ i - 1 ].x, end: points[ i ].x, rate: Math.cos( angle ) * this.speed, startTime } );
 			const yTween = myLinearTween( { start: points[ i - 1 ].y, end: points[ i ].y, rate: Math.sin( angle ) * this.speed, startTime } );
 
-			startTime += ( xTween.duration || yTween.duration ) * 1000;
-
 			if ( xTween.duration ) xTweens.push( xTween );
+			else if ( yTween.duration ) xTweens.push( mySleepTween( { startTime, duration: yTween.duration, value: points[ i ].x } ) );
+
 			if ( yTween.duration ) yTweens.push( yTween );
+			else if ( xTween.duration ) yTweens.push( mySleepTween( { startTime, duration: xTween.duration, value: points[ i ].y } ) );
+
+			startTime += ( xTween.duration || yTween.duration || 0 ) * 1000;
 
 		}
 
