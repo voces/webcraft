@@ -149,20 +149,30 @@ class Unit extends Doodad {
 
 	}
 
-	traverseTo( point ) {
-
-		const myLinearTween = this.app ? this.app.linearTween : linearTween;
+	traverseTo( point, myTween = this.app ? this.app.linearTween : linearTween ) {
 
 		const angle = "x" in point && "y" in point ? Math.atan2( point.y - this.y, point.x - this.x ) : 1;
 
-		if ( "x" in point ) this.x = myLinearTween( { start: this.x, end: point.x, rate: Math.cos( angle ) * this.speed } );
-		if ( "y" in point ) this.y = myLinearTween( { start: this.y, end: point.y, rate: Math.sin( angle ) * this.speed } );
+		if ( "x" in point ) this.x = myTween( {
+			start: this.x,
+			end: point.x,
+			control1: point.control1 !== undefined ? point.control1.x : undefined,
+			control2: point.control2 !== undefined ? point.control2.x : undefined,
+			rate: Math.cos( angle ) * this.speed
+		} );
+
+		if ( "y" in point ) this.y = myTween( {
+			start: this.y,
+			end: point.y,
+			control1: point.control1 !== undefined ? point.control1.y : undefined,
+			control2: point.control2 !== undefined ? point.control2.y : undefined,
+			rate: Math.cos( angle ) * this.speed
+		} );
 
 	}
 
-	traverse( points, patrol = false ) {
+	traverse( points, patrol = false, myTween = this.app ? this.app.linearTween : linearTween ) {
 
-		const myLinearTween = this.app ? this.app.linearTween : linearTween;
 		const mySleepTween = this.app ? this.app.sleepTween : sleepTween;
 		const myStepTween = this.app ? this.app.stepTween : stepTween;
 
@@ -178,8 +188,22 @@ class Unit extends Doodad {
 		for ( let i = start; i < points.length; i ++ ) {
 
 			const angle = Math.atan2( points[ i ].y - points[ i - 1 ].y, points[ i ].x - points[ i - 1 ].x );
-			const xTween = myLinearTween( { start: points[ i - 1 ].x, end: points[ i ].x, rate: Math.cos( angle ) * this.speed, startTime } );
-			const yTween = myLinearTween( { start: points[ i - 1 ].y, end: points[ i ].y, rate: Math.sin( angle ) * this.speed, startTime } );
+			const xTween = myTween( {
+				start: points[ i - 1 ].x,
+				end: points[ i ].x,
+				control1: points[ i ].control1 !== undefined ? points[ i ].control1.x : undefined,
+				control2: points[ i ].control2 !== undefined ? points[ i ].control2.x : undefined,
+				rate: Math.cos( angle ) * this.speed,
+				startTime
+			} );
+			const yTween = myTween( {
+				start: points[ i - 1 ].y,
+				end: points[ i ].y,
+				control1: points[ i ].control1 !== undefined ? points[ i ].control1.y : undefined,
+				control2: points[ i ].control2 !== undefined ? points[ i ].control2.y : undefined,
+				rate: Math.sin( angle ) * this.speed,
+				startTime
+			} );
 
 			if ( xTween.duration ) xTweens.push( xTween );
 			else if ( yTween.duration ) xTweens.push( mySleepTween( { startTime, duration: yTween.duration, value: points[ i ].x } ) );
@@ -199,9 +223,9 @@ class Unit extends Doodad {
 
 	}
 
-	patrol( points ) {
+	patrol( points, tweener ) {
 
-		this.traverse( points, true );
+		this.traverse( points, true, tweener );
 
 	}
 

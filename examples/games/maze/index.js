@@ -61,16 +61,17 @@ new Chat( app );
 ///// Game Logic
 /////////////////////////////////////////////////
 
-function spawn( player ) {
+function offset( point ) {
 
 	const level = levels[ app.state.levelIndex ];
-	const xOffset = level.origin ? level.origin.x || 0 : 0;
-	const yOffset = level.origin ? level.origin.y || 0 : 0;
-	const offset = p => ( { x: p.x + xOffset, y: p.y + yOffset } );
 
-	console.log( offset( { x: 0, y: 0 } ), level.spawn, offset( level.spawn ) );
+	return { x: point.x + ( level.origin ? level.origin.x || 0 : 0 ), y: point.y + ( level.origin ? level.origin.y || 0 : 0 ) };
 
-	const char = new app.Character( { owner: player, z: 1 }, offset( level.spawn ) );
+}
+
+function spawn( player ) {
+
+	const char = new app.Character( Object.assign( { owner: player, z: 1 }, offset( levels[ app.state.levelIndex ].spawn ) ) );
 	player.character = char;
 	char.onNear( app.units, SIZE, onNear );
 	char.addEventListener( "death", onDeath );
@@ -100,9 +101,6 @@ function start() {
 	// app.state.levelIndex = Math.floor( app.random() * levels.length );
 
 	const level = levels[ app.state.levelIndex ];
-	const xOffset = level.origin ? level.origin.x || 0 : 0;
-	const yOffset = level.origin ? level.origin.y || 0 : 0;
-	const offset = p => ( { x: p.x + xOffset, y: p.y + yOffset } );
 
 	const base = {};
 	if ( level.speed ) base.speed = level.speed;
@@ -128,7 +126,7 @@ function start() {
 		for ( let i = 0; i < level.patrols.length; i ++ ) {
 
 			const unit = new app.Enemy( Object.assign( { z: 1 }, base, offset( level.patrols[ i ][ 0 ] ) ) );
-			unit.patrol( level.patrols[ i ].map( offset ) );
+			unit.patrol( level.patrols[ i ].map( p => Object.assign( p, offset( p ) ) ) );
 
 		}
 
@@ -145,10 +143,11 @@ function start() {
 function onDeath() {
 
 	const player = this.owner;
+	const level = levels[ app.state.levelIndex ];
 
 	for ( let i = 0; i < player.food.length; i ++ )
 		if ( player.food[ i ] )
-			Object.assign( new app.Food( Object.assign( { z: 1 }, levels[ app.state.levelIndex ].food[ i ] ) ), { food: i } );
+			Object.assign( new app.Food( Object.assign( { z: 1 }, level.food[ i ], offset( level.food[ i ] ) ) ), { food: i } );
 
 	player.food = [];
 
@@ -359,7 +358,8 @@ const levels = [
 
 	// Level 3
 	{
-		spawn: { x: 0, y: - 0.5 },
+		origin: { x: 0, y: - 0.5 },
+		spawn: { x: 0, y: 0 },
 		floormap: [
 			"██████",
 			"█ ████",
@@ -371,22 +371,17 @@ const levels = [
 		],
 		speed: 4,
 		patrols: [
-			[ { x: - 1.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 } ],
-			[ { x: 1.5, y: 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 } ],
-			[ { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 } ],
-			[ { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 } ],
-			[ { x: - 0.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 } ],
-			[ { x: 0.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 } ],
-			[ { x: 1.5, y: 0 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 } ],
-			[ { x: 1.5, y: - 1 }, { x: 1.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 } ],
-			[ { x: 0.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 } ],
-			[ { x: - 0.5, y: - 2 }, { x: - 1.5, y: - 2 }, { x: - 1.5, y: 1 }, { x: 1.5, y: 1 }, { x: 1.5, y: - 2 } ]
-		],
-		food: [
-			{ x: 0, y: 3 },
-			{ x: 3, y: 0 },
-			{ x: 0, y: - 3 }
-		],
+			[ { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 } ],
+			[ { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 } ],
+			[ { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 } ],
+			[ { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 } ],
+			[ { x: - 0.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 } ],
+			[ { x: 0.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 } ],
+			[ { x: 1.5, y: 0.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 } ],
+			[ { x: 1.5, y: - 0.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 } ],
+			[ { x: 0.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 } ],
+			[ { x: - 0.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 } ]],
+		food: [ { x: - 1.5, y: 2.5 } ],
 		winArea: new app.Rect( { x: - 0.5, y: 0.5 }, { x: 0.5, y: - 1.5 } ),
 		won: player => player.food.filter( food => food ).length >= 1 && levels[ app.state.levelIndex ].winArea.contains( player.character )
 	},
@@ -394,7 +389,7 @@ const levels = [
 	// Level 4
 	{
 		origin: { x: 1.5, y: - 1.5 },
-		spawn: { x: 0, y: 0 },
+		spawn: { x: 0, y: 5.5 },
 		floormap: [
 			"█████████████",
 			"███████░░████",
@@ -412,12 +407,17 @@ const levels = [
 		],
 		speed: 4,
 		patrols: [
+			[ { x: 0, y: 0 } ],
 			[ { x: 0, y: 1 } ],
 			[ { x: 0, y: - 1 } ],
 			[ { x: 1, y: 0 } ],
 			[ { x: - 1, y: 0 } ]
 		],
-		food: [ { x: - 1.5, y: 2 } ],
+		food: [
+			{ x: 0, y: 3 },
+			{ x: 3, y: 0 },
+			{ x: 0, y: - 3 }
+		],
 		winArea: new app.Rect( { x: - 0.5, y: 0.5 }, { x: 0.5, y: - 1.5 } ),
 		won: player => player.food.filter( food => food ).length >= 1 && levels[ app.state.levelIndex ].winArea.contains( player.character )
 	}
