@@ -149,11 +149,13 @@ class Unit extends Doodad {
 
 	}
 
-	traverseTo( point, myTween = this.app ? this.app.linearTween : linearTween ) {
+	traverseTo( point ) {
+
+		const tween = this.app ? this.app.linearTween : linearTween;
 
 		const angle = "x" in point && "y" in point ? Math.atan2( point.y - this.y, point.x - this.x ) : 1;
 
-		if ( "x" in point ) this.x = myTween( {
+		if ( "x" in point ) this.x = tween( {
 			start: this.x,
 			end: point.x,
 			control1: point.control1 !== undefined ? point.control1.x : undefined,
@@ -161,7 +163,7 @@ class Unit extends Doodad {
 			rate: Math.cos( angle ) * this.speed
 		} );
 
-		if ( "y" in point ) this.y = myTween( {
+		if ( "y" in point ) this.y = tween( {
 			start: this.y,
 			end: point.y,
 			control1: point.control1 !== undefined ? point.control1.y : undefined,
@@ -171,8 +173,9 @@ class Unit extends Doodad {
 
 	}
 
-	traverse( points, patrol = false, myTween = this.app ? this.app.linearTween : linearTween ) {
+	traverse( points, patrol = false ) {
 
+		const myLinearTween = this.app ? this.app.linearTween : linearTween;
 		const mySleepTween = this.app ? this.app.sleepTween : sleepTween;
 		const myStepTween = this.app ? this.app.stepTween : stepTween;
 
@@ -188,19 +191,15 @@ class Unit extends Doodad {
 		for ( let i = start; i < points.length; i ++ ) {
 
 			const angle = Math.atan2( points[ i ].y - points[ i - 1 ].y, points[ i ].x - points[ i - 1 ].x );
-			const xTween = myTween( {
+			const xTween = myLinearTween( {
 				start: points[ i - 1 ].x,
 				end: points[ i ].x,
-				control1: points[ i ].control1 !== undefined ? points[ i ].control1.x : undefined,
-				control2: points[ i ].control2 !== undefined ? points[ i ].control2.x : undefined,
 				rate: Math.cos( angle ) * this.speed,
 				startTime
 			} );
-			const yTween = myTween( {
+			const yTween = myLinearTween( {
 				start: points[ i - 1 ].y,
 				end: points[ i ].y,
-				control1: points[ i ].control1 !== undefined ? points[ i ].control1.y : undefined,
-				control2: points[ i ].control2 !== undefined ? points[ i ].control2.y : undefined,
 				rate: Math.sin( angle ) * this.speed,
 				startTime
 			} );
@@ -223,9 +222,9 @@ class Unit extends Doodad {
 
 	}
 
-	patrol( points, tweener ) {
+	patrol( points ) {
 
-		this.traverse( points, true, tweener );
+		this.traverse( points, true );
 
 	}
 

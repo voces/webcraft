@@ -61,14 +61,6 @@ new Chat( app );
 ///// Game Logic
 /////////////////////////////////////////////////
 
-function offset( point ) {
-
-	const level = levels[ app.state.levelIndex ];
-
-	return { x: point.x + ( level.origin ? level.origin.x || 0 : 0 ), y: point.y + ( level.origin ? level.origin.y || 0 : 0 ) };
-
-}
-
 function spawn( player ) {
 
 	const char = new app.Character( Object.assign( { owner: player, z: 1 }, offset( levels[ app.state.levelIndex ].spawn ) ) );
@@ -102,6 +94,8 @@ function start() {
 
 	const level = levels[ app.state.levelIndex ];
 
+	if ( ! level.checkpoints ) calculateCheckpoints( level );
+
 	const base = {};
 	if ( level.speed ) base.speed = level.speed;
 
@@ -127,6 +121,22 @@ function start() {
 
 			const unit = new app.Enemy( Object.assign( { z: 1 }, base, offset( level.patrols[ i ][ 0 ] ) ) );
 			unit.patrol( level.patrols[ i ].map( p => Object.assign( p, offset( p ) ) ) );
+
+		}
+
+	if ( level.circles )
+		for ( let i = 0; i < level.circles.length; i ++ ) {
+
+			const center = offset( level.circles[ i ] );
+
+			const unit = new app.Enemy( Object.assign( { z: 1 }, base, center ) );
+			unit.circle = {
+				radius: level.circles[ i ].radius || 1,
+				duration: level.circles[ i ].duration || 1,
+				center,
+				offset: level.circles[ i ].offset || 0
+			};
+			unit.state = [ "circle" ];
 
 		}
 
@@ -198,6 +208,16 @@ function tick( time ) {
 			if ( level.won( player ) ) point( player );
 
 		}
+
+	const circles = app.units.filter( u => u instanceof app.Enemy && u.circle );
+	for ( let i = 0; i < circles.length; i ++ ) {
+
+		const info = circles[ i ].circle;
+
+		circles[ i ].x = info.center.x + Math.cos( - 2 * Math.PI * ( time / 1000 + info.offset ) / info.duration ) * info.radius;
+		circles[ i ].y = info.center.y + Math.sin( - 2 * Math.PI * ( time / 1000 + info.offset ) / info.duration ) * info.radius;
+
+	}
 
 }
 
@@ -407,19 +427,42 @@ const levels = [
 		],
 		speed: 4,
 		patrols: [
-			[ { x: 0, y: 0 } ],
-			[ { x: 0, y: 1 } ],
-			[ { x: 0, y: - 1 } ],
-			[ { x: 1, y: 0 } ],
-			[ { x: - 1, y: 0 } ]
+			[ { x: 0, y: 0 } ]
 		],
+		circles: [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( offset => [ 0.5, 1, 1.5, 2, 2.5, 3, 3.5 ].map( radius => ( {
+			x: 0, y: 0, radius, duration: 4, offset: 4 * offset
+		} ) ) ) ),
 		food: [
 			{ x: 0, y: 3 },
 			{ x: 3, y: 0 },
 			{ x: 0, y: - 3 }
 		],
+		won: player => player.food.filter( food => food ).length >= 3 && player.character.x < - 2.7
+	},
+
+	// Level 5
+	{
+		origin: { x: 0.5, y: 0 },
+		spawn: { x: - 7.75, y: 4.5 },
+		floormap: [
+			"███████████████████",
+			"█░░              ░█",
+			"████████████████ ██",
+			"█░             █ ██",
+			"███ ██████████ █ ██",
+			"███ █       ░█ █ ██",
+			"███ █ █     ░█ █ ██",
+			"███ █ ████████ █ ██",
+			"███ █          █ ██",
+			"███ ████████████ ██",
+			"███              ██",
+			"███████████████████"
+		],
+		circles: [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( offset => [ 0.25, 0.5, 0.75, 1 ].map( radius => ( {
+			x: 0, y: 0, radius: radius * 7.5, duration: 5, offset: 5 * offset
+		} ) ) ) ),
 		winArea: new app.Rect( { x: - 0.5, y: 0.5 }, { x: 0.5, y: - 1.5 } ),
-		won: player => player.food.filter( food => food ).length >= 1 && levels[ app.state.levelIndex ].winArea.contains( player.character )
+		won: player => player.food.filter( food => food ).length >= 3 && player.character.x < - 2.7
 	}
 
 ];
@@ -473,5 +516,50 @@ function canPlace( character, xDelta = 0, yDelta = 0 ) {
 	];
 
 	return ! corners.some( corner => levels[ app.state.levelIndex ].floormap[ Math.round( corner.y ) ][ Math.round( corner.x ) ] === "█" );
+
+}
+
+function offset( point ) {
+
+	const level = levels[ app.state.levelIndex ];
+
+	return { x: point.x + ( level.origin ? level.origin.x || 0 : 0 ), y: point.y + ( level.origin ? level.origin.y || 0 : 0 ) };
+
+}
+
+function calculateCheckpoints( level ) {
+
+	const grid = Array( level.floormap.length ).fill( 0 ).map( () => [] );
+
+	level.checkpoints = [];
+
+	for ( let y = 0; y < level.floormap.length; y ++ )
+		for ( let x = 0; x < level.floormap[ y ].length; x ++ ) {
+
+			const tile = level.floormap[ y ][ x ];
+
+			if ( tile !== "░" || grid[ y ][ x ] ) continue;
+
+			const topLeft = tileToWorld( x, y );
+			topLeft.x += 0.5;
+			topLeft.y += 0.5;
+
+			let tX = x;
+			let tY = y;
+
+			while ( level.floormap[ y ][ tX + 1 ] === "░" ) tX ++;
+			while ( level.floormap[ tY + 1 ][ tX ] === "░" ) tY ++;
+
+			const bottomRight = tileToWorld( tX, tY );
+			bottomRight.x -= 0.5;
+			bottomRight.y -= 0.5;
+
+			level.checkpoints.push( new app.Rect( topLeft, bottomRight ) );
+
+			for ( let ttY = y; ttY <= tY; ttY ++ )
+				for ( let ttX = x; ttX <= tX; ttX ++ )
+					grid[ ttY ][ ttX ] = true;
+
+		}
 
 }
