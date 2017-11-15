@@ -63,7 +63,7 @@ new Chat( app );
 
 function spawn( player ) {
 
-	const char = new app.Character( Object.assign( { owner: player, z: 1 }, offset( levels[ app.state.levelIndex ].spawn ) ) );
+	const char = new app.Character( Object.assign( { owner: player, z: 1 }, levels[ app.state.levelIndex ].checkpoints[ player.checkpoint ].center ) );
 	player.character = char;
 	char.onNear( app.units, SIZE, onNear );
 	char.addEventListener( "death", onDeath );
@@ -99,8 +99,12 @@ function start() {
 	const base = {};
 	if ( level.speed ) base.speed = level.speed;
 
-	for ( let i = 0; i < app.players.length; i ++ )
+	for ( let i = 0; i < app.players.length; i ++ ) {
+
+		app.players[ i ].checkpoint = level.spawn;
 		spawn( app.players[ i ] );
+
+	}
 
 	for ( let y = 0; y < level.floormap.length; y ++ )
 		for ( let x = 0; x < level.floormap[ y ].length; x ++ ) {
@@ -120,7 +124,7 @@ function start() {
 		for ( let i = 0; i < level.patrols.length; i ++ ) {
 
 			const unit = new app.Enemy( Object.assign( { z: 1 }, base, offset( level.patrols[ i ][ 0 ] ) ) );
-			unit.patrol( level.patrols[ i ].map( p => Object.assign( p, offset( p ) ) ) );
+			unit.patrol( level.patrols[ i ].map( p => offset( p ) ) );
 
 		}
 
@@ -205,7 +209,20 @@ function tick( time ) {
 			if ( xDelta !== 0 && canPlace( player.character, xDelta, 0 ) ) player.character.x = roundTo( player.character.x + xDelta, 4 );
 			if ( yDelta !== 0 && canPlace( player.character, 0, yDelta ) ) player.character.y = roundTo( player.character.y + yDelta, 4 );
 
-			if ( level.won( player ) ) point( player );
+			for ( let n = 0; n < level.checkpoints.length; n ++ )
+				if ( level.checkpoints[ n ].contains( player.character ) ) {
+
+					if ( level.score === n ) {
+
+						if ( level.won === undefined ||
+							typeof level.won === "number" && player.food.filter( food => food ).length >= level.won ||
+							typeof level.won === "function" && level.won( player ) )
+
+							point( player );
+
+					} else player.checkpoint = n;
+
+				}
 
 		}
 
@@ -239,7 +256,7 @@ function point( player ) {
 function newPlayer( player ) {
 
 	player.food = [];
-	player.state = [ "character", "points" ];
+	player.state = [ "character", "points", "checkpoint" ];
 	if ( ! player.points ) player.points = 0;
 
 	if ( app.players.length === 1 ) start();
@@ -324,7 +341,8 @@ const levels = [
 
 	// Level 1
 	{
-		spawn: { x: - 7.5, y: 0 },
+		spawn: 0,
+		score: 1,
 		floormap: [
 			"██████████████████████",
 			"██░░░██████████  ░░░██",
@@ -340,13 +358,15 @@ const levels = [
 			[ { x: 4.5, y: - 0.5 }, { x: - 4.5, y: - 0.5 } ],
 			[ { x: - 4.5, y: 0.5 }, { x: 4.5, y: 0.5 } ],
 			[ { x: 4.5, y: 1.5 }, { x: - 4.5, y: 1.5 } ]
-		],
-		won: player => player.character.x > 6
+		]
 	},
 
 	// Level 2
 	{
-		spawn: { x: - 7.5, y: 0 },
+		spawn: 0,
+		score: 1,
+		speed: 6,
+		won: 1,
 		floormap: [
 			"████████████████████",
 			"████            ████",
@@ -357,7 +377,6 @@ const levels = [
 			"████            ████",
 			"████████████████████"
 		],
-		speed: 5,
 		patrols: [
 			[ { x: - 5.5, y: - 2.5 }, { x: - 5.5, y: 2.5 } ],
 			[ { x: - 4.5, y: 2.5 }, { x: - 4.5, y: - 2.5 } ],
@@ -372,14 +391,14 @@ const levels = [
 			[ { x: 4.5, y: - 2.5 }, { x: 4.5, y: 2.5 } ],
 			[ { x: 5.5, y: 2.5 }, { x: 5.5, y: - 2.5 } ]
 		],
-		food: [ { x: 0, y: 0 } ],
-		won: player => player.character.x > 6 && player.food.filter( food => food ).length >= 1
+		food: [ { x: 0, y: 0 } ]
 	},
 
 	// Level 3
 	{
 		origin: { x: 0, y: - 0.5 },
-		spawn: { x: 0, y: 0 },
+		spawn: 0,
+		score: 0,
 		floormap: [
 			"██████",
 			"█ ████",
@@ -402,14 +421,15 @@ const levels = [
 			[ { x: 0.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 } ],
 			[ { x: - 0.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 } ]],
 		food: [ { x: - 1.5, y: 2.5 } ],
-		winArea: new app.Rect( { x: - 0.5, y: 0.5 }, { x: 0.5, y: - 1.5 } ),
-		won: player => player.food.filter( food => food ).length >= 1 && levels[ app.state.levelIndex ].winArea.contains( player.character )
+		won: player => player.food.filter( food => food ).length >= 1
 	},
 
 	// Level 4
 	{
 		origin: { x: 1.5, y: - 1.5 },
-		spawn: { x: 0, y: 5.5 },
+		spawn: 0,
+		score: 1,
+		won: 3,
 		floormap: [
 			"█████████████",
 			"███████░░████",
@@ -425,25 +445,24 @@ const levels = [
 			"██████    ███",
 			"█████████████"
 		],
-		speed: 4,
 		patrols: [
 			[ { x: 0, y: 0 } ]
 		],
 		circles: [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( offset => [ 0.5, 1, 1.5, 2, 2.5, 3, 3.5 ].map( radius => ( {
-			x: 0, y: 0, radius, duration: 4, offset: 4 * offset
+			x: 0, y: 0, radius, duration: 3.25, offset: 3.25 * offset
 		} ) ) ) ),
 		food: [
 			{ x: 0, y: 3 },
 			{ x: 3, y: 0 },
 			{ x: 0, y: - 3 }
-		],
-		won: player => player.food.filter( food => food ).length >= 3 && player.character.x < - 2.7
+		]
 	},
 
 	// Level 5
 	{
 		origin: { x: 0.5, y: 0 },
-		spawn: { x: - 7.75, y: 4.5 },
+		spawn: 0,
+		score: 3,
 		floormap: [
 			"███████████████████",
 			"█░░              ░█",
@@ -460,14 +479,12 @@ const levels = [
 		],
 		circles: [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( offset => [ 0.25, 0.5, 0.75, 1 ].map( radius => ( {
 			x: 0, y: 0, radius: radius * 7.5, duration: 5, offset: 5 * offset
-		} ) ) ) ),
-		winArea: new app.Rect( { x: - 0.5, y: 0.5 }, { x: 0.5, y: - 1.5 } ),
-		won: player => player.food.filter( food => food ).length >= 3 && player.character.x < - 2.7
+		} ) ) ) )
 	}
 
 ];
 
-app.state.levelIndex = levels.length - 2;
+// app.state.levelIndex = levels.length - 3;
 
 for ( let i = 0; i < levels.length; i ++ ) {
 
@@ -541,7 +558,7 @@ function calculateCheckpoints( level ) {
 			if ( tile !== "░" || grid[ y ][ x ] ) continue;
 
 			const topLeft = tileToWorld( x, y );
-			topLeft.x += 0.5;
+			topLeft.x -= 0.5;
 			topLeft.y += 0.5;
 
 			let tX = x;
@@ -551,7 +568,7 @@ function calculateCheckpoints( level ) {
 			while ( level.floormap[ tY + 1 ][ tX ] === "░" ) tY ++;
 
 			const bottomRight = tileToWorld( tX, tY );
-			bottomRight.x -= 0.5;
+			bottomRight.x += 0.5;
 			bottomRight.y -= 0.5;
 
 			level.checkpoints.push( new app.Rect( topLeft, bottomRight ) );

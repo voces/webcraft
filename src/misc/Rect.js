@@ -71,6 +71,15 @@ class Rect extends EventDispatcher {
 
 	}
 
+	get center() {
+
+		return {
+			x: ( this.maxX + this.minX ) / 2,
+			y: ( this.maxY + this.minY ) / 2
+		};
+
+	}
+
 	get area() {
 
 		return ( this.maxX - this.minX ) * ( this.maxY - this.minY );
