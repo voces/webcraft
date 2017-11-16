@@ -123,7 +123,7 @@ class Unit extends Doodad {
 
 				if ( newNears.length === 0 && newRetreats.length === 0 ) return;
 
-				callback( { type: "near", objects: newNears, target: this } );
+				callback( { type: "near", nears: newNears, retreats: newRetreats, target: this } );
 
 			}
 
