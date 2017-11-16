@@ -9,7 +9,7 @@
 
 	const isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )();
 
-	//For Node (i.e., servers)
+	// For Node (i.e., servers)
 	if ( ! isBrowser ) {
 
 		THREE = require( "three" );
@@ -89,12 +89,12 @@ function start() {
 
 	cleanup();
 
-	app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
-	// app.state.levelIndex = Math.floor( app.random() * levels.length );
+	// app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
+	app.state.levelIndex = Math.floor( app.random() * levels.length );
 
 	const level = levels[ app.state.levelIndex ];
 
-	if ( ! level.checkpoints ) calculateCheckpoints( level );
+	if ( level.checkpoints === undefined ) calculateCheckpoints();
 
 	const base = {};
 	if ( level.speed ) base.speed = level.speed;
@@ -176,12 +176,12 @@ function onNear( e ) {
 	const character = e.target;
 	const player = character.owner;
 
-	for ( let i = 0; i < e.objects.length; i ++ )
-		if ( e.objects[ i ] instanceof app.Enemy ) character.kill();
-		else if ( e.objects[ i ] instanceof app.Food ) {
+	for ( let i = 0; i < e.nears.length; i ++ )
+		if ( e.nears[ i ] instanceof app.Enemy ) character.kill();
+		else if ( e.nears[ i ] instanceof app.Food ) {
 
-			player.food[ e.objects[ i ].food ] = true;
-			e.objects[ i ].remove();
+			player.food[ e.nears[ i ].food ] = true;
+			e.nears[ i ].remove();
 
 		}
 
@@ -212,15 +212,15 @@ function tick( time ) {
 			for ( let n = 0; n < level.checkpoints.length; n ++ )
 				if ( level.checkpoints[ n ].contains( player.character ) ) {
 
-					if ( level.score === n ) {
+					player.checkpoint = n;
 
-						if ( level.won === undefined ||
+					if ( level.score !== n ) continue;
+
+					if ( level.won === undefined ||
 							typeof level.won === "number" && player.food.filter( food => food ).length >= level.won ||
 							typeof level.won === "function" && level.won( player ) )
 
-							point( player );
-
-					} else player.checkpoint = n;
+						point( player );
 
 				}
 
@@ -445,9 +445,7 @@ const levels = [
 			"██████    ███",
 			"█████████████"
 		],
-		patrols: [
-			[ { x: 0, y: 0 } ]
-		],
+		patrols: [[ { x: 0, y: 0 } ]],
 		circles: [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( offset => [ 0.5, 1, 1.5, 2, 2.5, 3, 3.5 ].map( radius => ( {
 			x: 0, y: 0, radius, duration: 3.25, offset: 3.25 * offset
 		} ) ) ) ),
@@ -480,11 +478,176 @@ const levels = [
 		circles: [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( offset => [ 0.25, 0.5, 0.75, 1 ].map( radius => ( {
 			x: 0, y: 0, radius: radius * 7.5, duration: 5, offset: 5 * offset
 		} ) ) ) )
+	},
+
+	// Level 6
+	{
+		origin: { x: 1, y: 0 },
+		spawn: 0,
+		score: 2,
+		floormap: [
+			"████████████████████",
+			"█░░                █",
+			"█░░                █",
+			"███                █",
+			"███                █",
+			"███████████████░░░░█",
+			"███████████████░░░░█",
+			"███                █",
+			"███                █",
+			"█░░                █",
+			"█░░                █",
+			"████████████████████"
+		],
+		patrols: [].concat( ...[ - 5.75, - 1.917, 1.917, 5.75 ].map( x => [ 3, - 3 ].map( y => [ { x, y } ] ) ) ),
+		circles: [].concat( ...[ - 5.75, - 1.917, 1.917, 5.75 ].map( x => [].concat( ...[ 3, - 3 ].map( y => [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( arm => [ 0.95, 1.9 ].map( radius => ( {
+			x, y: y, radius, duration: 4, offset: 4 * arm
+		} ) ) ) ) ) ) ) ),
+		food: [
+			{ x: - 7.5, y: - 1.5 },
+			{ x: - 3.5, y: - 1.5 },
+			{ x: 0.5, y: - 1.5 },
+			{ x: 4.5, y: - 1.5 }
+		],
+		won: 4
+	},
+
+	// Level 7
+	{
+		spawn: 0,
+		score: 1,
+		speed: 8,
+		won: 4,
+		floormap: [
+			"████████████████████",
+			"████            ████",
+			"████            ████",
+			"████            ████",
+			"█░░░            ░░░█",
+			"█░░░            ░░░█",
+			"████            ████",
+			"████            ████",
+			"████            ████",
+			"████████████████████"
+		],
+		patrols: [
+			[ { x: - 5.5, y: - 3.5 }, { x: - 5.5, y: 3.5 } ],
+			[ { x: - 4.5, y: 3.5 }, { x: - 4.5, y: - 3.5 } ],
+			[ { x: - 3.5, y: - 3.5 }, { x: - 3.5, y: 3.5 } ],
+			[ { x: - 2.5, y: 3.5 }, { x: - 2.5, y: - 3.5 } ],
+			[ { x: - 1.5, y: - 3.5 }, { x: - 1.5, y: 3.5 } ],
+			[ { x: - 0.5, y: 3.5 }, { x: - 0.5, y: - 3.5 } ],
+			[ { x: 0.5, y: - 3.5 }, { x: 0.5, y: 3.5 } ],
+			[ { x: 1.5, y: 3.5 }, { x: 1.5, y: - 3.5 } ],
+			[ { x: 2.5, y: - 3.5 }, { x: 2.5, y: 3.5 } ],
+			[ { x: 3.5, y: 3.5 }, { x: 3.5, y: - 3.5 } ],
+			[ { x: 4.5, y: - 3.5 }, { x: 4.5, y: 3.5 } ],
+			[ { x: 5.5, y: 3.5 }, { x: 5.5, y: - 3.5 } ]
+		],
+		food: [
+			{ x: - 5.5, y: 3.5 },
+			{ x: - 5.5, y: - 3.5 },
+			{ x: 5.5, y: 3.5 },
+			{ x: 5.5, y: - 3.5 }
+		]
+	},
+
+	// Level 8
+	{
+		origin: { x: - 1, y: 0 },
+		spawn: 0,
+		score: 1,
+		speed: 4,
+		won: 3,
+		floormap: [
+			"██████████████",
+			"█    ██    ███",
+			"█ ░█    ██ ███",
+			"█ ██ ██ ██ ███",
+			"█    ██    ███",
+			"█ ██ ██ ██ ░░█",
+			"█ ██ ██ ██ ░░█",
+			"█    ██    ███",
+			"█ ██ ██ ██ ███",
+			"█ ██    ██ ███",
+			"█    ██    ███",
+			"██████████████"
+		],
+		patrols: [
+			...[ { x: - 3, y: 3 }, { x: - 3, y: 0 }, { x: - 3, y: - 3 } ].map( offset => [
+				{ x: offset.x - 1.5, y: offset.y + 1.5 },
+				{ x: offset.x + 1.5, y: offset.y + 1.5 },
+				{ x: offset.x + 1.5, y: offset.y - 1.5 },
+				{ x: offset.x - 1.5, y: offset.y - 1.5 } ] ),
+			...[ { x: 3, y: 3 }, { x: 3, y: 0 }, { x: 3, y: - 3 } ].map( offset => [
+				{ x: offset.x + 1.5, y: offset.y + 1.5 },
+				{ x: offset.x - 1.5, y: offset.y + 1.5 },
+				{ x: offset.x - 1.5, y: offset.y - 1.5 },
+				{ x: offset.x + 1.5, y: offset.y - 1.5 } ] ),
+			[ { x: - 1.5, y: 3.5 }, { x: 1.5, y: 3.5 }, { x: 1.5, y: - 3.5 }, { x: - 1.5, y: - 3.5 } ]
+		],
+		food: [
+			{ x: - 4.5, y: - 4.5 },
+			{ x: 4.5, y: 4.5 },
+			{ x: 4.5, y: - 4.5 }
+		]
+	},
+
+	// Level 9
+	{
+		origin: { x: 0, y: 0 },
+		spawn: 0,
+		score: 1,
+		speed: 1,
+		won: 1,
+		floormap: [
+			"████████████████████",
+			"█░░██      ██      █",
+			"█░░██      ██      █",
+			"█      ██  ██  ██  █",
+			"█      ██  ██  ██  █",
+			"█  ██████  ██  ██░░█",
+			"█  ██████  ██  ██░░█",
+			"█  ██    ░░    █████",
+			"█  ██    ░░    █████",
+			"█      ██████      █",
+			"█      ██████      █",
+			"████████████████████"
+		],
+		patrols: [
+			[ { x: - 6, y: 2.5 } ],
+			[ { x: - 4.5, y: 4 } ],
+			[ { x: - 2, y: 3.5 } ],
+			[ { x: - 0.5, y: 2 } ],
+			[ { x: - 7.5, y: 0 } ],
+			[ { x: - 8.5, y: - 2 } ],
+			[ { x: - 6, y: - 3.5 } ],
+			[ { x: - 4.5, y: - 2 } ],
+			[ { x: - 3, y: - 1.5 } ],
+			[ { x: 3.5, y: 0 } ],
+			[ { x: 4.5, y: 2 } ],
+			[ { x: 6, y: 3.5 } ],
+			[ { x: 7.5, y: 2 } ],
+			[ { x: 3.5, y: - 4 } ],
+			...[
+				{ x: 0, y: 4 }, { x: 4, y: 4 }, { x: 8, y: 4 },
+				{ x: - 8, y: 2 }, { x: - 4, y: 2 },
+				{ x: 4, y: - 2 },
+				{ x: - 8, y: - 4 }, { x: - 4, y: - 4 }
+			].map( offset => [
+				{ x: offset.x - 0.5, y: offset.y + 0.5 },
+				{ x: offset.x + 0.5, y: offset.y + 0.5 },
+				{ x: offset.x + 0.5, y: offset.y - 0.5 },
+				{ x: offset.x - 0.5, y: offset.y - 0.5 } ] ),
+			[ { x: - 0.5, y: - 0.5 }, { x: 0.5, y: - 0.5 }, { x: 0.5, y: 2 }, { x: 0.5, y: - 0.5 } ],
+			[ { x: 4.5, y: - 3.5 }, { x: 7, y: - 3.5 }, { x: 7, y: - 4.5 }, { x: 7, y: - 3.5 } ]
+		],
+		food: [ { x: 8, y: - 4 } ]
 	}
 
 ];
 
-// app.state.levelIndex = levels.length - 3;
+// app.state.levelIndex = levels.length - 2;
 
 for ( let i = 0; i < levels.length; i ++ ) {
 
@@ -544,8 +707,9 @@ function offset( point ) {
 
 }
 
-function calculateCheckpoints( level ) {
+function calculateCheckpoints() {
 
+	const level = levels[ app.state.levelIndex ];
 	const grid = Array( level.floormap.length ).fill( 0 ).map( () => [] );
 
 	level.checkpoints = [];
