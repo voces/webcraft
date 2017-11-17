@@ -21,6 +21,9 @@ class Multiboard {
 		while ( this._data.length < rows )
 			this._data.push( new Array( this.columns ).fill( this.default ) );
 
+		if ( this._data.length > rows )
+			this._data.splice( rows );
+
 		this._render();
 
 	}
@@ -96,7 +99,8 @@ class Multiboard {
 				row.style.color = this.colors[ i ] || "white";
 				this._container.appendChild( row );
 
-			}
+			} else if ( this._container.children[ i ].style.color !== this.colors[ i ] )
+				this._container.children[ i ].style.color = this.colors[ i ] || "white";
 
 			const row = this._container.children[ i ];
 
@@ -116,12 +120,12 @@ class Multiboard {
 
 		}
 
-		while ( this._data.length > this._container.children.length )
-			this._container.removeChild( this._container.children[ this._container.children.length - 1 ] );
+		while ( this._data.length < this._container.children.length )
+			this._container.removeChild( this._container.lastElementChild );
 
-		while ( this._data[ 0 ].length > this._container.children[ 0 ].length )
+		while ( this._data[ 0 ].length < this._container.children[ 0 ].length )
 			for ( let i = 0; i < this._data.length; i ++ )
-				this._container.children[ i ].removeChild( this._container.children[ i ].children[ this._container.children[ i ].children.length - 1 ] );
+				this._container.children[ i ].removeChild( this._container.children[ i ].lastElementChild );
 
 	}
 

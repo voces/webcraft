@@ -143,13 +143,13 @@ class App extends EventDispatcher {
 
 					// Expand out properties
 					for ( const prop in value )
-						if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( prop ) === - 1 )
+						if ( ! [ "_key", "_collection", "_constructor", "_function" ].includes( prop ) )
 							value[ prop ] = props.reviver( prop, value[ prop ] );
 
 					// Apply properties
 					if ( obj )
 						for ( const prop in value )
-							if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( "prop" ) === - 1 )
+							if ( ! [ "_key", "_collection", "_constructor", "_function" ].includes( "prop" ) )
 								obj[ prop ] = value[ prop ];
 
 					return obj;
@@ -162,12 +162,12 @@ class App extends EventDispatcher {
 					const obj = new this[ value._constructor ]( { key: value._key } );
 
 					for ( const prop in value )
-						if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( prop ) === - 1 )
+						if ( ! [ "_key", "_collection", "_constructor", "_function" ].includes( prop ) )
 							value[ prop ] = props.reviver( prop, value[ prop ] );
 
 					if ( obj )
 						for ( const prop in value )
-							if ( [ "_key", "_collection", "_constructor", "_function" ].indexOf( "prop" ) === - 1 )
+							if ( ! [ "_key", "_collection", "_constructor", "_function" ].includes( "prop" ) )
 								obj[ prop ] = value[ prop ];
 
 					return obj;

@@ -27,7 +27,7 @@
 
 const keyboard = {};
 
-const SIZE = 0.6;
+const SIZE = 0.5;
 
 const app = new WebCraft.App( {
 
@@ -89,8 +89,8 @@ function start() {
 
 	cleanup();
 
-	// app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
-	app.state.levelIndex = Math.floor( app.random() * levels.length );
+	app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
+	// app.state.levelIndex = Math.floor( app.random() * levels.length );
 
 	const level = levels[ app.state.levelIndex ];
 
@@ -598,7 +598,7 @@ const levels = [
 		origin: { x: 0, y: 0 },
 		spawn: 0,
 		score: 1,
-		speed: 1,
+		speed: 5,
 		won: 1,
 		floormap: [
 			"████████████████████",
@@ -643,11 +643,59 @@ const levels = [
 			[ { x: 4.5, y: - 3.5 }, { x: 7, y: - 3.5 }, { x: 7, y: - 4.5 }, { x: 7, y: - 3.5 } ]
 		],
 		food: [ { x: 8, y: - 4 } ]
+	},
+
+	// Level 10
+	{
+		origin: { x: 0, y: - 0.5 },
+		spawn: 0,
+		score: 1,
+		speed: 1.5,
+		won: 1,
+		floormap: [
+			"███████████",
+			"███░░░█░░░█",
+			"███░░░█░░░█",
+			"███ ███ ███",
+			"███  █  ███",
+			"███  █  ███",
+			"███  █  ███",
+			"█    █    █",
+			"█  █████  █",
+			"█         █",
+			"███     ███",
+			"███████████"
+		],
+		patrols: [
+			...[
+				{ x: - 2, y: 2, dX: 1 },
+				{ x: - 1, y: 1, dX: - 1 },
+				{ x: - 2, y: - 0, dX: 1 },
+				{ x: - 1, y: - 1, dX: - 1 },
+				{ x: - 3, y: - 1, dX: - 1 },
+				{ x: - 4, y: - 2, dX: 1 },
+				{ x: - 3, y: - 3, dX: - 1 },
+				{ x: - 2, y: - 4, dY: 1 },
+				{ x: - 1, y: - 3, dY: - 1 },
+				{ x: 0, y: - 4, dY: 1 },
+				{ x: 1, y: - 3, dY: - 1 },
+				{ x: 2, y: - 4, dY: 1 },
+				{ x: 3, y: - 3, dX: 1 },
+				{ x: 4, y: - 2, dX: - 1 },
+				{ x: 3, y: - 1, dX: 1 },
+				{ x: 1, y: - 1, dX: 1 },
+				{ x: 2, y: 0, dX: - 1 },
+				{ x: 1, y: 1, dX: 1 },
+				{ x: 2, y: 2, dX: - 1 }
+			].map( p => [
+				{ x: p.x, y: p.y },
+				{ x: p.x + ( p.dX || 0 ), y: p.y + ( p.dY || 0 ) } ] )
+		]
 	}
 
 ];
 
-// app.state.levelIndex = levels.length - 2;
+app.state.levelIndex = levels.length - 2;
 
 for ( let i = 0; i < levels.length; i ++ ) {
 
