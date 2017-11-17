@@ -41,7 +41,7 @@ const app = new WebCraft.App( {
 		],
 		units: [
 			{ name: "Character", model: { path: "../../models/Cube.js", scale: SIZE }, speed: 3.5 },
-			{ name: "Food", model: { path: "../../models/Sphere.js", color: "#FFFF00", scale: 0.5 } },
+			{ name: "Food", model: { path: "../../models/Sphere.js", color: "#FFFF00", scale: 0.5 }, state: [ "food" ] },
 			{ name: "Enemy", model: { path: "../../models/Sphere.js", color: "#0000FF", scale: 0.5 }, speed: 7 }
 		]
 	}
@@ -63,7 +63,11 @@ new Chat( app );
 
 function spawn( player ) {
 
-	const char = new app.Character( Object.assign( { owner: player, z: 1 }, levels[ app.state.levelIndex ].checkpoints[ player.checkpoint ].center ) );
+	const level = levels[ app.state.levelIndex ];
+
+	if ( level.checkpoints === undefined ) calculateCheckpoints();
+
+	const char = new app.Character( Object.assign( { owner: player, z: 1 }, level.checkpoints[ player.checkpoint ].center ) );
 	player.character = char;
 	char.onNear( app.units, SIZE, onNear );
 	char.addEventListener( "death", onDeath );
@@ -89,8 +93,8 @@ function start() {
 
 	cleanup();
 
-	app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
-	// app.state.levelIndex = Math.floor( app.random() * levels.length );
+	// app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
+	app.state.levelIndex = Math.floor( app.random() * levels.length );
 
 	const level = levels[ app.state.levelIndex ];
 
@@ -257,7 +261,8 @@ function newPlayer( player ) {
 
 	player.food = [];
 	player.state = [ "character", "points", "checkpoint" ];
-	if ( ! player.points ) player.points = 0;
+	if ( player.points === undefined ) player.points = 0;
+	if ( player.checkpoint === undefined ) player.checkpoint = levels[ app.state.levelIndex ].spawn;
 
 	if ( app.players.length === 1 ) start();
 	else {
@@ -651,7 +656,6 @@ const levels = [
 		spawn: 0,
 		score: 1,
 		speed: 1.5,
-		won: 1,
 		floormap: [
 			"███████████",
 			"███░░░█░░░█",
@@ -695,7 +699,7 @@ const levels = [
 
 ];
 
-app.state.levelIndex = levels.length - 2;
+// app.state.levelIndex = levels.length - 2;
 
 for ( let i = 0; i < levels.length; i ++ ) {
 
