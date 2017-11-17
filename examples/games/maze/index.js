@@ -76,6 +76,10 @@ function spawn( player ) {
 
 function cleanup() {
 
+	const level = levels[ app.state.levelIndex ];
+
+	if ( typeof level.clean === "function" ) level.clean();
+
 	const units = [ ...app.units ];
 	for ( let i = 0; i < units.length; i ++ )
 		units[ i ].remove();
@@ -93,12 +97,12 @@ function start() {
 
 	cleanup();
 
-	// app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
-	app.state.levelIndex = Math.floor( app.random() * levels.length );
+	app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
+	// app.state.levelIndex = Math.floor( app.random() * levels.length );
 
 	const level = levels[ app.state.levelIndex ];
-
 	if ( level.checkpoints === undefined ) calculateCheckpoints();
+	if ( typeof level.start === "function" ) level.start();
 
 	const base = {};
 	if ( level.speed ) base.speed = level.speed;
@@ -208,10 +212,8 @@ function tick( time ) {
 			const xDelta = ( ( player.ArrowRight ? 1 : 0 ) - ( player.ArrowLeft ? 1 : 0 ) ) * player.character.speed * delta;
 			const yDelta = ( ( player.ArrowUp ? 1 : 0 ) - ( player.ArrowDown ? 1 : 0 ) ) * player.character.speed * delta;
 
-			if ( ! xDelta && ! yDelta ) continue;
-
-			if ( xDelta !== 0 && canPlace( player.character, xDelta, 0 ) ) player.character.x = roundTo( player.character.x + xDelta, 4 );
-			if ( yDelta !== 0 && canPlace( player.character, 0, yDelta ) ) player.character.y = roundTo( player.character.y + yDelta, 4 );
+			if ( xDelta && canPlace( player.character, xDelta, 0 ) ) player.character.x = roundTo( player.character.x + xDelta, 4 );
+			if ( yDelta && canPlace( player.character, 0, yDelta ) ) player.character.y = roundTo( player.character.y + yDelta, 4 );
 
 			for ( let n = 0; n < level.checkpoints.length; n ++ )
 				if ( level.checkpoints[ n ].contains( player.character ) ) {
@@ -221,10 +223,10 @@ function tick( time ) {
 					if ( level.score !== n ) continue;
 
 					if ( level.won === undefined ||
-							typeof level.won === "number" && player.food.filter( food => food ).length >= level.won ||
-							typeof level.won === "function" && level.won( player ) )
+						typeof level.won === "number" && app.players.reduce( ( sum, p ) => sum + p.food.filter( f => f ).length, 0 ) >= level.won ||
+						typeof level.won === "function" && level.won( player ) )
 
-						point( player );
+						point( app.players.filter( p => p === player || p.food.some( f => f ) ) );
 
 				}
 
@@ -240,13 +242,15 @@ function tick( time ) {
 
 	}
 
+	if ( typeof level.tick === "function" ) level.tick( time, delta );
+
 }
 
-function point( player ) {
+function point( players ) {
 
 	app.updates.splice( app.updates.indexOf( tick ), 1 );
 
-	++ player.points;
+	players.forEach( p => ++ p.points );
 	multiboard.update( app.players );
 
 	start();
@@ -268,7 +272,17 @@ function newPlayer( player ) {
 	else {
 
 		if ( player.character === undefined ) spawn( player );
+		else if ( player.character._onNearsAnotherUnit === undefined ) {
+
+			player.character.onNear( app.units, SIZE, onNear );
+			player.character.addEventListener( "death", onDeath );
+
+		}
+
 		if ( player === app.localPlayer ) app.updates.push( tick );
+
+		const level = levels[ app.state.levelIndex ];
+		if ( WebCraft.isBrowser ) app.camera.position.z = Math.max( level.width / 2 + 10, level.height );
 
 	}
 
@@ -404,6 +418,8 @@ const levels = [
 		origin: { x: 0, y: - 0.5 },
 		spawn: 0,
 		score: 0,
+		speed: 4,
+		won: 1,
 		floormap: [
 			"██████",
 			"█ ████",
@@ -413,7 +429,6 @@ const levels = [
 			"█    █",
 			"██████"
 		],
-		speed: 4,
 		patrols: [
 			[ { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 } ],
 			[ { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 } ],
@@ -425,8 +440,7 @@ const levels = [
 			[ { x: 1.5, y: - 0.5 }, { x: 1.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 } ],
 			[ { x: 0.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 } ],
 			[ { x: - 0.5, y: - 1.5 }, { x: - 1.5, y: - 1.5 }, { x: - 1.5, y: 1.5 }, { x: 1.5, y: 1.5 }, { x: 1.5, y: - 1.5 } ]],
-		food: [ { x: - 1.5, y: 2.5 } ],
-		won: player => player.food.filter( food => food ).length >= 1
+		food: [ { x: - 1.5, y: 2.5 } ]
 	},
 
 	// Level 4
@@ -695,11 +709,82 @@ const levels = [
 				{ x: p.x, y: p.y },
 				{ x: p.x + ( p.dX || 0 ), y: p.y + ( p.dY || 0 ) } ] )
 		]
+	},
+
+	// Level 11
+	{
+		spawn: 0,
+		score: 1,
+		speed: 1.5,
+		won: 2,
+		floormap: [
+			"██████████████████",
+			"█████            █",
+			"█████        ██  █",
+			"█████        ██░░█",
+			"█████        ██░░█",
+			"█░░██        █████",
+			"█░░██        █████",
+			"█  ██        █████",
+			"█            █████",
+			"██████████████████"
+		],
+		food: [
+			{ x: - 3.5, y: 3.5 },
+			{ x: 3.5, y: - 3.5 }
+		],
+		circles: [
+			...( () => {
+
+				const circles = [];
+				for ( let v = 0.75; v < 5; v += 0.667 )
+					circles.push(
+						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) },
+						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) },
+						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) },
+				 		{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) },
+						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) },
+						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) },
+						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) },
+						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - v, y: 0.25 } ) } );
+
+				return circles;
+
+			} )()
+		],
+		tick: function ( time ) {
+
+			const mode = Math.floor( time / 1000 ) % 2 ? "move" : "hold";
+			if ( this.mode === mode ) return;
+			this.mode = mode;
+
+			if ( ! this.enemies ) {
+
+				this.enemies = app.units.filter( u => u instanceof app.Enemy && u.circle );
+				for ( let i = 0; i < this.enemies.length; i ++ )
+					this.enemies[ i ]._circle = this.enemies[ i ].circle;
+
+			}
+
+			if ( mode === "move" )
+				for ( let i = 0; i < this.enemies.length; i ++ )
+					this.enemies[ i ].circle = this.enemies[ i ]._circle;
+			 else
+			 	for ( let i = 0; i < this.enemies.length; i ++ )
+					delete this.enemies[ i ].circle;
+
+		},
+		clean: function () {
+
+			delete this.enemies;
+			delete this.mode;
+
+		}
 	}
 
 ];
 
-// app.state.levelIndex = levels.length - 2;
+app.state.levelIndex = levels.length - 2;
 
 for ( let i = 0; i < levels.length; i ++ ) {
 
@@ -756,6 +841,18 @@ function offset( point ) {
 	const level = levels[ app.state.levelIndex ];
 
 	return { x: point.x + ( level.origin ? level.origin.x || 0 : 0 ), y: point.y + ( level.origin ? level.origin.y || 0 : 0 ) };
+
+}
+
+function angleBetweenPoints( p1, p2 ) {
+
+	return Math.atan2( p2.y - p1.y, p2.x - p1.x );
+
+}
+
+function distanceBetweenPoints( p1, p2 ) {
+
+	return ( ( p2.x - p1.x ) ** 2 + ( p2.y - p1.y ) ** 2 ) ** ( 1 / 2 );
 
 }
 
