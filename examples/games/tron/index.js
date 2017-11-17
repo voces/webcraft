@@ -3,6 +3,8 @@
 ///// Overhead
 ////////////////////////////////////////////////
 
+/* globals Multiboard */
+
 {
 
 	const isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )();
@@ -12,6 +14,7 @@
 
 		THREE = require( "three" );
 		WebCraft = require( "../../../build/webcraft.js" );
+		Multiboard = require( "../../shared/ui/Multiboard.js" );
 
 	}
 
@@ -50,38 +53,9 @@ const app = new WebCraft.App( {
 	types: {
 		doodads: [ { name: "Wall", model: "../../models/Cube.js" } ],
 		units: [
-			{ name: "Bike", model: "../../models/Cube.js" },
+			{ name: "Bike", model: "../../models/Cube.js", state: [ "oldFacing" ] },
 			{ name: "Glass", model: { path: "../../models/Cube.js", opacity: 0.5 } }
 		]
-	},
-
-	intentSystem: {
-
-		keydown: e => {
-
-			if ( keyboard[ e.key ] ) return;
-			keyboard[ e.key ] = true;
-
-			if ( ! app.localPlayer || ! app.localPlayer.bike ) return;
-
-			const eventType = e.key === "ArrowUp" && "up" ||
-				e.key === "ArrowDown" && "down" ||
-				e.key === "ArrowLeft" && "left" ||
-				e.key === "ArrowRight" && "right";
-
-			if ( ! eventType ) return;
-
-			app.network.send( { type: eventType } );
-
-		},
-
-		keyup: e => {
-
-			if ( ! keyboard[ e.key ] ) return;
-			keyboard[ e.key ] = false;
-
-		}
-
 	}
 
 } );
@@ -91,7 +65,6 @@ new app.Wall( { model: { path: "../../models/Cube.js", width: 41 }, y: - 10 } );
 new app.Wall( { model: { path: "../../models/Cube.js", height: 21 }, x: 21 } );
 new app.Wall( { model: { path: "../../models/Cube.js", height: 21 }, x: - 21 } );
 
-let bikes = [];
 let grid = [];
 for ( let i = 0; i <= 40; i ++ ) grid[ i ] = {};
 
@@ -108,17 +81,16 @@ Object.defineProperties( app.state, {
 		set: time => startTimer = typeof time === "number" ? app.setTimeout( start, time, true ) : time,
 		enumerable: true
 	},
-	scores: {
-		get: () => app.players.here.slice( 0, 8 ).map( player => player.score || 0 ),
-		set: scores => scores.forEach( ( score, i ) => app.players.here[ i ].score = score ),
-		enumerable: true
-	},
-	bikes: { get: () => bikes, set: value => bikes = value, enumerable: true },
 	grid: { get: () => grid, set: value => grid = value, enumerable: true }
 } );
 
 let ticker;
 let startTimer;
+
+const multiboard = new Multiboard( {
+	columns: 2,
+	schema: [ "color.name", "score" ]
+} );
 
 /////////////////////////////////////////////////
 ///// Game Logic
@@ -134,8 +106,6 @@ function reset() {
 	for ( let x = 0; x <= 40; x ++ )
 		grid[ x ] = {};
 
-	bikes.splice( 0 );
-
 	app.players.filter( player => player.status === "left" ).forEach( player => player.remove() );
 
 }
@@ -146,20 +116,14 @@ function start() {
 
 	reset();
 
-	const players = app.players.here.slice( 0, 8 );
+	for ( let i = 0; i < app.players.length; i ++ ) {
 
-	for ( let i = 0; i < players.length; i ++ ) {
-
-		const bike = new app.Bike( Object.assign( { owner: players[ i ] }, spawnLocations[ i ] ) );
-		players[ i ].bike = bike;
-		bikes.push( bike );
+		const bike = new app.Bike( Object.assign( { owner: app.players[ i ] }, spawnLocations[ i ] ) );
+		app.players[ i ].bike = bike;
 
 		bike.x = app.linearTween( { start: bike.x, rate: bike.speed * Math.cos( bike.facing ), duration: Infinity } );
 
 		bike.oldFacing = bike.facing;
-
-		if ( WebCraft.isBrowser )
-			players[ i ].scoreSpan.textContent = players[ i ].score;
 
 	}
 
@@ -172,6 +136,7 @@ function tick() {
 
 	let death = false;
 
+	const bikes = app.units.filter( u => u instanceof app.Bike );
 	for ( let i = 0; i < bikes.length; i ++ ) {
 
 		const bike = bikes[ i ];
@@ -233,13 +198,14 @@ function tick() {
 	const winner = bikes[ 0 ].owner;
 
 	++ winner.score;
+	multiboard.update( app.players.here );
 
 	winner.bike.x = winner.bike.x;
 	winner.bike.y = winner.bike.y;
 
 	ticker = ticker.clear();
 
-	if ( app.players.here.length >= 2 )
+	if ( app.players.length >= 2 )
 		startTimer = app.setTimeout( start, 1000 );
 
 }
@@ -250,37 +216,31 @@ function tick() {
 
 function onNewPlayer( player ) {
 
+	player.state = [ "bike", "score" ];
 	if ( player.score === undefined ) player.score = 0;
 
-	if ( WebCraft.isBrowser && app.players.here.slice( 0, 8 ).indexOf( player ) >= 0 ) addPlayerToLeaderboard( player );
+	multiboard.colors = app.players.here.map( player => player.color.hex );
+	multiboard.update( app.players.here );
 
 }
 
 app.addEventListener( "playerJoin", ( { player } ) => {
 
-	if ( app.players.here.length === 2 )
+	if ( app.players.length === 2 )
 		startTimer = app.setTimeout( start, 1000 );
 
 	onNewPlayer( player );
 
 } );
 
-app.addEventListener( "state", e => {
+app.addEventListener( "state", () => {
 
 	if ( ! WebCraft.isBrowser ) return;
 
-	for ( let i = 0; i < e.state.bikes.length; i ++ ) {
+	for ( let i = 0; i < app.players.length; i ++ )
+		onNewPlayer( app.players[ i ] );
 
-		e.state.bikes[ i ].owner.bike = e.state.bikes[ i ];
-		e.state.bikes[ i ].oldFacing = e.state.bikes[ i ].facing;
-
-	}
-
-	const players = app.players.here;
-	for ( let i = 0; i < players.length; i ++ )
-		onNewPlayer( players[ i ] );
-
-	if ( players.length === 2 )
+	if ( app.players.length === 2 )
 		startTimer = app.setTimeout( start, 1000 );
 
 } );
@@ -291,10 +251,10 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 	if ( player.bike ) {
 
 		player.bike.kill();
-		bikes.splice( bikes.indexOf( player.bike ), 1 );
 		player.bike = undefined;
 
 		// Leaver was the last opponent; award points to the winner and freeze the game
+		const bikes = app.units.filter( u => u instanceof app.Bike );
 		if ( bikes.length === 1 ) {
 
 			const winner = bikes[ 0 ].owner;
@@ -317,55 +277,21 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 
 		if ( startTimer ) startTimer = startTimer.clear();
 
-		if ( app.players.here.length >= 2 )
+		if ( app.players.length >= 2 )
 			startTimer = app.setTimeout( start, 1000 );
 
 	}
 
-	if ( WebCraft.isBrowser && player.leaderboardRow ) {
-
-		player.leaderboardRow.remove();
-
-		const players = app.players.here;
-		if ( players.length >= 8 ) addPlayerToLeaderboard( players[ 7 ] );
-
-	}
+	multiboard.colors = app.players.here.map( player => player.color.hex );
+	multiboard.update( app.players.here );
 
 } );
-
-/////////////////////////////////////////////////
-///// Leaderboard
-/////////////////////////////////////////////////
-
-function addPlayerToLeaderboard( player ) {
-
-	const container = document.createElement( "div" );
-	container.classList.add( "row" );
-	container.style.color = player.color.hex;
-	document.querySelector( ".leaderboard" ).appendChild( container );
-
-	const name = document.createElement( "span" );
-	name.classList.add( "player" );
-	name.textContent = ( player === app.localPlayer ? "►" : "" ) + player.color.name;
-	container.appendChild( name );
-
-	const score = document.createElement( "span" );
-	score.classList.add( "score" );
-	score.textContent = player.score;
-	container.appendChild( score );
-
-	player.scoreSpan = score;
-	player.leaderboardRow = container;
-
-}
 
 /////////////////////////////////////////////////
 ///// Player Actions
 /////////////////////////////////////////////////
 
-app.addEventListener( "up down left right", bikeEvent );
-
-function bikeEvent( { type, player } ) {
+app.addEventListener( "up down left right", ( { type, player } ) => {
 
 	const bike = player.bike;
 	const direction = type.replace( type[ 0 ], type[ 0 ].toUpperCase() );
@@ -377,4 +303,29 @@ function bikeEvent( { type, player } ) {
 
 	bike.facing = Direction[ direction ];
 
-}
+} );
+
+WebCraft.isBrowser && window.addEventListener( "keydown", e => {
+
+	if ( keyboard[ e.key ] ) return;
+	keyboard[ e.key ] = true;
+
+	if ( ! app.localPlayer || ! app.localPlayer.bike ) return;
+
+	const eventType = e.key === "ArrowUp" && "up" ||
+		e.key === "ArrowDown" && "down" ||
+		e.key === "ArrowLeft" && "left" ||
+		e.key === "ArrowRight" && "right";
+
+	if ( ! eventType ) return;
+
+	app.network.send( { type: eventType } );
+
+} );
+
+WebCraft.isBrowser && window.addEventListener( "keyup", e => {
+
+	if ( ! keyboard[ e.key ] ) return;
+	keyboard[ e.key ] = false;
+
+} );

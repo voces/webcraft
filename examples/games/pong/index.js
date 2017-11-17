@@ -30,40 +30,9 @@ const app = new WebCraft.App( {
 	types: {
 		doodads: [ { name: "Wall", model: "../../models/Cube.js" } ],
 		units: [
-			{ name: "Ball", model: "../../models/Sphere.js" },
+			{ name: "Ball", model: { path: "../../models/Sphere.js", color: "#00FF00" } },
 			{ name: "Paddle", model: { path: "../../models/Cube.js", height: 5 } }
 		]
-	},
-
-	intentSystem: {
-
-		keydown: e => {
-
-			if ( keyboard[ e.key ] ) return;
-			keyboard[ e.key ] = true;
-
-			if ( leftPaddle.owner !== app.localPlayer && rightPaddle.owner !== app.localPlayer ) return;
-
-			const eventType = e.key === "ArrowUp" && "up" || e.key === "ArrowDown" && "down";
-
-			if ( ! eventType ) return;
-
-			app.network.send( { type: eventType } );
-
-		},
-
-		keyup: e => {
-
-			if ( ! keyboard[ e.key ] ) return;
-			keyboard[ e.key ] = false;
-
-			if ( leftPaddle.owner !== app.localPlayer && rightPaddle.owner !== app.localPlayer ) return;
-
-			if ( ! keyboard.ArrowUp && ! keyboard.ArrowDown && [ "ArrowUp", "ArrowDown" ].indexOf( e.key ) >= 0 )
-				app.network.send( { type: "hold" } );
-
-		}
-
 	}
 
 } );
@@ -249,11 +218,9 @@ app.addEventListener( "state", e => {
 ///// Player Actions
 /////////////////////////////////////////////////
 
-app.addEventListener( "up down hold", paddleEvent );
+app.addEventListener( "up down hold", ( { type, player } ) => {
 
-function paddleEvent( { type, player } ) {
-
-	let paddle = leftPaddle.owner === player && leftPaddle || rightPaddle.owner === player && rightPaddle;
+	const paddle = leftPaddle.owner === player && leftPaddle || rightPaddle.owner === player && rightPaddle;
 
 	if ( ! paddle ) return;
 
@@ -265,4 +232,31 @@ function paddleEvent( { type, player } ) {
 
 	}
 
-}
+} );
+
+WebCraft.isBrowser && window.addEventListener( "keydown", e => {
+
+	if ( keyboard[ e.key ] ) return;
+	keyboard[ e.key ] = true;
+
+	if ( leftPaddle.owner !== app.localPlayer && rightPaddle.owner !== app.localPlayer ) return;
+
+	const type = e.key === "ArrowUp" && "up" || e.key === "ArrowDown" && "down";
+
+	if ( ! type ) return;
+
+	app.network.send( { type } );
+
+} );
+
+WebCraft.isBrowser && window.addEventListener( "keyup", e => {
+
+	if ( ! keyboard[ e.key ] ) return;
+	keyboard[ e.key ] = false;
+
+	if ( leftPaddle.owner !== app.localPlayer && rightPaddle.owner !== app.localPlayer ) return;
+
+	if ( ! keyboard.ArrowUp && ! keyboard.ArrowDown && [ "ArrowUp", "ArrowDown" ].includes( e.key ) )
+		app.network.send( { type: "hold" } );
+
+} );
