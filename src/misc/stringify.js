@@ -12,8 +12,6 @@ const defaultReplacer = ( prop, value ) => value;
 
 function stringify( value, replacer = defaultReplacer, toJSON = "toJSON", memory = new Set() ) {
 
-	// console.log( "stringify", memory.size, typeof value, value instanceof Handle, value.toString().slice( 0, 100 ) );
-
 	if ( value == null ) return "null";
 	if ( typeof value === "number" ) return replacer( undefined, isFinite( value ) ? value.toString() : "null" );
 	if ( typeof value === "boolean" ) return replacer( undefined, value.toString() );

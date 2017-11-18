@@ -55,9 +55,6 @@ class EventDispatcher {
 
 		if ( typeof type !== "string" ) {
 
-			// console.warn( "dispatchEvent( <object> ) has been deprecated, please use dispatchEvent( <string>, <object> )" );
-			console.trace( "dispatchEvent( <object> ) has been deprecated, please use dispatchEvent( <string>, <object> )" );
-
 			args.unshift( event );
 			event = type;
 			type = type.type;
