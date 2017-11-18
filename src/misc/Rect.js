@@ -152,7 +152,6 @@ class Rect extends EventDispatcher {
 
 		if ( ! this.area ) return;
 
-		// console.log( this.candidateUnits );
 		const units = this.candidateUnits.filter( unit => this.contains( unit ) ).sort( ( a, b ) => a.id > b.id );
 
 		const [ enters, leaves ] = diff( units, this.units, "id" );

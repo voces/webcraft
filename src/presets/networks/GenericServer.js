@@ -15,16 +15,6 @@ class GenericServer extends EventDispatcher {
 		this.clients = props.clients || new Collection();
 		this.ws = props.ws && props.ws.constructor !== Object && props.ws || this.createWS( props );
 
-		this.charsSent = 0;
-
-		setInterval( () => {
-
-			if ( ! this.charsSent ) return;
-			// console.log( this.charsSent );
-			this.charsSent = 0;
-
-		}, 1000 );
-
 	}
 
 	send( data, toJSON ) {

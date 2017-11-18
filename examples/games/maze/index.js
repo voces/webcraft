@@ -97,8 +97,7 @@ function start() {
 
 	cleanup();
 
-	app.state.levelIndex = ( app.state.levelIndex + 1 ) % levels.length;
-	// app.state.levelIndex = Math.floor( app.random() * levels.length );
+	app.state.levelIndex = Math.floor( app.random() * levels.length );
 
 	const level = levels[ app.state.levelIndex ];
 	if ( level.checkpoints === undefined ) calculateCheckpoints();
@@ -127,6 +126,10 @@ function start() {
 			new klass( tileToWorld( x, y ) );
 
 		}
+
+	if ( level.stills )
+		for ( let i = 0; i < level.stills.length; i ++ )
+			new app.Enemy( Object.assign( { z: 1 }, base, offset( level.stills[ i ] ) ) );
 
 	if ( level.patrols )
 		for ( let i = 0; i < level.patrols.length; i ++ ) {
@@ -245,6 +248,7 @@ function tick( time ) {
 	if ( typeof level.tick === "function" ) level.tick( time, delta );
 
 }
+tick.count = 0;
 
 function point( players ) {
 
@@ -685,30 +689,28 @@ const levels = [
 			"███████████"
 		],
 		patrols: [
-			...[
-				{ x: - 2, y: 2, dX: 1 },
-				{ x: - 1, y: 1, dX: - 1 },
-				{ x: - 2, y: - 0, dX: 1 },
-				{ x: - 1, y: - 1, dX: - 1 },
-				{ x: - 3, y: - 1, dX: - 1 },
-				{ x: - 4, y: - 2, dX: 1 },
-				{ x: - 3, y: - 3, dX: - 1 },
-				{ x: - 2, y: - 4, dY: 1 },
-				{ x: - 1, y: - 3, dY: - 1 },
-				{ x: 0, y: - 4, dY: 1 },
-				{ x: 1, y: - 3, dY: - 1 },
-				{ x: 2, y: - 4, dY: 1 },
-				{ x: 3, y: - 3, dX: 1 },
-				{ x: 4, y: - 2, dX: - 1 },
-				{ x: 3, y: - 1, dX: 1 },
-				{ x: 1, y: - 1, dX: 1 },
-				{ x: 2, y: 0, dX: - 1 },
-				{ x: 1, y: 1, dX: 1 },
-				{ x: 2, y: 2, dX: - 1 }
-			].map( p => [
-				{ x: p.x, y: p.y },
-				{ x: p.x + ( p.dX || 0 ), y: p.y + ( p.dY || 0 ) } ] )
-		]
+			{ x: - 2, y: 2, dX: 1 },
+			{ x: - 1, y: 1, dX: - 1 },
+			{ x: - 2, y: - 0, dX: 1 },
+			{ x: - 1, y: - 1, dX: - 1 },
+			{ x: - 3, y: - 1, dX: - 1 },
+			{ x: - 4, y: - 2, dX: 1 },
+			{ x: - 3, y: - 3, dX: - 1 },
+			{ x: - 2, y: - 4, dY: 1 },
+			{ x: - 1, y: - 3, dY: - 1 },
+			{ x: 0, y: - 4, dY: 1 },
+			{ x: 1, y: - 3, dY: - 1 },
+			{ x: 2, y: - 4, dY: 1 },
+			{ x: 3, y: - 3, dX: 1 },
+			{ x: 4, y: - 2, dX: - 1 },
+			{ x: 3, y: - 1, dX: 1 },
+			{ x: 1, y: - 1, dX: 1 },
+			{ x: 2, y: 0, dX: - 1 },
+			{ x: 1, y: 1, dX: 1 },
+			{ x: 2, y: 2, dX: - 1 }
+		].map( p => [
+			{ x: p.x, y: p.y },
+			{ x: p.x + ( p.dX || 0 ), y: p.y + ( p.dY || 0 ) } ] )
 	},
 
 	// Level 11
@@ -739,14 +741,14 @@ const levels = [
 				const circles = [];
 				for ( let v = 0.75; v < 5; v += 0.667 )
 					circles.push(
-						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) },
-						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) },
-						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) },
-				 		{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) },
-						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) },
-						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) },
-						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) },
-						{ x: 0, y: 0, duration: 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - v, y: 0.25 } ) } );
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) },
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) },
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) },
+				 		{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) },
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) },
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) },
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) },
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - v, y: 0.25 } ) } );
 
 				return circles;
 
@@ -780,11 +782,161 @@ const levels = [
 			delete this.mode;
 
 		}
+
+	},
+
+	// Level 12
+	{
+		origin: { x: 0.25, y: 0.25 },
+		spawn: 2,
+		score: 1,
+		speed: 3,
+		won: 1,
+		floormap: [
+			"████████████████████",
+			"█                  █",
+			"█ ░░               █",
+			"█ ░░               █",
+			"█                  █",
+			"█                  █",
+			"█ ░░            ░░ █",
+			"█ ░░            ░░ █",
+			"█                  █",
+			"████████████████████"
+		],
+		stills: [].concat( ...[
+			"••••••••••••••••••••••••••••••••••",
+			"•            ••     ••••••••••••••",
+			"•                   ••••••••••••••",
+			"•    ••••••      •  ••••••••••••••",
+			"•    •••••••••••••  ••••••••••••••",
+			"•          •••••••  ••••••••••••••",
+			"•              •••  ••••••••••••••",
+			"•••••••••      •••  ••••••••••••••",
+			"••••••••••••••••••  ••••••••••••••",
+			"•        •••••••      •••••••    •",
+			"•          ••            ••      •",
+			"•    •            ••             •",
+			"•    •••       ••••••••          •",
+			"••••••••••••••••••••••••••••••••••"
+		].map( ( row, y ) => row.split( "" ).map( ( symbol, x ) =>
+			symbol === "•" ? { x: x / 2 - 8.5, y: - y / 2 + 3 } : null ).filter( still => still ) ) ),
+		patrols: [
+			[ { x: - 5, y: - 3.5 }, { x: - 5, y: 3 } ],
+			[ { x: - 4.5, y: - 3.5 }, { x: - 4.5, y: 3 } ],
+			[ { x: 0.5, y: - 3.5 }, { x: 0.5, y: 3 } ],
+			[ { x: 1, y: - 3.5 }, { x: 1, y: 3 } ],
+			[ { x: - 2, y: 3 }, { x: - 2, y: - 3.5 } ],
+			[ { x: - 1.5, y: 3 }, { x: - 1.5, y: - 3.5 } ],
+			[ { x: 4, y: 3 }, { x: 4, y: - 3.5 } ],
+			[ { x: 4.5, y: 3 }, { x: 4.5, y: - 3.5 } ]
+		],
+		food: [ { x: - 1.75, y: - 0.25 } ]
+	},
+
+	// Level 13
+	{
+		spawn: 1,
+		score: 0,
+		speed: 5,
+		floormap: [
+			"████████████",
+			"█████░░█████",
+			"█████░░█████",
+			"█          █",
+			"█          █",
+			"█          █",
+			"█          █",
+			"█          █",
+			"█          █",
+			"█████░░█████",
+			"█████░░█████",
+			"████████████"
+		],
+		patrols: [
+			...Array( 5 ).fill( 0 ).map( ( v, i ) => ( [ { x: i * 2 - 4.5, y: 2.5 }, { x: i * 2 - 4.5, y: - 2.5 } ] ) ),
+			...Array( 5 ).fill( 0 ).map( ( v, i ) => ( [ { x: i * 2 - 3.5, y: - 2.5 }, { x: i * 2 - 3.5, y: 2.5 } ] ) ),
+			[ { x: - 4.5, y: 0.5 }, { x: 4.5, y: 0.5 } ],
+			[ { x: 4.5, y: - 0.5 }, { x: - 4.5, y: - 0.5 } ]
+		]
+	},
+
+	// Level 14
+	{
+		spawn: 1,
+		score: 0,
+		speed: 2,
+		floormap: [
+			"████████████████████",
+			"████████████████░░░█",
+			"████████████████░░░█",
+			"████████████████░░░█",
+			"█░░░               █",
+			"█░░░               █",
+			"█░░░               █",
+			"████████████████████"
+		],
+		patrols: [
+			...[ - 4.5, - 0.5, 3.5, 7.5 ].map( x => [ { x, y: - 1.5 } ] ),
+			[ { x: - 2.5, y: - 0.25 }, { x: - 2.5, y: - 2.25 } ],
+			[ { x: - 2.5, y: - 0.75 }, { x: - 2.5, y: - 2.75 } ],
+			[ { x: 5.5, y: - 0.25 }, { x: 5.5, y: - 2.25 } ],
+			[ { x: 5.5, y: - 0.75 }, { x: 5.5, y: - 2.75 } ],
+			[ { x: 1.5, y: - 2.25 }, { x: 1.5, y: - 0.25 } ],
+			[ { x: 1.5, y: - 2.75 }, { x: 1.5, y: - 0.75 } ]
+		],
+		circles: [].concat( ...[ - 4.5, - 0.5, 3.5, 7.5 ].map( x => [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( arm => [ 0.72, 1.44 ].map( radius => ( {
+			x, y: - 1.5, radius, duration: - 3, offset: 3 * arm
+		} ) ) ) ) ) )
+	},
+
+	// Level 15
+	{
+		origin: { x: - 0.5, y: 0.5 },
+		spawn: 0,
+		score: 1,
+		speed: 6,
+		floormap: [
+			"██████████████████████",
+			"█░░░█       █        █",
+			"█░░░█       █        █",
+			"█ ███       █        █",
+			"█   █   █   █   ██   █",
+			"█   █   █   █   ██   █",
+			"█   █   █   █   ██   █",
+			"█   █   █   █   ██   █",
+			"█       █       ████ █",
+			"█       █       ██░░░█",
+			"█       █       ██░░░█",
+			"██████████████████████"
+		],
+		patrols: [
+			{ x: - 9, y: 1, dY: - 6 },
+			{ x: - 8, y: - 5, dY: 6 },
+			{ x: - 7, y: 1, dY: - 6 },
+			{ x: - 6, y: - 3, dY: - 2 },
+			{ x: - 5, y: 4, dY: - 9 },
+			{ x: - 4, y: - 5, dY: 9 },
+			{ x: - 3, y: 4, dY: - 9 },
+			{ x: - 2, y: 4, dY: - 2 },
+			{ x: - 1, y: 4, dY: - 9 },
+			{ x: 0, y: - 5, dY: 9 },
+			{ x: 1, y: 4, dY: - 9 },
+			{ x: 2, y: - 3, dY: - 2 },
+			{ x: 3, y: 4, dY: - 9 },
+			{ x: 4, y: - 5, dY: 9 },
+			{ x: 5, y: 4, dY: - 9 },
+			{ x: 6, y: 4, dY: - 2 },
+			{ x: 7, y: 2, dY: 2 },
+			{ x: 8, y: - 2, dY: 6 },
+			{ x: 9, y: 4, dY: - 6 },
+			{ x: 10, y: - 2, dY: 6 }
+		].map( p => [
+			{ x: p.x, y: p.y },
+			{ x: p.x + ( p.dX || 0 ), y: p.y + ( p.dY || 0 ) } ] )
 	}
 
 ];
-
-app.state.levelIndex = levels.length - 2;
 
 for ( let i = 0; i < levels.length; i ++ ) {
 

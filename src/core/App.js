@@ -452,7 +452,7 @@ class App extends EventDispatcher {
 
 	}
 
-	update() {
+	update( consistencyUpdate = false ) {
 
 		if ( env.isServer ) {
 
@@ -519,7 +519,7 @@ class App extends EventDispatcher {
 
 		}
 
-		if ( env.isServer ) {
+		if ( env.isServer && ! consistencyUpdate ) {
 
 			this.network.send( this.time );
 			setTimeout( () => this.update(), 25 );
