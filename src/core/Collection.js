@@ -12,11 +12,15 @@ class Collection extends Array {
 
 	add( ...items ) {
 
-		this.push( ...items );
-
 		for ( let i = 0; i < items.length; i ++ )
-			if ( items[ i ][ this.key ] !== undefined )
+			if ( items[ i ][ this.key ] !== undefined ) {
+
+				if ( this.dict[ items[ i ][ this.key ] ] === items[ i ] ) continue;
+
 				this.dict[ items[ i ][ this.key ] ] = items[ i ];
+				this.push( items[ i ] );
+
+			}
 
 	}
 

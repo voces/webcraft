@@ -5,8 +5,10 @@
   "module": "build/webcraft.module.js",
   "scripts": {
     "build": "rollup -c",
+	"build-test": "rollup -c test/rollup.unit.config.test.js -w",
     "dev": "rollup -c -w -m inline",
-    "test": "echo \"Error: no test specified\" && exit 1"
+	"start": "npm run dev",
+    "test": "mocha build/webcraft.source.unit.test.js"
   },
   "author": "verit",
   "license": "ISC",
@@ -14,12 +16,13 @@
     "eslint": "^3.19.0",
     "eslint-config-mdcs": "^4.2.2",
     "eslint-plugin-html": "^2.0.3",
+    "mocha": "^4.0.1",
     "rollup": "^0.41.6",
     "rollup-watch": "^3.2.2",
     "three": "^0.87.1"
   },
   "dependencies": {
-    "ws": "^3.0.0"
+    "ws": "^3.3.1"
   },
   "repository": {
     "type": "git",
@@ -29,7 +32,8 @@
     "url": "https://github.com/voces/WebCraft/issues"
   },
   "directories": {
-    "example": "examples"
+    "example": "examples",
+    "test": "test"
   },
   "keywords": [
     "engine",
