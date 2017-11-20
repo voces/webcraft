@@ -1,5 +1,5 @@
 
-var isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )();
+var isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )() || process.env.isBrowser;
 
 class Multiboard {
 

@@ -5,7 +5,7 @@
 
 {
 
-	const isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )();
+	const isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )() || process.env.isBrowser;
 
 	//For Node (i.e., servers)
 	if ( ! isBrowser ) {
