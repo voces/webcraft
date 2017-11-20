@@ -1,26 +1,19 @@
 {
   "name": "webcraft",
-  "version": "1.1.0",
+  "version": "1.1.1",
+  "description": "HTML5 game engine",
   "main": "build/webcraft.js",
   "module": "build/webcraft.module.js",
   "scripts": {
     "build": "rollup -c",
-	"build-test": "rollup -c test/rollup.unit.config.test.js -w",
+    "build-test": "rollup -c test/rollup.unit.config.test.js",
     "dev": "rollup -c -w -m inline",
-	"start": "npm run dev",
-    "test": "mocha build/webcraft.source.unit.test.js"
+    "start": "npm run dev",
+    "test": "mocha build/webcraft.source.unit.test.js",
+    "test-dev": "rollup -c -w test/rollup.unit.config.test.js"
   },
   "author": "verit",
   "license": "ISC",
-  "devDependencies": {
-    "eslint": "^3.19.0",
-    "eslint-config-mdcs": "^4.2.2",
-    "eslint-plugin-html": "^2.0.3",
-    "mocha": "^4.0.1",
-    "rollup": "^0.41.6",
-    "rollup-watch": "^3.2.2",
-    "three": "^0.87.1"
-  },
   "dependencies": {
     "ws": "^3.3.1"
   },
@@ -42,5 +35,13 @@
     "network",
     "game"
   ],
-  "description": "HTML5 game engine"
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-mdcs": "^4.2.2",
+    "eslint-plugin-html": "^2.0.3",
+    "mocha": "^4.0.1",
+    "rollup": "^0.41.6",
+    "rollup-watch": "^3.2.2",
+    "three": "^0.87.1"
+  }
 }
