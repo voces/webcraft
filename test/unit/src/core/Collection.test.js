@@ -5,40 +5,38 @@ const assert = require( "assert" );
 
 import Collection from "../../../../src/core/Collection.js";
 
-describe( "Collection", () => {
+export default () => describe( "Collection", () => {
 
-	describe( "Collection", () => {
+	it( "Extends Array", () => assert.ok( new Collection() instanceof Array ) );
+	it( "key", () => assert.equal( ( new Collection() ).key, "key" ) );
 
-		it( "Extends array", () => assert.equal( new Collection() instanceof Array, true ) );
-		it( "key", () => assert.equal( ( new Collection() ).key, "key" ) );
+	it( "add( obj )", () => {
 
-		it( "add( obj )", () => {
+		1 + 1;
 
-			const collection = new Collection();
-			const obj = { key: "test", value: 7 };
+		const collection = new Collection();
+		const obj = { key: "test", value: 7 };
 
-			collection.add( obj );
-			collection.add( obj );	// Act as a set
+		collection.add( obj );
+		collection.add( obj );	// Act as a set
 
-			assert.equal( collection.length, 1 );
-			assert.equal( collection[ 0 ], obj );
-			assert.equal( collection.dict[ obj.key ], obj );
+		assert.equal( collection.length, 1 );
+		assert.equal( collection[ 0 ], obj );
+		assert.equal( collection.dict[ obj.key ], obj );
 
-		} );
+	} );
 
-		it( "remove( obj )", () => {
+	it( "remove( obj )", () => {
 
-			const collection = new Collection();
-			const obj = { key: "test", value: 7 };
+		const collection = new Collection();
+		const obj = { key: "test", value: 7 };
 
-			collection.add( obj );
-			collection.remove( obj );
+		collection.add( obj );
+		collection.remove( obj );
 
-			assert.equal( collection.length, 0 );
-			assert.notEqual( collection[ 0 ], obj );
-			assert.notEqual( collection.dict[ obj.key ], obj );
-
-		} );
+		assert.equal( collection.length, 0 );
+		assert.notEqual( collection[ 0 ], obj );
+		assert.notEqual( collection.dict[ obj.key ], obj );
 
 	} );
 

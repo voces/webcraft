@@ -1,2 +1,2 @@
 
-import "./unit/src/core/Collection.test.js";
+import "./unit/src/index.test.js";
