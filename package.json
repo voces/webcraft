@@ -10,7 +10,7 @@
     "dev": "rollup -c -w -m inline",
     "start": "npm run dev",
     "test": "mocha build/webcraft.source.unit.test.js",
-    "test-dev": "rollup -c -w test/rollup.unit.config.test.js"
+    "test-dev": "rollup -c test/rollup.unit.config.test.js -w"
   },
   "author": "verit",
   "license": "ISC",

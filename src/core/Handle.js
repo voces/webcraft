@@ -3,7 +3,7 @@ import EventDispatcher from "./EventDispatcher.js";
 
 class Handle extends EventDispatcher {
 
-	constructor( props ) {
+	constructor( props = {} ) {
 
 		super();
 
@@ -50,6 +50,8 @@ class Handle extends EventDispatcher {
 
 		const obj = {};
 
+		if ( ! Array.isArray( this.state ) ) return this.state;
+
 		for ( let i = 0; i < this.state.length; i ++ )
 			obj[ this.state[ i ] ] = this._props[ this.state[ i ] ] || this[ this.state[ i ] ];
 
@@ -60,7 +62,7 @@ class Handle extends EventDispatcher {
 	toState() {
 
 		return Object.assign( {
-			_key: this.key,
+			key: this.key,
 			_collection: this.entityType.name.toLowerCase() + "s",
 			_constructor: this.constructor.name
 
@@ -71,7 +73,7 @@ class Handle extends EventDispatcher {
 	toJSON() {
 
 		return {
-			_key: this.key,
+			key: this.key,
 			_collection: this.entityType.name.toLowerCase() + "s",
 			_constructor: this.constructor.name
 		};
@@ -80,7 +82,7 @@ class Handle extends EventDispatcher {
 
 }
 
-Handle.entityTypes = [];
+Handle.entityTypes = [ Handle ];
 Handle.id = 0;
 
 export default Handle;

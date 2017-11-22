@@ -1,4 +1,6 @@
 
+console.log( "abc" );
+
 const fs = require( "fs" );
 fs.readFile( "./test/source.unit.test.js", ( err, file ) => console.log( err || file ) );
 

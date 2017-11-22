@@ -142,7 +142,7 @@ class Rect extends EventDispatcher {
 	toJSON() {
 
 		return {
-			_key: this.key,
+			key: this.key,
 			_collection: "rects"
 		};
 

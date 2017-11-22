@@ -132,24 +132,24 @@ class App extends EventDispatcher {
 				// Primitive
 				if ( value == null || typeof value !== "object" ) return value;
 
-				if ( value._collection !== undefined && value._key !== undefined ) {
+				if ( value._collection !== undefined && value.key !== undefined ) {
 
 					// Try fetching from collection
-					let obj = this[ value._collection ].dict[ value._key ];
+					let obj = this[ value._collection ].dict[ value.key ];
 
 					// Create it if recongized constructor
 					if ( ! obj && value._constructor )
-						obj = new this[ value._constructor ]( { key: value._key } );
+						obj = new this[ value._constructor ]( { key: value.key } );
 
 					// Expand out properties
 					for ( const prop in value )
-						if ( ! [ "_key", "_collection", "_constructor", "_function" ].includes( prop ) )
+						if ( ! [ "key", "_collection", "_constructor", "_function" ].includes( prop ) )
 							value[ prop ] = props.reviver( prop, value[ prop ] );
 
 					// Apply properties
 					if ( obj )
 						for ( const prop in value )
-							if ( ! [ "_key", "_collection", "_constructor", "_function" ].includes( "prop" ) )
+							if ( ! [ "key", "_collection", "_constructor", "_function" ].includes( "prop" ) )
 								obj[ prop ] = value[ prop ];
 
 					return obj;
@@ -159,15 +159,15 @@ class App extends EventDispatcher {
 				// Not collectable, but still a constructable
 				if ( value._constructor ) {
 
-					const obj = new this[ value._constructor ]( { key: value._key } );
+					const obj = new this[ value._constructor ]( { key: value.key } );
 
 					for ( const prop in value )
-						if ( ! [ "_key", "_collection", "_constructor", "_function" ].includes( prop ) )
+						if ( ! [ "key", "_collection", "_constructor", "_function" ].includes( prop ) )
 							value[ prop ] = props.reviver( prop, value[ prop ] );
 
 					if ( obj )
 						for ( const prop in value )
-							if ( ! [ "_key", "_collection", "_constructor", "_function" ].includes( "prop" ) )
+							if ( ! [ "key", "_collection", "_constructor", "_function" ].includes( "prop" ) )
 								obj[ prop ] = value[ prop ];
 
 					return obj;

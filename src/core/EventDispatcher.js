@@ -1,20 +1,7 @@
 
 // Adapted from THREE.js
 
-// import * as env from "../misc/env.js";
-
 class EventDispatcher {
-
-	get _listenerCount() {
-
-		let count = 0;
-
-		for ( const prop in this._listeners )
-			count += this._listeners[ prop ].length;
-
-		return count;
-
-	}
 
 	addEventListener( types, listener ) {
 
