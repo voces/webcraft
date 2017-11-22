@@ -1,9 +1,4 @@
 
-console.log( "abc" );
-
-const fs = require( "fs" );
-fs.readFile( "./test/source.unit.test.js", ( err, file ) => console.log( err || file ) );
-
 function glsl() {
 
 	return {
@@ -35,5 +30,6 @@ export default {
 	plugins: [ glsl() ],
 	external: [ "three", "ws" ],
 	globals: { "three": "THREE", "ws": "ws" },
-	targets: [ { format: "umd", moduleName: "WebCraft", dest: "build/webcraft.source.unit.test.js" } ]
+	targets: [ { format: "umd", moduleName: "WebCraft", dest: "build/webcraft.source.unit.test.js" } ],
+	banner: "THREE = require( \"three\" );"
 };

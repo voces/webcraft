@@ -61,9 +61,41 @@ export default () => describe( "Player", () => {
 	it( "set color", () => {
 
 		const player = new Player();
-		const color = player.color;
+		const currentColor = player.color;
+		const nextColor = Player.colors[ Player.nextColorIndex ];
 
-		player.color = Player.colors[ Player.nextColorIndex ];
+		// Color object
+		player.color = nextColor;
+		assert.ok( ! currentColor.taken );
+		assert.ok( nextColor.taken );
+
+		player.color = currentColor;
+
+		assert.throws( () => player.color = {}, Error );
+
+		// Color index
+		player.color = Player.colors.indexOf( nextColor );
+		assert.ok( ! currentColor.taken );
+		assert.ok( nextColor.taken );
+
+		player.color = currentColor;
+
+		assert.throws( () => player.color = Player.colors.length, Error );
+
+		// Color name and hex
+		player.color = nextColor.name;
+		assert.ok( ! currentColor.taken );
+		assert.ok( nextColor.taken );
+
+		player.color = currentColor;
+
+		player.color = nextColor.hex;
+		assert.ok( ! currentColor.taken );
+		assert.ok( nextColor.taken );
+
+		player.color = currentColor;
+
+		assert.throws( () => player.color = "test", Error );
 
 	} );
 
