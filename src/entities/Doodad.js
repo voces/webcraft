@@ -6,7 +6,7 @@ import models from "./models.js";
 
 class Doodad extends Handle {
 
-	constructor( props ) {
+	constructor( props = {} ) {
 
 		if ( props.x === undefined ) props.x = 0;
 		if ( props.y === undefined ) props.y = 0;
@@ -59,17 +59,18 @@ class Doodad extends Handle {
 	set model( model ) {
 
 		const modelPath = typeof model === "string" ? model : model.path;
+		const klass = models[ modelPath ] || models.load( modelPath );
 
-		this._props.model = model;
+		this._props.model = modelPath;
 
-		if ( models[ modelPath ].prototype instanceof THREE.Mesh ) {
+		if ( klass.prototype instanceof THREE.Mesh ) {
 
-			this.mesh = new models[ modelPath ]( model );
+			this.mesh = new klass( model );
 			this.mesh.userData = this.id;
 
-		} else models[ modelPath ].addEventListener( "ready", ( { model: modelClass } ) => {
+		} else klass.addEventListener( "ready", ( { model: klass } ) => {
 
-			this.mesh = new modelClass( model );
+			this.mesh = new klass( model );
 
 			this.mesh.userData = this.id;
 			this.mesh.position.x = this._props.x || 0;

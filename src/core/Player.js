@@ -49,9 +49,9 @@ class Player extends Handle {
 
 		if ( typeof color === "number" ) color = Player.colors[ color ];
 		else if ( typeof color === "string" ) color = Player.colors.find( c => c.name === color || c.hex === color );
-		else return;
 
-		if ( ! color ) return;
+		if ( ! color || Player.colors.indexOf( color ) === - 1 )
+			throw new Error( "Player.color must be an index within range of Player#colors, a name or hex matching a color in Player#colors, and object from Player#colors." );
 
 		if ( this._props.color ) this._props.color.taken = false;
 
