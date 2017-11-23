@@ -9,7 +9,7 @@ import stepTween from "../tweens/stepTween.js";
 
 class Unit extends Doodad {
 
-	constructor( props ) {
+	constructor( props = {} ) {
 
 		if ( props.maxLife === undefined ) props.maxLife = 1;
 		if ( props.life === undefined ) props.life = props.maxLife;

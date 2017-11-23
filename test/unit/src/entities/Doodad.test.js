@@ -28,18 +28,29 @@ export default () => describe( "Doodad", () => {
 
 	[ "x", "y", "z" ].forEach( prop => {
 
-		it( "set/get " + prop, () => {
+		it( "set/get " + prop, function ( done ) {
+
+			this.timeout( 10 );
 
 			const doodad = new Doodad();
+			let calls = 0;
+			doodad.addEventListener( "dirty", () => calls ++ );
+			doodad.addEventListener( "clean", () => ( ++ calls ) === 2 ? done() : null );
 
 			const value1 = Math.random();
+			assert.equal( doodad.dirty, 0 );
 			doodad[ prop ] = value1;
+			assert.equal( doodad.dirty, 0 );
 			assert.deepEqual( doodad[ prop ], value1 );
 			assert.deepEqual( doodad._props[ prop ], value1 );
 
 			const value2 = Math.random();
+			assert.equal( doodad.dirty, 0 );
 			doodad[ prop ] = () => value2;
+			assert.equal( doodad.dirty, 1 );
 			assert.deepEqual( doodad[ prop ], value2 );
+			doodad[ prop ] = value1;
+			assert.equal( doodad.dirty, 0 );
 
 		} );
 
@@ -59,6 +70,19 @@ export default () => describe( "Doodad", () => {
 			done();
 
 		} );
+
+	} );
+
+	it( "update", function ( done ) {
+
+		this.timeout( 10 );
+
+		const doodad = new Doodad();
+		const num = Math.random();
+
+		doodad.updates.push( time => ( assert.equal( time, num ), done() ) );
+
+		doodad.update( num );
 
 	} );
 

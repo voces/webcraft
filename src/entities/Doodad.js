@@ -29,6 +29,7 @@ class Doodad extends Handle {
 		super( props );
 
 		this.updates = [];
+		this.renders = [];
 
 		this._props = {};
 
@@ -121,7 +122,7 @@ class Doodad extends Handle {
 		else if ( typeof x !== "function" ) {
 
 			if ( this.mesh ) this.mesh.position.x = x;
-			if ( typeof this._props.x === "function" )++ this.dirty;
+			if ( typeof this._props.x === "function" ) -- this.dirty;
 
 		}
 
@@ -143,7 +144,7 @@ class Doodad extends Handle {
 		else if ( typeof y !== "function" ) {
 
 			if ( this.mesh ) this.mesh.position.y = y;
-			if ( typeof this._props.y === "function" )++ this.dirty;
+			if ( typeof this._props.y === "function" ) -- this.dirty;
 
 		}
 
@@ -161,11 +162,11 @@ class Doodad extends Handle {
 
 	set z( z ) {
 
-		if ( typeof y === "function" && typeof this._props.z !== "function" ) ++ this.dirty;
+		if ( typeof z === "function" && typeof this._props.z !== "function" ) ++ this.dirty;
 		else if ( typeof z !== "function" ) {
 
 			if ( this.mesh ) this.mesh.position.z = z;
-			if ( typeof this._props.z === "function" )++ this.dirty;
+			if ( typeof this._props.z === "function" ) -- this.dirty;
 
 		}
 
@@ -215,6 +216,9 @@ class Doodad extends Handle {
 
 		if ( typeof this._props.x === "function" ) this.mesh.position.x = this._props.x( time );
 		if ( typeof this._props.y === "function" ) this.mesh.position.y = this._props.y( time );
+
+		for ( let i = 0; i < this.renders.length; i ++ )
+			this.renders[ i ]( time );
 
 	}
 
