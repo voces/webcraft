@@ -14,33 +14,27 @@ class Terrain {
 	}
 
 	// This is meant to be optimized using a quadtree
-	selectUnitsBoundedByRectangle( rect ) {
+	selectUnitsBoundedByRect( rect ) {
 
-		let units = this.units;
+		if ( ! this.units || ! this.units.length ) return [];
 
-		if ( ! units || ! units.length ) return [];
-
-		return units.filter( unit => rect.contains( unit ) );
+		return this.units.filter( unit => rect.contains( unit ) );
 
 	}
 
 	selectUnitsBoundedByPolygon( polygon ) {
 
-		let units = this.units;
+		if ( ! this.units || ! this.units.length ) return [];
 
-		if ( ! units || ! units.length ) return [];
-
-		return units.filter( unit => pointInPolygon( unit, polygon ) );
+		return this.units.filter( unit => pointInPolygon( unit, polygon ) );
 
 	}
 
 	selectUnitsBoundedByPolygons( polygons ) {
 
-		let units = this.units;
+		if ( ! this.units || ! this.units.length ) return [];
 
-		if ( ! units || ! units.length ) return [];
-
-		return units.filter( unit => pointInSomePolygon( unit, polygons ) );
+		return this.units.filter( unit => pointInSomePolygon( unit, polygons ) );
 
 	}
 

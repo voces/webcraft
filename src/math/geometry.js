@@ -1,7 +1,7 @@
 
 const PI2 = Math.PI * 2;
 
-// From http://www.mathopenref.com/coordpolygonarea2.html
+// From http:// www.mathopenref.com/coordpolygonarea2.html
 function areaOfPolygon( polygon ) {
 
 	let area = 0;
@@ -24,38 +24,39 @@ function areaOfPolygons( polygons ) {
 
 }
 
+// Returns true if in, false if out, and - 1 if on a segment
 function pointInPolygon( point, polygon ) {
 
 	let inside = false;
 
-    // Grab the first vertex, Loop through vertices
+	// Grab the first vertex, Loop through vertices
 	for ( let i = 1, p = polygon[ 0 ]; i <= polygon.length; i ++ ) {
 
-        //Grab the next vertex (to form a segment)
+		// Grab the next vertex (to form a segment)
 		const q = i === polygon.length ? polygon[ 0 ] : polygon[ i ];
 
-        //Test if the point matches either vertex
+		// Test if the point matches either vertex
 		if ( q.y === point.y && ( q.x === point.x || p.y === point.y && q.x > point.x === p.x < point.x ) )
-			return false;
+			return - 1;
 
-        //Only consider segments whose (vertical) interval the point fits in
+		// Only consider segments whose (vertical) interval the point fits in
 		if ( p.y < point.y !== q.y < point.y )
 
-            //If one edge is to the right of us
+			// If one edge is to the right of us
 			if ( p.x >= point.x )
 
-                //And the other is as well (a wall)
+				// And the other is as well (a wall)
 				if ( q.x > point.x ) inside = ! inside;
 
 				else {
 
-                    //Otherwise calculate if we fall to left or right
+					// Otherwise calculate if we fall to left or right
 					const d = ( p.x - point.x ) * ( q.y - point.y ) - ( q.x - point.x ) * ( p.y - point.y );
 
-                    //We're on it (FLOAT POINT)
-					if ( d >= - 1e-7 && d <= 1e-7 ) return false;
+					// We're on it (FLOAT POINT)
+					if ( d >= - 1e-7 && d <= 1e-7 ) return - 1;
 
-                    //We fall to the left
+					// We fall to the left
 					else if ( d > 0 === q.y > p.y ) inside = ! inside;
 
 				}
@@ -64,7 +65,7 @@ function pointInPolygon( point, polygon ) {
 
 				const d = ( p.x - point.x ) * ( q.y - point.y ) - ( q.x - point.x ) * ( p.y - point.y );
 
-				if ( d >= - 1e-7 && d <= 1e-7 ) return false;
+				if ( d >= - 1e-7 && d <= 1e-7 ) return - 1;
 				else if ( d > 0 === q.y > p.y ) inside = ! inside;
 
 			}
@@ -79,14 +80,22 @@ function pointInPolygon( point, polygon ) {
 
 function pointInSomePolygon( point, polygons ) {
 
-	for ( let i = 0; i < polygons.length; i ++ )
-		if ( pointInPolygon( point, polygons ) ) return true;
+	let result = false;
 
-	return false;
+	for ( let i = 0; i < polygons.length; i ++ ) {
+
+		const test = pointInPolygon( point, polygons[ i ] );
+
+		if ( test === true ) return true;
+		if ( test === - 1 ) result = - 1;
+
+	}
+
+	return result;
 
 }
 
-//True if n is between a or b inclusively
+// True if n is between a or b inclusively
 function inclusiveBetween( n, a, b ) {
 
 	if ( n < 0 ) n += PI2;
@@ -111,9 +120,9 @@ export default {
 };
 
 export {
-    areaOfPolygon,
-    areaOfPolygons,
-    pointInPolygon,
-    pointInSomePolygon,
+	areaOfPolygon,
+	areaOfPolygons,
+	pointInPolygon,
+	pointInSomePolygon,
 	inclusiveBetween
 };
