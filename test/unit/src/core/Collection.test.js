@@ -1,6 +1,4 @@
 
-/* globals describe it */
-
 const assert = require( "assert" );
 
 import Collection from "../../../../src/core/Collection.js";

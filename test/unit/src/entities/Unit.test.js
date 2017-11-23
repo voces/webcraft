@@ -1,6 +1,4 @@
 
-/* globals describe it */
-
 const assert = require( "assert" );
 
 import Doodad from "../../../../src/entities/Doodad.js";

@@ -15,6 +15,7 @@
   "author": "verit",
   "license": "ISC",
   "dependencies": {
+    "three": "^0.87.1",
     "ws": "^3.3.1"
   },
   "repository": {
@@ -39,9 +40,9 @@
     "eslint": "^3.19.0",
     "eslint-config-mdcs": "^4.2.2",
     "eslint-plugin-html": "^2.0.3",
+    "eslint-plugin-mocha": "^4.11.0",
     "mocha": "^4.0.1",
     "rollup": "^0.41.6",
-    "rollup-watch": "^3.2.2",
-    "three": "^0.87.1"
+    "rollup-watch": "^3.2.2"
   }
 }
