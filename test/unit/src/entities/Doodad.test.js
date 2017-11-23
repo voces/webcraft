@@ -1,6 +1,4 @@
 
-/* globals describe it */
-
 const assert = require( "assert" );
 
 import Handle from "../../../../src/core/Handle.js";

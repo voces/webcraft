@@ -1,6 +1,4 @@
 
-/* globals describe it */
-
 const assert = require( "assert" );
 
 import EventDispatcher from "../../../../src/core/EventDispatcher.js";

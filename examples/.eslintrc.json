@@ -1,5 +1,7 @@
 {
 	"globals": {
-		"WebCraft": true
+		"WebCraft": true,
+		"Chat": true,
+		"Multiboard": true
 	}
 }
