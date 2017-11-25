@@ -12,7 +12,7 @@
 
 		THREE = require( "three" );
 		WebCraft = require( "../../../build/webcraft.js" );
-		Multiboard = require( "../../shared/ui/Multiboard.js" );
+		Multiboard = require( "../../ui/Multiboard.js" );
 
 	}
 

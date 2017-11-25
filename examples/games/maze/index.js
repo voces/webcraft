@@ -12,8 +12,8 @@
 
 		THREE = require( "three" );
 		WebCraft = require( "../../../build/webcraft.js" );
-		Multiboard = require( "../../shared/ui/Multiboard.js" );
-		Chat = require( "../../shared/ui/Chat.js" );
+		Multiboard = require( "../../ui/Multiboard.js" );
+		Chat = require( "../../ui/Chat.js" );
 
 	}
 
