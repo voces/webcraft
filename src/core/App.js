@@ -38,7 +38,7 @@ class App extends EventDispatcher {
 		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
 
 		// Randomness
-		this.initialSeed = props.seed || "webcraft";
+		this.initialSeed = props.seed || Math.random();
 		this.random = new Random( this.initialSeed );
 
 		// Collections & Arrays

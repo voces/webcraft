@@ -13,6 +13,17 @@ class Terrain {
 
 	}
 
+	set heightmap( heightmap ) {
+
+		this._props.heightmap = heightmap;
+
+	}
+	get heightmap() {
+
+		return this._props.heightmap;
+
+	}
+
 	// This is meant to be optimized using a quadtree
 	selectUnitsBoundedByRect( rect ) {
 
