@@ -25,8 +25,7 @@ class App extends EventDispatcher {
 
 		super();
 
-		if ( ! props.base ) throw new Error( "You must specify a base." );
-		this.baseHref = props.base.endsWith( "/" ) ? props.base.slice( 0, - 1 ) : props.base;
+		if ( props.base ) this.baseHref = props.base.endsWith( "/" ) ? props.base.slice( 0, - 1 ) : props.base;
 
 		this.state = {};
 

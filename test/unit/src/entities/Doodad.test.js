@@ -69,8 +69,7 @@ export default () => describe( "Doodad", () => {
 
 		} );
 
-		doodad.baseHref = __dirname;
-		doodad.model = "/../../../../examples/models/CubeModel.js";
+		doodad.model = () => import( "../../../../examples/models/CubeModel.js" );
 
 	} );
 

@@ -89,14 +89,14 @@ class Doodad extends Handle {
 
 	set model( model ) {
 
-		if ( typeof model === "string" )
-			return import( this._fixRootPath( model ) ).then( imported => this._setModel( imported.default ) );
+		const path = model.mesh || model;
 
-		if ( typeof model.mesh === "string" )
-			return import( this._fixRootPath( model.mesh ) ).then( imported => this._setModel( imported.default, model ) );
+		if ( typeof path === "string" ) return import( this._fixRootPath( path ) ).then( imported => this._setModel( imported.default, model ) );
 
-		if ( model.prototype instanceof Mesh ) this._setModel( model );
-		else this._setModel( model.mesh, model );
+		if ( typeof path === "function" && ! ( path.prototype instanceof Mesh ) )
+			return path().then( imported => this._setModel( imported.default, model ) );
+
+		this._setModel( path, model );
 
 	}
 
