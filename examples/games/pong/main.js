@@ -1,6 +1,9 @@
 
 import * as WebCraft from "../../../src/webcraft.js";
 
+// delayed import
+const di = path => () => import( path );
+
 /////////////////////////////////////////////////
 ///// Initialization
 ////////////////////////////////////////////////
@@ -14,10 +17,10 @@ const app = new WebCraft.App( {
 	network: { host: "notextures.io", port: 8086 },
 
 	types: {
-		doodads: [ { name: "Wall", model: { mesh: "/../../models/CubeModel.js", width: 26 } } ],
+		doodads: [ { name: "Wall", model: { mesh: di( "../../models/CubeModel.js" ), width: 26 } } ],
 		units: [
-			{ name: "Ball", model: { mesh: "/../../models/SphereModel.js", color: "#00FF00" } },
-			{ name: "Paddle", model: { mesh: "/../../models/CubeModel.js", height: 5 } }
+			{ name: "Ball", model: { mesh: di( "../../models/SphereModel.js" ), color: "#00FF00" } },
+			{ name: "Paddle", model: { mesh: di( "../../models/CubeModel.js" ), height: 5 } }
 		]
 	}
 

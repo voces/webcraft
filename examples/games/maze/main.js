@@ -3,6 +3,9 @@ import Chat from "../../ui/Chat.js";
 import Multiboard from "../../ui/Multiboard.js";
 import * as WebCraft from "../../../src/webcraft.js";
 
+// delayed import
+const di = path => () => import( path );
+
 ///////////////////////////////////////////////
 /// Initialization
 //////////////////////////////////////////////
@@ -13,20 +16,18 @@ const SIZE = 0.5;
 
 const app = new WebCraft.App( {
 
-	base: typeof location !== "undefined" ? location.href.split( "/" ).slice( 0, - 1 ).join( "/" ) : __dirname,
-
 	network: { host: "notextures.io", port: 8086 },
 
 	types: {
 		doodads: [
-			{ name: "Green", model: { mesh: "/../../models/CubeModel.js", color: "#B5FEB4" } },
-			{ name: "TileWhite", model: { mesh: "/../../models/CubeModel.js", color: "#F7F7FF" } },
-			{ name: "TileGray", model: { mesh: "/../../models/CubeModel.js", color: "#E6E6FF" } }
+			{ name: "Green", model: { mesh: di( "../../models/CubeModel.js" ), color: "#B5FEB4" } },
+			{ name: "TileWhite", model: { mesh: di( "../../models/CubeModel.js" ), color: "#F7F7FF" } },
+			{ name: "TileGray", model: { mesh: di( "../../models/CubeModel.js" ), color: "#E6E6FF" } }
 		],
 		units: [
-			{ name: "Character", model: { mesh: "/../../models/CubeModel.js", scale: SIZE }, speed: 3.5 },
-			{ name: "Food", model: { mesh: "/../../models/SphereModel.js", color: "#FFFF00", scale: 0.5 }, state: [ "food" ] },
-			{ name: "Enemy", model: { mesh: "/../../models/SphereModel.js", color: "#0000FF", scale: 0.5 }, speed: 7 }
+			{ name: "Character", model: { mesh: di( "../../models/CubeModel.js" ), scale: SIZE }, speed: 3.5 },
+			{ name: "Food", model: { mesh: di( "../../models/SphereModel.js" ), color: "#FFFF00", scale: 0.5 }, state: [ "food" ] },
+			{ name: "Enemy", model: { mesh: di( "../../models/SphereModel.js" ), color: "#0000FF", scale: 0.5 }, speed: 7 }
 		]
 	}
 } );

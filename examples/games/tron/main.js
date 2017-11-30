@@ -2,6 +2,9 @@
 import Multiboard from "../../ui/Multiboard.js";
 import * as WebCraft from "../../../src/webcraft.js";
 
+// delayed import
+const di = path => () => import( path );
+
 /////////////////////////////////////////////////
 ///// Initialization
 ////////////////////////////////////////////////
@@ -35,19 +38,19 @@ const app = new WebCraft.App( {
 	network: { host: "notextures.io", port: 8086 },
 
 	types: {
-		doodads: [ { name: "Wall", model: "/../../models/CubeModel.js" } ],
+		doodads: [ { name: "Wall", model: di( "../../models/CubeModel.js" ) } ],
 		units: [
-			{ name: "Bike", model: "/../../models/CubeModel.js", state: [ "oldFacing" ] },
-			{ name: "Glass", model: { mesh: "/../../models/CubeModel.js", opacity: 0.5 } }
+			{ name: "Bike", model: di( "../../models/CubeModel.js" ), state: [ "oldFacing" ] },
+			{ name: "Glass", model: { mesh: di( "../../models/CubeModel.js" ), opacity: 0.5 } }
 		]
 	}
 
 } );
 
-new app.Wall( { model: { mesh: "/../../models/CubeModel.js", width: 41 }, y: 10 } );
-new app.Wall( { model: { mesh: "/../../models/CubeModel.js", width: 41 }, y: - 10 } );
-new app.Wall( { model: { mesh: "/../../models/CubeModel.js", height: 21 }, x: 21 } );
-new app.Wall( { model: { mesh: "/../../models/CubeModel.js", height: 21 }, x: - 21 } );
+new app.Wall( { model: { mesh: di( "../../models/CubeModel.js" ), width: 41 }, y: 10 } );
+new app.Wall( { model: { mesh: di( "../../models/CubeModel.js" ), width: 41 }, y: - 10 } );
+new app.Wall( { model: { mesh: di( "../../models/CubeModel.js" ), height: 21 }, x: 21 } );
+new app.Wall( { model: { mesh: di( "../../models/CubeModel.js" ), height: 21 }, x: - 21 } );
 
 let grid = [];
 for ( let i = 0; i <= 40; i ++ ) grid[ i ] = {};
