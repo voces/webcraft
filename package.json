@@ -5,12 +5,7 @@
   "main": "build/webcraft.js",
   "module": "build/webcraft.module.js",
   "scripts": {
-    "build": "rollup -c",
-    "build-test": "rollup -c test/rollup.unit.config.test.js",
-    "dev": "rollup -c -w -m inline",
-    "start": "npm run dev",
-    "test": "mocha -r @std/esm test/index.test.js",
-    "test-dev": "rollup -c test/rollup.unit.config.test.js -w"
+    "test": "mocha test/index.test.js"
   },
   "author": "verit",
   "license": "ISC",
