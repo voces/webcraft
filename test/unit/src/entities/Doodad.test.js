@@ -58,7 +58,7 @@ export default () => describe( "Doodad", () => {
 
 	it( "set/get model", function ( done ) {
 
-		this.timeout( 10 );
+		this.timeout( 100 );
 
 		const doodad = new Doodad();
 		doodad.addEventListener( "meshLoaded", () => {
