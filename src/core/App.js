@@ -1,16 +1,15 @@
 
 // Actually used by App
+import { Scene, HemisphereLight, DirectionalLight, Camera, PerspectiveCamera } from "../../node_modules/three/build/three.module.js";
 
 import Collection from "./Collection.js";
 import EventDispatcher from "./EventDispatcher.js";
 import Player from "./Player.js";
 
-import models from "../entities/models.js";
 import Terrain from "../entities/Terrain.js";
 import Unit from "../entities/Unit.js";
 import Doodad from "../entities/Doodad.js";
 import * as env from "../misc/env.js";
-import fetchFile from "../misc/fetchFile.js";
 
 import Random from "../../lib/seedrandom-alea.js";
 
@@ -20,13 +19,14 @@ import * as gk from "../presets/gk.js";
 import Rect from "../misc/Rect.js";
 import * as tweens from "../tweens/tweens.js";
 
-const eval2 = eval;
-
 class App extends EventDispatcher {
 
-	constructor( props = {} ) {
+	constructor( props ) {
 
 		super();
+
+		if ( ! props.base ) throw "You must specify a base.";
+		this.baseHref = props.base.endsWith( "/" ) ? props.base : props.base + "/";
 
 		this.state = {};
 
@@ -81,14 +81,14 @@ class App extends EventDispatcher {
 
 	initScene( props ) {
 
-		this.scene = props && props instanceof THREE.Scene ?
+		this.scene = props && props instanceof Scene ?
 			props :
-			new THREE.Scene();
+			new Scene();
 
-		this.globalLight = new THREE.HemisphereLight( 0xffffbb, 0x080820 );
+		this.globalLight = new HemisphereLight( 0xffffbb, 0x080820 );
 		this.scene.add( this.globalLight );
 
-		this.sun = new THREE.DirectionalLight( 0xffffff, 0.5 );
+		this.sun = new DirectionalLight( 0xffffff, 0.5 );
 		this.sun.position.z = 5;
 		this.sun.position.x = - 3;
 		this.sun.position.y = - 7;
@@ -107,9 +107,9 @@ class App extends EventDispatcher {
 
 	initCamera( props ) {
 
-		this.camera = props && props instanceof THREE.Camera ?
+		this.camera = props && props instanceof Camera ?
 			props :
-			new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10000 );
+			new PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 10000 );
 
 		this.camera.resize = () => {
 
@@ -281,27 +281,6 @@ class App extends EventDispatcher {
 
 	}
 
-	loadModel( model ) {
-
-		if ( typeof model === "object" ) model = model.path;
-
-		if ( models[ model ] !== undefined ) return;
-
-		models[ model ] = new EventDispatcher();
-		fetchFile( model )
-			.then( file => {
-
-				const eventDispatcher = models[ model ];
-
-				models[ model ] = eval2( file );
-
-				eventDispatcher.dispatchEvent( "ready", { model: models[ model ] } );
-
-			} )
-			.catch( err => console.error( err ) );
-
-	}
-
 	attachDooodadEvents( doodad ) {
 
 		doodad.addEventListener( "subevents", ( { subevents } ) => this.subevents.push( ...subevents ) );
@@ -329,8 +308,6 @@ class App extends EventDispatcher {
 
 		const app = this;
 
-		if ( type.model ) this.loadModel( type.model );
-
 		this[ type.name ] = class extends Unit {
 
 			static get name() {
@@ -341,7 +318,7 @@ class App extends EventDispatcher {
 
 			constructor( props ) {
 
-				super( Object.assign( { app }, type, props ) );
+				super( Object.assign( { app, base: app.baseHref }, type, props ) );
 
 				app.units.add( this );
 
@@ -363,8 +340,6 @@ class App extends EventDispatcher {
 
 		const app = this;
 
-		if ( type.model ) this.loadModel( type.model );
-
 		this[ type.name ] = class extends Doodad {
 
 			static get name() {
@@ -375,7 +350,7 @@ class App extends EventDispatcher {
 
 			constructor( props ) {
 
-				super( Object.assign( { app }, type, props ) );
+				super( Object.assign( { app, base: app.baseHref }, type, props ) );
 
 				app.doodads.add( this );
 

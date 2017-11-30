@@ -1,13 +1,13 @@
 
-/* exported SphereModel */
+import { Mesh, FaceColors, SphereGeometry, MeshPhongMaterial } from "../../node_modules/three/build/three.module.js";
 
-class SphereModel extends THREE.Mesh {
+class SphereModel extends Mesh {
 
 	constructor( props = {} ) {
 
 		const scale = props.scale / 2 || 0.5;
 		const color = props.color || 0xeeeeff;
-		const materialDef = props.materialDef || { color, vertexColors: THREE.FaceColors };
+		const materialDef = props.materialDef || { color, vertexColors: FaceColors };
 
 		if ( props.opacity !== undefined ) {
 
@@ -19,8 +19,8 @@ class SphereModel extends THREE.Mesh {
 		if ( materialDef.transparent && materialDef.opacity === undefined ) materialDef.opacity = 1;
 		if ( materialDef.opacity !== undefined && ! materialDef.transparent ) materialDef.transparent = true;
 
-		const geometry = new THREE.SphereGeometry( scale );
-		const material = new THREE.MeshPhongMaterial( materialDef );
+		const geometry = new SphereGeometry( scale );
+		const material = new MeshPhongMaterial( materialDef );
 
 		super( geometry, material );
 
@@ -28,4 +28,4 @@ class SphereModel extends THREE.Mesh {
 
 }
 
-SphereModel;
+export default SphereModel;

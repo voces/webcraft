@@ -1,6 +1,8 @@
 
 const assert = require( "assert" );
 
+import { Mesh } from "../../../../node_modules/three/build/three.module.js";
+
 import Handle from "../../../../src/core/Handle.js";
 import Doodad from "../../../../src/entities/Doodad.js";
 
@@ -56,18 +58,19 @@ export default () => describe( "Doodad", () => {
 
 	it( "set/get model", function ( done ) {
 
-		this.timeout( 100 );
+		this.timeout( 10 );
 
 		const doodad = new Doodad();
-		doodad.model = "./examples/models/Cube.js";
-
 		doodad.addEventListener( "meshLoaded", () => {
 
-			assert( doodad.mesh instanceof THREE.Mesh );
+			assert( doodad.mesh instanceof Mesh );
 
 			done();
 
 		} );
+
+		doodad.baseHref = __dirname;
+		doodad.model = "/../../../../examples/models/CubeModel.js";
 
 	} );
 

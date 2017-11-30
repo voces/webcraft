@@ -1,6 +1,5 @@
 
 import EventDispatcher from "../core/EventDispatcher.js";
-import fetchFile from "../misc/fetchFile.js";
 
 // TODO: Remove this after #4
 const eval2 = eval;
@@ -9,7 +8,8 @@ export default { load: function ( model ) {
 
 	this[ model ] = new EventDispatcher();
 
-	fetchFile( model ).then( file => {
+	// TODO: import()
+	( () => {} )( model ).then( file => {
 
 		const eventDispatcher = this[ model ];
 

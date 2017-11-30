@@ -1,5 +1,6 @@
 {
 	"extends": "mdcs",
+	"parser": "babel-eslint",
 	"parserOptions": { "ecmaVersion": 8 },
 	"plugins": ["html"],
 	"rules": {

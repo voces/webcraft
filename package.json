@@ -9,12 +9,13 @@
     "build-test": "rollup -c test/rollup.unit.config.test.js",
     "dev": "rollup -c -w -m inline",
     "start": "npm run dev",
-    "test": "mocha build/webcraft.source.unit.test.js",
+    "test": "mocha -r @std/esm test/index.test.js",
     "test-dev": "rollup -c test/rollup.unit.config.test.js -w"
   },
   "author": "verit",
   "license": "ISC",
   "dependencies": {
+    "@std/esm": "^0.17.3",
     "three": "^0.87.1",
     "ws": "^3.3.1"
   },
@@ -25,6 +26,7 @@
   "bugs": {
     "url": "https://github.com/voces/WebCraft/issues"
   },
+  "@std/esm": "cjs",
   "directories": {
     "example": "examples",
     "test": "test"
@@ -37,12 +39,11 @@
     "game"
   ],
   "devDependencies": {
+    "babel-eslint": "^8.0.2",
     "eslint": "^3.19.0",
     "eslint-config-mdcs": "^4.2.2",
     "eslint-plugin-html": "^2.0.3",
     "eslint-plugin-mocha": "^4.11.0",
-    "mocha": "^4.0.1",
-    "rollup": "^0.41.6",
-    "rollup-watch": "^3.2.2"
+    "mocha": "^4.0.1"
   }
 }

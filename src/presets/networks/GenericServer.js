@@ -1,8 +1,6 @@
 
-import { Server } from "ws";
-
-import EventDispatcher from "../../core/EventDispatcher";
-import Handle from "../../core/Handle";
+import EventDispatcher from "../../core/EventDispatcher.js";
+import Handle from "../../core/Handle.js";
 import Collection from "../../core/Collection.js";
 import stringify from "../../misc/stringify.js";
 
@@ -13,7 +11,9 @@ class GenericServer extends EventDispatcher {
 		super();
 
 		this.clients = props.clients || new Collection();
-		this.ws = props.ws && props.ws.constructor !== Object && props.ws || this.createWS( props );
+
+		if ( ! props.ws || props.ws.constructor === Object ) this.createWS( props );
+		else this.ws = props.ws;
 
 	}
 
@@ -51,9 +51,11 @@ class GenericServer extends EventDispatcher {
 
 	}
 
-	createWS( props = {} ) {
+	async createWS( props = {} ) {
 
-		const ws = new Server( { port: props.port || 3000 } );
+		const WebSocket = await import( "ws" );
+
+		const ws = new WebSocket.Server( { port: props.port || 3000 } );
 		console.log( "Listening on", props.port || 3000 );
 
 		ws.on( "connection", socket => {
@@ -123,7 +125,7 @@ class GenericServer extends EventDispatcher {
 
 		} );
 
-		return ws;
+		this.ws = ws;
 
 	}
 

@@ -131,8 +131,7 @@ class Multiboard {
 
 }
 
-if ( ! isBrowser ) module.exports = Multiboard;
-else {
+if ( isBrowser ) {
 
 	const style = document.createElement( "style" );
 	style.textContent = `
@@ -158,3 +157,5 @@ else {
 	document.head.appendChild( style );
 
 }
+
+export default Multiboard;
