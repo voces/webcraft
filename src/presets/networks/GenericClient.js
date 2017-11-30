@@ -1,6 +1,5 @@
 
 import EventDispatcher from "../../core/EventDispatcher.js";
-// import EventDispatcher from "../../../../core/EventDispatcher";
 
 class GenericClient extends EventDispatcher {
 

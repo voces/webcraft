@@ -1,8 +1,8 @@
 
+import { Mesh } from "../../node_modules/three/build/three.module.js";
+
 import Handle from "../core/Handle.js";
 import { isBrowser } from "../misc/env.js";
-
-import models from "./models.js";
 
 class Doodad extends Handle {
 
@@ -27,6 +27,8 @@ class Doodad extends Handle {
 		}
 
 		super( props );
+
+		this.baseHref = props.base;
 
 		this.updates = [];
 		this.renders = [];
@@ -57,37 +59,35 @@ class Doodad extends Handle {
 
 	}
 
+	_setModel( klass, details ) {
+
+		this.mesh = new klass( details );
+
+		this.mesh.userData = this.id;
+		this.mesh.position.x = this._props.x || 0;
+		this.mesh.position.y = this._props.y || 0;
+		this.mesh.position.z = this._props.z || 0;
+
+		if ( this.owner && this.mesh.accentFaces ) {
+
+			for ( let i = 0; i < this.mesh.accentFaces.length; i ++ )
+				this.mesh.geometry.faces[ this.mesh.accentFaces[ i ] ].color.set( this.owner.color.hex );
+
+			this.mesh.geometry.colorsNeedUpdate = true;
+
+		}
+
+	}
+
 	set model( model ) {
 
-		const modelPath = typeof model === "string" ? model : model.path;
-		const klass = models[ modelPath ] || models.load( modelPath );
+		if ( typeof model === "string" )
+			return import( ( this.baseHref || "" ) + model ).then( imported => this._setModel( imported.default ) );
 
-		this._props.model = modelPath;
+		if ( typeof model.mesh === "string" )
+			return import( ( this.baseHref || "" ) + model.mesh ).then( imported => this._setModel( imported.default, model ) );
 
-		if ( klass.prototype instanceof THREE.Mesh ) {
-
-			this.mesh = new klass( model );
-			this.mesh.userData = this.id;
-
-		} else klass.addEventListener( "ready", ( { model: klass } ) => {
-
-			this.mesh = new klass( model );
-
-			this.mesh.userData = this.id;
-			this.mesh.position.x = this._props.x || 0;
-			this.mesh.position.y = this._props.y || 0;
-			this.mesh.position.z = this._props.z || 0;
-
-			if ( this.owner && this.mesh.accentFaces ) {
-
-				for ( let i = 0; i < this.mesh.accentFaces.length; i ++ )
-					this.mesh.geometry.faces[ this.mesh.accentFaces[ i ] ].color.set( this.owner.color.hex );
-
-				this.mesh.geometry.colorsNeedUpdate = true;
-
-			}
-
-		} );
+		this._setModel( model.mesh, model );
 
 	}
 
@@ -99,7 +99,7 @@ class Doodad extends Handle {
 
 	set mesh( mesh ) {
 
-		if ( this._props.mesh instanceof THREE.Mesh )
+		if ( this._props.mesh instanceof Mesh )
 			this.dispatchEvent( "meshUnloaded" );
 
 		this._props.mesh = mesh;

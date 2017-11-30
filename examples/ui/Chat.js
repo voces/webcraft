@@ -94,8 +94,7 @@ class Chat {
 
 }
 
-if ( ! isBrowser ) module.exports = Chat;
-else {
+if ( isBrowser ) {
 
 	const style = document.createElement( "style" );
 	style.textContent = `
@@ -158,3 +157,5 @@ else {
 	document.head.appendChild( style );
 
 }
+
+export default Chat;
