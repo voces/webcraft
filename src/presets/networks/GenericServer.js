@@ -126,6 +126,7 @@ class GenericServer extends EventDispatcher {
 		} );
 
 		this.ws = ws;
+		this.dispatchEvent( "ready" );
 
 	}
 
