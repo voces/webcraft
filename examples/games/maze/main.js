@@ -1,5 +1,5 @@
 
-import Chat from "../../ui/Chat.js";
+import chat from "../../ui/chat.js";
 import Multiboard from "../../ui/Multiboard.js";
 import * as WebCraft from "../../../src/webcraft.js";
 
@@ -40,7 +40,7 @@ const multiboard = new Multiboard( {
 	colors: app.Player.colors.map( color => color.hex )
 } );
 
-new Chat( app );
+if ( WebCraft.isBrowser ) chat( app );
 
 /////////////////////////////////////////////////
 ///// Game Logic
