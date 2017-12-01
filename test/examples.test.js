@@ -5,7 +5,7 @@ export default () => describe( "examples", () => {
 
 		it( example, function ( done ) {
 
-			this.timeout( 750 );
+			this.timeout( 2000 );
 
 			const goodHandles = process._getActiveHandles();
 

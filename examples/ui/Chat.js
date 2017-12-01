@@ -96,7 +96,7 @@ export default app => {
 
 			} else if ( who ) {
 
-				chat.innerHTML = /* @html */`<span class="who" style="color: ${who.color.hex}">${who.color.name}</span>: <span class="message">${message}</span>`;
+				chat.innerHTML = /* @html */`<span class="who" style="color: ${who.color.hex}">${who.name || who.color.name}</span>: <span class="message">${message}</span>`;
 
 			}
 
