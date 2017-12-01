@@ -1,9 +1,11 @@
 
-var isBrowser = new Function( "try {return this===window;}catch(e){ return false;}" )() || process.env.isBrowser;
+const supportsHTMLElement = typeof HTMLElement !== "undefined";
 
-class Multiboard {
+class Multiboard extends ( supportsHTMLElement ? HTMLElement : class {} ) {
 
-	constructor( { rows = 1, columns = 1, defaultValue = "", schema, colors = [], data } ) {
+	constructor( { rows = 1, columns = 1, defaultValue = "", schema, colors = [], data, attach = true } ) {
+
+		super();
 
 		this._data = [];
 
@@ -13,6 +15,39 @@ class Multiboard {
 		this.rows = rows;
 		this.columns = columns;
 		this.data = data;
+
+		if ( attach && supportsHTMLElement ) document.body.appendChild( this );
+
+	}
+
+	connectedCallback() {
+
+		const shadowRoot = this.attachShadow( { mode: "open" } );
+		shadowRoot.innerHTML = /* @html */`
+			<style>
+			:host {
+				font-size: 1.5em;
+				color: white;
+				position: absolute;
+				right: 1em;
+				top: 0.5em;
+				background-color: rgba(0, 0, 0, 0.5);
+				border: 1px outset gold;
+				border-radius: 0.25em;
+				box-shadow: 0 0 0.25em black;
+				z-index: 1;
+			}
+			.row {
+				display: flex;
+				justify-content: space-between;
+			}
+			.row :not(:empty) { padding: 0.25em 0.25em 0em; }
+			</style>
+			<div id="container"></div>`;
+
+		const ids = shadowRoot.querySelectorAll( "[id]" );
+		for ( let i = 0; i < ids.length; i ++ )
+			this[ ids[ i ].id ] = ids[ i ];
 
 	}
 
@@ -48,7 +83,7 @@ class Multiboard {
 
 	update( arr ) {
 
-		if ( ! this.schema ) throw "Leaderboard must have a schema to use update.";
+		if ( ! this.schema ) throw new Error( "Leaderboard must have a schema to use update." );
 
 		if ( ! arr.length ) return;
 
@@ -77,32 +112,21 @@ class Multiboard {
 
 	_render() {
 
-		if ( ! isBrowser ) return;
-
-		if ( ! this._container ) {
-
-			const e = document.createElement( "div" );
-			e.classList.add( "wc", "ui", "multiboard" );
-
-			this._container = e;
-
-			document.body.appendChild( e );
-
-		}
+		if ( ! supportsHTMLElement || ! this.container ) return;
 
 		for ( let i = 0; i < this._data.length; i ++ ) {
 
-			if ( ! this._container.children[ i ] ) {
+			if ( ! this.container.children[ i ] ) {
 
 				const row = document.createElement( "div" );
 				row.classList.add( "row" );
 				row.style.color = this.colors[ i ] || "white";
-				this._container.appendChild( row );
+				this.container.appendChild( row );
 
-			} else if ( this._container.children[ i ].style.color !== this.colors[ i ] )
-				this._container.children[ i ].style.color = this.colors[ i ] || "white";
+			} else if ( this.container.children[ i ].style.color !== this.colors[ i ] )
+				this.container.children[ i ].style.color = this.colors[ i ] || "white";
 
-			const row = this._container.children[ i ];
+			const row = this.container.children[ i ];
 
 			for ( let n = 0; n < this._data[ i ].length; n ++ ) {
 
@@ -120,42 +144,18 @@ class Multiboard {
 
 		}
 
-		while ( this._data.length < this._container.children.length )
-			this._container.removeChild( this._container.lastElementChild );
+		while ( this._data.length < this.container.children.length )
+			this.container.removeChild( this.container.lastElementChild );
 
-		while ( this._data[ 0 ].length < this._container.children[ 0 ].length )
+		while ( this._data[ 0 ].length < this.container.children[ 0 ].length )
 			for ( let i = 0; i < this._data.length; i ++ )
-				this._container.children[ i ].removeChild( this._container.children[ i ].lastElementChild );
+				this.container.children[ i ].removeChild( this.container.children[ i ].lastElementChild );
 
 	}
 
 }
 
-if ( isBrowser ) {
-
-	const style = document.createElement( "style" );
-	style.textContent = `
-		.wc.ui.multiboard {
-			font-size: 1.5em;
-			color: white;
-			position: absolute;
-			right: 1em;
-			top: 0.5em;
-			background-color: rgba(0, 0, 0, 0.5);
-			border: 1px outset gold;
-			border-radius: 0.25em;
-			box-shadow: 0 0 0.25em black;
-			z-index: 1;
-		}
-		.wc.ui.multiboard .row {
-			display: flex;
-			justify-content: space-between;
-		}
-		.wc.ui.multiboard .row :not(:empty) { padding: 0 0.5em; }
-	`;
-
-	document.head.appendChild( style );
-
-}
+if ( typeof customElements !== "undefined" )
+	customElements.define( "wc-ui-multiboard", Multiboard );
 
 export default Multiboard;
