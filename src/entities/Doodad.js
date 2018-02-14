@@ -22,13 +22,11 @@ class Doodad extends Handle {
 		if ( props.max === undefined ) {
 
 			props.max = {};
-			Object.defineProperties( props.max, { y: { get: () => this.x - this.radius }, y: { get: () => this.y + this.radius } } );
+			Object.defineProperties( props.max, { x: { get: () => this.x - this.radius }, y: { get: () => this.y + this.radius } } );
 
 		}
 
 		super( props );
-
-		this.baseHref = props.base;
 
 		this.updates = [];
 		this.renders = [];
@@ -79,19 +77,11 @@ class Doodad extends Handle {
 
 	}
 
-	_fixRootPath( path ) {
-
-		if ( path.startsWith( "/" ) ) return ( this.baseHref || "" ) + path;
-
-		return path;
-
-	}
-
 	set model( model ) {
 
 		const path = model.mesh || model;
 
-		if ( typeof path === "string" ) return import( this._fixRootPath( path ) ).then( imported => this._setModel( imported.default, model ) );
+		if ( typeof path === "string" ) return import( path ).then( imported => this._setModel( imported.default, model ) );
 
 		if ( typeof path === "function" && ! ( path.prototype instanceof Mesh ) )
 			return path().then( imported => this._setModel( imported.default, model ) );

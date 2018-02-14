@@ -6,9 +6,9 @@ import Collection from "./Collection.js";
 import EventDispatcher from "./EventDispatcher.js";
 import Player from "./Player.js";
 
-import Terrain from "../entities/Terrain.js";
 import Unit from "../entities/Unit.js";
 import Doodad from "../entities/Doodad.js";
+import WC3Terrain from "../entities/WC3Terrain.js";
 import * as env from "../misc/env.js";
 
 import Random from "../../lib/seedrandom-alea.js";
@@ -24,8 +24,6 @@ class App extends EventDispatcher {
 	constructor( props ) {
 
 		super();
-
-		if ( props.base ) this.baseHref = props.base.endsWith( "/" ) ? props.base.slice( 0, - 1 ) : props.base;
 
 		this.state = {};
 
@@ -58,8 +56,8 @@ class App extends EventDispatcher {
 		if ( props.eventSystem ) props.eventSystem( this );
 		else gk.eventSystem( this );
 
-		this.initTerrain( props.terrain );
 		this.initScene( props.scene );
+		if ( props.terrain ) this.initTerrain( props.terrain );
 		this.initFactories( props.types );
 		this.initNetwork( props.network );
 
@@ -74,7 +72,10 @@ class App extends EventDispatcher {
 
 	initTerrain( props ) {
 
-		this.terrain = props && props.constructor !== Object ? props : new Terrain( Object.assign( { units: this.units }, props ) );
+		this.terrain = props && props.constructor !== Object ? props : new WC3Terrain( Object.assign( { units: this.units, app: this }, props ) );
+		this.terrain.addEventListener( "dirty", () => ( this.updates.add( this.terrain ), this.renders.add( this.terrain ) ) );
+		this.terrain.addEventListener( "clean", () => ( this.updates.remove( this.terrain ), this.renders.remove( this.terrain ) ) );
+		this.scene.add( this.terrain.mesh );
 
 	}
 
@@ -129,7 +130,7 @@ class App extends EventDispatcher {
 			props.reviver = ( key, value ) => {
 
 				// Primitive
-				if ( value == null || typeof value !== "object" ) return value;
+				if ( value === null || typeof value !== "object" ) return value;
 
 				if ( value._collection !== undefined && value.key !== undefined ) {
 
@@ -317,7 +318,7 @@ class App extends EventDispatcher {
 
 			constructor( props ) {
 
-				super( Object.assign( { app, base: app.baseHref }, type, props ) );
+				super( Object.assign( { app }, type, props ) );
 
 				app.units.add( this );
 
@@ -349,7 +350,7 @@ class App extends EventDispatcher {
 
 			constructor( props ) {
 
-				super( Object.assign( { app, base: app.baseHref }, type, props ) );
+				super( Object.assign( { app }, type, props ) );
 
 				app.doodads.add( this );
 
@@ -413,14 +414,12 @@ class App extends EventDispatcher {
 
 		for ( let i = 0; i < this.renders.length; i ++ )
 			if ( typeof this.renders[ i ] === "function" ) this.renders[ i ]( this.renderTime );
-			else if ( typeof this.renders[ i ] === "object" ) {
+			else if ( typeof this.renders[ i ] === "object" )
 
 				if ( this.renders[ i ].render ) this.renders[ i ].render( this.renderTime );
 				else if ( this.renders[ i ].renders )
 					for ( let n = 0; n < this.renders[ i ].renders.length; n ++ )
 						this.uodates[ i ].renders[ n ]( this.renderTime );
-
-			}
 
 		this.renderer.render( this.scene, this.camera );
 
@@ -440,14 +439,12 @@ class App extends EventDispatcher {
 
 		for ( let i = 0; i < this.updates.length; i ++ )
 			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );
-			else if ( typeof this.updates[ i ] === "object" ) {
+			else if ( typeof this.updates[ i ] === "object" )
 
 				if ( this.updates[ i ].update ) this.updates[ i ].update( this.time );
 				else if ( this.updates[ i ].updates )
 					for ( let n = 0; n < this.updates[ i ].updates.length; n ++ )
 						this.uodates[ i ].updates[ n ]( this.time );
-
-			}
 
 		if ( this.subevents.length ) {
 
