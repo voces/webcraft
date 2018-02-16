@@ -92,6 +92,7 @@ class App extends EventDispatcher {
 		this.sun.position.z = 5;
 		this.sun.position.x = - 3;
 		this.sun.position.y = - 7;
+		this.sun.castShadow = true;
 		this.scene.add( this.sun );
 
 	}
@@ -120,7 +121,8 @@ class App extends EventDispatcher {
 
 		};
 
-		this.camera.position.z = 25;
+		this.camera.position.z = props.z || 25;
+		this.camera.rotation.x = props.angleOfAttack || 0;
 
 	}
 
@@ -413,13 +415,13 @@ class App extends EventDispatcher {
 		this.renderTime += delta;
 
 		for ( let i = 0; i < this.renders.length; i ++ )
-			if ( typeof this.renders[ i ] === "function" ) this.renders[ i ]( this.renderTime );
+			if ( typeof this.renders[ i ] === "function" ) this.renders[ i ]( this.renderTime, delta );
 			else if ( typeof this.renders[ i ] === "object" )
 
-				if ( this.renders[ i ].render ) this.renders[ i ].render( this.renderTime );
+				if ( this.renders[ i ].render ) this.renders[ i ].render( this.renderTime, delta );
 				else if ( this.renders[ i ].renders )
 					for ( let n = 0; n < this.renders[ i ].renders.length; n ++ )
-						this.uodates[ i ].renders[ n ]( this.renderTime );
+						this.renders[ i ].renders[ n ]( this.renderTime, delta );
 
 		this.renderer.render( this.scene, this.camera );
 
@@ -444,7 +446,7 @@ class App extends EventDispatcher {
 				if ( this.updates[ i ].update ) this.updates[ i ].update( this.time );
 				else if ( this.updates[ i ].updates )
 					for ( let n = 0; n < this.updates[ i ].updates.length; n ++ )
-						this.uodates[ i ].updates[ n ]( this.time );
+						this.updates[ i ].updates[ n ]( this.time );
 
 		if ( this.subevents.length ) {
 

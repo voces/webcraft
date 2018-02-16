@@ -6,6 +6,7 @@ function renderer() {
 	const renderer = new WebGLRenderer( { antialias: true } );
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.type = PCFSoftShadowMap;
+	renderer.shadowMap.soft = true;
 
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
