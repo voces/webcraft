@@ -1,99 +1,28 @@
 
-import { Geometry, Mesh, MeshPhongMaterial, FaceColors, SphereGeometry, Vector3, Face3, Color } from "../../node_modules/three/build/three.module.js";
+import { Geometry, Mesh, MeshPhongMaterial, FaceColors, Vector3, Face3, Color } from "../../node_modules/three/build/three.module.js";
 
 import Collection from "../core/Collection.js";
 import { pointInPolygon, pointInSomePolygon } from "../math/geometry.js";
 import Doodad from "./Doodad.js";
 
-// function setColor( geometry, face, color ) {
-
-// 	geometry.faces[ 2 * face ].color.setHex( color );
-// 	geometry.faces[ 2 * face + 1 ].color.setHex( color );
-
-// }
-
-function ball( app, vertex, color = 0x987654 ) {
-
-	const mesh = new Mesh( new SphereGeometry( 0.25 ), new MeshPhongMaterial( { color } ) );
-
-	mesh.position.add( vertex );
-	// mesh.position.y -= 7;
-
-	app.scene.add( mesh );
-
-	return mesh;
-
-	// mesh.render = time => {
-
-	// 	if ( ! mesh._startTime ) mesh._startTime = time;
-
-	// 	mesh.rotateOnWorldAxis( { x: 0, y: 1, z: 0 }, ( time - this._initialTime ) * - 0.0005 );
-
-	// };
-
-	// app.renders.add( mesh );
-
-}
-
-function markTile( app, geometry, tile, color ) {
-
-	ball( app, geometry.vertices[ geometry.faces[ tile * 2 ].a ], color );
-	ball( app, geometry.vertices[ geometry.faces[ tile * 2 ].b ], color );
-	ball( app, geometry.vertices[ geometry.faces[ tile * 2 ].c ], color );
-	ball( app, geometry.vertices[ geometry.faces[ tile * 2 + 1 ].b ], color );
-
-}
-
-const flag = 0;
-
 class Terrain extends Doodad {
-
-	_getHeight( x, y ) {
-
-		if ( ! isNaN( this.heightmap[ y ][ x ] ) ) return this.heightmap[ y ][ x ];
-
-		const [ topLeft, top, topRight, left, right, botLeft, bot, botRight ] = [
-			y > 0 && x > 0 ? this.heightmap[ y - 1 ][ x - 1 ] : undefined,
-			y > 0 ? this.heightmap[ y - 1 ][ x ] : undefined,
-			y > 0 && x < this.width ? this.heightmap[ y - 1 ][ x + 1 ] : undefined,
-			x > 0 ? this.heightmap[ y ][ x - 1 ] : undefined,
-			x < this.width ? this.heightmap[ y ][ x + 1 ] : undefined,
-			y < this.height && x > 0 ? this.heightmap[ y + 1 ][ x - 1 ] : undefined,
-			y < this.height ? this.heightmap[ y + 1 ][ x ] : undefined,
-			y < this.height && x < this.width ? this.heightmap[ y + 1 ][ x + 1 ] : undefined
-		].map( tile => isNaN( tile ) ? - Infinity : tile );
-
-		const topLeftHeight = Math.max( topLeft, top, left );
-		const topRightHeight = Math.max( topRight, top, right );
-		const botLeftHeight = Math.max( botLeft, bot, left );
-		const botRightHeight = Math.max( botRight, bot, right );
-
-		return Math.min( topLeftHeight, topRightHeight, botLeftHeight, botRightHeight );
-
-	}
 
 	constructor( props ) {
 
 		super();
-
-		ball( props.app, new Vector3( 1, 5, 0 ), 0xff0000 );
-		ball( props.app, new Vector3( 0.5, 5, 0 ), 0xff0000 );
-		ball( props.app, new Vector3( 0, 5.5, 0 ), 0x00ff00 );
-		ball( props.app, new Vector3( 0, 6, 0 ), 0x00ff00 );
-		ball( props.app, new Vector3( 0, 5, 0.5 ), 0x0000ff );
-		ball( props.app, new Vector3( 0, 5, 1 ), 0x0000ff );
-
 		const balls = [];
 
-		Object.assign( this, props );
-
 		if ( ! this.units ) this.units = new Collection();
+
+		Object.assign( this, props );
 
 		if ( this.mesh === undefined ) {
 
 			const heightmap = this.heightmap = props.heightmap || [[ 0 ]];
+			const tilemap = this.tilemap = props.tilemap || [[ 0 ]];
+			const tileTypes = this.tileTypes = props.tileTypes || [ { name: "Grass", color: "#608038" } ];
 
-			const height = this.height = props.heightmap.length - 1;
+			const height = this.height = heightmap.length - 1;
 			const width = this.width = Math.min( ...heightmap.map( row => row.length ) ) - 1;
 
 			const geometry = new Geometry();
@@ -102,7 +31,19 @@ class Terrain extends Doodad {
 				flatShading: true
 			} );
 
-			const color = ( x, y ) => new Color( props.tileTypes[ props.tilemap[ y ][ x ] ].color );
+			const color = ( x, y ) => {
+
+				try {
+
+					return new Color( tileTypes[ tilemap[ y ][ x ] ].color );
+
+				} catch ( err ) {
+
+					throw new Error( `Tile ( ${x}, ${y} ) uses undefined color ${tilemap[ y ][ x ]}.` );
+
+				}
+
+			};
 
 			const rampWalls = [];
 
@@ -122,7 +63,7 @@ class Terrain extends Doodad {
 						geometry.faces.push( new Face3( index + 1, index, index + 2, undefined, color( x, y ) ) );
 						geometry.faces.push( new Face3( index + 1, index + 2, index + 3, undefined, color( x, y ) ) );
 
-						// Left + right wall
+						// Left wall (next gets right)
 						if ( x > 0 ) {
 
 							const altHeight = this._getHeight( x - 1, y );
@@ -139,14 +80,14 @@ class Terrain extends Doodad {
 									new Vector3( x, - y, z + 1 ),
 									new Vector3( x, - y - 1, z + 1 )
 								);
-								if ( currentIsLow ) geometry.faces.push( new Face3( index, index + 2, index + 1 ), new Face3( index + 2, index + 3, index + 1 ) );
-								else geometry.faces.push( new Face3( index, index + 1, index + 2 ), new Face3( index + 1, index + 3, index + 2 ) );
+								if ( currentIsLow ) geometry.faces.push( new Face3( index + 1, index, index + 2 ), new Face3( index + 1, index + 2, index + 3 ) );
+								else geometry.faces.push( new Face3( index + 2, index, index + 1 ), new Face3( index + 2, index + 1, index + 3 ) );
 
 							}
 
 						}
 
-						// Top + bottom wall
+						// Top wall (next gets bottom)
 						if ( y > 0 ) {
 
 							const altHeight = this._getHeight( x, y - 1 );
@@ -163,8 +104,8 @@ class Terrain extends Doodad {
 									new Vector3( x, - y, z + 1 ),
 									new Vector3( x + 1, - y, z + 1 )
 								);
-								if ( currentIsLow ) geometry.faces.push( new Face3( index, index + 1, index + 2 ), new Face3( index + 1, index + 3, index + 2 ) );
-								else geometry.faces.push( new Face3( index, index + 2, index + 1 ), new Face3( index + 2, index + 3, index + 1 ) );
+								if ( currentIsLow ) geometry.faces.push( new Face3( index + 2, index, index + 1 ), new Face3( index + 2, index + 1, index + 3 ) );
+								else geometry.faces.push( new Face3( index + 1, index, index + 2 ), new Face3( index + 1, index + 2, index + 3 ) );
 
 							}
 
@@ -202,11 +143,19 @@ class Terrain extends Doodad {
 						geometry.faces.push( new Face3( index + 1, index, index + 2, undefined, color( x, y ) ) );
 						geometry.faces.push( new Face3( index + 1, index + 2, index + 3, undefined, color( x, y ) ) );
 
-						const pairs = [[ 0, 1 ], [ 1, 3 ], [ 3, 2 ], [ 2, 0 ]];
-						for ( let i = 0; i < pairs.length; i ++ ) {
+						const walls = [ { a: 0, b: 1, neighbor: { x: 0, y: - 1 } }, { a: 1, b: 3, neighbor: { x: 1, y: 0 } }, { a: 3, b: 2, neighbor: { x: 0, y: 1 } }, { a: 2, b: 0, neighbor: { x: - 1, y: 0 } } ];
+						for ( let i = 0; i < walls.length; i ++ ) {
 
-							const a = geometry.vertices[ index + pairs[ i ][ 0 ] ];
-							const b = geometry.vertices[ index + pairs[ i ][ 1 ] ];
+							// Don't put triangles where they won't be seen
+							if ( y + walls[ i ].neighbor.y < 0 || y + walls[ i ].neighbor.y > height ||
+								x + walls[ i ].neighbor.x < 0 || x + walls[ i ].neighbor.x > width || (
+									typeof heightmap[ y + walls[ i ].neighbor.y ][ x + walls[ i ].neighbor.x ] === "string" &&
+									heightmap[ y + walls[ i ].neighbor.y ][ x + walls[ i ].neighbor.x ].toLowerCase() === "r" ) )
+
+								continue;
+
+							const a = geometry.vertices[ index + walls[ i ].a ];
+							const b = geometry.vertices[ index + walls[ i ].b ];
 
 							if ( a.z !== b.z && ( a.x === b.x || a.y === b.y ) ) {
 
@@ -215,7 +164,7 @@ class Terrain extends Doodad {
 								const v = new Vector3( x, y, z );
 
 								const newVertex = geometry.vertices.push( v ) - 1;
-								rampWalls.push( new Face3( index + pairs[ i ][ 0 ], index + pairs[ i ][ 1 ], newVertex ) );
+								rampWalls.push( new Face3( index + walls[ i ].a, index + walls[ i ].b, newVertex ) );
 
 							}
 
@@ -223,10 +172,8 @@ class Terrain extends Doodad {
 
 						const minHeight = Math.min( topLeftHeight, topRightHeight, botLeftHeight, botRightHeight );
 
-						// TODO: Don't create a face if neighbor is also a ramp
-
-						// Left + right wall
-						if ( x > 0 ) {
+						// Left wall (next gets right)
+						if ( topLeftHeight !== botLeftHeight && x > 0 ) {
 
 							const currentIsLow = minHeight < heightmap[ y ][ x - 1 ];
 							const low = currentIsLow ? minHeight : heightmap[ y ][ x - 1 ];
@@ -241,15 +188,15 @@ class Terrain extends Doodad {
 									new Vector3( x, - y, z + 1 ),
 									new Vector3( x, - y - 1, z + 1 )
 								);
-								if ( currentIsLow ) geometry.faces.push( new Face3( index, index + 2, index + 1 ), new Face3( index + 2, index + 3, index + 1 ) );
-								else geometry.faces.push( new Face3( index, index + 1, index + 2 ), new Face3( index + 1, index + 3, index + 2 ) );
+								if ( currentIsLow ) geometry.faces.push( new Face3( index + 1, index, index + 2 ), new Face3( index + 1, index + 2, index + 3 ) );
+								else geometry.faces.push( new Face3( index + 2, index, index + 1 ), new Face3( index + 2, index + 1, index + 3 ) );
 
 							}
 
 						}
 
-						// Top + bottom wall
-						if ( y > 0 ) {
+						// Top wall (next gets bottom)
+						if ( topLeftHeight !== topRightHeight && y > 0 ) {
 
 							const currentIsLow = minHeight < heightmap[ y - 1 ][ x ];
 							const low = currentIsLow ? minHeight : heightmap[ y - 1 ][ x ];
@@ -264,8 +211,8 @@ class Terrain extends Doodad {
 									new Vector3( x, - y, z + 1 ),
 									new Vector3( x + 1, - y, z + 1 )
 								);
-								if ( currentIsLow ) geometry.faces.push( new Face3( index, index + 1, index + 2 ), new Face3( index + 1, index + 3, index + 2 ) );
-								else geometry.faces.push( new Face3( index, index + 2, index + 1 ), new Face3( index + 2, index + 3, index + 1 ) );
+								if ( currentIsLow ) geometry.faces.push( new Face3( index + 2, index, index + 1 ), new Face3( index + 2, index + 1, index + 3 ) );
+								else geometry.faces.push( new Face3( index + 1, index, index + 2 ), new Face3( index + 1, index + 2, index + 3 ) );
 
 							}
 
@@ -273,12 +220,12 @@ class Terrain extends Doodad {
 
 					}
 
-			// Randomly rotate squares 50% of squares
+			// Randomly rotate 50% of squares
 			for ( let i = 0; i < geometry.faces.length / 2; i ++ )
 				if ( Math.random() < 0.5 ) {
 
-					geometry.faces[ i * 2 ].c = geometry.faces[ i * 2 + 1 ].b;
-					geometry.faces[ i * 2 + 1 ].a = geometry.faces[ i * 2 ].a;
+					geometry.faces[ i * 2 ].c = geometry.faces[ i * 2 + 1 ].c;
+					geometry.faces[ i * 2 + 1 ].a = geometry.faces[ i * 2 ].b;
 
 				}
 
@@ -289,8 +236,8 @@ class Terrain extends Doodad {
 			for ( let i = 0; i < geometry.vertices.length; i ++ ) {
 
 				geometry.vertices[ i ].x += ( Math.random() - 0.5 ) * ( Math.random() - 0.5 ) * 0.75;
+				geometry.vertices[ i ].y += ( Math.random() - 0.5 ) * ( Math.random() - 0.5 ) * 0.75;
 				geometry.vertices[ i ].z += ( Math.random() - 0.5 ) * ( Math.random() - 0.5 ) * 0.75;
-				geometry.vertices[ i ].y += ( Math.random() - 0.5 ) * ( Math.random() - 0.5 ) * 0.75;	//height
 
 			}
 
@@ -302,15 +249,38 @@ class Terrain extends Doodad {
 
 			if ( balls.length ) this.mesh.add( ...balls );
 
-			this.mesh.position.y = - 7;
-			// this.mesh.castShadow = true;
-			// this.mesh.receiveShadow = true;
+			this.mesh.castShadow = true;
+			this.mesh.receiveShadow = true;
 
-			this.mesh.rotateX( - 90 * Math.PI / 180 );
-
-			props.app.renders.add( ( time, delta ) => this.mesh.rotateZ( delta * - 0.0005 ) );
+			// props.app.renders.add( ( time, delta ) => this.mesh.rotateZ( delta * - 0.00005 ) );
 
 		}
+
+	}
+
+	_getHeight( x, y ) {
+
+		if ( ! isNaN( this.heightmap[ y ][ x ] ) ) return this.heightmap[ y ][ x ];
+
+		if ( this.heightmap[ y ][ x ].toLowerCase() !== "r" ) return;
+
+		const [ topLeft, top, topRight, left, right, botLeft, bot, botRight ] = [
+			y > 0 && x > 0 ? this.heightmap[ y - 1 ][ x - 1 ] : undefined,
+			y > 0 ? this.heightmap[ y - 1 ][ x ] : undefined,
+			y > 0 && x < this.width ? this.heightmap[ y - 1 ][ x + 1 ] : undefined,
+			x > 0 ? this.heightmap[ y ][ x - 1 ] : undefined,
+			x < this.width ? this.heightmap[ y ][ x + 1 ] : undefined,
+			y < this.height && x > 0 ? this.heightmap[ y + 1 ][ x - 1 ] : undefined,
+			y < this.height ? this.heightmap[ y + 1 ][ x ] : undefined,
+			y < this.height && x < this.width ? this.heightmap[ y + 1 ][ x + 1 ] : undefined
+		].map( tile => isNaN( tile ) ? - Infinity : tile );
+
+		const topLeftHeight = Math.max( topLeft, top, left );
+		const topRightHeight = Math.max( topRight, top, right );
+		const botLeftHeight = Math.max( botLeft, bot, left );
+		const botRightHeight = Math.max( botRight, bot, right );
+
+		return Math.min( topLeftHeight, topRightHeight, botLeftHeight, botRightHeight );
 
 	}
 

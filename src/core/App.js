@@ -89,9 +89,16 @@ class App extends EventDispatcher {
 		this.scene.add( this.globalLight );
 
 		this.sun = new DirectionalLight( 0xffffff, 0.5 );
-		this.sun.position.z = 5;
-		this.sun.position.x = - 3;
-		this.sun.position.y = - 7;
+		this.sun.position.set( - 12.5, - 2.5, 25 );
+		this.sun.shadow.camera.near = 0;
+		this.sun.shadow.camera.far = 100;
+		this.sun.shadow.camera.left = - 2 * 18;
+		this.sun.shadow.camera.right = 2 * 18;
+		this.sun.shadow.camera.top = 2 * 9;
+		this.sun.shadow.camera.bottom = - 2 * 9;
+		this.sun.shadow.mapSize.width = 4096;
+		this.sun.shadow.mapSize.height = 4096;
+
 		this.sun.castShadow = true;
 		this.scene.add( this.sun );
 
@@ -121,6 +128,8 @@ class App extends EventDispatcher {
 
 		};
 
+		this.camera.position.x = props.y || 0;
+		this.camera.position.y = props.x || 0;
 		this.camera.position.z = props.z || 25;
 		this.camera.rotation.x = props.angleOfAttack || 0;
 

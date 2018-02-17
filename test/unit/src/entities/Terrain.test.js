@@ -10,7 +10,7 @@ export default () => describe( "WC3Terrain", () => {
 	it( "constructor( <{ <units> }> )", () => {
 
 		const terrain1Props = { a: Math.random() };
-		assert.deepEqual( new WC3Terrain( terrain1Props ), Object.assign( { units: new Collection() }, terrain1Props ) );
+		assert.equal( new WC3Terrain( terrain1Props ).a, terrain1Props.a );
 
 		const terrain2Units = new Collection();
 		assert.equal( new WC3Terrain( { units: terrain2Units } ).units, terrain2Units );
