@@ -5,7 +5,7 @@ let chat;
 
 export default app => {
 
-	if ( ! isBrowser || chat ) return;
+	if ( ! isBrowser || chat ) return chat;
 
 	class Chat extends HTMLElement {
 
@@ -94,11 +94,7 @@ export default app => {
 				chat.classList.add( "system" );
 				chat.innerHTML = /* @html */`<span class="message">${message}</span>`;
 
-			} else if ( who ) {
-
-				chat.innerHTML = /* @html */`<span class="who" style="color: ${who.color.hex}">${who.name || who.color.name}</span>: <span class="message">${message}</span>`;
-
-			}
+			} else if ( who ) chat.innerHTML = /* @html */`<span class="who" style="color: ${who.color.hex}">${who.name || who.color.name}</span>: <span class="message">${message}</span>`;
 
 			this.log.appendChild( chat );
 

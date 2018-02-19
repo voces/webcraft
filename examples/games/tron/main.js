@@ -43,6 +43,12 @@ const app = new WebCraft.App( {
 			{ name: "Bike", model: di( "../../models/CubeModel.js" ), state: [ "oldFacing" ] },
 			{ name: "Glass", model: { mesh: di( "../../models/CubeModel.js" ), opacity: 0.5 } }
 		]
+	},
+
+	camera: {
+		angleOfAttack: 0,
+		z: 60,
+		controls: false
 	}
 
 } );
@@ -149,8 +155,8 @@ function tick() {
 		const x = Math.round( bike.x );
 		const y = Math.round( bike.y );
 
-		new app.Glass( { owner: bike.owner, x: x, y: y } );
-		grid[ x + 20 ][ y + 9 ] = new app.Glass( { owner: bike.owner, x: x, y: y } );
+		new app.Glass( { owner: bike.owner, x, y } );
+		grid[ x + 20 ][ y + 9 ] = new app.Glass( { owner: bike.owner, x, y } );
 
 		if ( bike.facing !== bike.oldFacing ) {
 

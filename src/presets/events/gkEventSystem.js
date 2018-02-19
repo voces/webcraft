@@ -18,15 +18,19 @@ function clientJoinHandler( app, e ) {
 	const seed = app.initialSeed + player.id;
 	app.random = new Random( seed );
 
-	for ( let i = 0; i < app.players.length; i ++ )
-		app.players[ i ].send( {
+	app.players.add( player );
+	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
+
+	app.update( true );
+
+	const originalPlayers = [ ...app.players ];
+
+	for ( let i = 0; i < originalPlayers.length; i ++ )
+		originalPlayers[ i ].send( {
 			type: "playerJoin",
 			time: app.time,
 			seed,
 			player: playerState } );
-
-	app.players.add( player );
-	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
 
 	player.send( {
 		type: "state",
@@ -36,7 +40,6 @@ function clientJoinHandler( app, e ) {
 		local: player.toJSON()
 	}, "toState" );
 
-	app.update( true );
 	app.dispatchEvent( "playerJoin", { player } );
 
 }

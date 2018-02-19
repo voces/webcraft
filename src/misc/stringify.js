@@ -12,13 +12,13 @@ const defaultReplacer = ( prop, value ) => value;
 
 function stringify( value, replacer = defaultReplacer, toJSON = "toJSON", memory = new Set() ) {
 
-	if ( value == null ) return "null";
+	if ( value === null || value === undefined ) return "null";
 	if ( typeof value === "number" ) return replacer( undefined, isFinite( value ) ? value.toString() : "null" );
 	if ( typeof value === "boolean" ) return replacer( undefined, value.toString() );
 	if ( typeof value === "object" || typeof value === "function" ) {
 
 		const inMemory = value instanceof Handle && memory.has( value );
-		if ( value instanceof Handle ) memory.add( value );
+		if ( value instanceof Handle && ! inMemory ) memory.add( value );
 
 		if ( ! inMemory && typeof value[ toJSON ] === "function" )
 			return stringify( replacer( undefined, value[ toJSON ]() ), replacer, toJSON, memory );

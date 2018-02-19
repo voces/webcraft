@@ -21,7 +21,7 @@ class GenericServer extends EventDispatcher {
 
 		if ( typeof data === "object" ) {
 
-			if ( this.app ) {
+			if ( this.app )
 
 				if ( data instanceof Array ) {
 
@@ -29,8 +29,6 @@ class GenericServer extends EventDispatcher {
 						if ( data[ i ].time === undefined ) data[ i ].time = this.app.time;
 
 				} else if ( data.time === undefined ) data.time = this.app.time;
-
-			}
 
 			if ( toJSON ) data = stringify( data, this.replacer, toJSON );
 			else data = JSON.stringify( data, this.replacer );
@@ -43,7 +41,11 @@ class GenericServer extends EventDispatcher {
 
 				this.clients[ i ].send( data );
 
-			} catch ( err ) {}
+			} catch ( err ) {
+
+				console.error( err );
+
+			}
 
 			this.charsSent += data.length;
 
@@ -99,7 +101,7 @@ class GenericServer extends EventDispatcher {
 
 				if ( typeof data === "object" ) {
 
-					if ( this.app ) {
+					if ( this.app )
 
 						if ( data instanceof Array ) {
 
@@ -107,8 +109,6 @@ class GenericServer extends EventDispatcher {
 								if ( data[ i ].time === undefined ) data[ i ].time = this.app.time;
 
 						} else if ( data.time === undefined ) data.time = this.app.time;
-
-					}
 
 					if ( toJSON ) data = stringify( data, this.replacer, toJSON );
 					else data = JSON.stringify( data, this.replacer );
@@ -119,7 +119,11 @@ class GenericServer extends EventDispatcher {
 
 					socket.send( data );
 
-				} catch ( err ) {}
+				} catch ( err ) {
+
+					console.error( err );
+
+				}
 
 			} } } );
 

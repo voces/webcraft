@@ -22,6 +22,12 @@ const app = new WebCraft.App( {
 			{ name: "Ball", model: { mesh: di( "../../models/SphereModel.js" ), color: "#00FF00" } },
 			{ name: "Paddle", model: { mesh: di( "../../models/CubeModel.js" ), height: 5 } }
 		]
+	},
+
+	camera: {
+		angleOfAttack: 0,
+		z: 35,
+		controls: false
 	}
 
 } );
@@ -37,11 +43,9 @@ const rightPaddle = new app.Paddle( { x: 12.5 } );
 const bounceRegion = new app.Rect( { x: 11.5, y: 6.5 }, { x: - 11.5, y: - 6.5 } );
 const scoreRegion = new app.Rect( { x: 13.5, y: 100 }, { x: - 13.5, y: - 100 } );
 
-app.state = {
-	players: app.players,
-	leftPaddle, rightPaddle, ball,
+Object.assign( app.state, {
 	leftScore: 0, rightScore: 0
-};
+} );
 
 Object.defineProperty( app.state, "start", {
 	get: () => startTimeout && startTimeout.time,
@@ -177,7 +181,7 @@ app.addEventListener( "start", () => {
 
 app.addEventListener( "playerLeave", e => {
 
-	if ( e.player !== leftPaddle.owner && e.player !== rightPaddle.owner ) return;
+	if ( e.player !== leftPaddle.owner && e.player !== rightPaddle.owner ) return e.player.remove();
 
 	if ( startTimeout ) startTimeout.clear();
 	startTimeout = undefined;
@@ -185,9 +189,10 @@ app.addEventListener( "playerLeave", e => {
 	ball.x = ball.x;
 	ball.y = ball.y;
 
+	reset();
+
 	if ( app.players.filter( player => player.status === "here" ).length < 2 ) return;
 
-	reset();
 	init();
 
 	startTimeout = app.setTimeout( () => start(), 1000 );
@@ -251,3 +256,5 @@ WebCraft.isBrowser && window.addEventListener( "keyup", e => {
 } );
 
 export default app;
+
+if ( typeof window === "object" ) window.app = app;

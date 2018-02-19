@@ -7,4 +7,6 @@ import ClientNetwork from "./networks/GenericClient.js";
 import ServerNetwork from "./networks/GenericServer.js";
 import renderer from "./misc/Renderer.js";
 
-export { eventSystem, ClientNetwork, ServerNetwork, renderer };
+const state = app => ( { players: app.players, units: app.units, doodads: app.doodads } );
+
+export { eventSystem, ClientNetwork, ServerNetwork, renderer, state };

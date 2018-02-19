@@ -47,13 +47,13 @@ class Unit extends Doodad {
 
 		this._props.owner = owner;
 
-		// Null and undefined
-		if ( owner == undefined ) return;
+		if ( owner === undefined || owner === null ) return;
 
 		if ( this.mesh && this.mesh.accentFaces ) {
 
-			for ( let i = 0; i < this.mesh.accentFaces.length; i ++ )
-				this.mesh.geometry.faces[ this.mesh.accentFaces[ i ] ].color.set( owner.color.hex );
+			if ( owner.color && owner.color.hex )
+				for ( let i = 0; i < this.mesh.accentFaces.length; i ++ )
+					this.mesh.geometry.faces[ this.mesh.accentFaces[ i ] ].color.set( owner.color.hex );
 
 			this.mesh.geometry.colorsNeedUpdate = true;
 
