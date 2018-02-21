@@ -1,5 +1,5 @@
 
-import Doodad from "./Doodad.js";
+import Destructible from "./Destructible.js";
 import Handle from "../core/Handle.js";
 import { diff } from "../math/set.js";
 
@@ -7,7 +7,7 @@ import linearTween from "../tweens/linearTween.js";
 import sleepTween from "../tweens/sleepTween.js";
 import stepTween from "../tweens/stepTween.js";
 
-class Unit extends Doodad {
+class Unit extends Destructible {
 
 	constructor( props = {} ) {
 
@@ -64,46 +64,6 @@ class Unit extends Doodad {
 	get owner() {
 
 		return this._props.owner;
-
-	}
-
-	get alive() {
-
-		return this._life > 0;
-
-	}
-
-	get dead() {
-
-		return this._life <= 0;
-
-	}
-
-	get life() {
-
-		return this._life;
-
-	}
-
-	set life( value ) {
-
-		this._live = value;
-
-		if ( value <= 0 ) this.dispatchEvent( "death" );
-
-	}
-
-	kill() {
-
-		this.life = 0;
-		this.x = this.x;
-		this.y = this.y;
-
-	}
-
-	onDeath() {
-
-		if ( this.mesh ) this.dispatchEvent( "meshUnloaded" );
 
 	}
 

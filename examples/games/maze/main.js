@@ -29,6 +29,12 @@ const app = new WebCraft.App( {
 			{ name: "Food", model: { mesh: di( "../../models/SphereModel.js" ), color: "#FFFF00", scale: 0.5 }, state: [ "food" ] },
 			{ name: "Enemy", model: { mesh: di( "../../models/SphereModel.js" ), color: "#0000FF", scale: 0.5 }, speed: 7 }
 		]
+	},
+
+	camera: {
+		angleOfAttack: 0,
+		z: 35,
+		controls: false
 	}
 } );
 
@@ -52,7 +58,7 @@ function spawn( player ) {
 
 	if ( level.checkpoints === undefined ) calculateCheckpoints();
 
-	const char = new app.Character( Object.assign( { owner: player, z: 1 }, level.checkpoints[ player.checkpoint ].center ) );
+	const char = new app.Character( Object.assign( { owner: player, z: 0.5 + SIZE / 2 }, level.checkpoints[ player.checkpoint ].center ) );
 	player.character = char;
 	char.onNear( app.units, SIZE, onNear );
 	char.addEventListener( "death", onDeath );
@@ -509,7 +515,7 @@ const levels = [
 		],
 		patrols: [].concat( ...[ - 5.75, - 1.917, 1.917, 5.75 ].map( x => [ 3, - 3 ].map( y => [ { x, y } ] ) ) ),
 		circles: [].concat( ...[ - 5.75, - 1.917, 1.917, 5.75 ].map( x => [].concat( ...[ 3, - 3 ].map( y => [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( arm => [ 0.95, 1.9 ].map( radius => ( {
-			x, y: y, radius, duration: 4, offset: 4 * arm
+			x, y, radius, duration: 4, offset: 4 * arm
 		} ) ) ) ) ) ) ) ),
 		food: [
 			{ x: - 7.5, y: - 1.5 },
@@ -729,7 +735,7 @@ const levels = [
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) },
-				 		{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) },
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) },
@@ -739,7 +745,7 @@ const levels = [
 
 			} )()
 		],
-		tick: function ( time ) {
+		tick( time ) {
 
 			const mode = Math.floor( time / 1000 ) % 2 ? "move" : "hold";
 			if ( this.mode === mode ) return;
@@ -756,12 +762,12 @@ const levels = [
 			if ( mode === "move" )
 				for ( let i = 0; i < this.enemies.length; i ++ )
 					this.enemies[ i ].circle = this.enemies[ i ]._circle;
-			 else
-			 	for ( let i = 0; i < this.enemies.length; i ++ )
+			else
+				for ( let i = 0; i < this.enemies.length; i ++ )
 					delete this.enemies[ i ].circle;
 
 		},
-		clean: function () {
+		clean() {
 
 			delete this.enemies;
 			delete this.mode;
@@ -1032,3 +1038,5 @@ function calculateCheckpoints() {
 }
 
 export default app;
+
+if ( typeof window !== "undefined" ) window.app = app;

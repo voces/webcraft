@@ -39,6 +39,7 @@ class App extends EventDispatcher {
 		this.handles = props.handles || new Collection();
 		this.players = props.players || new Collection();
 		this.units = props.units || new Collection();
+		this.destructibles = props.destructibles || new Collection();
 		this.doodads = props.doodads || new Collection();
 		this.rects = props.rects || new Collection();
 		this.updates = props.updates || new Collection();
