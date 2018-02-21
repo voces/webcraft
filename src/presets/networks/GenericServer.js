@@ -35,21 +35,22 @@ class GenericServer extends EventDispatcher {
 
 		} else if ( typeof data !== "string" ) data = data.toString();
 
-		for ( let i = 0; i < this.clients.length; i ++ ) {
+		for ( let i = 0; i < this.clients.length; i ++ )
+			this.clients[ i ].pool.push( data );
 
-			try {
+	}
 
-				this.clients[ i ].send( data );
+	flush( time ) {
 
-			} catch ( err ) {
+		for ( let i = 0; i < this.clients.length; i ++ )
+			if ( this.clients[ i ].pool.length ) {
 
-				console.error( err );
+				if ( this.clients[ i ].pool.length === 1 ) this.clients[ i ].send( this.clients[ i ].pool[ 0 ] );
+				else this.clients[ i ].send( `[${this.clients[ i ].pool.join( "," )}]` );
 
-			}
+				this.clients[ i ].pool = [];
 
-			this.charsSent += data.length;
-
-		}
+			} else this.clients[ i ].send( time );
 
 	}
 
@@ -64,6 +65,8 @@ class GenericServer extends EventDispatcher {
 
 			socket.id = ( Handle.id )++;
 			socket.key = "c" + socket.id;
+			socket.pool = [];
+
 			this.clients.add( socket );
 			console.log( "Connection from", socket._socket.remoteAddress, "on", socket._socket.remotePort, "as", socket.id );
 
@@ -117,11 +120,7 @@ class GenericServer extends EventDispatcher {
 
 				}
 
-				try {
-
-					socket.send( data );
-
-				} catch ( err ) { /* ignore error; client likely just disconected */ }
+				socket.pool.push( data );
 
 			} } } );
 

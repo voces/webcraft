@@ -1,11 +1,6 @@
 
 import Doodad from "./Doodad.js";
 import Handle from "../core/Handle.js";
-import { diff } from "../math/set.js";
-
-import linearTween from "../tweens/linearTween.js";
-import sleepTween from "../tweens/sleepTween.js";
-import stepTween from "../tweens/stepTween.js";
 
 class Destructible extends Doodad {
 

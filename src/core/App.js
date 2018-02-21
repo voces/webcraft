@@ -28,8 +28,8 @@ class App extends EventDispatcher {
 		// Time keeping
 		this.time = 0;
 		this.renderTime = 0;
-		this.lastNow = Date.now();
-		this.lastRender = this.lastNow;
+		this.lastUpdate = Date.now();
+		this.lastRender = this.lastUpdate;
 
 		// Randomness
 		this.initialSeed = props.seed || Math.random();
@@ -444,12 +444,21 @@ class App extends EventDispatcher {
 		if ( env.isServer ) {
 
 			const now = Date.now();
-			const delta = now - this.lastNow;
+			const delta = now - this.lastUpdate;
 
-			this.lastNow = now;
 			this.time += delta;
 
 		} else if ( env.isBrowser ) this.renderTime = this.time;
+
+		// Only update once per time
+		if ( this.lastUpdate === this.time ) {
+
+			if ( env.isServer && ! consistencyUpdate ) setTimeout( () => this.update(), 25 );
+			return;
+
+		}
+
+		this.lastUpdate = this.time;
 
 		if ( this.subevents.length ) {
 
@@ -506,7 +515,7 @@ class App extends EventDispatcher {
 
 		if ( env.isServer && ! consistencyUpdate ) {
 
-			this.network.send( this.time );
+			this.network.flush( this.time );
 			setTimeout( () => this.update(), 25 );
 
 		}

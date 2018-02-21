@@ -49,9 +49,9 @@ function clientLeaveHandler( app, e ) {
 
 	const player = app.players.dict[ "p" + e.client.id ];
 
-	app.network.send( { type: "playerLeave", player } );
-
 	app.update( true );
+
+	app.network.send( { type: "playerLeave", player } );
 	app.dispatchEvent( "playerLeave", { player } );
 
 }
@@ -65,19 +65,15 @@ function clientMessageHandler( app, e ) {
 	// Ignore unsafe messages
 	if ( ! e.message.type || reservedEventTypes.indexOf( e.message.type ) !== - 1 ) return;
 
-	// Update the game clock
-	const now = Date.now();
-	const delta = now - app.lastNow;
-	app.lastNow = now;
-	app.time += delta;
+	// Update the game state
+	app.update( true );
 
 	// Set reserved values
 	e.message.player = app.players.dict[ "p" + e.client.id ];
 	e.message.time = app.time;
 
+	// Dispatch the event (through network and server)
 	app.network.send( e.message );
-
-	app.update( true );
 	app.dispatchEvent( e.message.type, e.message );
 
 }
