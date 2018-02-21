@@ -28,7 +28,6 @@ class GenericClient extends EventDispatcher {
 			if ( typeof e === "number" ) {
 
 				this.app.time = e;
-				this.app.officialTime = e;
 				this.app.update();
 				this.app.dispatchEvent( "time", { time: e } );
 
@@ -38,12 +37,11 @@ class GenericClient extends EventDispatcher {
 
 					if ( this.app && e[ i ].time ) {
 
-						const oldTime = this.app.officialTime;
+						const oldTime = this.app.time;
 
 						this.app.time = e[ i ].time;
-						this.app.officialTime = e[ i ].time;
 
-						if ( oldTime !== this.app.officialTime ) this.app.update();
+						if ( oldTime !== this.app.time ) this.app.update();
 
 					}
 
@@ -55,12 +53,11 @@ class GenericClient extends EventDispatcher {
 
 				if ( this.app && e.time ) {
 
-					const oldTime = this.app.officialTime;
+					const oldTime = this.app.time;
 
 					this.app.time = e.time;
-					this.app.officialTime = e.time;
 
-					if ( oldTime !== this.app.officialTime ) this.app.update();
+					if ( oldTime !== this.app.time ) this.app.update();
 
 				}
 

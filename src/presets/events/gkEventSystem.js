@@ -18,12 +18,12 @@ function clientJoinHandler( app, e ) {
 	const seed = app.initialSeed + player.id;
 	app.random = new Random( seed );
 
+	const originalPlayers = [ ...app.players ];
+
 	app.players.add( player );
 	app.players.sort( ( a, b ) => a.id > b.id ? 1 : - 1 );
 
 	app.update( true );
-
-	const originalPlayers = [ ...app.players ];
 
 	for ( let i = 0; i < originalPlayers.length; i ++ )
 		originalPlayers[ i ].send( {

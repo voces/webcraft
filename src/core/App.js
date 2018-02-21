@@ -30,7 +30,6 @@ class App extends EventDispatcher {
 		this.renderTime = 0;
 		this.lastNow = Date.now();
 		this.lastRender = this.lastNow;
-		if ( env.isServer ) Object.defineProperty( this, "officialTime", { get: () => this.time } );
 
 		// Randomness
 		this.initialSeed = props.seed || Math.random();
@@ -451,15 +450,6 @@ class App extends EventDispatcher {
 
 		} else if ( env.isBrowser ) this.renderTime = this.time;
 
-		for ( let i = 0; i < this.updates.length; i ++ )
-			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );
-			else if ( typeof this.updates[ i ] === "object" )
-
-				if ( this.updates[ i ].update ) this.updates[ i ].update( this.time );
-				else if ( this.updates[ i ].updates )
-					for ( let n = 0; n < this.updates[ i ].updates.length; n ++ )
-						this.updates[ i ].updates[ n ]( this.time );
-
 		if ( this.subevents.length ) {
 
 			const oldTime = this.time;
@@ -478,7 +468,7 @@ class App extends EventDispatcher {
 					else this.subevents.splice( 0, index );
 					break;
 
-				} else if ( subevents[ index ].time > this.officialTime ) {
+				} else if ( subevents[ index ].time > oldTime ) {
 
 					this.subevents.splice( 0, index );
 					break;
@@ -503,6 +493,15 @@ class App extends EventDispatcher {
 			this.time = oldTime;
 
 		}
+
+		for ( let i = 0; i < this.updates.length; i ++ )
+			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );
+			else if ( typeof this.updates[ i ] === "object" )
+
+				if ( this.updates[ i ].update ) this.updates[ i ].update( this.time );
+				else if ( this.updates[ i ].updates )
+					for ( let n = 0; n < this.updates[ i ].updates.length; n ++ )
+						this.updates[ i ].updates[ n ]( this.time );
 
 		if ( env.isServer && ! consistencyUpdate ) {
 

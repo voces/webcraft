@@ -77,6 +77,8 @@ class GenericServer extends EventDispatcher {
 
 			};
 
+			socket.onerror = () => {};
+
 			socket.onmessage = data => {
 
 				// Ignore large messages
@@ -119,11 +121,7 @@ class GenericServer extends EventDispatcher {
 
 					socket.send( data );
 
-				} catch ( err ) {
-
-					console.error( err );
-
-				}
+				} catch ( err ) { /* ignore error; client likely just disconected */ }
 
 			} } } );
 

@@ -40,7 +40,7 @@ const app = new WebCraft.App( {
 	types: {
 		doodads: [ { name: "Wall", model: di( "../../models/CubeModel.js" ) } ],
 		units: [
-			{ name: "Bike", model: di( "../../models/CubeModel.js" ), state: [ "oldFacing" ] },
+			{ name: "Bike", model: di( "../../models/CubeModel.js" ), state: [ "oldFacing", "speed" ] },
 			{ name: "Glass", model: { mesh: di( "../../models/CubeModel.js" ), opacity: 0.5 } }
 		]
 	},
@@ -130,6 +130,7 @@ function tick() {
 	let death = false;
 
 	const bikes = app.units.filter( u => u instanceof app.Bike );
+
 	for ( let i = 0; i < bikes.length; i ++ ) {
 
 		const bike = bikes[ i ];
