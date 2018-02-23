@@ -1,5 +1,6 @@
 
-import { BoxGeometry, Mesh, FaceColors, MeshPhongMaterial, JSONLoader } from "../../node_modules/three/build/three.module.js";
+import { Mesh, FaceColors, MeshPhongMaterial, JSONLoader } from "../../node_modules/three/build/three.module.js";
+import json from "./farm.json.js";
 
 const loader = new JSONLoader();
 
@@ -11,55 +12,23 @@ const colors = [
 	0x979797,	// chimney-guard
 	0x000000 ];	// chimney-top
 
-let geometry, material;
-const ready = new Promise( resolve => loader.load( "/examples/models/farm.json", ( geo, mat ) => {
-
-	geo.rotateX( Math.PI / 2 );
-	geo.scale( 0.08, 0.08, 0.08 );
-
-	for ( let i = 0; i < geo.faces.length; i ++ )
-		geo.faces[ i ].color.setHex( colors[ geo.faces[ i ].materialIndex ] );
-
-	geometry = geo;
-	material = mat;
-
-	resolve( { geo, mat } );
-
-} ) );
-
 class FarmModel extends Mesh {
 
-	constructor( props = {} ) {
+	constructor( { scale = 0.08, color = 0xeeeeff } ) {
 
-		const color = props.color || 0xeeeeff;
+		const { geometry } = loader.parse( json );
 
-		const materialDef = props.materialDef || { color, vertexColors: FaceColors, flatShading: true };
+		for ( let i = 0; i < geometry.faces.length; i ++ )
+			geometry.faces[ i ].color.setHex( colors[ geometry.faces[ i ].materialIndex ] );
 
-		if ( props.opacity !== undefined ) {
+		geometry.rotateX( Math.PI / 2 );
 
-			materialDef.opacity = props.opacity;
-			materialDef.transparent = true;
+		const material = new MeshPhongMaterial( { color, vertexColors: FaceColors, flatShading: true } );
 
-		}
-
-		if ( materialDef.transparent && materialDef.opacity === undefined ) materialDef.opacity = 1;
-		if ( materialDef.opacity !== undefined && ! materialDef.transparent ) materialDef.transparent = true;
-
-		const geo = geometry || new BoxGeometry( 1, 1, 1 );
-		const mat = material || new MeshPhongMaterial( materialDef );
-
-		super( geo, mat );
+		super( geometry, material );
+		this.scale.multiplyScalar( scale );
 		this.castShadow = true;
 		this.receiveShadow = true;
-
-		if ( geometry ) return;
-		ready.then( ( { geo/*, mat*/ } ) => {
-
-			this.geometry = geo;
-			// this.material = mat;
-			this.accentFaces = [ ...Array( geo.faces.length ).keys() ];
-
-		} );
 
 	}
 

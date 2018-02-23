@@ -1,5 +1,5 @@
 
-import { Geometry, Mesh, MeshPhongMaterial, FaceColors, Vector3, Face3, Color, Raycaster, OrthographicCamera } from "../../node_modules/three/build/three.module.js";
+import { Geometry, Mesh, MeshPhongMaterial, FaceColors, Vector3, Face3, Color, Raycaster } from "../../node_modules/three/build/three.module.js";
 
 import Collection from "../core/Collection.js";
 import { pointInPolygon, pointInSomePolygon } from "../math/geometry.js";
