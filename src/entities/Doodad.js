@@ -1,5 +1,5 @@
 
-import { Mesh } from "../../node_modules/three/build/three.module.js";
+import { AnimationClip, AnimationMixer, Mesh } from "../../node_modules/three/build/three.module.js";
 
 import Handle from "../core/Handle.js";
 import { isBrowser } from "../misc/env.js";
@@ -62,9 +62,9 @@ class Doodad extends Handle {
 		this.mesh = new klass( details );
 
 		this.mesh.userData = this.id;
-		this.mesh.position.x = this._props.x || 0;
-		this.mesh.position.y = this._props.y || 0;
-		this.mesh.position.z = this._props.z || 0;
+		this.mesh.position.x = this.x || 0;
+		this.mesh.position.y = this.y || 0;
+		this.mesh.position.z = this.z || 0;
 
 		if ( this.owner && this.mesh.accentFaces ) {
 
@@ -103,7 +103,37 @@ class Doodad extends Handle {
 
 		this._props.mesh = mesh;
 
+		mesh.position.x = this.x;
+		mesh.position.y = this.y;
+		mesh.position.z = this.z;
+
+		if ( mesh.geometry.animations ) {
+
+			this.mixer = new AnimationMixer( mesh );
+			this.playAnimation( mesh.geometry.animations[ 0 ].name );
+
+		}
+
 		this.dispatchEvent( "meshLoaded" );
+
+	}
+
+	playAnimation( animation, speed = 1, weight = 1 ) {
+
+		if ( ! this._playingAniamtion ) {
+
+			this._playingAniamtion = true;
+			++ this.dirty;
+
+		}
+
+		const clip = animation instanceof AnimationClip ? animation : this.mesh.geometry.animations.find( clip => clip.name === animation );
+		if ( ! clip ) throw new Error( `Unknown animation '${animation}'` );
+
+		this.mixer.clipAction( clip )
+			.setEffectiveTimeScale( speed )
+			.setEffectiveWeight( weight )
+			.play();
 
 	}
 
@@ -209,7 +239,7 @@ class Doodad extends Handle {
 
 	}
 
-	render( time ) {
+	render( time, delta ) {
 
 		if ( ! isBrowser || ! this.mesh ) return;
 
@@ -218,6 +248,8 @@ class Doodad extends Handle {
 
 		for ( let i = 0; i < this.renders.length; i ++ )
 			this.renders[ i ]( time );
+
+		if ( this.mixer ) this.mixer.update( delta / 1000 );
 
 	}
 

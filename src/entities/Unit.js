@@ -114,21 +114,20 @@ class Unit extends Destructible {
 		const tween = this.app ? this.app.linearTween : linearTween;
 
 		const angle = "x" in point && "y" in point ? Math.atan2( point.y - this.y, point.x - this.x ) : 1;
+		const startTime = this.app ? this.app.time : Date.now();
 
 		if ( "x" in point ) this.x = tween( {
 			start: this.x,
 			end: point.x,
-			control1: point.control1 !== undefined ? point.control1.x : undefined,
-			control2: point.control2 !== undefined ? point.control2.x : undefined,
-			rate: Math.cos( angle ) * this.speed
+			rate: Math.cos( angle ) * this.speed,
+			startTime
 		} );
 
 		if ( "y" in point ) this.y = tween( {
 			start: this.y,
 			end: point.y,
-			control1: point.control1 !== undefined ? point.control1.y : undefined,
-			control2: point.control2 !== undefined ? point.control2.y : undefined,
-			rate: Math.cos( angle ) * this.speed
+			rate: Math.sin( angle ) * this.speed,
+			startTime
 		} );
 
 	}

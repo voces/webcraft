@@ -9,8 +9,6 @@ const di = path => () => import( path );
 /// Initialization
 //////////////////////////////////////////////
 
-const SIZE = 0.5;
-
 const app = new WebCraft.App( {
 
 	network: { host: "notextures.io", port: 8086 },
@@ -22,6 +20,7 @@ const app = new WebCraft.App( {
 	},
 
 	terrain: {
+		pointer: true,
 		tileTypes: [
 			{ name: "Grass", color: "#608038" },
 			{ name: "Dirt", color: "#c07040" },
@@ -30,21 +29,6 @@ const app = new WebCraft.App( {
 			{ name: "Rock", color: "#bbbbdd" }
 		],
 		tilemap: [
-			// "00000000000000000000000000",
-			// "00000000000000000000000000",
-			// "00003330000000000000000000",
-			// "00000330000000000000000000",
-			// "00000000000000000000000000",
-			// "00000000000000000000000000",
-			// "00000000000000000000000000",
-			// "00000000000000000000000000",
-			// "00000001001000000000000000",
-			// "00000001001000000000000000",
-			// "00000001001000000000000000",
-			// "00022220000111000000000000",
-			// "00022220000000000000000000",
-			// "00000000000000000000000000",
-			// "00000000000000000000000000"
 			"00000000000000000000000000",
 			"00000000000000000000000000",
 			"00000000000000000000000000",
@@ -61,20 +45,7 @@ const app = new WebCraft.App( {
 			"00000000000000000000000000",
 			"00000000000000000000000000"
 		],
-		heightmap: [
-			// "01r0",
-			// "01r0"
-			// "00",
-			// "11",
-			// "rr",
-			// "00"
-			// "00000000",
-			// "0r104r50",
-			// "00r0r0r0",
-			// " 02r3060",
-			// " 00000r0",
-			// " 09r8r70",
-			// " 0000000"
+		cliffmap: [
 			"22222222222222222222222222",
 			"20001110000001111000000002",
 			"200rrrr000000rrrrr00000002",
@@ -94,20 +65,16 @@ const app = new WebCraft.App( {
 	},
 
 	types: {
-		doodads: [
-			{ name: "Green", model: { mesh: di( "../../models/CubeModel.js" ), color: "#B5FEB4" } },
-			{ name: "TileWhite", model: { mesh: di( "../../models/CubeModel.js" ), color: "#F7F7FF" } },
-			{ name: "TileGray", model: { mesh: di( "../../models/CubeModel.js" ), color: "#E6E6FF" } }
-		],
 		units: [
-			{ name: "Character", model: { mesh: di( "../../models/CubeModel.js" ), scale: SIZE }, speed: 3.5 },
-			{ name: "Food", model: { mesh: di( "../../models/SphereModel.js" ), color: "#FFFF00", scale: 0.5 }, state: [ "food" ] },
-			{ name: "Enemy", model: { mesh: di( "../../models/SphereModel.js" ), color: "#0000FF", scale: 0.5 }, speed: 7 }
+			{ name: "Farm", model: { mesh: di( "../../models/FarmModel.js" ) } },
+			{ name: "Sheep", model: { mesh: di( "../../models/SheepModel.js" ) }, speed: 3.5 }
 		]
 	}
+
 } );
 
-app.state.levelIndex = 0;
+// app.terrain.add( new app.Farm( { x: - 0.5, y: - 4 } ) );
+app.terrain.add( new app.Sheep() );
 
 if ( WebCraft.isBrowser ) chat( app );
 

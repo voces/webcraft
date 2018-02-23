@@ -10,11 +10,13 @@ export default ( camera, renders ) => {
 		if ( keyboard.ArrowRight ) camera.position.x += speed;
 		if ( keyboard.ArrowUp ) camera.position.y += speed;
 		if ( keyboard.ArrowDown ) camera.position.y -= speed;
+		if ( keyboard.PageDown ) camera.rotation.z += delta * 0.001;
+		if ( keyboard.PageUp ) camera.rotation.z -= delta * 0.001;
 
 	};
 	window.addEventListener( "keydown", e => {
 
-		if ( e.key.indexOf( "Arrow" ) !== 0 ) return;
+		if ( e.key.indexOf( "Arrow" ) !== 0 && e.key.indexOf( "Page" ) !== 0 ) return;
 		if ( keyboard[ e.key ] ) return;
 		keyboard[ e.key ] = true;
 		if ( cameraRendering ) return;
@@ -24,9 +26,9 @@ export default ( camera, renders ) => {
 	} );
 	window.addEventListener( "keyup", e => {
 
-		if ( e.key.indexOf( "Arrow" ) !== 0 ) return;
+		if ( e.key.indexOf( "Arrow" ) !== 0 && e.key.indexOf( "Page" ) !== 0 ) return;
 		keyboard[ e.key ] = false;
-		if ( keyboard.ArrowLeft || keyboard.ArrowRight || keyboard.ArrowUp || keyboard.ArrowDown ) return;
+		if ( keyboard.ArrowLeft || keyboard.ArrowRight || keyboard.ArrowUp || keyboard.ArrowDown || keyboard.PageUp || keyboard.PageDown ) return;
 		cameraRendering = false;
 		if ( renders ) renders.remove( renderCameraMovement );
 
