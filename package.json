@@ -1,44 +1,21 @@
 {
   "name": "webcraft",
-  "version": "1.1.1",
-  "description": "HTML5 game engine",
-  "main": "build/webcraft.js",
-  "module": "build/webcraft.module.js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "test": "mocha test/index.test.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "verit",
+  "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@std/esm": "^0.17.3",
-    "three": "^0.87.1",
-    "ws": "^3.3.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/voces/WebCraft"
-  },
-  "bugs": {
-    "url": "https://github.com/voces/WebCraft/issues"
-  },
-  "@std/esm": "cjs",
-  "directories": {
-    "example": "examples",
-    "test": "test"
-  },
-  "keywords": [
-    "engine",
-    "html5",
-    "javascript",
-    "network",
-    "game"
-  ],
   "devDependencies": {
-    "babel-eslint": "^8.0.2",
-    "eslint": "^3.19.0",
-    "eslint-config-mdcs": "^4.2.2",
-    "eslint-plugin-html": "^2.0.3",
-    "eslint-plugin-mocha": "^4.11.0",
-    "mocha": "^4.0.1"
+    "babel-eslint": "^8.2.3",
+    "eslint": "^4.19.1",
+    "eslint-config-mdcs": "^4.2.3"
+  },
+  "dependencies": {
+    "esm": "^3.0.22",
+    "knack-ecs": "^1.0.7",
+    "three": "^0.92.0"
   }
 }

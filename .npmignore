@@ -1,5 +1,0 @@
-src/
-.eslintignore
-.eslintrc.json
-.npmignore
-rollup.config.js
