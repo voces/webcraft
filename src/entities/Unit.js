@@ -134,6 +134,11 @@ class Unit extends Destructible {
 
 	traverse( points, patrol = false ) {
 
+		// Allow a single point; use traverseTo if not patrolling
+		if ( ! Array.isArray( points ) )
+			if ( ! patrol ) return this.traverseTo( points );
+			else points = [ points ];
+
 		const myLinearTween = this.app ? this.app.linearTween : linearTween;
 		const mySleepTween = this.app ? this.app.sleepTween : sleepTween;
 		const myStepTween = this.app ? this.app.stepTween : stepTween;

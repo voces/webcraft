@@ -316,6 +316,8 @@ class App extends EventDispatcher {
 
 		} );
 
+		if ( this.terrain ) this.terrain.add( this );
+
 	}
 
 	loadUnitType( type ) {

@@ -73,8 +73,9 @@ const app = new WebCraft.App( {
 
 } );
 
-app.terrain.add( new app.Farm( { x: - 0.5, y: 0 } ) );
-// app.terrain.add( new app.Sheep() );
+new app.Farm( { x: - 2.5, y: - 4 } );
+const sheep = new app.Sheep( { x: - 1.5 } );
+setTimeout( () => sheep.traverseTo( { x: 0.5 } ), 1000 );
 
 if ( WebCraft.isBrowser ) chat( app );
 
