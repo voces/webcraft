@@ -16,6 +16,6 @@
   "dependencies": {
     "esm": "^3.0.22",
     "knack-ecs": "^1.0.7",
-    "three": "^0.92.0"
+    "three": "^0.100.0"
   }
 }

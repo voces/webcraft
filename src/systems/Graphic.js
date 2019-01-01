@@ -2,22 +2,20 @@
 import System from "../../node_modules/knack-ecs/src/System.js";
 import { DirectionalLight, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "../../node_modules/three/build/three.module.js";
 
-import { isBrowser } from "../util.js";
+import { commonConstructor, isBrowser } from "../util.js";
+import Position from "../components/Position.js";
 
 export default class Graphic extends System {
 
-	constructor() {
+	constructor( props = {} ) {
 
 		super();
 
 		Object.defineProperties( this, {
 			_queuedAdds: { value: [] },
-			onObject3D: { value: this.onObject3D.bind( this ) }
+			onObject3D: { value: this.onObject3D.bind( this ) },
+			onComponentAdded: { value: this.onComponentAdded.bind( this ) }
 		} );
-
-		this.addEventListener( "entityadded", this.onEntityAdded.bind( this ) );
-		this.addEventListener( "entityremoved", this.onEntityRemoved.bind( this ) );
-		this.addEventListener( "sceneready", this.onSceneReady.bind( this ) );
 
 		const width = isBrowser ? window.innerWidth : 1920;
 		const height = isBrowser ? window.innerHeight : 1080;
@@ -25,7 +23,7 @@ export default class Graphic extends System {
 		this.scene = new Scene();
 
 		this.camera = new PerspectiveCamera( 50, width / height, 0.1, 10000 );
-		this.camera.position.z = 25;
+		this.camera.position.z = props.camera || 25;
 		this.scene.add( this.camera );
 
 		this.sun = new DirectionalLight();
@@ -41,16 +39,16 @@ export default class Graphic extends System {
 		this.sun.castShadow = true;
 		this.scene.add( this.sun );
 
-		if ( isBrowser ) this.browserConstructor();
+		commonConstructor( this, props );
 
-		this.dispatchEvent( "sceneready" );
+		this.dispatchEvent( "sceneReady" );
 
 	}
 
-	browserConstructor() {
+	initBrowser( props = {} ) {
 
-		Object.defineProperties( this, {
-			renderer: { value: new WebGLRenderer( { antialias: true } ) }
+		Object.defineProperty( this, "renderer", {
+			value: new WebGLRenderer( { antialias: true, alpha: true, ...props.renderer } )
 		} );
 
 		this.renderer.shadowMap.enabled = true;
@@ -59,10 +57,10 @@ export default class Graphic extends System {
 
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 
-		this.dispatchEvent( "rendererready" );
+		this.dispatchEvent( "rendererReady" );
 
-		if ( ! this.renderer.domElement.parentNode )
-			document.body.appendChild( this.renderer.domElement );
+		// if ( ! this.renderer.domElement.parentNode )
+		// 	document.body.appendChild( this.renderer.domElement );
 
 	}
 
@@ -74,13 +72,31 @@ export default class Graphic extends System {
 
 	onObject3D( event ) {
 
-		console.log( event );
+		// console.log( event );
+
+	}
+
+	onPosition( entity ) {
+
+		if ( ! entity.model ) return;
+		entity.model.update( entity.position );
+
+	}
+
+	onComponentAdded( entity, component ) {
+
+		if ( ! ( component instanceof Position ) ) return;
+		entity.removeEventListener( entity, this.onComponentAdded );
+		entity.position.addEventListener( "updated", () => this.onPosition( entity ) );
 
 	}
 
 	onEntityAdded( { entity } ) {
 
 		entity.model.addEventListener( "updated", this.onObject3D );
+		if ( entity.position )
+			entity.position.addEventListener( "updated", () => this.onPosition( entity ) );
+		else entity.addEventListener( "componentAdded", this.onComponentAdded );
 
 		if ( ! this.scene ) return this._queuedAdds.push( entity );
 
@@ -90,7 +106,7 @@ export default class Graphic extends System {
 
 	onEntityRemoved( { entity } ) {
 
-		entity.model.remoevEventListener( "updated", this.onObject3D );
+		entity.model.removeEventListener( "updated", this.onObject3D );
 
 		if ( ! this.scene ) {
 
@@ -101,7 +117,7 @@ export default class Graphic extends System {
 
 		}
 
-		this.scene.remove( entity );
+		this.scene.remove( entity.model.object3D );
 
 	}
 

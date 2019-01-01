@@ -27,14 +27,14 @@ const colors = [
 	{ name: "black", hex: "#000000" }
 ];
 
-export default class PlayerColors extends System {
+export default class WC3PlayerColors extends System {
 
 	constructor( isHost ) {
 
 		super();
 
-		this.addEventListener( "entityadded", this.onEntityAdded.bind( this ) );
-		this.addEventListener( "entityremoved", this.onEntityRemoved.bind( this ) );
+		this.addEventListener( "entityAdded", this.onEntityAdded.bind( this ) );
+		this.addEventListener( "entityRemoved", this.onEntityRemoved.bind( this ) );
 
 		Object.defineProperties( this, {
 			_colors: { value: colors.map( c => Object.assign( { taken: false }, c ) ) },

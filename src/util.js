@@ -17,6 +17,7 @@ let loader = url => {
 	return request.p;
 
 };
+
 export const load = ( ...args ) => loader( ...args );
 const loaderQueue = [];
 ( async () => {
@@ -43,4 +44,42 @@ const loaderQueue = [];
 	load.relative = relative;
 
 } )();
+
+export const commonConstructor = ( object, props, app ) => {
+
+	app = app || ( props && props.app ) || ( object && object.app );
+
+	// app might not be set at construction time (added after), we'll wait :)
+	if ( ! app ) {
+
+		Object.defineProperty( object, "app", {
+			set: app => {
+
+				Object.defineProperty( object, "app", { value: app } );
+				commonConstructor( object, props, app );
+
+			},
+			configurable: true
+		} );
+
+		return;
+
+	}
+
+	// Stuff that ties into APIs (such as graphics, window event listeners, etc)
+	if ( isBrowser ) object.initBrowser ? object.initBrowser( props ) : null;
+	else object.initNode ? object.initNode( props ) : null;
+
+	// Stuff that ties into the either the host or client (networked event listeners)
+	if ( app.isHost ) object.initHost ? object.initHost( props ) : null;
+	else object.initClient ? object.initClient( props ) : null;
+
+};
+
+export const randomInt = ( randomNumber, max, min = 0 ) => {
+
+	console.log( randomNumber );
+	return Math.round( randomNumber * ( max - min ) + min );
+
+};
 

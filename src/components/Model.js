@@ -1,17 +1,20 @@
 
 import Component from "../../node_modules/knack-ecs/src/Component.js";
+import { Mesh } from "../../node_modules/three/build/three.module.js";
 
 export default class Model extends Component {
 
-	constructor( object3D ) {
+	constructor( props ) {
 
 		super();
 
+		// Replaceable with static get properties?
 		Object.defineProperties( this, {
 			_object3D: { writable: true }
 		} );
 
-		if ( object3D ) this.object3D = object3D;
+		if ( props instanceof Mesh ) this.object3D = props;
+		else Object.assign( this, props );
 
 	}
 
@@ -44,6 +47,38 @@ export default class Model extends Component {
 		if ( ! this._object3D ) return NaN;
 
 		return this._object3D.position.x;
+
+	}
+
+	set y( y ) {
+
+		if ( ! this._object3D ) return;
+
+		this._object3D.position.y = y;
+
+	}
+
+	get y() {
+
+		if ( ! this._object3D ) return NaN;
+
+		return this._object3D.position.y;
+
+	}
+
+	set z( z ) {
+
+		if ( ! this._object3D ) return;
+
+		this._object3D.position.z = z;
+
+	}
+
+	get z() {
+
+		if ( ! this._object3D ) return NaN;
+
+		return this._object3D.position.z;
 
 	}
 
