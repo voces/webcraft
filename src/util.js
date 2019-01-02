@@ -38,7 +38,9 @@ const loaderQueue = [];
 	for ( let i = 0; i < loaderQueue.length; i ++ ) {
 
 		load.relative = loaderQueue[ i ].relative;
-		loader( loaderQueue[ i ].url ).catch( err => ( loaderQueue[ i ].reject( err ), rejected ) ).then( res => res !== rejected && loaderQueue[ i ].resolve( res ) );
+		loader( loaderQueue[ i ].url )
+			.catch( err => ( loaderQueue[ i ].reject( err ), rejected ) )
+			.then( res => res !== rejected && loaderQueue[ i ].resolve( res ) );
 
 	}
 	load.relative = relative;
@@ -76,10 +78,6 @@ export const commonConstructor = ( object, props, app ) => {
 
 };
 
-export const randomInt = ( randomNumber, max, min = 0 ) => {
-
-	console.log( randomNumber );
-	return Math.round( randomNumber * ( max - min ) + min );
-
-};
+export const randomInt = ( randomNumber, max, min = 0 ) =>
+	Math.round( randomNumber * ( max - min ) + min );
 

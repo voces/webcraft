@@ -87,6 +87,8 @@ export default class App extends ECS {
 		this.seed = e.seed;
 		this.random = alea( e.seed );
 
+		this.addEntity( new this.constructor.Player( { account: e.account } ) );
+
 	}
 
 	// Directly invoked from the host service
