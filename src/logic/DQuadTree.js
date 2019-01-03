@@ -1,23 +1,146 @@
 
-class DQuadTree {
+const defaultCalculateBoundingBox = item => {
 
-	constructor( props = {} ) {
+	const radius = item.radius || 0;
+	return {
+		min: { x: item.x - radius, y: item.y - radius },
+		max: { x: item.x + radius, y: item.y + radius }
+	};
 
-		this.contents = [];
-		this.children = undefined;
-		this.itemMap = new WeakMap();
+};
 
-		Object.assign( this, {
-			density: 10,
-			min: { x: - Infinity, y: - Infinity },
-			max: { x: Infinity, y: Infinity }
-		}, props );
+const circleIntersectsRect = ( centerX, centerY, radius, rect ) => {
+
+	const itemX = ( rect.min.x + rect.max.x ) / 2;
+	const itemY = ( rect.min.y + rect.max.y ) / 2;
+	const itemHalfWidth = ( rect.max.x - rect.min.x ) / 2;
+	const itemHalfHeight = ( rect.max.y - rect.min.y ) / 2;
+
+	const distX = Math.abs( centerX - itemX );
+	const distY = Math.abs( centerY - itemY );
+
+	if ( distX > itemHalfWidth + radius ) return false;
+	if ( distY > itemHalfHeight + radius ) return false;
+
+	if ( distX <= itemHalfWidth ) return true;
+	if ( distY <= itemHalfHeight ) return true;
+
+	const distSqd = ( itemX - itemHalfWidth ) ** 2 + ( itemY - itemHalfHeight ) ** 2;
+
+	return distSqd <= radius ** 2;
+
+};
+
+class Children extends Array {
+
+	constructor( qt ) {
+
+		super();
+
+		const childProps = qt.getChildProps();
+
+		// Create four child quadtrees (common intersection at the average, as treated below)
+		this.topRight = new DQuadTree( { ...childProps, _min: { x: qt.x, y: qt.y }, _max: { ...qt._max }, _path: `${qt.path}.topRight` } );
+		this.topLeft = new DQuadTree( { ...childProps, _min: { x: qt._min.x, y: qt.y }, _max: { x: qt.x, y: qt._max.y }, _path: `${qt.path}.topLeft` } );
+		this.botLeft = new DQuadTree( { ...childProps, _min: { ...qt._min }, _max: { x: qt.x, y: qt.y }, _path: `${qt.path}.botLeft` } );
+		this.botRight = new DQuadTree( { ...childProps, _min: { x: qt.x, y: qt._min.y }, _max: { x: qt._max.x, y: qt.y }, _path: `${qt.path}.botRight` } );
+
+	}
+
+	get topRight() {
+
+		return this[ 0 ];
+
+	}
+
+	set topRight( value ) {
+
+		return this[ 0 ] = value;
+
+	}
+
+	get topLeft() {
+
+		return this[ 1 ];
+
+	}
+
+	set topLeft( value ) {
+
+		return this[ 1 ] = value;
+
+	}
+
+	get botLeft() {
+
+		return this[ 2 ];
+
+	}
+
+	set botLeft( value ) {
+
+		return this[ 2 ] = value;
+
+	}
+
+	get botRight() {
+
+		return this[ 3 ];
+
+	}
+
+	set botRight( value ) {
+
+		return this[ 3 ] = value;
+
+	}
+
+}
+
+export default class DQuadTree {
+
+	static get defaultCalculateBoundingBox() {
+
+		return defaultCalculateBoundingBox;
+
+	}
+
+	// A multiple of #density, so we don't constantly split/collapse
+	static get densityThrash() {
+
+		return 1.25;
+
+	}
+
+	constructor( { density, calculateBoundingBox, _min, _max, _path, _itemMap, _parent } = {} ) {
 
 		Object.defineProperties( this, {
+			density: { value: density || 10, enumerable: true },
+			calculateBoundingBox: { value: calculateBoundingBox || this.constructor.defaultCalculateBoundingBox, enumerable: true },
+			path: { value: _path || "root", enumerable: true },
+			_min: { value: _min || { x: - Infinity, y: - Infinity } },
+			_max: { value: _max || { x: Infinity, y: Infinity } },
 			_length: { value: 0, writable: true },
-			_sharedMin: { value: { ...this.min }, writable: true },
-			_sharedMax: { value: { ...this.max }, writable: true }
+			_itemMap: { value: _itemMap || new WeakMap() },
+			_children: { value: undefined, writable: true },
+			_contents: { value: [], writable: true },
+			_parent: { value: _parent }
 		} );
+
+		Object.defineProperties( this, {
+			_sharedMin: { value: { ...this._min }, writable: true },
+			_sharedMax: { value: { ...this._max }, writable: true }
+		} );
+
+	}
+
+	getChildProps() {
+
+		return {
+			density: this.density,
+			_itemMap: this._itemMap,
+			_parent: this
+		};
 
 	}
 
@@ -26,71 +149,71 @@ class DQuadTree {
 		this.x = this.y = 0;
 
 		// Calculate the sum x/y of the cell (clamp each value to the cell)
-		for ( let i = 0; i < this.contents.length; i ++ ) {
+		for ( let i = 0; i < this._contents.length; i ++ ) {
 
-			this.x += Math.min( Math.max( this.contents[ i ].x, this.min.x ), this.max.x );
-			this.y += Math.min( Math.max( this.contents[ i ].y, this.min.y ), this.max.y );
+			this.x += Math.min( Math.max( this._contents[ i ].x, this._min.x ), this._max.x );
+			this.y += Math.min( Math.max( this._contents[ i ].y, this._min.y ), this._max.y );
 
 		}
 
 		// Turn that sum into an average
-		this.x /= this.contents.length;
-		this.y /= this.contents.length;
+		this.x /= this._contents.length;
+		this.y /= this._contents.length;
 
-		this.children = [];
-
-		// Create four children cells (common intersection at the average, as treated below)
-		this.children[ 0 ] = new DQuadTree( this.density, this, { x: this.x, y: this.y }, this.max, 0 );
-		this.children[ 1 ] = new DQuadTree( this.density, this, { x: this.min.x, y: this.y }, { x: this.x, y: this.max.y }, 1 );
-		this.children[ 2 ] = new DQuadTree( this.density, this, this.min, { x: this.x, y: this.y }, 2 );
-		this.children[ 3 ] = new DQuadTree( this.density, this, { x: this.x, y: this.min.y }, { x: this.max.x, y: this.y }, 3 );
+		this._children = new Children( this );
 
 		// Loop through all the contents and push them onto the new children
-		for ( let i = 0; i < this.contents.length; i ++ ) {
+		for ( let i = 0; i < this._contents.length; i ++ ) {
 
-			this.contents[ i ][ this.id ].splice( this.contents[ i ][ this.id ].indexOf( this ), 1 );
+			// Remove from current cell
+			const cells = this._itemMap.get( this._contents[ i ] );
+			cells.splice( cells.indexOf( this ), 1 );
 
-			if ( this.contents[ i ].max.x > this.x && this.contents[ i ].max.y > this.y )
-				this.children[ 0 ].push( this.contents[ i ] );
+			const boundingBox = this.calculateBoundingBox( this._contents[ i ] );
 
-			if ( this.contents[ i ].min.x < this.x && this.contents[ i ].max.y > this.y )
-				this.children[ 1 ].push( this.contents[ i ] );
+			// Push to subdivisions
+			if ( boundingBox.max.x > this.x && boundingBox.max.y > this.y )
+				this._children.topRight.push( this._contents[ i ] );
 
-			if ( this.contents[ i ].min.x < this.x && this.contents[ i ].min.y < this.y )
-				this.children[ 2 ].push( this.contents[ i ] );
+			if ( boundingBox.min.x < this.x && boundingBox.max.y > this.y )
+				this._children.topLeft.push( this._contents[ i ] );
 
-			if ( this.contents[ i ].max.x > this.x && this.contents[ i ].min.y < this.y )
-				this.children[ 3 ].push( this.contents[ i ] );
+			if ( boundingBox.min.x < this.x && boundingBox.min.y < this.y )
+				this._children.botLeft.push( this._contents[ i ] );
+
+			if ( boundingBox.max.x > this.x && boundingBox.min.y < this.y )
+				this._children.botRight.push( this._contents[ i ] );
 
 		}
 
-		this.contents = undefined;
+		this._contents = undefined;
 
 	}
 
 	push( item ) {
 
 		// We've reached density; empty the contents and spill into children
-		if ( this.contents && this.contents.length >= this.density && ( this._sharedMax.x - this._sharedMin.x < - 1e-7 || this._sharedMax.y - this._sharedMin.y < - 1e-7 ) )
+		if ( this._contents && this._contents.length >= this.density && ( this._sharedMax.x - this._sharedMin.x < - 1e-7 || this._sharedMax.y - this._sharedMin.y < - 1e-7 ) )
 			this.split();
 
 		// We're not full; add to our own contents
-		else if ( ! this.children ) {
+		else if ( ! this._children ) {
 
-			const radius = item.radius || 0;
+			const boundingBox = this.calculateBoundingBox( item );
 
 			// First, update the shared space (used for detecting stacking)
-			if ( item.x - radius > this._sharedMin.x ) this._sharedMin.x = item.x - radius;
-			if ( item.y - radius > this._sharedMin.y ) this._sharedMin.y = item.y - radius;
-			if ( item.x + radius < this._sharedMax.x ) this._sharedMax.x = item.x + radius;
-			if ( item.y + radius < this._sharedMax.y ) this._sharedMax.y = item.y + radius;
+			if ( boundingBox.min.x > this._sharedMin.x ) this._sharedMin.x = boundingBox.min.x;
+			if ( boundingBox.min.y > this._sharedMin.y ) this._sharedMin.y = boundingBox.min.y;
+			if ( boundingBox.max.x < this._sharedMax.x ) this._sharedMax.x = boundingBox.max.x;
+			if ( boundingBox.max.y < this._sharedMax.y ) this._sharedMax.y = boundingBox.max.y;
 
 			// Add to our contents
-			this.contents.push( item );
+			this._contents.push( item );
 
 			// Add ourselves as a cell holding the item
-			if ( this.itemMap.has( item ) ) this.itemMap.get( item ).push( this );
-			else this.itemMap.set( item, [ this ] );
+			// TODO: _itemMap should be shared between parent and children!!!
+			if ( this._itemMap.has( item ) ) this._itemMap.get( item ).push( this );
+			else this._itemMap.set( item, [ this ] );
 
 			// Increase our length
 			this._length ++;
@@ -99,13 +222,13 @@ class DQuadTree {
 
 		}
 
-		const radius = item.radius || 0;
+		const boundingBox = this.calculateBoundingBox( item );
 
 		// Feeds to a child; find them and push
-		if ( item.x + radius > this.x && item.y + radius > this.y ) this.children[ 0 ].push( item );
-		if ( item.x - radius < this.x && item.y + radius > this.y ) this.children[ 1 ].push( item );
-		if ( item.x - radius < this.x && item.y - radius < this.y ) this.children[ 2 ].push( item );
-		if ( item.x + radius > this.x && item.y - radius < this.y ) this.children[ 3 ].push( item );
+		if ( boundingBox.max.x > this.x && boundingBox.max.y > this.y ) this._children.topRight.push( item );
+		if ( boundingBox.min.x < this.x && boundingBox.max.y > this.y ) this._children.topLeft.push( item );
+		if ( boundingBox.min.x < this.x && boundingBox.min.y < this.y ) this._children.botLeft.push( item );
+		if ( boundingBox.max.x > this.x && boundingBox.min.y < this.y ) this._children.botRight.push( item );
 
 		// Increase our length
 		this._length ++;
@@ -114,98 +237,76 @@ class DQuadTree {
 
 	remove( item ) {
 
-		const removedList = [];
+		const cells = this._itemMap.get( item );
+		if ( ! cells ) return;
 
-		const cells = this.itemMap.get( item );
-		if ( ! cells ) {
+		for ( let i = 0; i < cells.length; i ++ ) {
 
-			for ( let i = 0; i < cells.length; i ++ ) {
+			const index = cells[ i ]._contents.indexOf( item );
 
-				const index = cells[ i ].contents.indexOf( item );
+			let cur = cells[ i ];
+			while ( cur ) {
 
-				let cur = cells[ i ];
-				while ( cur && removedList.indexOf( cur ) === - 1 ) {
-
-					-- cur.length;
-					removedList.push( cur );
-
-					cur = cur.parent;
-
-				}
-
-				cells[ i ].contents.splice( index, 1 );
+				-- cur._length;
+				cur = cur._parent;
 
 			}
 
-			for ( let i = 0; i < cells.length; i ++ )
-				if ( cells[ i ].contents && cells[ i ].parent && cells[ i ].parent.contents && cells[ i ].parent.length * 1.25 < cells[ i ].density )
-
-					cells[ i ].parent.collapse();
-
-			this.itemMap.delete( item );
+			cells[ i ]._contents.splice( index, 1 );
 
 		}
+
+		for ( let i = 0; i < cells.length; i ++ )
+			// TODO: expose this 1.25 somewhere
+			if ( cells[ i ]._parent && cells[ i ]._parent.length * this.constructor.densityThrash < this.density )
+				cells[ i ]._parent.collapse();
+
+		this._itemMap.delete( item );
 
 	}
 
 	collapse() {
 
 		// Restore the cell as if it was new
-		this.contents = [];
-		this._sharedMin = { x: this.min.x, y: this.min.y };
-		this._sharedMax = { x: this.max.x, y: this.max.y };
+		this._contents = [];
+		this._sharedMin = { ...this._min };
+		this._sharedMax = { ...this._max };
 		this._length = 0;
-		this.x = null;
-		this.y = null;
+		delete this.x;
+		delete this.y;
 
 		// Reset the children to empty
-		const children = this.children;
-		this.children = undefined;
+		const children = this._children;
+		this._children = undefined;
 
 		// Push the contents of all children to this
 		for ( let i = 0; i < 4; i ++ ) {
 
-			for ( let n = 0; n < children[ i ].contents.length; n ++ ) {
+			for ( let n = 0; n < children[ i ]._contents.length; n ++ ) {
 
-				const index = children[ i ].contents[ n ][ this.id ].indexOf( children[ i ] );
-				if ( index >= 0 ) children[ i ].contents[ n ][ this.id ].splice( index, 1 );
+				const cells = this._itemMap.get( children[ i ]._contents[ n ] );
+				const index = cells.indexOf( children[ i ] );
+				if ( index >= 0 ) cells.splice( index, 1 );
 
-				if ( children[ i ].contents[ n ][ this.id ].indexOf( this ) < 0 )
-					this.push( children[ i ].contents[ n ] );
+				if ( cells.indexOf( this ) < 0 )
+					this.push( children[ i ]._contents[ n ] );
 
 			}
 
-			children[ i ].contents = undefined;
+			children[ i ]._contents = undefined;
 
 		}
 
 	}
 
-	*queryPoint( x, y, radius ) {
+	_queryPoint( x, y, radius ) {
 
-		// Start off the cells with the superstructure
-		const cells = [ this ];
-		let cell;
-
-		// Loop while non-empty
-		while ( ( cell = cells.pop() ) )
-
-			// We have children; add them to cells and try again
-			if ( cell.children && cell.children.length > 0 ) {
-
-				if ( x - radius >= cell.x && y - radius >= cell.y ) cells.push( cell.children[ 0 ] );
-				if ( x - radius <= cell.x && y - radius >= cell.y ) cells.push( cell.children[ 1 ] );
-				if ( x - radius <= cell.x && y - radius <= cell.y ) cells.push( cell.children[ 2 ] );
-				if ( x - radius >= cell.x && y - radius <= cell.y ) cells.push( cell.children[ 3 ] );
-
-			// No children; return self
-
-			} else yield cell.contents;
+		return this.queryRange( x - radius, y.radius, x + radius, y + radius );
 
 	}
 
 	// Returns
-	*queryRange( minX, minY, maxX, maxY ) {
+	*_queryRange( minX, minY, maxX, maxY ) {
 
 		// Start off the cells with the superstructure
 		const cells = [ this ];
@@ -215,49 +316,105 @@ class DQuadTree {
 		while ( ( cell = cells.pop() ) )
 
 			// We have children; add them to cells and try again
-			if ( cell.children ) {
+			if ( cell._children ) {
 
-				if ( maxX >= cell.x && maxY >= cell.y ) cells.push( cell.children[ 0 ] );
-				if ( minX <= cell.x && maxY >= cell.y ) cells.push( cell.children[ 1 ] );
-				if ( minX <= cell.x && minY <= cell.y ) cells.push( cell.children[ 2 ] );
-				if ( maxX >= cell.x && minY <= cell.y ) cells.push( cell.children[ 3 ] );
+				if ( maxX >= cell.x && maxY >= cell.y )
+					cells.push( cell._children.topRight );
+				if ( minX <= cell.x && maxY >= cell.y )
+					cells.push( cell._children.topLeft );
+				if ( minX <= cell.x && minY <= cell.y )
+					cells.push( cell._children.botLeft );
+				if ( maxX >= cell.x && minY <= cell.y )
+					cells.push( cell._children.botRight );
 
 			// No children; return self
 
-			} else yield cell.contents;
+			} else yield cell._contents;
 
 	}
 
-	*iterateInRange( min, max ) {
+	*_iterateInRangeRadius( centerX, centerY, radius ) {
 
 		// Start off the cells with the superstructure
-		const cells = [ this ];
-		const used = new WeakSet();
-		let cell;
+		const yielded = new Set();
 
-		// Loop while non-empty
-		while ( ( cell = cells.pop() ) )
+		for ( const items of this._queryRange( centerX - radius, centerY - radius, centerX + radius, centerY + radius ) )
+			for ( let i = 0; i < items.length; i ++ ) {
 
-			// We have children; add them to cells and try again
-			if ( cell.children ) {
+				debugger;
+				if ( yielded.has( items[ i ] ) ) continue;
+				else {
 
-				if ( max.x >= cell.x && max.y >= cell.y ) cells.push( cell.children[ 0 ] );
-				if ( min.x <= cell.x && max.y >= cell.y ) cells.push( cell.children[ 1 ] );
-				if ( min.x <= cell.x && min.y <= cell.y ) cells.push( cell.children[ 2 ] );
-				if ( max.x >= cell.x && min.y <= cell.y ) cells.push( cell.children[ 3 ] );
+					// TODO: benchmark this assumption
+					// We're marking it yielded if we don't because it's expensive to calculate
+					yielded.add( items[ i ] );
+					if ( circleIntersectsRect( centerX, centerY, radius, this.calculateBoundingBox( items[ i ] ) ) )
+						yield items[ i ];
 
-			// No children; return self
+				}
 
-			} else
+			}
 
-				for ( let i = 0; i < cell.contents.length; i ++ )
-					if ( used.has( cell.contents[ i ] ) ) continue;
-					else {
+	}
 
-						used.add( cell.contents[ i ] );
-						yield cell.contents[ i ];
+	// Can accept:
+	// 1) min: {x, y}, max: {x, y}
+	// 2) minX, minY, maxX, maxY
+	// 3) center: {x, y}, radius
+	// 4) centerX, centerY, radius
+	// 5) min: {x, y}, maxX, maxY (please don't do this...)
+	// 6) minX, minY, max: {x, y} (please don't do this...)
+	*iterateInRange( minX, minY, maxX, maxY ) {
+
+		// First argument is point-like
+		if ( typeof minX !== "number" ) {
+
+			maxY = maxX;
+			maxX = minY;
+			minY = minX.y;
+			minX = minX.x;
+
+		}
+
+		// one arg, either maxX is a point or radius
+		if ( maxY === undefined )
+
+			// maxX is a radius, so generate min/max from it
+			if ( typeof maxX === "number" ) {
+
+				yield* this._iterateInRangeRadius( minX, minY, maxX );
+				return;
+
+			// It's point-like
+
+			} else {
+
+				maxY = maxX.y;
+				maxX = maxX.x;
+
+			}
+
+		// Start off the cells with the superstructure
+		const yielded = new Set();
+
+		for ( const items of this._queryRange( minX, minY, maxX, maxY ) )
+			for ( let i = 0; i < items.length; i ++ )
+				if ( yielded.has( items[ i ] ) ) continue;
+				else {
+
+					const boundingBox = this.calculateBoundingBox( items[ i ] );
+
+					console.log( boundingBox, minX, minY, maxX, maxY );
+
+					if ( boundingBox.min.x >= minX && boundingBox.min.y >= minY &&
+					boundingBox.max.x <= maxX && boundingBox.max.y <= maxY ) {
+
+						yielded.add( items[ i ] );
+						yield items[ i ];
 
 					}
+
+				}
 
 	}
 
@@ -276,6 +433,10 @@ class DQuadTree {
 
 	}
 
-}
+	[Symbol.iterator]() {
 
-export default DQuadTree;
+		return this.iterateInRange( this._min, this._max );
+
+	}
+
+}
