@@ -1,7 +1,7 @@
 
 import Doodad from "./Doodad.js";
-
 import meshes from "../meshes.js";
+import { merge } from "../../node_modules/knack-ecs/src/util.js";
 
 export default Object.entries( {
 	Box: { model: "Box" },
@@ -16,7 +16,8 @@ export default Object.entries( {
 
 	static get defaultData() {
 
-		return data;
+		console.log( `${name}#defaultData`, { ...Doodad.defaultData, data } );
+		return merge( Doodad.defaultData, data );
 
 	}
 

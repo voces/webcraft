@@ -70,7 +70,7 @@ export default class Graphic extends System {
 
 	}
 
-	onObject3D( event ) {
+	onObject3D() {
 
 		// console.log( event );
 
@@ -130,7 +130,18 @@ export default class Graphic extends System {
 
 	preRender() {
 
-		this.renderer.render( this.scene, this.camera );
+		try {
+
+			this.renderer.render( this.scene, this.camera );
+
+		} catch ( err ) {
+
+			if ( ! this.preRender.errored ) return;
+
+			this.preRender.errored = true;
+			throw err;
+
+		}
 
 	}
 

@@ -54,15 +54,14 @@ export const commonConstructor = ( object, props, app ) => {
 	// app might not be set at construction time (added after), we'll wait :)
 	if ( ! app ) {
 
-		Object.defineProperty( object, "app", {
-			set: app => {
+		const listener = () => {
 
-				Object.defineProperty( object, "app", { value: app } );
-				commonConstructor( object, props, app );
+			commonConstructor( object, props );
+			object.removeEventListener( "updatedApp", listener );
 
-			},
-			configurable: true
-		} );
+		};
+
+		object.addEventListener( "updatedApp", listener );
 
 		return;
 

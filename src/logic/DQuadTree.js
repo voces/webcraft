@@ -9,6 +9,7 @@ const defaultCalculateBoundingBox = item => {
 
 };
 
+// From https://stackoverflow.com/a/402010
 const circleIntersectsRect = ( centerX, centerY, radius, rect ) => {
 
 	const itemX = ( rect.min.x + rect.max.x ) / 2;
@@ -25,7 +26,7 @@ const circleIntersectsRect = ( centerX, centerY, radius, rect ) => {
 	if ( distX <= itemHalfWidth ) return true;
 	if ( distY <= itemHalfHeight ) return true;
 
-	const distSqd = ( itemX - itemHalfWidth ) ** 2 + ( itemY - itemHalfHeight ) ** 2;
+	const distSqd = ( distX - itemHalfWidth ) ** 2 + ( distY - itemHalfHeight ) ** 2;
 
 	return distSqd <= radius ** 2;
 
@@ -160,6 +161,8 @@ export default class DQuadTree {
 		this.x /= this._contents.length;
 		this.y /= this._contents.length;
 
+		// console.log( "split at", this.x, this.y );
+
 		this._children = new Children( this );
 
 		// Loop through all the contents and push them onto the new children
@@ -169,20 +172,26 @@ export default class DQuadTree {
 			const cells = this._itemMap.get( this._contents[ i ] );
 			cells.splice( cells.indexOf( this ), 1 );
 
+			if ( this._contents[ i ].id === undefined )
+				debugger;
+
 			const boundingBox = this.calculateBoundingBox( this._contents[ i ] );
-
 			// Push to subdivisions
-			if ( boundingBox.max.x > this.x && boundingBox.max.y > this.y )
+			if ( boundingBox.max.x >= this.x && boundingBox.max.y >= this.y )
 				this._children.topRight.push( this._contents[ i ] );
+				// console.log( "adding", this._contents[ i ].id, "topRight" );
 
-			if ( boundingBox.min.x < this.x && boundingBox.max.y > this.y )
+			if ( boundingBox.min.x <= this.x && boundingBox.max.y >= this.y )
 				this._children.topLeft.push( this._contents[ i ] );
+				// console.log( "adding", this._contents[ i ].id, "topLeft" );
 
-			if ( boundingBox.min.x < this.x && boundingBox.min.y < this.y )
+			if ( boundingBox.min.x <= this.x && boundingBox.min.y <= this.y )
 				this._children.botLeft.push( this._contents[ i ] );
+				// console.log( "adding", this._contents[ i ].id, "botLeft" );
 
-			if ( boundingBox.max.x > this.x && boundingBox.min.y < this.y )
+			if ( boundingBox.max.x >= this.x && boundingBox.min.y <= this.y )
 				this._children.botRight.push( this._contents[ i ] );
+				// console.log( "adding", this._contents[ i ].id, "botRight" );
 
 		}
 
@@ -192,8 +201,13 @@ export default class DQuadTree {
 
 	push( item ) {
 
+		// Increase our length
+		this._length ++;
+
 		// We've reached density; empty the contents and spill into children
 		if ( this._contents && this._contents.length >= this.density && ( this._sharedMax.x - this._sharedMin.x < - 1e-7 || this._sharedMax.y - this._sharedMin.y < - 1e-7 ) )
+
+			// console.log( "splitting", this._sharedMax.x - this._sharedMin.x, this._sharedMax.y - this._sharedMin.y );
 			this.split();
 
 		// We're not full; add to our own contents
@@ -215,9 +229,6 @@ export default class DQuadTree {
 			if ( this._itemMap.has( item ) ) this._itemMap.get( item ).push( this );
 			else this._itemMap.set( item, [ this ] );
 
-			// Increase our length
-			this._length ++;
-
 			return;
 
 		}
@@ -225,13 +236,10 @@ export default class DQuadTree {
 		const boundingBox = this.calculateBoundingBox( item );
 
 		// Feeds to a child; find them and push
-		if ( boundingBox.max.x > this.x && boundingBox.max.y > this.y ) this._children.topRight.push( item );
-		if ( boundingBox.min.x < this.x && boundingBox.max.y > this.y ) this._children.topLeft.push( item );
-		if ( boundingBox.min.x < this.x && boundingBox.min.y < this.y ) this._children.botLeft.push( item );
-		if ( boundingBox.max.x > this.x && boundingBox.min.y < this.y ) this._children.botRight.push( item );
-
-		// Increase our length
-		this._length ++;
+		if ( boundingBox.max.x >= this.x && boundingBox.max.y >= this.y ) this._children.topRight.push( item );
+		if ( boundingBox.min.x <= this.x && boundingBox.max.y >= this.y ) this._children.topLeft.push( item );
+		if ( boundingBox.min.x <= this.x && boundingBox.min.y <= this.y ) this._children.botLeft.push( item );
+		if ( boundingBox.max.x >= this.x && boundingBox.min.y <= this.y ) this._children.botRight.push( item );
 
 	}
 
@@ -262,6 +270,42 @@ export default class DQuadTree {
 				cells[ i ]._parent.collapse();
 
 		this._itemMap.delete( item );
+
+	}
+
+	update( item ) {
+
+		// Check if changed
+		const cells = this._itemMap.get( item );
+		if ( ! cells ) {
+
+			console.log( "no cells, pushing", item.id );
+			return this.push( item );
+
+		}
+		let minX = Infinity;
+		let minY = Infinity;
+		let maxX = - Infinity;
+		let maxY = - Infinity;
+		for ( let i = 0; i < cells.length; i ++ ) {
+
+			if ( cells[ i ]._min.x < minX ) minX = cells[ i ]._min.x;
+			if ( cells[ i ]._min.y < minY ) minY = cells[ i ]._min.y;
+			if ( cells[ i ]._max.x > maxX ) maxX = cells[ i ]._max.x;
+			if ( cells[ i ]._max.y > maxY ) maxY = cells[ i ]._max.y;
+
+		}
+
+		const boundingBox = this.calculateBoundingBox( item );
+
+		if ( boundingBox.min.x >= minX && boundingBox.min.y >= minY &&
+			boundingBox.max.x <= maxX && boundingBox.max.y <= maxY )
+
+			return;
+
+		// Otherwise re-add
+		this.remove( item );
+		this.push( item );
 
 	}
 
@@ -339,9 +383,8 @@ export default class DQuadTree {
 		const yielded = new Set();
 
 		for ( const items of this._queryRange( centerX - radius, centerY - radius, centerX + radius, centerY + radius ) )
-			for ( let i = 0; i < items.length; i ++ ) {
+			for ( let i = 0; i < items.length; i ++ )
 
-				debugger;
 				if ( yielded.has( items[ i ] ) ) continue;
 				else {
 
@@ -353,8 +396,6 @@ export default class DQuadTree {
 
 				}
 
-			}
-
 	}
 
 	// Can accept:
@@ -362,9 +403,13 @@ export default class DQuadTree {
 	// 2) minX, minY, maxX, maxY
 	// 3) center: {x, y}, radius
 	// 4) centerX, centerY, radius
-	// 5) min: {x, y}, maxX, maxY (please don't do this...)
-	// 6) minX, minY, max: {x, y} (please don't do this...)
-	*iterateInRange( minX, minY, maxX, maxY ) {
+	// 5) {centerX, centerY, radius}
+	// 6) min: {x, y}, maxX, maxY (please don't do this...)
+	// 7) minX, minY, max: {x, y} (please don't do this...)
+	// TODO: Add support for {min: {x, y}, max: {x, y}}
+	*iterateInRange( mixedArg, minY, maxX, maxY ) {
+
+		let minX = mixedArg;
 
 		// First argument is point-like
 		if ( typeof minX !== "number" ) {
@@ -380,9 +425,10 @@ export default class DQuadTree {
 		if ( maxY === undefined )
 
 			// maxX is a radius, so generate min/max from it
-			if ( typeof maxX === "number" ) {
+			if ( typeof maxX === "number" || maxX === undefined ) {
 
-				yield* this._iterateInRangeRadius( minX, minY, maxX );
+				const radius = typeof maxX === "number" ? maxX : mixedArg.radius || 0;
+				yield* this._iterateInRangeRadius( minX, minY, radius );
 				return;
 
 			// It's point-like
@@ -403,9 +449,6 @@ export default class DQuadTree {
 				else {
 
 					const boundingBox = this.calculateBoundingBox( items[ i ] );
-
-					console.log( boundingBox, minX, minY, maxX, maxY );
-
 					if ( boundingBox.min.x >= minX && boundingBox.min.y >= minY &&
 					boundingBox.max.x <= maxX && boundingBox.max.y <= maxY ) {
 
@@ -415,6 +458,12 @@ export default class DQuadTree {
 					}
 
 				}
+
+	}
+
+	enumerateInRange( ...args ) {
+
+		return Array.from( this.iterateInRange( ...args ) );
 
 	}
 
@@ -436,6 +485,27 @@ export default class DQuadTree {
 	[Symbol.iterator]() {
 
 		return this.iterateInRange( this._min, this._max );
+
+	}
+
+	_breadthCells( fn ) {
+
+		let cells = [ this ];
+		let rounds = 0;
+		while ( cells.length ) {
+
+			const newCells = [];
+			cells.forEach( cell => {
+
+				fn( cell, rounds );
+				if ( cell._children ) newCells.push( ...cell._children );
+
+			} );
+
+			cells = newCells;
+			rounds ++;
+
+		}
 
 	}
 

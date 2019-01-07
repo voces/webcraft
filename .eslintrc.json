@@ -1,7 +1,6 @@
 {
 	"extends": [ "eslint:recommended", "mdcs" ],
-	"parser": "babel-eslint",
-	"parserOptions": { "ecmaVersion": 8 },
+	"parserOptions": { "ecmaVersion": 2018 },
 	"rules": {
 		"comma-dangle": [ "error", "never" ],
 		"quotes": [ "error", "double" ],
@@ -11,10 +10,11 @@
 		"arrow-parens": [ "error", "as-needed" ],
 		"arrow-body-style": [ "error", "as-needed" ],
 		"no-var": [ "error" ],
+		"no-unused-vars": [ "warn", { "ignoreRestSiblings": true } ],
 		"curly": [ "error", "multi" ],
 		"object-shorthand": [ "error" ],
 		"eqeqeq": [ "error" ],
-		"prefer-const": [ "error" ],
+		"prefer-const": [ "warn" ],
 		"no-console": 0,
 		"no-constant-condition": 0
 	}

@@ -1,5 +1,5 @@
 
-import { BoxGeometry, SphereGeometry, MeshPhongMaterial, Mesh } from "../../node_modules/three/build/three.module.js";
+import { BoxGeometry, SphereGeometry, MeshPhongMaterial, Mesh } from "../node_modules/three/build/three.module.js";
 
 export default Object.entries( {
 	Box: { geometry: BoxGeometry, material: MeshPhongMaterial },

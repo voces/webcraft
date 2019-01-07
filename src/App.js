@@ -175,7 +175,7 @@ export default class App extends ECS {
 
 		} catch ( err ) {
 
-			console.log( entity );
+			console.error( entity );
 			throw new Error( "Entity#app must be writable" );
 
 		}

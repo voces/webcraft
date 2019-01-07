@@ -17,7 +17,7 @@ export default class Doodad extends Entity {
 
 	}
 
-	static defaultData() {
+	static get defaultData() {
 
 		return { x: 0, y: 0 };
 
