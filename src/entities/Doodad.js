@@ -35,11 +35,9 @@ export default class Doodad extends Entity {
 
 	}
 
-	// TODO: should play death animation (defaulting to simple removal of model)
-	// TODO: delay to remove should be configurable
-	kill() {
+	distanceTo( pointLike ) {
 
-		setTimeout( () => this.remove(), 120 );
+		return ( ( pointLike.x - this.x ) ** 2 + ( pointLike.y - this.y ) ** 2 ) ** ( 1 / 2 );
 
 	}
 

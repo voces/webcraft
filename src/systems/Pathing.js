@@ -27,7 +27,6 @@ export default class Pathing extends System {
 
 	test( entity ) {
 
-		// console.log( "testing", entity.id, typeof entity.x === "number", typeof entity.y === "number", ! entity.noPathing );
 		return typeof entity.x === "number" && typeof entity.y === "number" && ! entity.noPathing;
 
 	}
@@ -41,10 +40,7 @@ export default class Pathing extends System {
 		listener = event => {
 
 			if ( event.target !== entity ) return;
-
-			const before = this._qt.length;
 			this._qt.update( entity );
-			console.log( "onEntityMoved", entity.id, before, this._qt.length );
 
 		};
 		this._listenerMap.set( entity, listener );
@@ -88,30 +84,6 @@ export default class Pathing extends System {
 	enumerateInRange( ...args ) {
 
 		return this._qt.enumerateInRange( ...args );
-
-	}
-
-	paint() {
-
-		if ( this.paint.prev ) this.paint.prev.forEach( e => this.app.removeEntity( e ) );
-		this.paint.prev = [];
-
-		console.log( "painting" );
-
-		this._qt._breadthCells( ( cell, round ) => {
-
-			if ( ! cell.x ) return;
-
-			console.log( "painting", round, cell.x, cell.y );
-
-			const sphere = new Sphere( { x: cell.x, y: cell.y } );
-			sphere.noPathing = true;
-			// setTimeout( () => sphere.model._object3D ? sphere.model._object3D.material.color.r = 1 : null, 1000 );
-			this.app.addEntity( sphere );
-			this.paint.prev.push( sphere );
-			console.log( sphere );
-
-		} );
 
 	}
 

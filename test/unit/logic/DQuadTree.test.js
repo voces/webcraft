@@ -69,6 +69,7 @@ describe( "DQuadTree", () => {
 			const items = Array( qt.density + 1 ).fill().map( () => new Item() );
 			items.forEach( item => qt.push( item ) );
 			assert.equal( qt.length, items.length );
+			debugger;
 			assertSameElements( Array.from( qt ), items );
 			assert.equal( qt.split.calledOnce, true );
 
@@ -111,7 +112,7 @@ describe( "DQuadTree", () => {
 			const item = new Item();
 			items.push( item );
 			qt.push( item );
-
+			debugger;
 			assert.equal( qt.length, 11 );
 			assertSameElements( Array.from( qt ), items );
 
@@ -242,7 +243,6 @@ describe( "DQuadTree", () => {
 				item.x = random();
 				item.y = random();
 				qt.update( item );
-				updates ++;
 
 			} else {
 

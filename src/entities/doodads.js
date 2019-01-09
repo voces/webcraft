@@ -16,7 +16,6 @@ export default Object.entries( {
 
 	static get defaultData() {
 
-		console.log( `${name}#defaultData`, { ...Doodad.defaultData, data } );
 		return merge( Doodad.defaultData, data );
 
 	}

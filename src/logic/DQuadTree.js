@@ -32,67 +32,112 @@ const circleIntersectsRect = ( centerX, centerY, radius, rect ) => {
 
 };
 
+const easyIndex = i => ( {
+	set( value ) {
+
+		this[ i ] = value;
+
+	},
+	get() {
+
+		return this[ i ];
+
+	}
+} );
+
 class Children extends Array {
 
-	constructor( qt ) {
+	constructor( qt, type = "quad" ) {
 
 		super();
 
+		Object.defineProperties( this, {
+			type: { value: type },
+			qt: { value: qt },
+			// For a vertical split ⧗
+			top: easyIndex( 0 ),
+			bottom: easyIndex( 1 ),
+			// For a horizontal split ⧓
+			left: easyIndex( 0 ),
+			right: easyIndex( 1 ),
+			// For quad split
+			topRight: easyIndex( 0 ),
+			topLeft: easyIndex( 1 ),
+			botLeft: easyIndex( 2 ),
+			botRight: easyIndex( 3 )
+		} );
+
 		const childProps = qt.getChildProps();
+		switch ( type ) {
 
-		// Create four child quadtrees (common intersection at the average, as treated below)
-		this.topRight = new DQuadTree( { ...childProps, _min: { x: qt.x, y: qt.y }, _max: { ...qt._max }, _path: `${qt.path}.topRight` } );
-		this.topLeft = new DQuadTree( { ...childProps, _min: { x: qt._min.x, y: qt.y }, _max: { x: qt.x, y: qt._max.y }, _path: `${qt.path}.topLeft` } );
-		this.botLeft = new DQuadTree( { ...childProps, _min: { ...qt._min }, _max: { x: qt.x, y: qt.y }, _path: `${qt.path}.botLeft` } );
-		this.botRight = new DQuadTree( { ...childProps, _min: { x: qt.x, y: qt._min.y }, _max: { x: qt._max.x, y: qt.y }, _path: `${qt.path}.botRight` } );
+			case "quad":
+				// Create four child quadtrees (common intersection at the average, as treated below)
+				this.topRight = new DQuadTree( { ...childProps, _min: { x: qt.x, y: qt.y }, _max: { ...qt._max }, _path: `${qt.path}.topRight` } );
+				this.topLeft = new DQuadTree( { ...childProps, _min: { x: qt._min.x, y: qt.y }, _max: { x: qt.x, y: qt._max.y }, _path: `${qt.path}.topLeft` } );
+				this.botLeft = new DQuadTree( { ...childProps, _min: { ...qt._min }, _max: { x: qt.x, y: qt.y }, _path: `${qt.path}.botLeft` } );
+				this.botRight = new DQuadTree( { ...childProps, _min: { x: qt.x, y: qt._min.y }, _max: { x: qt._max.x, y: qt.y }, _path: `${qt.path}.botRight` } );
+				return;
 
-	}
+			case "vertical":
+				// Create two child quadtrees (common line at the average y)
+				this.top = new DQuadTree( { ...childProps, _min: { x: qt._min.x, y: qt.y }, _max: { ...qt._max }, _path: `${qt.path}.topRight` } );
+				this.bottom = new DQuadTree( { ...childProps, _min: { ...qt._min }, _max: { x: qt._max.x, y: qt.y }, _path: `${qt.path}.topRight` } );
+				return;
 
-	get topRight() {
+			case "horizontal":
+				// Create two child quadtrees (common line at the average y)
+				this.left = new DQuadTree( { ...childProps, _min: { ...qt._min }, _max: { x: qt.x, y: qt._max.y }, _path: `${qt.path}.topRight` } );
+				this.right = new DQuadTree( { ...childProps, _min: { x: qt.x, y: qt._min.y }, _max: { ...qt._max }, _path: `${qt.path}.topRight` } );
+				return;
 
-		return this[ 0 ];
+			default:
+				throw new Error( `Unknown type ${type}` );
 
-	}
-
-	set topRight( value ) {
-
-		return this[ 0 ] = value;
-
-	}
-
-	get topLeft() {
-
-		return this[ 1 ];
-
-	}
-
-	set topLeft( value ) {
-
-		return this[ 1 ] = value;
+		}
 
 	}
 
-	get botLeft() {
+	push( item, boundingBox ) {
 
-		return this[ 2 ];
+		if ( ! boundingBox ) boundingBox = this.qt.calculateBoundingBox( item );
 
-	}
+		switch ( this.type ) {
 
-	set botLeft( value ) {
+			case "quad":
 
-		return this[ 2 ] = value;
+				if ( boundingBox.max.x >= this.qt.x && boundingBox.max.y >= this.qt.y )
+					this.topRight.push( item );
 
-	}
+				if ( boundingBox.min.x <= this.qt.x && boundingBox.max.y >= this.qt.y )
+					this.topLeft.push( item );
 
-	get botRight() {
+				if ( boundingBox.min.x <= this.qt.x && boundingBox.min.y <= this.qt.y )
+					this.botLeft.push( item );
 
-		return this[ 3 ];
+				if ( boundingBox.max.x >= this.qt.x && boundingBox.min.y <= this.qt.y )
+					this.botRight.push( item );
 
-	}
+				return;
 
-	set botRight( value ) {
+			case "vertical":
 
-		return this[ 3 ] = value;
+				if ( boundingBox.max.y >= this.qt.y )
+					this.top.push( item );
+
+				if ( boundingBox.min.y <= this.qt.y )
+					this.bottom.push( item );
+
+				return;
+
+			case "horizontal":
+
+				if ( boundingBox.min.x <= this.qt.x )
+					this.left.push( item );
+
+				if ( boundingBox.max.x >= this.qt.x )
+					this.right.push( item );
+
+		}
 
 	}
 
@@ -145,7 +190,7 @@ export default class DQuadTree {
 
 	}
 
-	split() {
+	split( splitHorizontal, splitVertical ) {
 
 		this.x = this.y = 0;
 
@@ -161,9 +206,7 @@ export default class DQuadTree {
 		this.x /= this._contents.length;
 		this.y /= this._contents.length;
 
-		// console.log( "split at", this.x, this.y );
-
-		this._children = new Children( this );
+		this._children = new Children( this, splitHorizontal ? splitVertical ? "quad" : "horizontal" : "vertical" );
 
 		// Loop through all the contents and push them onto the new children
 		for ( let i = 0; i < this._contents.length; i ++ ) {
@@ -175,23 +218,8 @@ export default class DQuadTree {
 			if ( this._contents[ i ].id === undefined )
 				debugger;
 
-			const boundingBox = this.calculateBoundingBox( this._contents[ i ] );
 			// Push to subdivisions
-			if ( boundingBox.max.x >= this.x && boundingBox.max.y >= this.y )
-				this._children.topRight.push( this._contents[ i ] );
-				// console.log( "adding", this._contents[ i ].id, "topRight" );
-
-			if ( boundingBox.min.x <= this.x && boundingBox.max.y >= this.y )
-				this._children.topLeft.push( this._contents[ i ] );
-				// console.log( "adding", this._contents[ i ].id, "topLeft" );
-
-			if ( boundingBox.min.x <= this.x && boundingBox.min.y <= this.y )
-				this._children.botLeft.push( this._contents[ i ] );
-				// console.log( "adding", this._contents[ i ].id, "botLeft" );
-
-			if ( boundingBox.max.x >= this.x && boundingBox.min.y <= this.y )
-				this._children.botRight.push( this._contents[ i ] );
-				// console.log( "adding", this._contents[ i ].id, "botRight" );
+			this._children.push( this._contents[ i ] );
 
 		}
 
@@ -204,13 +232,15 @@ export default class DQuadTree {
 		// Increase our length
 		this._length ++;
 
-		// We've reached density; empty the contents and spill into children
-		if ( this._contents && this._contents.length >= this.density && ( this._sharedMax.x - this._sharedMin.x < - 1e-7 || this._sharedMax.y - this._sharedMin.y < - 1e-7 ) )
+		const overlap = this.overlap;
 
-			// console.log( "splitting", this._sharedMax.x - this._sharedMin.x, this._sharedMax.y - this._sharedMin.y );
-			this.split();
+		// We've reached density; empty the contents and spill into children
+		if ( this._contents && this._contents.length >= this.density && ( overlap.x < - 1e-7 || overlap.y < - 1e-7 ) )
+
+			this.split( overlap.x < - 1e-7, overlap.y < - 1e-7 );
 
 		// We're not full; add to our own contents
+
 		else if ( ! this._children ) {
 
 			const boundingBox = this.calculateBoundingBox( item );
@@ -233,13 +263,8 @@ export default class DQuadTree {
 
 		}
 
-		const boundingBox = this.calculateBoundingBox( item );
-
 		// Feeds to a child; find them and push
-		if ( boundingBox.max.x >= this.x && boundingBox.max.y >= this.y ) this._children.topRight.push( item );
-		if ( boundingBox.min.x <= this.x && boundingBox.max.y >= this.y ) this._children.topLeft.push( item );
-		if ( boundingBox.min.x <= this.x && boundingBox.min.y <= this.y ) this._children.botLeft.push( item );
-		if ( boundingBox.max.x >= this.x && boundingBox.min.y <= this.y ) this._children.botRight.push( item );
+		this._children.push( item );
 
 	}
 
@@ -277,12 +302,8 @@ export default class DQuadTree {
 
 		// Check if changed
 		const cells = this._itemMap.get( item );
-		if ( ! cells ) {
+		if ( ! cells ) return this.push( item );
 
-			console.log( "no cells, pushing", item.id );
-			return this.push( item );
-
-		}
 		let minX = Infinity;
 		let minY = Infinity;
 		let maxX = - Infinity;
@@ -324,8 +345,7 @@ export default class DQuadTree {
 		this._children = undefined;
 
 		// Push the contents of all children to this
-		for ( let i = 0; i < 4; i ++ ) {
-
+		for ( let i = 0; i < children.length; i ++ )
 			for ( let n = 0; n < children[ i ]._contents.length; n ++ ) {
 
 				const cells = this._itemMap.get( children[ i ]._contents[ n ] );
@@ -336,10 +356,6 @@ export default class DQuadTree {
 					this.push( children[ i ]._contents[ n ] );
 
 			}
-
-			children[ i ]._contents = undefined;
-
-		}
 
 	}
 
@@ -362,14 +378,18 @@ export default class DQuadTree {
 			// We have children; add them to cells and try again
 			if ( cell._children ) {
 
-				if ( maxX >= cell.x && maxY >= cell.y )
-					cells.push( cell._children.topRight );
-				if ( minX <= cell.x && maxY >= cell.y )
-					cells.push( cell._children.topLeft );
-				if ( minX <= cell.x && minY <= cell.y )
-					cells.push( cell._children.botLeft );
-				if ( maxX >= cell.x && minY <= cell.y )
-					cells.push( cell._children.botRight );
+				for ( let i = 0; i < cell._children.length; i ++ )
+					// https://www.geeksforgeeks.org/find-two-rectangles-overlap/
+					if (
+						// If one rectangle is on the left side of other
+						minX <= cell._children[ i ]._max.x &&
+						cell._children[ i ]._min.x <= maxX &&
+						// If one rectangle is above other
+						maxY >= cell._children[ i ]._min.y &&
+						cell._children[ i ]._max.y >= minY
+					)
+
+						cells.push( cell._children[ i ] );
 
 			// No children; return self
 
