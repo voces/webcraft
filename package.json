@@ -6,7 +6,7 @@
   "module": "build/webcraft.module.js",
   "scripts": {
     "test": "mocha -r esm \"test/**/*.test.js\" --exit",
-    "lint": "eslint **/*.js"
+    "lint": "eslint \"**/*.js\""
   },
   "author": "verit",
   "license": "ISC",

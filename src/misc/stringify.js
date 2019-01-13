@@ -9,7 +9,7 @@ const escMap = { "\"": "\\\"", "\\": "\\\\", "\b": "\\b", "\f": "\\f", "\n": "\\
 const escFunc = m => escMap[ m ] || "\\u" + ( m.charCodeAt( 0 ) + 0x10000 ).toString( 16 ).substr( 1 );
 // eslint-disable-next-line no-control-regex
 const escRE = /[\\"\u0000-\u001F\u2028\u2029]/g;
-const defaultReplacer = ( prop, value ) => value;
+const defaultReplacer = ( _, value ) => value;
 
 function stringify( value, replacer = defaultReplacer, toJSON = "toJSON", memory = new Set() ) {
 
