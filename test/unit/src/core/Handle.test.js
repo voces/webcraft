@@ -4,7 +4,7 @@ const assert = require( "assert" );
 import EventDispatcher from "../../../../src/core/EventDispatcher.js";
 import Handle from "../../../../src/core/Handle.js";
 
-export default () => describe( "Handle", () => {
+describe( "Handle", () => {
 
 	it( "Extends EventDispatcher", () => assert.ok( new Handle() instanceof EventDispatcher ) );
 	it( "Automatic id", () => assert.equal( typeof new Handle().id, "number" ) );

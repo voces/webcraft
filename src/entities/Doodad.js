@@ -22,7 +22,7 @@ class Doodad extends Handle {
 		if ( props.max === undefined ) {
 
 			props.max = {};
-			Object.defineProperties( props.max, { y: { get: () => this.x - this.radius }, y: { get: () => this.y + this.radius } } );
+			Object.defineProperties( props.max, { x: { get: () => this.x - this.radius }, y: { get: () => this.y + this.radius } } );
 
 		}
 

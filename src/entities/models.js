@@ -4,7 +4,7 @@ import EventDispatcher from "../core/EventDispatcher.js";
 // TODO: Remove this after #4
 const eval2 = eval;
 
-export default { load: function ( model ) {
+export default { load( model ) {
 
 	this[ model ] = new EventDispatcher();
 

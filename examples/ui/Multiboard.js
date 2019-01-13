@@ -97,7 +97,7 @@ class Multiboard extends ( supportsHTMLElement ? HTMLElement : class {} ) {
 			if ( arr[ i ] )
 				for ( let n = 0; n < this.schema.length; n ++ ) {
 
-					let parts = this.schema[ n ].split( "." );
+					const parts = this.schema[ n ].split( "." );
 					let value = arr[ i ][ parts.shift() ];
 
 					while ( parts.length && value ) value = value[ parts.shift() ];

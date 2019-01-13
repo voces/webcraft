@@ -48,7 +48,7 @@ class Unit extends Doodad {
 		this._props.owner = owner;
 
 		// Null and undefined
-		if ( owner == undefined ) return;
+		if ( owner === undefined ) return;
 
 		if ( this.mesh && this.mesh.accentFaces ) {
 

@@ -7,12 +7,13 @@ const toString = Object.prototype.toString;
 const isArray = Array.isArray || ( a => toString.call( a ) === "[object Array]" );
 const escMap = { "\"": "\\\"", "\\": "\\\\", "\b": "\\b", "\f": "\\f", "\n": "\\n", "\r": "\\r", "\t": "\\t" };
 const escFunc = m => escMap[ m ] || "\\u" + ( m.charCodeAt( 0 ) + 0x10000 ).toString( 16 ).substr( 1 );
+// eslint-disable-next-line no-control-regex
 const escRE = /[\\"\u0000-\u001F\u2028\u2029]/g;
 const defaultReplacer = ( prop, value ) => value;
 
 function stringify( value, replacer = defaultReplacer, toJSON = "toJSON", memory = new Set() ) {
 
-	if ( value == null ) return "null";
+	if ( value === null ) return "null";
 	if ( typeof value === "number" ) return replacer( undefined, isFinite( value ) ? value.toString() : "null" );
 	if ( typeof value === "boolean" ) return replacer( undefined, value.toString() );
 	if ( typeof value === "object" || typeof value === "function" ) {

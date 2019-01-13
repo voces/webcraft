@@ -6,7 +6,7 @@ import { Mesh } from "../../../../node_modules/three/build/three.module.js";
 import Handle from "../../../../src/core/Handle.js";
 import Doodad from "../../../../src/entities/Doodad.js";
 
-export default () => describe( "Doodad", () => {
+describe( "Doodad", () => {
 
 	it( "Extends Handle", () => assert.ok( new Doodad() instanceof Handle ) );
 	it( "Automatic key", () => {

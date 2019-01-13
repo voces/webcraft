@@ -4,7 +4,7 @@ const assert = require( "assert" );
 import Handle from "../../../../src/core/Handle.js";
 import Player from "../../../../src/core/Player.js";
 
-export default () => describe( "Player", () => {
+describe( "Player", () => {
 
 	it( "#get nextColorIndex", () => {
 

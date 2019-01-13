@@ -21,7 +21,7 @@ class Rect extends EventDispatcher {
 			this.minY = Math.min( p2, y2 );
 			this.maxY = Math.max( p2, y2 );
 
-		// Passed as {x1, y1}, {x2, y2}
+			// Passed as {x1, y1}, {x2, y2}
 
 		} else if ( p1.x !== undefined ) {
 
@@ -32,13 +32,11 @@ class Rect extends EventDispatcher {
 
 			if ( x2 !== undefined ) props = x2;
 
-		// Not passed?
+			// Not passed?
 
-		} else {
+		} else
 
-			if ( p1 !== undefined ) props = p1;
-
-		}
+		if ( p1 !== undefined ) props = p1;
 
 		if ( props.unitEnter ) this.addEventListener( "unitEnter", props.unitEnter );
 		if ( props.unitLeave ) this.addEventListener( "unitLeave", props.unitLeave );

@@ -5,14 +5,15 @@
   "main": "build/webcraft.js",
   "module": "build/webcraft.module.js",
   "scripts": {
-    "test": "mocha test/index.test.js"
+    "test": "mocha -r esm \"test/**/*.test.js\" --exit",
+    "lint": "eslint **/*.js"
   },
   "author": "verit",
   "license": "ISC",
   "dependencies": {
-    "@std/esm": "^0.17.3",
-    "three": "^0.87.1",
-    "ws": "^3.3.1"
+    "esm": "^3.0.84",
+    "three": "^0.100.0",
+    "ws": "^6.1.2"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,6 @@
   "bugs": {
     "url": "https://github.com/voces/WebCraft/issues"
   },
-  "@std/esm": "cjs",
   "directories": {
     "example": "examples",
     "test": "test"
@@ -34,11 +34,10 @@
     "game"
   ],
   "devDependencies": {
-    "babel-eslint": "^8.0.2",
-    "eslint": "^3.19.0",
-    "eslint-config-mdcs": "^4.2.2",
-    "eslint-plugin-html": "^2.0.3",
-    "eslint-plugin-mocha": "^4.11.0",
-    "mocha": "^4.0.1"
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.12.0",
+    "eslint-config-mdcs": "^4.2.3",
+    "eslint-plugin-mocha": "^5.2.1",
+    "mocha": "^5.2.0"
   }
 }
