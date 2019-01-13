@@ -29,7 +29,7 @@ class Collection extends Array {
 		const index = this.indexOf( item );
 		if ( index >= 0 ) this.splice( index, 1 );
 
-		//Is the second condition required? How does it effect speed?
+		// Is the second condition required? How does it effect speed?
 		if ( item[ this.key ] !== undefined && this.dict[ item[ this.key ] ] )
 			delete this.dict[ item[ this.key ] ];
 

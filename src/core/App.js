@@ -129,7 +129,7 @@ class App extends EventDispatcher {
 			props.reviver = ( key, value ) => {
 
 				// Primitive
-				if ( value == null || typeof value !== "object" ) return value;
+				if ( value === null || typeof value !== "object" ) return value;
 
 				if ( value._collection !== undefined && value.key !== undefined ) {
 
@@ -413,14 +413,11 @@ class App extends EventDispatcher {
 
 		for ( let i = 0; i < this.renders.length; i ++ )
 			if ( typeof this.renders[ i ] === "function" ) this.renders[ i ]( this.renderTime );
-			else if ( typeof this.renders[ i ] === "object" ) {
-
+			else if ( typeof this.renders[ i ] === "object" )
 				if ( this.renders[ i ].render ) this.renders[ i ].render( this.renderTime );
 				else if ( this.renders[ i ].renders )
 					for ( let n = 0; n < this.renders[ i ].renders.length; n ++ )
 						this.uodates[ i ].renders[ n ]( this.renderTime );
-
-			}
 
 		this.renderer.render( this.scene, this.camera );
 
@@ -440,14 +437,11 @@ class App extends EventDispatcher {
 
 		for ( let i = 0; i < this.updates.length; i ++ )
 			if ( typeof this.updates[ i ] === "function" ) this.updates[ i ]( this.time );
-			else if ( typeof this.updates[ i ] === "object" ) {
-
+			else if ( typeof this.updates[ i ] === "object" )
 				if ( this.updates[ i ].update ) this.updates[ i ].update( this.time );
 				else if ( this.updates[ i ].updates )
 					for ( let n = 0; n < this.updates[ i ].updates.length; n ++ )
 						this.uodates[ i ].updates[ n ]( this.time );
-
-			}
 
 		if ( this.subevents.length ) {
 

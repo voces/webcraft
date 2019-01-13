@@ -33,7 +33,7 @@ class Handle extends EventDispatcher {
 		while ( proto && Handle.entityTypes.indexOf( proto.constructor ) === - 1 )
 			proto = Object.getPrototypeOf( proto );
 
-		if ( ! proto ) return;
+		if ( ! proto ) throw new Error( "proto is falsey" );
 
 		return proto.constructor;
 

@@ -10,8 +10,6 @@ describe( "Collection", () => {
 
 	it( "add( obj )", () => {
 
-		1 + 1;
-
 		const collection = new Collection();
 		const obj = { key: "test", value: 7 };
 
