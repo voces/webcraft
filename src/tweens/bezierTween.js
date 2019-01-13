@@ -26,7 +26,7 @@ function approximateLength( start, end, control1, control2 ) {
 
 	const func = control2 !== undefined ? getCubicBezierAtPercent : getQuadraticBezierAtPercent;
 
-	const distance = 0;
+	let distance = 0;
 
 	let last = func( start, end, 0, control1, control2 );
 	for ( let i = 0.01; i < 1; i += 0.01 ) {
@@ -47,12 +47,9 @@ function bezierTween( { start = 0, end = 1, control1, control2, rate, duration, 
 
 	const diff = approximateLength( start, end, control1, control2 );
 
-	if ( rate === undefined ) {
-
+	if ( rate === undefined )
 		if ( duration === Infinity ) rate = 1;
 		else rate = diff / duration;
-
-	}
 
 	if ( duration === undefined ) duration = ( diff / rate ) || 0;
 

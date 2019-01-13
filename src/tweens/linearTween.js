@@ -8,12 +8,9 @@ function linearTween( { start = 0, end = 1, rate, duration, startTime = Date.now
 
 	const diff = end - start;
 
-	if ( rate === undefined ) {
-
+	if ( rate === undefined )
 		if ( duration === Infinity ) rate = 1;
 		else rate = diff / duration;
-
-	}
 
 	if ( duration === undefined ) duration = ( diff / rate ) || 0;
 

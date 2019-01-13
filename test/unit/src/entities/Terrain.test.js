@@ -5,7 +5,7 @@ import Collection from "../../../../src/core/Collection.js";
 import Terrain from "../../../../src/entities/Terrain.js";
 import Rect from "../../../../src/misc/Rect.js";
 
-export default () => describe( "Terrain", () => {
+describe( "Terrain", () => {
 
 	it( "constructor( <{ <units> }> )", () => {
 

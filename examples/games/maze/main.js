@@ -7,7 +7,7 @@ import * as WebCraft from "../../../src/webcraft.js";
 const di = path => () => import( path );
 
 ///////////////////////////////////////////////
-/// Initialization
+// Initialization
 //////////////////////////////////////////////
 
 const keyboard = {};
@@ -43,7 +43,7 @@ const multiboard = new Multiboard( {
 if ( WebCraft.isBrowser ) chat( app );
 
 /////////////////////////////////////////////////
-///// Game Logic
+// Game Logic
 /////////////////////////////////////////////////
 
 function spawn( player ) {
@@ -247,7 +247,7 @@ function point( players ) {
 }
 
 /////////////////////////////////////////////////
-///// Server Events
+// Server Events
 /////////////////////////////////////////////////
 
 function newPlayer( player ) {
@@ -313,7 +313,7 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 } );
 
 /////////////////////////////////////////////////
-///// Player Actions
+// Player Actions
 /////////////////////////////////////////////////
 
 app.addEventListener( "keydown", ( { direction, player } ) => player[ direction ] = true );
@@ -342,7 +342,7 @@ WebCraft.isBrowser && window.addEventListener( "keyup", e => {
 } );
 
 /////////////////////////////////////////////////
-///// Levels
+// Levels
 /////////////////////////////////////////////////
 
 const levels = [
@@ -509,7 +509,7 @@ const levels = [
 		],
 		patrols: [].concat( ...[ - 5.75, - 1.917, 1.917, 5.75 ].map( x => [ 3, - 3 ].map( y => [ { x, y } ] ) ) ),
 		circles: [].concat( ...[ - 5.75, - 1.917, 1.917, 5.75 ].map( x => [].concat( ...[ 3, - 3 ].map( y => [].concat( ...[ 0, 0.25, 0.5, 0.75 ].map( arm => [ 0.95, 1.9 ].map( radius => ( {
-			x, y: y, radius, duration: 4, offset: 4 * arm
+			x, y, radius, duration: 4, offset: 4 * arm
 		} ) ) ) ) ) ) ) ),
 		food: [
 			{ x: - 7.5, y: - 1.5 },
@@ -729,7 +729,7 @@ const levels = [
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: v } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: v } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: - 0.25 } ) },
-				 		{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) },
+						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: v, y: 0.25 } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - 0.25, y: - v } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: 0.25, y: - v } ) },
 						{ x: 0, y: 0, duration: - 4, offset: angleBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) / Math.PI / 2 * 4, radius: distanceBetweenPoints( { x: 0, y: 0 }, { x: - v, y: - 0.25 } ) },
@@ -739,7 +739,7 @@ const levels = [
 
 			} )()
 		],
-		tick: function ( time ) {
+		tick( time ) {
 
 			const mode = Math.floor( time / 1000 ) % 2 ? "move" : "hold";
 			if ( this.mode === mode ) return;
@@ -756,12 +756,12 @@ const levels = [
 			if ( mode === "move" )
 				for ( let i = 0; i < this.enemies.length; i ++ )
 					this.enemies[ i ].circle = this.enemies[ i ]._circle;
-			 else
-			 	for ( let i = 0; i < this.enemies.length; i ++ )
+			else
+				for ( let i = 0; i < this.enemies.length; i ++ )
 					delete this.enemies[ i ].circle;
 
 		},
-		clean: function () {
+		clean() {
 
 			delete this.enemies;
 			delete this.mode;
@@ -931,7 +931,7 @@ for ( let i = 0; i < levels.length; i ++ ) {
 }
 
 /////////////////////////////////////////////////
-///// Misc
+// Misc
 /////////////////////////////////////////////////
 
 function tileToWorld( x, y ) {

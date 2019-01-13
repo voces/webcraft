@@ -32,7 +32,7 @@ class GenericClient extends EventDispatcher {
 				this.app.update();
 				this.app.dispatchEvent( "time", { time: e } );
 
-			} else if ( e instanceof Array ) {
+			} else if ( e instanceof Array )
 
 				for ( let i = 0; i < e.length; i ++ ) {
 
@@ -48,7 +48,7 @@ class GenericClient extends EventDispatcher {
 
 				}
 
-			} else {
+			else {
 
 				if ( this.app && e.time ) {
 

@@ -3,7 +3,7 @@ const assert = require( "assert" );
 
 import EventDispatcher from "../../../../src/core/EventDispatcher.js";
 
-export default () => describe( "EventDispatcher", () => {
+describe( "EventDispatcher", () => {
 
 	it( "addEventListener( listener, callback )", () => {
 

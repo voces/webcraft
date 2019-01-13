@@ -6,7 +6,7 @@ import * as WebCraft from "../../../src/webcraft.js";
 const di = path => () => import( path );
 
 /////////////////////////////////////////////////
-///// Initialization
+// Initialization
 ////////////////////////////////////////////////
 
 const keyboard = {};
@@ -80,7 +80,7 @@ const multiboard = new Multiboard( {
 } );
 
 /////////////////////////////////////////////////
-///// Game Logic
+// Game Logic
 /////////////////////////////////////////////////
 
 function reset() {
@@ -149,8 +149,8 @@ function tick() {
 		const x = Math.round( bike.x );
 		const y = Math.round( bike.y );
 
-		new app.Glass( { owner: bike.owner, x: x, y: y } );
-		grid[ x + 20 ][ y + 9 ] = new app.Glass( { owner: bike.owner, x: x, y: y } );
+		new app.Glass( { owner: bike.owner, x, y } );
+		grid[ x + 20 ][ y + 9 ] = new app.Glass( { owner: bike.owner, x, y } );
 
 		if ( bike.facing !== bike.oldFacing ) {
 
@@ -198,7 +198,7 @@ function tick() {
 }
 
 /////////////////////////////////////////////////
-///// Game Events
+// Game Events
 /////////////////////////////////////////////////
 
 function onNewPlayer( player ) {
@@ -253,7 +253,7 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 
 			if ( ticker ) ticker = ticker.clear();
 
-		// Leaver was the winner; cancel ticker if going and start the next round if we can
+			// Leaver was the winner; cancel ticker if going and start the next round if we can
 
 		} else if ( bikes.length === 0 && ticker ) ticker = ticker.clear();
 
@@ -275,7 +275,7 @@ app.addEventListener( "playerLeave", ( { player } ) => {
 } );
 
 /////////////////////////////////////////////////
-///// Player Actions
+// Player Actions
 /////////////////////////////////////////////////
 
 app.addEventListener( "up down left right", ( { type, player } ) => {

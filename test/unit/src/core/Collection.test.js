@@ -3,7 +3,7 @@ const assert = require( "assert" );
 
 import Collection from "../../../../src/core/Collection.js";
 
-export default () => describe( "Collection", () => {
+describe( "Collection", () => {
 
 	it( "Extends Array", () => assert.ok( new Collection() instanceof Array ) );
 	it( "key", () => assert.equal( ( new Collection() ).key, "key" ) );

@@ -5,7 +5,7 @@ import * as WebCraft from "../../../src/webcraft.js";
 const di = path => () => import( path );
 
 /////////////////////////////////////////////////
-///// Initialization
+// Initialization
 ////////////////////////////////////////////////
 
 const keyboard = {};
@@ -52,7 +52,7 @@ Object.defineProperty( app.state, "start", {
 let startTimeout;
 
 /////////////////////////////////////////////////
-///// Game Logic
+// Game Logic
 /////////////////////////////////////////////////
 
 function randomAngle() {
@@ -156,7 +156,7 @@ scoreRegion.addEventListener( "unitLeave", () => {
 } );
 
 /////////////////////////////////////////////////
-///// Game Events
+// Game Events
 /////////////////////////////////////////////////
 
 app.addEventListener( "playerJoin", () => {
@@ -204,7 +204,7 @@ app.addEventListener( "state", e => {
 } );
 
 /////////////////////////////////////////////////
-///// Player Actions
+// Player Actions
 /////////////////////////////////////////////////
 
 app.addEventListener( "up down hold", ( { type, player } ) => {
