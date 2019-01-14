@@ -1,76 +1,98 @@
 
-const assert = require( "assert" );
+import assert from "assert";
 
 import EventDispatcher from "../../../../src/core/EventDispatcher.js";
 
-describe( "EventDispatcher", () => {
+export default () => describe( "EventDispatcher", function () {
 
-	it( "addEventListener( listener, callback )", () => {
+	this.timeout( 10 );
 
-		const eventDispatcher = new EventDispatcher();
-		const listener = {};
+	describe( "#addEventListener", () => {
 
-		eventDispatcher.addEventListener( "anyType", listener );
-		eventDispatcher.addEventListener( "anyType", listener ); // Duplicates should be ignored
+		it( "one type", () => {
 
-		assert.ok( eventDispatcher._listeners.anyType.length === 1, "listener with unknown type was added" );
-		assert.ok( eventDispatcher._listeners.anyType[ 0 ] === listener, "listener with unknown type was added" );
+			const ed = new EventDispatcher();
+			const listener = () => {};
+			ed.addEventListener( "test", listener );
 
-		eventDispatcher.addEventListener( "anyType", listener );
+			assert.equal( ed._listeners.test[ 0 ], listener, "Callback not added" );
 
-		assert.ok( eventDispatcher._listeners.anyType.length === 1, "can't add one listener twice to same type" );
-		assert.ok( eventDispatcher._listeners.anyType[ 0 ] === listener, "listener is still there" );
+		} );
 
-	} );
+		it( "space-delimited types", () => {
 
-	it( "hasEventListener( listener, callback )", () => {
+			const ed = new EventDispatcher();
+			const listener = () => {};
+			ed.addEventListener( "test1 test2", listener );
 
-		const eventDispatcher = new EventDispatcher();
-		const listener = {};
+			assert.equal( ed._listeners.test1[ 0 ], listener, "Callback not added" );
+			assert.equal( ed._listeners.test2[ 0 ], listener, "Callback not added" );
 
-		eventDispatcher.addEventListener( "anyType", listener );
+		} );
 
-		assert.ok( eventDispatcher.hasEventListener( "anyType", listener ), "listener was found" );
-		assert.ok( ! eventDispatcher.hasEventListener( "anotherType", listener ), "listener was not found which is good" );
+		it( "array types", () => {
 
-	} );
+			const ed = new EventDispatcher();
+			const listener = () => {};
+			ed.addEventListener( [ "test3", "test4" ], listener );
 
-	it( "removeEventListener", () => {
+			assert.equal( ed._listeners.test3[ 0 ], listener, "Callback not added" );
+			assert.equal( ed._listeners.test4[ 0 ], listener, "Callback not added" );
 
-		const eventDispatcher = new EventDispatcher();
-		const listener = {};
-
-		assert.ok( eventDispatcher._listeners === undefined, "there are no listeners by default" );
-
-		eventDispatcher.addEventListener( "anyType", listener );
-		assert.ok( Object.keys( eventDispatcher._listeners ).length === 1 && eventDispatcher._listeners.anyType.length === 1, "if a listener was added, there is a new key" );
-
-		eventDispatcher.removeEventListener( "anyType", listener );
-		assert.ok( eventDispatcher._listeners.anyType.length === 0, "listener was deleted" );
-
-		eventDispatcher.removeEventListener( "unknownType", listener );
-		assert.ok( eventDispatcher._listeners.unknownType === undefined, "unknown types will be ignored" );
-
-		eventDispatcher.removeEventListener( "anyType", undefined );
-		assert.ok( eventDispatcher._listeners.anyType.length === 0, "undefined listeners are ignored" );
+		} );
 
 	} );
 
-	it( "dispatchEvent", () => {
+	it( "#hasEventListener", () => {
 
-		const eventDispatcher = new EventDispatcher();
+		const ed = new EventDispatcher();
+		const listener = () => {};
+		assert.ok( ! ed.hasEventListener( "test", listener ), "Listener found before adding" );
 
-		let callCount = 0;
-		const listener = () => callCount ++;
+		ed.addEventListener( "test", listener );
+		assert.ok( ed.hasEventListener( "test", listener ), "Listener not found" );
+		assert.ok( ! ed.hasEventListener( "test2", listener ), "Another listener found" );
 
-		eventDispatcher.addEventListener( "anyType", listener );
-		assert.ok( callCount === 0, "no event, no call" );
+	} );
 
-		eventDispatcher.dispatchEvent( { type: "anyType" } );
-		assert.ok( callCount === 1, "one event, one call" );
+	it( "#removeEventListener", () => {
 
-		eventDispatcher.dispatchEvent( { type: "anyType" } );
-		assert.ok( callCount === 2, "two events, two calls" );
+		const ed = new EventDispatcher();
+		const listener = () => {};
+		ed.addEventListener( "test", listener );
+		ed.removeEventListener( "test", listener );
+
+		assert.ok( ! ed.hasEventListener( "test", listener ), "Listener found after removing" );
+
+	} );
+
+	describe( "#dispatchEvent", () => {
+
+		it( "works", done => {
+
+			const ed = new EventDispatcher();
+			ed.addEventListener( "test", () => done() );
+
+			ed.dispatchEvent( "test" );
+
+		} );
+
+		it( "sub-events are processed after all callbacks", done => {
+
+			const ed = new EventDispatcher();
+			let invoked = false;
+			ed.addEventListener( "test", () => ed.dispatchEvent( "test2" ) );
+			ed.addEventListener( "test", () => invoked = true );
+			ed.addEventListener( "test2", () => {
+
+				assert.ok( invoked ),
+				done();
+
+			} );
+
+			ed.dispatchEvent( "test" );
+
+		} );
 
 	} );
 

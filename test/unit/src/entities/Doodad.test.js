@@ -1,5 +1,5 @@
 
-const assert = require( "assert" );
+import assert from "assert";
 
 import { Mesh } from "../../../../node_modules/three/build/three.module.js";
 

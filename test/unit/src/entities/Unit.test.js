@@ -1,5 +1,5 @@
 
-const assert = require( "assert" );
+import assert from "assert";
 
 import Doodad from "../../../../src/entities/Doodad.js";
 import Unit from "../../../../src/entities/Unit.js";
