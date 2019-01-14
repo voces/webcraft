@@ -1,5 +1,5 @@
 
-const assert = require( "assert" );
+import assert from "assert";
 
 import EventDispatcher from "../../../../src/core/EventDispatcher.js";
 import Handle from "../../../../src/core/Handle.js";

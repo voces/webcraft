@@ -1,5 +1,5 @@
 
-const assert = require( "assert" );
+import assert from "assert";
 
 import Collection from "../../../../src/core/Collection.js";
 

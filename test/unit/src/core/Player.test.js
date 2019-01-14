@@ -1,5 +1,5 @@
 
-const assert = require( "assert" );
+import assert from "assert";
 
 import Handle from "../../../../src/core/Handle.js";
 import Player from "../../../../src/core/Player.js";
