@@ -7,7 +7,7 @@
   "scripts": {
     "test": "mocha -r esm \"test/**/*.test.js\" --exit",
     "lint": "eslint \"**/*.js\"",
-    "prepublish": "npm test && npm lint"
+    "prepublishOnly": "npm test && npm run lint"
   },
   "author": "verit",
   "license": "ISC",
@@ -37,6 +37,7 @@
   "devDependencies": {
     "babel-eslint": "^10.0.1",
     "eslint": "^5.12.0",
+    "eslint-config-mdcs": "^4.2.3",
     "eslint-config-verit": "^1.0.1",
     "eslint-plugin-mocha": "^5.2.1",
     "mocha": "^5.2.0"
