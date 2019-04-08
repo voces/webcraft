@@ -215,9 +215,6 @@ export default class DQuadTree {
 			const cells = this._itemMap.get( this._contents[ i ] );
 			cells.splice( cells.indexOf( this ), 1 );
 
-			if ( this._contents[ i ].id === undefined )
-				debugger;
-
 			// Push to subdivisions
 			this._children.push( this._contents[ i ] );
 
@@ -373,7 +370,7 @@ export default class DQuadTree {
 		let cell;
 
 		// Loop while non-empty
-		while ( ( cell = cells.pop() ) )
+		while ( cell = cells.pop() )
 
 			// We have children; add them to cells and try again
 			if ( cell._children ) {

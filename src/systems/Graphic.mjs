@@ -1,9 +1,9 @@
 
-import System from "../../node_modules/knack-ecs/src/System.js";
+import System from "../../node_modules/knack-ecs/src/System.mjs";
 import { DirectionalLight, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "../../node_modules/three/build/three.module.js";
 
-import { commonConstructor, isBrowser } from "../util.js";
-import Position from "../components/Position.js";
+import { commonConstructor, isBrowser } from "../util.mjs/index.mjs";
+import Position from "../components/Position.mjs";
 
 export default class Graphic extends System {
 

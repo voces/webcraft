@@ -1,5 +1,5 @@
 
-import Doodad from "./Doodad.js";
+import Doodad from "./Doodad.mjs";
 
 export default class Unit extends Doodad {
 

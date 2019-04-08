@@ -1,7 +1,8 @@
 
-import Doodad from "./Doodad.js";
-import meshes from "../meshes.js";
-import { merge } from "../../node_modules/knack-ecs/src/util.js";
+import { merge } from "../../node_modules/knack-ecs/src/util.mjs";
+
+import Doodad from "./Doodad.mjs";
+import meshes from "../meshes.mjs";
 
 export default Object.entries( {
 	Box: { model: "Box" },

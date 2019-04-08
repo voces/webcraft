@@ -1,5 +1,5 @@
 
-import Entity from "../../node_modules/knack-ecs/src/Entity.js";
+import Entity from "../../node_modules/knack-ecs/src/Entity.mjs";
 
 export default class Player extends Entity {
 

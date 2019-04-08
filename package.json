@@ -1,24 +1,27 @@
 {
   "name": "webcraft",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-	"test": "mocha -r esm \"test/**/*.test.js\" --exit",
-	"mocha": "mocha -r esm --exit"
+    "test": "NODE_OPTIONS=\"--experimental-modules --loader ./loader.mjs\" vt --mocha-done",
+    "lint": "eslint \"**/*.mjs\""
   },
-  "author": "",
+  "author": "voces",
   "license": "ISC",
   "devDependencies": {
-    "babel-eslint": "^8.2.3",
+    "babel-eslint": "^8.2.6",
     "eslint": "^4.19.1",
     "eslint-config-mdcs": "^4.2.3",
-    "mocha": "^5.2.0",
-    "sinon": "^7.2.2"
+    "eslint-config-verit": "^1.0.2",
+    "sinon": "^7.3.1",
+    "verit-test": "^1.0.2"
   },
   "dependencies": {
-    "esm": "^3.0.22",
-    "knack-ecs": "^1.0.7",
+    "knack-ecs": "^2.0.0",
     "three": "^0.100.0"
-  }
+  },
+  "files": [
+    "src",
+    "loader.mjs"
+  ]
 }

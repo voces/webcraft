@@ -49,7 +49,7 @@ const loaderQueue = [];
 
 export const commonConstructor = ( object, props, app ) => {
 
-	app = app || ( props && props.app ) || ( object && object.app );
+	app = app || props && props.app || object && object.app;
 
 	// app might not be set at construction time (added after), we'll wait :)
 	if ( ! app ) {

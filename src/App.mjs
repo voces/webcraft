@@ -1,9 +1,9 @@
 
-import ECS from "../node_modules/knack-ecs/src/App.js";
+import ECS from "../node_modules/knack-ecs/src/App.mjs";
 
-import Player from "./entities/Player.js";
-import alea from "../lib/alea.js";
-import { commonConstructor, isBrowser } from "./util.js";
+import Player from "./entities/Player.mjs";
+import alea from "../lib/alea.mjs";
+import { commonConstructor, isBrowser } from "./util/index.mjs";
 
 export default class App extends ECS {
 

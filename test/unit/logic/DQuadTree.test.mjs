@@ -1,12 +1,12 @@
 
 import assert from "assert";
 import sinon from "sinon";
-import alea from "../../../lib/alea";
-import DQuadTree from "../../../src/logic/DQuadTree";
+import alea from "../../../lib/alea.mjs";
+import DQuadTree from "../../../src/logic/DQuadTree.mjs";
 
 // TODO: investigate how to block usage of Math.random
 //       would be nice for implementers, too :D
-const random = alea( __filename );
+const random = alea( import.meta.url );
 
 let itemId = 0;
 class Item {
@@ -29,7 +29,7 @@ const assertSameElements = ( actual, expected ) =>
 		expected.map( i => i.id ).sort( ( a, b ) => b - a )
 	);
 
-describe( "DQuadTree", () => {
+describe( "DQuadTree", { parallel: false }, () => {
 
 	let qt;
 	beforeEach( () => qt = new DQuadTree() );
@@ -69,7 +69,7 @@ describe( "DQuadTree", () => {
 			const items = Array( qt.density + 1 ).fill().map( () => new Item() );
 			items.forEach( item => qt.push( item ) );
 			assert.equal( qt.length, items.length );
-			debugger;
+
 			assertSameElements( Array.from( qt ), items );
 			assert.equal( qt.split.calledOnce, true );
 
@@ -112,7 +112,7 @@ describe( "DQuadTree", () => {
 			const item = new Item();
 			items.push( item );
 			qt.push( item );
-			debugger;
+
 			assert.equal( qt.length, 11 );
 			assertSameElements( Array.from( qt ), items );
 

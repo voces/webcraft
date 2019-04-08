@@ -1,5 +1,5 @@
 
-import Component from "../../node_modules/knack-ecs/src/Component.js";
+import Component from "../../node_modules/knack-ecs/src/Component.mjs";
 
 export default class Position extends Component {
 

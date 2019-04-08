@@ -1,6 +1,6 @@
 
-import System from ".../../node_modules/knack-ecs/src/System.js";
-import Player from "../entities/Player.js";
+import System from ".../../../node_modules/knack-ecs/src/System.mjs";
+import Player from "../entities/Player.mjs";
 
 const colors = [
 	{ name: "red", hex: "#FF0000" },

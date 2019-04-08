@@ -1,7 +1,7 @@
 
-import Entity from "../../node_modules/knack-ecs/src/Entity.js";
+import Entity from "../../node_modules/knack-ecs/src/Entity.mjs";
 
-import Model from "../components/Model.js";
+import Model from "../components/Model.mjs";
 
 export default class Doodad extends Entity {
 

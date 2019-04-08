@@ -1,5 +1,5 @@
 
-import { commonConstructor } from "../util.js";
+import { commonConstructor } from "../util.mjs/index.mjs";
 
 export default class Keyboard {
 

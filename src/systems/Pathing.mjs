@@ -1,9 +1,6 @@
 
-import System from "../../node_modules/knack-ecs/src/System.js";
-import shapes from "../entities/doodads.js";
-import DQuadTree from "../logic/DQuadTree.js";
-
-const { Sphere } = shapes;
+import System from "../../node_modules/knack-ecs/src/System.mjs";
+import DQuadTree from "../logic/DQuadTree.mjs";
 
 export default class Pathing extends System {
 

@@ -1,5 +1,5 @@
 
-import Component from "../../node_modules/knack-ecs/src/Component.js";
+import Component from "../../node_modules/knack-ecs/src/Component.mjs";
 import { Mesh } from "../../node_modules/three/build/three.module.js";
 
 export default class Model extends Component {

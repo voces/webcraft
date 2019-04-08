@@ -1,7 +1,7 @@
 
 import assert from "assert";
-import Pathing from "../../../src/systems/Pathing";
-import Doodad from "../../../src/entities/Doodad.js";
+import Pathing from "../../../src/systems/Pathing.mjs";
+import Doodad from "../../../src/entities/Doodad.mjs";
 
 const assertSameElements = ( actual, expected ) =>
 	assert.deepStrictEqual(
@@ -9,7 +9,7 @@ const assertSameElements = ( actual, expected ) =>
 		expected.map( i => i.id ).sort( ( a, b ) => b - a )
 	);
 
-describe( "Pathing", () => {
+describe( "Pathing", { parallel: false }, () => {
 
 	let pathing;
 	beforeEach( () => pathing = new Pathing() );
