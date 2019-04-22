@@ -5,7 +5,7 @@
   "main": "build/webcraft.js",
   "module": "build/webcraft.module.js",
   "scripts": {
-    "test": "mocha \"test/**/*.test.js\" --exit",
+    "test": "vt",
     "lint": "eslint \"**/*.js\"",
     "prepublishOnly": "npm run lint"
   },
