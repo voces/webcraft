@@ -1,7 +1,5 @@
 
-import { Clock } from "../node_modules/three/build/three.module.js";
 import { toCamelCase } from "./util/string.mjs";
-import System from "./System.mjs";
 
 export default class Game {
 
@@ -9,6 +7,8 @@ export default class Game {
 
 		Object.defineProperty( this, "_systems", { value: [] } );
 		Object.defineProperty( this, "_mechanisms", { value: [] } );
+
+		this.lastUpdate = this.lastRender = this.time = Date.now();
 
 	}
 
@@ -24,9 +24,6 @@ export default class Game {
 	}
 
 	addMechanism( mechanism ) {
-
-		if ( mechanism instanceof System )
-			throw new Error( "Systems should be added via Game#addSystem" );
 
 		const camelName = toCamelCase( mechanism.constructor.name );
 		if ( this[ camelName ] )
@@ -77,14 +74,28 @@ export default class Game {
 	// The animation loop
 	render() {
 
-		this.renderRequest = requestAnimationFrame( () =>
-			this.render( this.renderClock ) );
+		this.renderRequest = requestAnimationFrame( () => this.render() );
+
+		const thisRender = Date.now();
+		const delta = thisRender - this.lastRender;
 
 		for ( let i = 0; i < this._mechanisms.length; i ++ )
-			this._mechanisms[ i ].render();
+			if ( this._mechanisms[ i ].render )
+				this._mechanisms[ i ].render( delta, thisRender );
 
-		for ( let i = 0; i < this._systems.length; i ++ )
-			this._systems[ i ].render();
+		for ( let i = 0; i < this._systems.length; i ++ ) {
+
+			if ( this._systems[ i ].preRender )
+				this._systems[ i ].preRender( delta, thisRender );
+			if ( this._systems[ i ].render )
+				for ( let n = 0; n < this._systems[ i ].length; n ++ )
+					this._systems[ i ].render( this._systems[ i ][ n ], delta, thisRender );
+			if ( this._systems[ i ].postRender )
+				this._systems[ i ].postRender( delta, thisRender );
+
+		}
+
+		this.lastRender = thisRender;
 
 		return this;
 
@@ -93,24 +104,35 @@ export default class Game {
 	// The logical loop
 	update() {
 
-		for ( let i = 0; i < this._mechanisms.length; i ++ )
-			this._mechanisms[ i ].update();
+		this.time = Date.now();
+		const delta = this.time - this.lastUpdate;
 
-		for ( let i = 0; i < this._systems.length; i ++ )
-			this._systems[ i ].update();
+		for ( let i = 0; i < this._mechanisms.length; i ++ )
+			if ( this._mechanisms[ i ].update )
+				this._mechanisms[ i ].update( delta, this.time );
+
+		for ( let i = 0; i < this._systems.length; i ++ ) {
+
+			if ( this._systems[ i ].preUpdate )
+				this._systems[ i ].preUpdate( delta, this.time );
+			if ( this._systems[ i ].update )
+				for ( let n = 0; n < this._systems[ i ].length; n ++ )
+					this._systems[ i ].update( this._systems[ i ][ n ], delta, this.time );
+			if ( this._systems[ i ].postUpdate )
+				this._systems[ i ].postUpdate( delta, this.time );
+
+		}
+
+		this.lastUpdate = this.time;
 
 	}
 
 	start() {
 
-		if ( ! this.updateClock ) this.updateClock = new Clock();
-		if ( ! this.renderClock ) this.renderClock = new Clock();
+		this.update();
+		this.updateInterval = setInterval( () => this.update(), 25 );
 
-		this.update( this.updateClock );
-		this.updateInterval = setInterval( () =>
-			this.update( this.updateClock ), 25 );
-
-		this.render( this.renderClock );
+		this.render();
 
 		return this;
 
