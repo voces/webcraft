@@ -1,0 +1,21 @@
+{
+  "name": "mvp-bd-client",
+  "version": "1.0.0",
+  "description": "Minimum viable product of Bulldog client",
+  "main": "server/src/index.js",
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-mdcs": "^4.2.3",
+    "eslint-config-verit": "^1.0.2",
+    "verit-test": "^3.1.0"
+  },
+  "scripts": {
+    "test": "vt **/*.test.js --no-parallel",
+    "start": "node --experimental-modules --no-warnings server/src/index.js"
+  },
+  "author": "verit",
+  "license": "ISC",
+  "type": "module"
+}

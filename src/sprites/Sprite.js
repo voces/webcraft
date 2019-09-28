@@ -1,0 +1,145 @@
+
+import { PATHING_TYPES, WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
+import dragSelect from "./dragSelect.js";
+import game from "../index.js";
+import emitter from "../emitter.js";
+
+// TODO: abstract dom into a class
+const arenaElement = document.getElementById( "arena" );
+
+export default emitter( class Sprite {
+
+	static radius = 1;
+	static maxHealth = 1;
+
+	maxHealth = this.constructor.maxHealth;
+	health = this.maxHealth;
+	radius = this.constructor.radius;
+	requiresPathing = PATHING_TYPES.WALKABLE;
+	blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
+	action;
+
+	constructor( { owner, x, y } ) {
+
+		emitter( this );
+		this.owner = owner;
+		this.x = x;
+		this.y = y;
+		this.elem = document.createElement( "div" );
+		this.elem.classList.add( this.constructor.name.toLowerCase(), "sprite" );
+		this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+		this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+		this.elem.style.width = this.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
+		this.elem.style.height = this.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
+		this.elem.sprite = this;
+		arenaElement.appendChild( this.elem );
+		dragSelect.addSelectables( [ this.elem ] );
+
+		if ( this.owner ) {
+
+			if ( this.owner.color )
+				this.elem.style.backgroundColor = this.owner.color.hex;
+			this.elem.setAttribute( "owner", this.owner.id );
+
+		}
+
+		if ( this.owner ) this.owner.sprites.push( this );
+		if ( game.round ) game.round.sprites.push( this );
+
+	}
+
+	set x( x ) {
+
+		if ( isNaN( x ) ) throw new Error( "Cannot set Sprite#x to NaN" );
+
+		this._x = x;
+		if ( this.elem ) this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+
+	}
+
+	get x() {
+
+		return this._x;
+
+	}
+
+	set y( y ) {
+
+		if ( isNaN( y ) ) throw new Error( "Cannot set Sprite#y to NaN" );
+
+		this._y = y;
+		if ( this.elem ) this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+
+	}
+
+	get y() {
+
+		return this._y;
+
+	}
+
+	set selected( value ) {
+
+		this._selected = value;
+
+		if ( this.elem && value )
+			this.elem.classList.add( "selected" );
+		else
+			this.elem.classList.remove( "selected" );
+
+	}
+
+	get selected() {
+
+		return this._selected;
+
+	}
+
+	kill( { removeImmediately = false } = {} ) {
+
+		if ( this.health <= 0 ) return;
+
+		this.health = 0;
+		this.action = undefined;
+		dragSelect.removeSelectables( [ this.elem ] );
+		if ( this._selected )
+			dragSelect.setSelection(
+				dragSelect.getSelection().filter( u => u !== this )
+			);
+		if ( this.owner ) {
+
+			const index = this.owner.sprites.indexOf( this );
+			if ( index >= 0 ) this.owner.sprites.splice( index, 1 );
+
+		}
+		if ( game.round ) {
+
+			game.round.pathingMap.removeEntity( this );
+			const index = game.round.sprites.indexOf( this );
+			if ( index >= 0 ) game.round.sprites.splice( index, 1 );
+
+		}
+		this.dispatchEvent( "death" );
+
+		// Death antimation
+		if ( removeImmediately ) this.remove();
+		else {
+
+			this.elem.classList.add( "death" );
+			setTimeout( () => this.remove(), 125 );
+
+		}
+
+	}
+
+	remove() {
+
+		this.removeEventListeners();
+		if ( game.round ) game.round.pathingMap.removeEntity( this );
+
+		if ( arenaElement.contains( this.elem ) )
+			arenaElement.removeChild( this.elem );
+
+	}
+
+} );

@@ -1,0 +1,8 @@
+{
+    "extends": [ "verit" ],
+    "parser": "babel-eslint",
+    "rules": {
+        "no-extra-parens": [ "error" ],
+        "comma-dangle": [ "error", "always-multiline" ]
+    }
+}

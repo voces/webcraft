@@ -1,0 +1,94 @@
+
+body {
+    margin: 0;
+    background-color: #333;
+}
+
+#tiles {
+    font-size: 0;
+}
+
+.row {
+    white-space: nowrap;
+}
+
+.tile {
+    width: 64px;
+    height: 64px;
+    background-color: white;
+    display: inline-block;
+}
+
+.tile.open { background-color: green; }
+.tile.block { background-color: #555; }
+.tile.start { background-color: #569656; }
+.tile.end { background-color: #569656; }
+.tile.spawn { background-color: green; }
+
+.layer-0 { opacity: 1.0; }
+.layer-1 { opacity: 0.9; }
+.layer-2 { opacity: 0.8; }
+.layer-3 { opacity: 0.7; }
+.layer-4 { opacity: 0.6; }
+.layer-5 { opacity: 0.5; }
+.layer-6 { opacity: 0.4; }
+.layer-7 { opacity: 0.3; }
+.layer-8 { opacity: 0.2; }
+.layer-9 { opacity: 0.1; }
+
+.sprite {
+    filter: drop-shadow(0.125em 0.1875em 0.375em rgba(0,0,0,0.5));
+    position: absolute;
+}
+.sprite:hover {
+    filter: drop-shadow(0.125em 0.1875em 0.5em rgba(0,0,0,0.6));
+    cursor: pointer;
+}
+.sprite.selected {
+    filter: drop-shadow(0.125em 0.1875em 0.375em rgb(70,145,246))
+        drop-shadow(0.125em 0.1875em 0.375em rgb(70,145,246));
+}
+.sprite.selected:hover {
+    filter: drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246))
+        drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246))
+        drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246));
+}
+
+@keyframes death {
+    0% { transform: scale(1); }
+    10% { transform: scale(0.75); }
+    20% { transform: scale(0.85); }
+    100% { transform: scale(0); }
+}
+.death {
+    animation: death 125ms;
+}
+
+@keyframes ascend {
+    0% { transform: scale(1); opacity: 1; }
+    10% { transform: scale(3); opacity: 1; }
+    20% { transform: scale(2); opacity: 1; }
+    100% { transform: scale(10); opacity: 0; }
+}
+.ascend {
+    animation: ascend 1s;
+}
+
+#scores {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    background: rgba(70, 145, 246, 0.5);
+    display: grid;
+    grid-template-columns: 4em 4em;
+    color: white;
+    font-weight: bold;
+    border-radius: 0.25em;
+    box-shadow: 0 0 1em 0.125em rgba(70, 145, 246, 0.9);
+    padding: 0.25em 0.5em;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-shadow: black 1px 1px 0.125em;
+}
+
+#scores span { padding: 0.25em; }
+#scores .score { text-align: right; }
