@@ -32,6 +32,14 @@ export default class Defender extends Unit {
 				const updateProgress = delta * this.speed;
 				const { x, y } = path( updateProgress );
 
+				if ( target.health <= 0 ) {
+
+					Object.assign( this, { x, y } );
+					this.action = undefined;
+					return;
+
+				}
+
 				const distanceToTarget = Math.sqrt( ( target.x - x ) ** 2 + ( target.y - y ) ** 2 );
 				if ( distanceToTarget < this.range + this.radius + target.radius ) {
 

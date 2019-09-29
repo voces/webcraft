@@ -96,6 +96,7 @@ export default class Crosser extends Unit {
 
 	ascend() {
 
+		this.health = 0;
 		this.action = undefined;
 		dragSelect.removeSelectables( [ this.elem ] );
 		if ( this._selected )

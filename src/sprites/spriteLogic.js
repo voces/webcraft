@@ -69,8 +69,8 @@ window.addEventListener( "mousedown", e => {
 
 	if ( ! game.round ) return;
 
+	if ( e.button === 2 || e.ctrlKey ) return rightClick( e );
 	if ( e.button === 0 ) leftClick( e );
-	if ( e.button === 2 ) rightClick( e );
 
 } );
 

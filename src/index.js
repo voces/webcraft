@@ -56,12 +56,4 @@ window.addEventListener( "error", event => {
 
 } );
 
-setTimeout( () => {
-
-	throw new Error( "blah" )
-
-	;
-
-} );
-
 export default game;

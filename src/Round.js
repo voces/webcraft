@@ -48,8 +48,8 @@ export default class Round {
 		const remaining = [ ...this.players ];
 		while ( remaining.length ) {
 
-			// const player = remaining.splice( Math.floor( this.random() * remaining.length ), 1 )[ 0 ];
-			const player = remaining.splice( 0, 1 )[ 0 ];
+			const player = remaining.splice( Math.floor( this.random() * remaining.length ), 1 )[ 0 ];
+			// const player = remaining.splice( 0, 1 )[ 0 ];
 			if ( this.crossers.length < this.settings.crossers )
 				this.crossers.push( player );
 			else
