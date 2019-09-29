@@ -1,7 +1,8 @@
 
 import emitter from "./emitter.js";
 
-const connection = new WebSocket( "ws://localhost:8080" );
+const host = location.port ? `${location.hostname}:${8080}` : `ws.${location.hostname}`;
+const connection = new WebSocket( `ws://${host}` );
 
 connection.addEventListener( "message", message => {
 

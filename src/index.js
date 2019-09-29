@@ -45,4 +45,23 @@ window.addEventListener( "contextmenu", e => {
 
 } );
 
+const host = location.port ? `${location.hostname}:${8080}` : `ws.${location.hostname}`;
+window.addEventListener( "error", event => {
+
+	fetch( `http://${host}/error`, {
+		method: "POST",
+		body: JSON.stringify( { stack: event.error.stack } ),
+		headers: { "Content-Type": "application/json" },
+	} );
+
+} );
+
+setTimeout( () => {
+
+	throw new Error( "blah" )
+
+	;
+
+} );
+
 export default game;

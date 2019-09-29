@@ -42,6 +42,6 @@ const dragSelect = new DragSelect( {
 } );
 
 const oldSelection = dragSelect.getSelection;
-dragSelect.getSelection = () => oldSelection.call( dragSelect ).map( e => e.sprite );
+dragSelect.getSelection = () => oldSelection.call( dragSelect ).map( e => e.sprite ).filter( e => e );
 
 export default dragSelect;

@@ -142,6 +142,7 @@ export const start = obstruction => {
 	plannedObstruction = obstruction;
 	updateSize();
 	arena.appendChild( container );
+	if ( requestedAnimationFrame ) cancelAnimationFrame( requestedAnimationFrame );
 	requestedAnimationFrame = requestAnimationFrame( onFrame );
 
 };
@@ -151,7 +152,8 @@ export const stop = () => {
 	if ( ! plannedObstruction ) return;
 	plannedObstruction = undefined;
 	arena.removeChild( container );
-	cancelAnimationFrame( requestedAnimationFrame );
+	if ( requestedAnimationFrame ) cancelAnimationFrame( requestedAnimationFrame );
+	requestedAnimationFrame = undefined;
 
 };
 

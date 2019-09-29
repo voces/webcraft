@@ -5,14 +5,14 @@ import Unit from "./Unit.js";
 import dragSelect from "./dragSelect.js";
 import game from "../index.js";
 
-const BUILD_DISTANCE = 1;
+const BUILD_DISTANCE = 1.5;
 
 export default class Crosser extends Unit {
 
-	static radius = 0.5;
+    static radius = 0.5;
 
-	// 360 in WC3
-	speed = 5.938;
+	// 380 in WC3 on fast
+	speed = 5.9375;
 
 	constructor( ...args ) {
 

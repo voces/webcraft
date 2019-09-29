@@ -5,11 +5,11 @@ import Unit from "./Unit.js";
 
 export default class Defender extends Unit {
 
-    static radius = 1;
-    range = 0.25;
+	static radius = 1;
+	range = 0.25;
 
-    // 420 in WC3
-	speed = 6.563 / 2;
+	// 420 in WC3 on fast
+	speed = 6.5625;
 
 	attack( pathingMap, target ) {
 
@@ -42,9 +42,20 @@ export default class Defender extends Unit {
 				} else {
 
 					// Update self
-					this._x = x;
-					this._y = y;
-					pathingMap.updateEntity( this );
+					if ( pathingMap.pathable( this, x, y ) ) {
+
+						this._x = x;
+						this._y = y;
+						pathingMap.updateEntity( this );
+
+					} else {
+
+						const { x: newX, y: newY } = pathingMap.withoutEntity( this, () => pathingMap.nearestPathing( x, y, this ) );
+						this._x = newX;
+						this._y = newY;
+						pathingMap.updateEntity( this );
+
+					}
 
 					// Start new attack path
 					pathingMap.removeEntity( target );

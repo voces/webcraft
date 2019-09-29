@@ -53,7 +53,8 @@ export default emitter( class Sprite {
 		if ( isNaN( x ) ) throw new Error( "Cannot set Sprite#x to NaN" );
 
 		this._x = x;
-		if ( this.elem ) this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+		if ( this.elem )
+			this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
 
 	}
 
@@ -68,7 +69,8 @@ export default emitter( class Sprite {
 		if ( isNaN( y ) ) throw new Error( "Cannot set Sprite#y to NaN" );
 
 		this._y = y;
-		if ( this.elem ) this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+		if ( this.elem )
+			this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
 
 	}
 
