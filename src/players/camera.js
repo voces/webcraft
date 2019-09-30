@@ -25,6 +25,7 @@ window.addEventListener( "keydown", e => {
 
 	if ( e.key.startsWith( "Arrow" ) && ! keyboard[ e.key ] ) {
 
+		if ( pan ) pan = undefined;
 		keyboard[ e.key ] = true;
 		if ( ! requestedAnimationFrame ) renderCamera();
 
@@ -49,12 +50,10 @@ const renderCamera = time => {
 
 	if ( pan ) {
 
-		// console.log( delta * CAMERA_SPEED, pan.distance, pan.duration );
-		// console.log( delta );
-		const { x, y } = pan.step( delta * pan.distance );
+		const { x, y } = pan.step( delta * pan.distance / pan.duration );
 
-		arena.style.top = y + "px";
-		arena.style.left = x + "px";
+		arena.style.top = ( arena.y = y ) + "px";
+		arena.style.left = ( arena.x = x ) + "px";
 
 		if ( x !== pan.target.x || y !== pan.target.y )
 			requestedAnimationFrame = requestAnimationFrame( renderCamera );
@@ -63,10 +62,10 @@ const renderCamera = time => {
 
 	} else {
 
-		if ( keyboard.ArrowDown ) arena.style.top = parseInt( arena.style.top.slice( 0, - 2 ) || 0 ) + delta * CAMERA_SPEED + "px";
-		if ( keyboard.ArrowUp ) arena.style.top = parseInt( arena.style.top.slice( 0, - 2 ) || 0 ) - delta * CAMERA_SPEED + "px";
-		if ( keyboard.ArrowRight ) arena.style.left = parseInt( arena.style.left.slice( 0, - 2 ) || 0 ) + delta * CAMERA_SPEED + "px";
-		if ( keyboard.ArrowLeft ) arena.style.left = parseInt( arena.style.left.slice( 0, - 2 ) || 0 ) - delta * CAMERA_SPEED + "px";
+		if ( keyboard.ArrowDown ) arena.style.top = ( arena.y = arena.y - delta * CAMERA_SPEED ) + "px";
+		if ( keyboard.ArrowUp ) arena.style.top = ( arena.y = arena.y + delta * CAMERA_SPEED ) + "px";
+		if ( keyboard.ArrowRight ) arena.style.left = ( arena.x = arena.x - delta * CAMERA_SPEED ) + "px";
+		if ( keyboard.ArrowLeft ) arena.style.left = ( arena.x = arena.x + delta * CAMERA_SPEED ) + "px";
 
 		if ( Object.values( keyboard ).some( Boolean ) )
 			requestedAnimationFrame = requestAnimationFrame( renderCamera );
@@ -76,15 +75,22 @@ const renderCamera = time => {
 
 };
 
-export const panTo = ( { x, y, duration = 1 } ) => {
+export const panTo = ( { x, y, duration = 0.125 } ) => {
 
-	x = WORLD_TO_GRAPHICS_RATIO;
-	y = WORLD_TO_GRAPHICS_RATIO;
+	x *= WORLD_TO_GRAPHICS_RATIO;
+	y *= WORLD_TO_GRAPHICS_RATIO;
 
-	const xCurrent = parseInt( arena.style.top.slice( 0, - 2 ) ) || 0;
-	const yCurrent = parseInt( arena.style.left.slice( 0, - 2 ) ) || 0;
+	const xCenter = window.innerWidth / 2;
+	const yCenter = window.innerHeight / 2;
 
-	pan = Object.assign( tweenPoints( [ { x: xCurrent, y: yCurrent }, { x, y } ] ), { duration } );
+	pan = Object.assign(
+		tweenPoints( [
+			{ x: arena.x, y: arena.y },
+			{ x: xCenter - x, y: yCenter - y },
+		] ),
+		{ duration }
+	);
+
 	renderCamera();
 
 };

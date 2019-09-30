@@ -130,8 +130,8 @@ const updatePosition = () => {
 
 window.addEventListener( "mousemove", e => {
 
-	mouse.x = e.clientX / WORLD_TO_GRAPHICS_RATIO;
-	mouse.y = e.clientY / WORLD_TO_GRAPHICS_RATIO;
+	mouse.x = ( e.clientX - arena.x ) / WORLD_TO_GRAPHICS_RATIO;
+	mouse.y = ( e.clientY - arena.y ) / WORLD_TO_GRAPHICS_RATIO;
 
 	if ( plannedObstruction ) updatePosition();
 

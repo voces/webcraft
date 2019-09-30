@@ -18,6 +18,8 @@ import Huge from "./obstructions/Huge.js";
 import Tiny from "./obstructions/Tiny.js";
 import Large from "./obstructions/Large.js";
 
+const arena = document.getElementById( "arena" );
+
 const hotkeys = {
 	f: {
 		type: "build",
@@ -116,8 +118,8 @@ const leftClick = e => {
 	if ( ! obstructionPlacementValid() ) return;
 	const obstruction = activeObstructionPlacement();
 
-	const x = snap( e.clientX / WORLD_TO_GRAPHICS_RATIO );
-	const y = snap( e.clientY / WORLD_TO_GRAPHICS_RATIO );
+	const x = snap( ( e.clientX - arena.x ) / WORLD_TO_GRAPHICS_RATIO );
+	const y = snap( ( e.clientY - arena.y ) / WORLD_TO_GRAPHICS_RATIO );
 
 	hideObstructionPlacement();
 
@@ -144,8 +146,8 @@ network.addEventListener( "build", e => {
 
 const rightClick = e => {
 
-	const x = e.clientX / WORLD_TO_GRAPHICS_RATIO;
-	const y = e.clientY / WORLD_TO_GRAPHICS_RATIO;
+	const x = ( e.clientX - arena.x ) / WORLD_TO_GRAPHICS_RATIO;
+	const y = ( e.clientY - arena.y ) / WORLD_TO_GRAPHICS_RATIO;
 
 	const selection = dragSelect.getSelection();
 
@@ -160,7 +162,7 @@ const rightClick = e => {
 		else {
 
 			const target = e.target.sprite;
-			if ( target && target.owner !== unit.owner )
+			if ( target && target.owner !== unit.owner && target.owner )
 				network.send( { type: "attack", attacker: unit.id, target: target.id } );
 			else
 				network.send( { type: "move", sprite: unit.id, x, y } );

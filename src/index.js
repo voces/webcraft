@@ -8,6 +8,10 @@ import "./players/camera.js";
 
 const game = window.game = new Game();
 
+const arena = document.getElementById( "arena" );
+arena.x = 0;
+arena.y = 0;
+
 // We receive this upon connecting; the only state we get is the number of connections
 network.addEventListener( "init", ( { connections } ) => {
 

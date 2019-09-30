@@ -746,8 +746,8 @@ export default class Tilemap {
 				[ { x: entity.x, y: entity.y } ] :
 				[ pathWorld[ 0 ] ],
 			...pathWorld.slice( 1 ),
-			...pathWorld[ pathWorld.length - 1 ].x !== target.x || pathWorld[ pathWorld.length - 1 ].y !== target.y ?
-				[ { x: target.x, y: target.y } ] :
+			...pathWorld[ pathWorld.length - 1 ].x !== realEnd.x || pathWorld[ pathWorld.length - 1 ].y !== realEnd.y ?
+				[ { x: realEnd.x / this.resolution, y: realEnd.y / this.resolution } ] :
 				[],
 		];
 

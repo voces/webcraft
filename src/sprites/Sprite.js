@@ -14,14 +14,15 @@ export default emitter( class Sprite {
 
 	maxHealth = this.constructor.maxHealth;
 	health = this.maxHealth;
-	radius = this.constructor.radius;
+	radius = this.radius || this.constructor.radius;
 	requiresPathing = PATHING_TYPES.WALKABLE;
 	blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
 	action;
 
-	constructor( { owner, x, y, selectable = true, id } ) {
+	constructor( { owner, x, y, selectable = true, id, ...rest } ) {
 
 		emitter( this );
+		Object.assign( this, rest );
 		this.id = id === undefined ? game.round.spriteId ++ : id;
 		this.owner = owner;
 		this.x = x;
