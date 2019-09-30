@@ -1,7 +1,19 @@
 
 body {
     margin: 0;
-    background-color: #333;
+	background-color: #333;
+	max-width: 100vw;
+	max-height: 100vh;
+	overflow: hidden;
+}
+
+#arena {
+	max-width: 100vw;
+	max-height: 100vh;
+	overflow: hidden;
+	position: absolute;
+	top: 0px;
+	left: 0px;
 }
 
 #tiles {
@@ -39,7 +51,6 @@ body {
 .sprite {
     filter: drop-shadow(0.125em 0.1875em 0.375em rgba(0,0,0,0.5));
 	position: absolute;
-	/* transition: top 5ms, left 5ms; */
 }
 .sprite:hover {
     filter: drop-shadow(0.125em 0.1875em 0.5em rgba(0,0,0,0.6));
@@ -53,6 +64,10 @@ body {
     filter: drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246))
         drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246))
         drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246));
+}
+
+.blueprint {
+	background-color: rgba(70,145,246,0.5);
 }
 
 @keyframes death {
@@ -73,6 +88,16 @@ body {
 }
 .ascend {
     animation: ascend 1s;
+}
+
+@keyframes attack {
+	0% { transform: scale(1); filter: hue-rotate(0deg); }
+	40% { transform: scale(0.8); filter: hue-rotate(-15deg); }
+	90% { transform: scale(1.2); filter: hue-rotate(35deg); }
+	0% { transform: scale(1); filter: hue-rotate(0deg); }
+}
+.attack {
+    animation: attack 250ms;
 }
 
 #scores {

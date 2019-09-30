@@ -19,9 +19,10 @@ export default emitter( class Sprite {
 	blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
 	action;
 
-	constructor( { owner, x, y } ) {
+	constructor( { owner, x, y, selectable = true, id } ) {
 
 		emitter( this );
+		this.id = id === undefined ? game.round.spriteId ++ : id;
 		this.owner = owner;
 		this.x = x;
 		this.y = y;
@@ -33,7 +34,7 @@ export default emitter( class Sprite {
 		this.elem.style.height = this.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
 		this.elem.sprite = this;
 		arenaElement.appendChild( this.elem );
-		dragSelect.addSelectables( [ this.elem ] );
+		if ( selectable ) dragSelect.addSelectables( [ this.elem ] );
 
 		if ( this.owner ) {
 
@@ -45,6 +46,17 @@ export default emitter( class Sprite {
 
 		if ( this.owner ) this.owner.sprites.push( this );
 		if ( game.round ) game.round.sprites.push( this );
+
+		let action;
+		Object.defineProperty( this, "action", {
+			set: value => {
+
+				if ( action && action.cleanup ) action.cleanup();
+				action = value;
+
+			},
+			get: () => action,
+		} );
 
 	}
 
@@ -97,9 +109,22 @@ export default emitter( class Sprite {
 
 	}
 
+	damage( amount ) {
+
+		if ( this.health <= 0 ) return;
+		this.health -= amount;
+		if ( this.health <= 0 ) this._death();
+
+	}
+
 	kill( { removeImmediately = false } = {} ) {
 
 		if ( this.health <= 0 ) return;
+		this._death( { removeImmediately } );
+
+	}
+
+	_death( { removeImmediately = false } = {} ) {
 
 		this.health = 0;
 		this.action = undefined;

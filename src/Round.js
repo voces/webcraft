@@ -9,6 +9,7 @@ import dragSelect from "./sprites/dragSelect.js";
 import game from "./index.js";
 import elo from "./players/elo.js";
 import emitter from "./emitter.js";
+import { panTo } from "./players/camera.js";
 
 // A round starts upon construction
 export default class Round {
@@ -17,6 +18,7 @@ export default class Round {
 	defenders = [];
 	sprites = [];
 	scores = 0;
+	spriteId = 0;
 
 	constructor( { seed, time, settings, players } ) {
 
@@ -74,9 +76,6 @@ export default class Round {
 				y: 0,
 			} );
 
-			// Select it
-			if ( player === game.localPlayer ) dragSelect.setSelection( [ unit.elem ] );
-
 			// Place it
 			let maxTries = 8192;
 			while ( -- maxTries ) {
@@ -100,6 +99,14 @@ export default class Round {
 
 			}
 			if ( ! maxTries ) console.error( "Exhausted placement attempts" );
+
+			// Select + pan to it
+			if ( player === game.localPlayer ) {
+
+				dragSelect.setSelection( [ unit.elem ] );
+				panTo( unit );
+
+			}
 
 			// Add event listeners
 			unit.addEventListener( "death", () => {
@@ -152,7 +159,7 @@ export default class Round {
 
 			const unit = p.unit;
 
-			if ( unit && unit.action )
+			if ( unit && unit.action && unit.action.render )
 				unit.action.render( delta );
 
 		} );
@@ -178,7 +185,7 @@ export default class Round {
 			if ( ! unit ) return;
 
 			if ( unit.action )
-				unit.action.update( delta );
+				unit.action.update && unit.action.update( delta );
 
 			else if ( unit instanceof Defender ) {
 
@@ -200,7 +207,7 @@ export default class Round {
 				}, {} ).bestUnit;
 
 				if ( nearest )
-					unit.attack( this.pathingMap, nearest );
+					unit.attack( nearest );
 
 			}
 

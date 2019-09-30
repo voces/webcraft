@@ -4,6 +4,7 @@ import network from "./network.js";
 import Game from "./Game.js";
 import "./players/playerLogic.js";
 import "./sprites/spriteLogic.js";
+import "./players/camera.js";
 
 const game = window.game = new Game();
 
@@ -29,10 +30,7 @@ network.addEventListener( "update", e => {
 
 window.addEventListener( "keydown", e => {
 
-	if ( e.key.includes( "Arrow" ) && game.round )
-		return console.warn( "Have not implemented scrolling yet" );
-
-	if ( ! game.isHost ) return;
+	if ( ! game.isHost || game.round ) return;
 
 	if ( e.key === "ArrowDown" )
 		network.send( { type: "start", seed: Math.random() } );
@@ -46,7 +44,11 @@ window.addEventListener( "contextmenu", e => {
 } );
 
 const host = location.port ? `${location.hostname}:${8080}` : `ws.${location.hostname}`;
+let remainingErrors = 3;
 window.addEventListener( "error", event => {
+
+	if ( remainingErrors === 0 ) return;
+	remainingErrors --;
 
 	fetch( `http://${host}/error`, {
 		method: "POST",
@@ -55,5 +57,6 @@ window.addEventListener( "error", event => {
 	} );
 
 } );
+setInterval( () => remainingErrors = Math.min( 3, remainingErrors + 1 ), 5000 );
 
 export default game;

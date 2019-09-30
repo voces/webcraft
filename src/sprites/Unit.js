@@ -7,6 +7,12 @@ export default class Unit extends Sprite {
 
 	// 380 in WC3
 	speed = 5.938;
+	weapon = {
+		damage: 1,
+		cooldown: 1.5,
+		last: 0,
+		range: 0.25,
+	}
 
 	constructor( props ) {
 
@@ -58,6 +64,12 @@ export default class Unit extends Sprite {
 
 			},
 		};
+
+	}
+
+	holdPosition() {
+
+		this.action = {};
 
 	}
 

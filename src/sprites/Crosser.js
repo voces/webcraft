@@ -4,6 +4,8 @@ import tweenPoints from "../util/tweenPoints.js";
 import Unit from "./Unit.js";
 import dragSelect from "./dragSelect.js";
 import game from "../index.js";
+import { stop as stopPlacement, active as activePlacement } from "./obstructionPlacement.js";
+import Blueprint from "./obstructions/Blueprint.js";
 
 const BUILD_DISTANCE = 1.5;
 
@@ -13,14 +15,22 @@ export default class Crosser extends Unit {
 
 	// 380 in WC3 on fast
 	speed = 5.9375;
+	obstructions = [];
 
 	constructor( ...args ) {
 
 		super( ...args );
 
-		this.addEventListener( "death", () =>
+		this.addEventListener( "death", () => {
+
+			// Kill all their sprites
 			[ ...this.owner.sprites ].forEach( sprite =>
-				sprite.kill() ) );
+				sprite.kill() );
+
+			// Cancel any active placements
+			if ( activePlacement() ) stopPlacement();
+
+		} );
 
 	}
 
@@ -29,6 +39,7 @@ export default class Crosser extends Unit {
 		let renderProgress = 0;
 		let rawPath = pathingMap.path( this, target );
 		let path = tweenPoints( rawPath );
+		const blueprint = this.owner === game.localPlayer && new Blueprint( { ...target, radius: Obstruction.radius } );
 
 		this.action = {
 			update: delta => {
@@ -52,9 +63,12 @@ export default class Crosser extends Unit {
 
 						pathingMap.removeEntity( this );
 
-						if ( pathingMap.pathable( obstruction, target.x, target.y ) )
+						if ( pathingMap.pathable( obstruction, target.x, target.y ) ) {
+
 							pathingMap.addEntity( obstruction );
-						else
+							this.obstructions.push( obstruction );
+
+						} else
 							obstruction.kill( { removeImmediately: true } );
 
 						const position = pathingMap.nearestSpiralPathing( x, y, this );
@@ -88,6 +102,11 @@ export default class Crosser extends Unit {
 				const { x, y } = path( renderProgress );
 				this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
 				this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+
+			},
+			cleanup: () => {
+
+				if ( blueprint ) blueprint.kill();
 
 			},
 		};

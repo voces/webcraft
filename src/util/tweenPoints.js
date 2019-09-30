@@ -54,8 +54,7 @@ export default points => {
 	}
 
 	let curPoint = 0;
-
-	return Object.assign( progress => {
+	const func = progress => {
 
 		if ( progress < 0 )
 			throw new Error( "Progress should be greater than 0" );
@@ -80,6 +79,18 @@ export default points => {
                 percentProgress * annotatedPoints[ curPoint ].yDeltaToNext,
 		};
 
-	}, { distance: annotatedPoints[ points.length - 1 ].start } );
+	};
+
+	let internalProgress = 0;
+	return Object.assign( func, {
+		distance: annotatedPoints[ points.length - 1 ].start,
+		step: deltaProgress => {
+
+			internalProgress += deltaProgress;
+			return func( internalProgress );
+
+		},
+		target: points[ points.length - 1 ],
+	} );
 
 };

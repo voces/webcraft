@@ -10,6 +10,7 @@ import {
 	stop as hideObstructionPlacement,
 	valid as obstructionPlacementValid,
 } from "./obstructionPlacement.js";
+import Unit from "./Unit.js";
 import Crosser from "./Crosser.js";
 import Obstruction from "./obstructions/Obstruction.js";
 import Basic from "./obstructions/Basic.js";
@@ -36,6 +37,9 @@ const hotkeys = {
 	},
 	x: () => {
 
+		if ( ! game.round || ! game.localPlayer.unit || ! ( game.localPlayer.unit instanceof Crosser ) )
+			return;
+
 		const selection = dragSelect.getSelection();
 
 		const ownedUnits = selection
@@ -43,11 +47,44 @@ const hotkeys = {
 
 		dragSelect.setSelection( [ game.localPlayer.unit.elem ] );
 
+		// Kill selected obstructions
+		let includesObstruction = false;
 		ownedUnits.forEach( u => {
 
-			if ( u instanceof Obstruction ) u.kill();
+			if ( u instanceof Obstruction ) {
+
+				network.send( { type: "kill", sprite: u.id } );
+				includesObstruction = true;
+
+			}
 
 		} );
+
+		// If no obstructions were selected, but a crosser was, kill the last obstruction
+		let crosser;
+		if ( ! includesObstruction && ( crosser = ownedUnits.find( u => u instanceof Crosser ) ) )
+			while ( crosser.obstructions.length ) {
+
+				const obstruction = crosser.obstructions.pop();
+				if ( obstruction && obstruction.health > 0 ) {
+
+					network.send( { type: "kill", sprite: obstruction.id } );
+					break;
+
+				}
+
+			}
+
+	},
+	h: () => {
+
+		if ( ! game.round )
+			return;
+
+		const ownedUnits = dragSelect.getSelection()
+			.filter( u => u.owner === game.localPlayer && u instanceof Unit );
+
+		network.send( { type: "holdPosition", sprites: ownedUnits.map( u => u.id ) } );
 
 	},
 	Escape: () => {
@@ -112,10 +149,28 @@ const rightClick = e => {
 
 	const selection = dragSelect.getSelection();
 
-	const ownedUnits = selection
+	const ownedSprites = selection
 		.filter( u => u.owner === game.localPlayer );
 
-	if ( ownedUnits.length ) network.send( { type: "move", x, y } );
+	const units = ownedSprites.filter( u => u instanceof Unit );
+
+	units.forEach( unit => {
+
+		if ( unit instanceof Crosser ) network.send( { type: "move", sprite: unit.id, x, y } );
+		else {
+
+			const target = e.target.sprite;
+			if ( target && target.owner !== unit.owner )
+				network.send( { type: "attack", attacker: unit.id, target: target.id } );
+			else
+				network.send( { type: "move", sprite: unit.id, x, y } );
+
+		}
+
+	} );
+
+	if ( ownedSprites.length > units.length )
+		dragSelect.setSelection( units.map( u => u.elem ).filter( Boolean ) );
 
 };
 
@@ -153,5 +208,52 @@ network.addEventListener( "move", ( { time, connection, x, y } ) => {
 	if ( ! unit ) return;
 
 	unit.walkTo( game.round.pathingMap, { x, y } );
+
+} );
+
+network.addEventListener( "attack", ( { time, connection, attacker: attackerId, target: targetId } ) => {
+
+	if ( ! game.round ) return;
+	game.update( { time } );
+
+	const player = game.round.players.find( p => p.id === connection );
+	if ( ! player ) return;
+
+	const attacker = player.sprites.find( s => s.id === attackerId );
+	if ( ! attacker ) return;
+
+	const target = game.round.sprites.find( s => s.id === targetId );
+	if ( ! target ) return;
+
+	attacker.attack( target );
+
+} );
+
+network.addEventListener( "kill", ( { time, sprite, connection } ) => {
+
+	if ( ! game.round ) return;
+	game.update( { time } );
+
+	const player = game.round.players.find( p => p.id === connection );
+	if ( ! player ) return;
+
+	const unit = player.sprites.find( s => s.id === sprite );
+	if ( ! unit ) return;
+
+	unit.kill();
+
+} );
+
+network.addEventListener( "holdPosition", ( { time, connection, sprites } ) => {
+
+	if ( ! game.round ) return;
+	game.update( { time } );
+
+	const player = game.round.players.find( p => p.id === connection );
+	if ( ! player ) return;
+
+	player.sprites
+		.filter( s => sprites.includes( s.id ) )
+		.forEach( s => s.holdPosition() );
 
 } );
