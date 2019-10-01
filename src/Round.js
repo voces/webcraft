@@ -1,6 +1,5 @@
 
 import arenas from "./arenas/index.js";
-import Random from "./lib/alea.js";
 import PathingMap from "./pathing/PathingMap.js";
 import { TILE_TYPES } from "./constants.js";
 import Crosser from "./sprites/Crosser.js";
@@ -10,6 +9,10 @@ import game from "./index.js";
 import elo from "./players/elo.js";
 import emitter from "./emitter.js";
 import { panTo } from "./players/camera.js";
+import network from "./network.js";
+import {
+	colors,
+} from "./players/colors.js";
 
 // A round starts upon construction
 export default class Round {
@@ -20,14 +23,13 @@ export default class Round {
 	scores = 0;
 	spriteId = 0;
 
-	constructor( { seed, time, settings, players } ) {
+	constructor( { time, settings, players } ) {
 
 		emitter( this );
-		this.random = new Random( seed );
 		this.lastUpdate = time;
 		this.lastRender = Date.now() / 1000;
 		this.settings = settings;
-		this.players = players;
+		this.players = [ ...players ];
 		this.arena = arenas[ settings.arenaIndex ];
 		this.pathingMap = new PathingMap( {
 			pathing: this.arena.pathing,
@@ -50,7 +52,7 @@ export default class Round {
 		const remaining = [ ...this.players ];
 		while ( remaining.length ) {
 
-			const player = remaining.splice( Math.floor( this.random() * remaining.length ), 1 )[ 0 ];
+			const player = remaining.splice( Math.floor( game.random() * remaining.length ), 1 )[ 0 ];
 			// const player = remaining.splice( 0, 1 )[ 0 ];
 			if ( this.crossers.length < this.settings.crossers )
 				this.crossers.push( player );
@@ -80,8 +82,8 @@ export default class Round {
 			let maxTries = 8192;
 			while ( -- maxTries ) {
 
-				const xRand = this.random() * this.pathingMap.widthWorld;
-				const yRand = this.random() * this.pathingMap.heightWorld;
+				const xRand = game.random() * this.pathingMap.widthWorld;
+				const yRand = game.random() * this.pathingMap.heightWorld;
 
 				if ( this.arena.tiles[ Math.floor( yRand / 2 ) ][ Math.floor( xRand / 2 ) ] !== targetTile )
 					continue;
@@ -138,13 +140,40 @@ export default class Round {
 			scores: this.scores,
 		} );
 
+		if ( game.newPlayers ) {
+
+			game.newPlayers = false;
+			game.receivedState = false;
+
+			const randomPlayerIndex = Math.floor( game.random() * this.players.length );
+			const randomPlayer = this.players[ randomPlayerIndex ];
+			if ( randomPlayer === game.localPlayer )
+				network.send( {
+					type: "state",
+					arena: game.settings.arenaIndex,
+					players: game.players.map( p => ( {
+						id: p.id, color:
+						colors.indexOf( p.color ),
+						score: p.score,
+					} ) ),
+				} );
+
+		} else
+			game.lastRoundEnd = game.lastUpdate;
+
 		setTimeout( () => {
 
 			[ ...this.sprites ].forEach( sprite => sprite.kill() );
 			cancelAnimationFrame( this.requestedAnimationFrame );
-			this.dispatchEvent( "end" );
 
 		}, 1000 );
+
+		setTimeout( () => {
+
+			this.removeEventListeners();
+			game.round = undefined;
+
+		} );
 
 	}
 
@@ -155,14 +184,8 @@ export default class Round {
 		const delta = ( newRender - this.lastRender ) / 1000;
 		this.lastRender = newRender;
 
-		this.players.forEach( p => {
-
-			const unit = p.unit;
-
-			if ( unit && unit.action && unit.action.render )
-				unit.action.render( delta );
-
-		} );
+		this.sprites.forEach( sprite =>
+			sprite.action && sprite.action.render && sprite.action.render( delta ) );
 
 	}
 
@@ -178,18 +201,14 @@ export default class Round {
 		if ( isNaN( delta ) ) throw new Error( `delta=${delta}` );
 		this.lastUpdate = time;
 
-		this.players.forEach( p => {
+		this.sprites.forEach( sprite => {
 
-			const unit = p.unit;
+			if ( sprite.action )
+				sprite.action.update && sprite.action.update( delta );
 
-			if ( ! unit ) return;
+			else if ( sprite instanceof Defender ) {
 
-			if ( unit.action )
-				unit.action.update && unit.action.update( delta );
-
-			else if ( unit instanceof Defender ) {
-
-				const { x, y } = unit;
+				const { x, y } = sprite;
 
 				const nearest = this.crossers.reduce( ( { bestUnit, bestDistance }, testPlayer ) => {
 
@@ -207,17 +226,17 @@ export default class Round {
 				}, {} ).bestUnit;
 
 				if ( nearest )
-					unit.attack( nearest );
+					sprite.attack( nearest );
 
 			}
 
-			if ( unit instanceof Crosser )
+			if ( sprite instanceof Crosser )
 
-				if ( this.arena.tiles[ Math.floor( unit.y / 2 ) ][ Math.floor( unit.x / 2 ) ] === TILE_TYPES.END ) {
+				if ( this.arena.tiles[ Math.floor( sprite.y / 2 ) ][ Math.floor( sprite.x / 2 ) ] === TILE_TYPES.END ) {
 
-					unit.ascend();
+					sprite.ascend();
 					this.scores ++;
-					unit.owner.unit = undefined;
+					sprite.owner.sprite = undefined;
 
 					setTimeout( () => this.onCrosserRemoval(), 1000 );
 

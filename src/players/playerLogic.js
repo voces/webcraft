@@ -3,12 +3,12 @@ import network from "../network.js";
 import game from "../index.js";
 import Player from "./Player.js";
 import {
-	colors,
 	next as nextColor,
 	take as takeColor,
 	release as releaseColor,
 } from "./colors.js";
 import { updateDisplay } from "./elo.js";
+import Random from "../lib/alea.js";
 
 const newPlayer = data => {
 
@@ -24,24 +24,9 @@ network.addEventListener( "connection", data => {
 	const player = new Player( { id: data.connection, color: nextColor() } );
 
 	if ( game.localPlayer === undefined ) game.localPlayer = player;
+	else game.newPlayers = true;
 
 	game.players.push( player );
-
-	if ( game.isHost ) {
-
-		if ( game.host === undefined ) game.host = player;
-
-		network.send( {
-			type: "state",
-			arena: game.settings.arenaIndex,
-			players: game.players.map( p => ( {
-				id: p.id, color:
-				colors.indexOf( p.color ),
-				score: p.score,
-			} ) ),
-		} );
-
-	}
 
 	updateDisplay();
 
@@ -56,22 +41,14 @@ network.addEventListener( "disconnection", ( { connection } ) => {
 
 	game.players.splice( playerIndex, 1 );
 
-	if ( ! game.host || game.host.id === connection ) {
-
-		game.host = game.players[ 0 ];
-		if ( game.host === game.localPlayer )
-			game.isHost = true;
-
-	}
-
 	releaseColor( player.color );
 
 	updateDisplay();
 
 } );
 
-// Received by the host upon someone connecting
-network.addEventListener( "state", ( { arena, players: inputPlayers } ) => {
+// Received by the a random player upon someone connecting
+network.addEventListener( "state", ( { time, arena, players: inputPlayers } ) => {
 
 	inputPlayers.forEach( ( { color, id, ...playerData } ) => {
 
@@ -89,9 +66,10 @@ network.addEventListener( "state", ( { arena, players: inputPlayers } ) => {
 	} );
 	game.players.sort( ( a, b ) => a.id - b.id );
 
-	if ( ! game.host ) game.host = game.players.find( p => p.id === inputPlayers[ 0 ].id );
-
 	game.setArena( arena );
+	game.receivedState = true;
+	game.lastRoundEnd = time / 1000;
+	game.random = new Random( time );
 
 	updateDisplay();
 

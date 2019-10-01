@@ -2,6 +2,7 @@
 import network from "./network.js";
 
 import Game from "./Game.js";
+import Random from "./lib/alea.js";
 import "./players/playerLogic.js";
 import "./sprites/spriteLogic.js";
 import "./players/camera.js";
@@ -15,29 +16,18 @@ arena.y = 0;
 // We receive this upon connecting; the only state we get is the number of connections
 network.addEventListener( "init", ( { connections } ) => {
 
-	game.isHost = connections === 1;
+	if ( connections === 1 ) {
 
-} );
+		game.random = new Random( Date.now() );
+		game.receivedState = true;
 
-// Received upon the host starting the round
-network.addEventListener( "start", ( { seed, time } ) => {
-
-	game.start( { seed, time } );
+	}
 
 } );
 
 network.addEventListener( "update", e => {
 
 	game.update( e );
-
-} );
-
-window.addEventListener( "keydown", e => {
-
-	if ( ! game.isHost || game.round ) return;
-
-	if ( e.key === "ArrowDown" )
-		network.send( { type: "start", seed: Math.random() } );
 
 } );
 
