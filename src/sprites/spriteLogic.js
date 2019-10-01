@@ -123,21 +123,27 @@ const leftClick = e => {
 
 	hideObstructionPlacement();
 
-	network.send( { type: "build", x, y, obstruction: obstruction.name } );
+	const builder = dragSelect.getSelection()
+		.find( s => s.owner === game.localPlayer && s instanceof Crosser );
+
+	if ( ! builder ) return;
+
+	network.send( { type: "build", builder: builder.id, x, y, obstruction: obstruction.name } );
 
 };
 
 network.addEventListener( "build", e => {
 
-	const { x, y, time, connection, obstruction } = e;
+	const { x, y, time, connection, obstruction, builder } = e;
+
+	game.update( { time } );
 
 	if ( ! game.round ) return;
-	game.update( { time } );
 
 	const player = game.round.players.find( p => p.id === connection );
 	if ( ! player ) return;
 
-	const unit = player.unit;
+	const unit = player.sprites.find( s => s.id === builder && s instanceof Crosser );
 	if ( ! unit ) return;
 
 	unit.buildAt( game.round.pathingMap, { x, y }, obstructions[ obstruction ] );
@@ -200,8 +206,9 @@ window.addEventListener( "keydown", e => {
 
 network.addEventListener( "move", ( { time, connection, x, y } ) => {
 
-	if ( ! game.round ) return;
 	game.update( { time } );
+
+	if ( ! game.round ) return;
 
 	const player = game.round.players.find( p => p.id === connection );
 	if ( ! player ) return;
@@ -215,8 +222,9 @@ network.addEventListener( "move", ( { time, connection, x, y } ) => {
 
 network.addEventListener( "attack", ( { time, connection, attacker: attackerId, target: targetId } ) => {
 
-	if ( ! game.round ) return;
 	game.update( { time } );
+
+	if ( ! game.round ) return;
 
 	const player = game.round.players.find( p => p.id === connection );
 	if ( ! player ) return;
@@ -233,8 +241,9 @@ network.addEventListener( "attack", ( { time, connection, attacker: attackerId, 
 
 network.addEventListener( "kill", ( { time, sprite, connection } ) => {
 
-	if ( ! game.round ) return;
 	game.update( { time } );
+
+	if ( ! game.round ) return;
 
 	const player = game.round.players.find( p => p.id === connection );
 	if ( ! player ) return;
@@ -248,8 +257,9 @@ network.addEventListener( "kill", ( { time, sprite, connection } ) => {
 
 network.addEventListener( "holdPosition", ( { time, connection, sprites } ) => {
 
-	if ( ! game.round ) return;
 	game.update( { time } );
+
+	if ( ! game.round ) return;
 
 	const player = game.round.players.find( p => p.id === connection );
 	if ( ! player ) return;

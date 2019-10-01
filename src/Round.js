@@ -22,9 +22,13 @@ export default class Round {
 	sprites = [];
 	scores = 0;
 	spriteId = 0;
+	// Replace with a heap
+	intervals = [];
+	timeouts = [];
 
 	constructor( { time, settings, players } ) {
 
+		if ( ! game.round ) game.round = this;
 		emitter( this );
 		this.lastUpdate = time;
 		this.lastRender = Date.now() / 1000;
@@ -37,13 +41,8 @@ export default class Round {
 		} );
 
 		this.pickTeams();
-
-		setTimeout( () => {
-
-			this.spawnUnits();
-			this.startRendering();
-
-		} );
+		this.spawnUnits();
+		this.startRendering();
 
 	}
 
@@ -145,8 +144,9 @@ export default class Round {
 			game.newPlayers = false;
 			game.receivedState = false;
 
-			const randomPlayerIndex = Math.floor( game.random() * this.players.length );
-			const randomPlayer = this.players[ randomPlayerIndex ];
+			const pool = this.players.filter( p => p.isHere );
+			const randomPlayerIndex = Math.floor( game.random() * pool.length );
+			const randomPlayer = pool[ randomPlayerIndex ];
 			if ( randomPlayer === game.localPlayer )
 				network.send( {
 					type: "state",
@@ -161,19 +161,19 @@ export default class Round {
 		} else
 			game.lastRoundEnd = game.lastUpdate;
 
-		setTimeout( () => {
+		this.setTimeout( () => {
 
 			[ ...this.sprites ].forEach( sprite => sprite.kill() );
 			cancelAnimationFrame( this.requestedAnimationFrame );
 
-		}, 1000 );
+			this.setTimeout( () => {
 
-		setTimeout( () => {
+				this.removeEventListeners();
+				game.round = undefined;
 
-			this.removeEventListeners();
-			game.round = undefined;
+			}, 0.25 );
 
-		} );
+		}, 1 );
 
 	}
 
@@ -238,11 +238,80 @@ export default class Round {
 					this.scores ++;
 					sprite.owner.sprite = undefined;
 
-					setTimeout( () => this.onCrosserRemoval(), 1000 );
+					this.setTimeout( () => this.onCrosserRemoval(), 1 );
 
 				}
 
 		} );
+
+		this.intervals.sort( ( a, b ) => a.next - b.next );
+		const intervals = [ ...this.intervals ];
+		let intervalIndex = 0;
+		while ( intervals[ intervalIndex ] && intervals[ intervalIndex ].next < time ) {
+
+			const interval = intervals[ intervalIndex ];
+			interval.next = intervalIndex.oncePerUpdate ? time + interval.interval : interval.next + interval.interval;
+			interval.fn();
+			if ( interval.oncePerUpdate || interval.next > time ) intervalIndex ++;
+
+		}
+
+		this.timeouts.sort( ( a, b ) => a.next - b.next );
+		const timeouts = [ ...this.timeouts ];
+		let timeoutIndex = 0;
+		while ( timeouts[ timeoutIndex ] && timeouts[ timeoutIndex ].next < time ) {
+
+			const timeout = timeouts[ timeoutIndex ];
+			timeout.fn();
+			timeoutIndex ++;
+			const index = this.timeouts.indexOf( timeout );
+			if ( index >= 0 ) this.timeouts.splice( index, 1 );
+
+		}
+
+	}
+
+	setInterval( fn, interval = 0.05, oncePerUpdate = true ) {
+
+		const id = this.intervals.id || 0;
+
+		this.intervals.push( {
+			fn,
+			next: this.lastUpdate + interval,
+			interval,
+			oncePerUpdate,
+			id,
+		} );
+
+		this.intervals.id = id + 1;
+
+		return id;
+
+	}
+
+	clearInterval( id ) {
+
+		const index = this.intervals.findIndex( i => i.id === id );
+		if ( index >= 0 ) this.intervals.splice( index, 1 );
+
+	}
+
+	setTimeout( fn, timeout = 0.05 ) {
+
+		const id = this.timeouts.id || 0;
+
+		this.timeouts.push( { fn, next: this.lastUpdate + timeout, id } );
+
+		this.timeouts.id = id + 1;
+
+		return id;
+
+	}
+
+	clearTimeout( id ) {
+
+		const index = this.timeouts.findIndex( i => i.id === id );
+		if ( index >= 0 ) this.timeouts.splice( index, 1 );
 
 	}
 

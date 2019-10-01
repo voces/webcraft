@@ -74,7 +74,7 @@ body {
     100% { transform: scale(0); }
 }
 .death {
-    animation: death 125ms;
+    animation: death 125ms forwards;
 }
 
 @keyframes ascend {
@@ -84,7 +84,7 @@ body {
     100% { transform: scale(10); opacity: 0; }
 }
 .ascend {
-    animation: ascend 1s;
+    animation: ascend 1s forwards;
 }
 
 @keyframes attack {

@@ -170,6 +170,7 @@ export default class Tilemap {
 
 	}
 
+	// Make this more efficient by storing known tiles
 	withoutEntity( entity, fn ) {
 
 		const removed = this.entities.has( entity );

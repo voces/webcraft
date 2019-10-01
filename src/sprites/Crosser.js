@@ -7,7 +7,7 @@ import game from "../index.js";
 import { stop as stopPlacement, active as activePlacement } from "./obstructionPlacement.js";
 import Blueprint from "./obstructions/Blueprint.js";
 
-const BUILD_DISTANCE = 1.5;
+const BUILD_DISTANCE = 1.75;
 
 export default class Crosser extends Unit {
 
@@ -135,9 +135,12 @@ export default class Crosser extends Unit {
 			if ( index >= 0 ) game.round.sprites.splice( index, 1 );
 
 		}
+		// Cancel any active placements
+		if ( activePlacement() ) stopPlacement();
 
 		this.elem.classList.add( "ascend" );
-		setTimeout( () => this.remove(), 1000 );
+
+		game.round.setTimeout( () => this.remove(), 1 );
 
 	}
 

@@ -11,7 +11,7 @@ export default class Unit extends Sprite {
 		damage: 1,
 		cooldown: 1.5,
 		last: 0,
-		range: 0.25,
+		range: 0.125,
 	}
 
 	constructor( props ) {

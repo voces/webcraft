@@ -89,12 +89,11 @@ export default class Game {
 		if ( this.round )
 			return this.round.update( time );
 
-		if ( this.receivedState && ( ! this.lastRoundEnd || time > this.lastRoundEnd + 2 ) ) {
-
-			console.log( "starting", e.time, this.lastRoundEnd );
+		if (
+			this.players.length && this.receivedState &&
+			( ! this.lastRoundEnd || time > this.lastRoundEnd + 2 )
+		)
 			this.start( { time } );
-
-		}
 
 	}
 

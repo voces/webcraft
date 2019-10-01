@@ -5,6 +5,7 @@ export default class Player {
 		standard: 1000,
 	};
 	sprites = [];
+	isHere = true;
 
 	constructor( data ) {
 

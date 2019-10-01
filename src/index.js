@@ -19,7 +19,7 @@ network.addEventListener( "init", ( { connections } ) => {
 	if ( connections === 1 ) {
 
 		game.random = new Random( Date.now() );
-		game.receivedState = true;
+		game.receivedState = "init";
 
 	}
 

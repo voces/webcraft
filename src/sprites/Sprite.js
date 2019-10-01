@@ -154,7 +154,7 @@ export default emitter( class Sprite {
 		else {
 
 			this.elem.classList.add( "death" );
-			setTimeout( () => this.remove(), 125 );
+			game.round.setTimeout( () => this.remove(), 0.125 );
 
 		}
 
