@@ -3,13 +3,20 @@ import game from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import tweenPoints from "../util/tweenPoints.js";
 
-const CAMERA_SPEED = 300;
+const CAMERA_SPEED = 600;
 
 const arena = document.getElementById( "arena" );
 let keyboard;
 let knownRound;
 let requestedAnimationFrame;
 let pan;
+
+const wasdMap = {
+	w: "ArrowUp",
+	a: "ArrowLeft",
+	s: "ArrowDown",
+	d: "ArrowRight",
+};
 
 window.addEventListener( "keydown", e => {
 
@@ -23,10 +30,11 @@ window.addEventListener( "keydown", e => {
 	}
 	knownRound = game.round;
 
-	if ( e.key.startsWith( "Arrow" ) && ! keyboard[ e.key ] ) {
+	const key = wasdMap[ e.key ] || e.key;
+	if ( key.startsWith( "Arrow" ) && ! keyboard[ e.key ] ) {
 
 		if ( pan ) pan = undefined;
-		keyboard[ e.key ] = true;
+		keyboard[ key ] = true;
 		if ( ! requestedAnimationFrame ) renderCamera();
 
 	}
@@ -37,8 +45,9 @@ window.addEventListener( "keyup", e => {
 
 	if ( ! game.round || ! keyboard ) return;
 
-	if ( e.key.startsWith( "Arrow" ) )
-		keyboard[ e.key ] = false;
+	const key = wasdMap[ e.key ] || e.key;
+	if ( key.startsWith( "Arrow" ) )
+		keyboard[ key ] = false;
 
 } );
 

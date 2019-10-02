@@ -4,7 +4,9 @@ body {
 	background-color: #333;
 	max-width: 100vw;
 	max-height: 100vh;
-	overflow: hidden;
+    overflow: hidden;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-shadow: black 1px 1px 0.125em;
 }
 
 #arena {
@@ -109,9 +111,46 @@ body {
     border-radius: 0.25em;
     box-shadow: 0 0 1em 0.125em rgba(70, 145, 246, 0.9);
     padding: 0.25em 0.5em;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-    text-shadow: black 1px 1px 0.125em;
 }
 
 #scores span { padding: 0.25em; }
 #scores .score { text-align: right; }
+
+#chat-log {
+    position: absolute;
+    bottom: 8em;
+    left: 1em;
+    color: white;
+    font-weight: bold;
+    max-width: 20em;
+    word-break: break-word;
+    text-indent: -1em;
+    margin-left: 1em;
+    font-size: 90%;
+}
+
+#chat-log div {
+    opacity: 1;
+    transition: 1s;
+}
+
+#chat-input {
+    visibility: hidden;
+    position: absolute;
+    bottom: 4em;
+    width: 90%;
+    max-width: 30em;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5em;
+    background: rgba(70, 145, 246, 0.5);
+    color: white;
+    font-size: 100%;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 0 0.125em 0.125em rgba(70, 145, 246, 0.9);
+    outline: none;
+    font-family: inherit;
+    text-shadow: inherit;
+}
+

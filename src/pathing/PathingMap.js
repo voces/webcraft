@@ -971,7 +971,7 @@ export default class Tilemap {
 		const host = this.elem || ( this.elem = ( () => {
 
 			const elem = document.createElement( "div" );
-			document.body.appendChild( elem );
+			document.getElementById( "arena" ).appendChild( elem );
 
 			return elem;
 

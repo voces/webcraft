@@ -7,7 +7,7 @@ import game from "../index.js";
 import { stop as stopPlacement, active as activePlacement } from "./obstructionPlacement.js";
 import Blueprint from "./obstructions/Blueprint.js";
 
-const BUILD_DISTANCE = 1.75;
+const BUILD_DISTANCE = 2;
 
 export default class Crosser extends Unit {
 
@@ -61,23 +61,29 @@ export default class Crosser extends Unit {
 							owner: this.owner,
 						} );
 
-						pathingMap.removeEntity( this );
+						pathingMap.withoutEntity( this, () => {
 
-						if ( pathingMap.pathable( obstruction, target.x, target.y ) ) {
+							if ( pathingMap.pathable( obstruction, target.x, target.y ) ) {
 
-							pathingMap.addEntity( obstruction );
-							this.obstructions.push( obstruction );
+								pathingMap.addEntity( obstruction );
+								this.obstructions.push( obstruction );
 
-						} else
-							obstruction.kill( { removeImmediately: true } );
+							} else
+								obstruction.kill( { removeImmediately: true } );
 
-						const position = pathingMap.nearestSpiralPathing( x, y, this );
-						Object.assign( this, position );
-						pathingMap.addEntity( this );
+							const position = pathingMap.nearestSpiralPathing( x, y, this );
+							Object.assign( this, position );
+
+						} );
 
 						// Otherwise assign final coordinates
 
-					} else Object.assign( this, { x, y } );
+					} else {
+
+						Object.assign( this, { x, y } );
+						pathingMap.updateEntity( this );
+
+					}
 
 				} else {
 

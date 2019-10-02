@@ -9,6 +9,7 @@ import {
 } from "./colors.js";
 import { updateDisplay } from "./elo.js";
 import Random from "../lib/alea.js";
+import "./chat.js";
 
 const newPlayer = data => {
 

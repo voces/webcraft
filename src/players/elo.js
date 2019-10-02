@@ -46,7 +46,7 @@ export const updateDisplay = () => {
 	game.players.forEach( player => {
 
 		const playerName = document.createElement( "span" );
-		playerName.textContent = player.id;
+		playerName.textContent = player.color.name;
 		playerName.style.color = player.color.hex;
 		playerName.classList.add( "player" );
 		container.appendChild( playerName );

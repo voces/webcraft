@@ -33,7 +33,7 @@ const hotkeys = {
 		type: "build",
 		obstruction: Tiny,
 	},
-	w: {
+	e: {
 		type: "build",
 		obstruction: Large,
 	},
