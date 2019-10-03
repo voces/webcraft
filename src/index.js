@@ -6,6 +6,7 @@ import Random from "./lib/alea.js";
 import "./players/playerLogic.js";
 import "./sprites/spriteLogic.js";
 import "./players/camera.js";
+import "./ui/clock.js";
 
 const game = window.game = new Game();
 

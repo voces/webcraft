@@ -10,9 +10,7 @@ import elo from "./players/elo.js";
 import emitter from "./emitter.js";
 import { panTo } from "./players/camera.js";
 import network from "./network.js";
-import {
-	colors,
-} from "./players/colors.js";
+import { colors } from "./players/colors.js";
 
 // A round starts upon construction
 export default class Round {
@@ -39,6 +37,7 @@ export default class Round {
 			pathing: this.arena.pathing,
 			resolution: 2,
 		} );
+		this.expireAt = time + settings.duration;
 
 		this.pickTeams();
 		this.spawnUnits();
@@ -201,6 +200,9 @@ export default class Round {
 		const delta = time - this.lastUpdate;
 		if ( isNaN( delta ) ) throw new Error( `delta=${delta}` );
 		this.lastUpdate = time;
+
+		if ( time > this.expireAt )
+			this.crossers.forEach( c => c.unit && c.unit.kill() );
 
 		this.sprites.forEach( sprite => {
 

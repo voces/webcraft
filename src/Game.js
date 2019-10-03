@@ -4,6 +4,7 @@ import seal from "./util/seal.js";
 import Round from "./Round.js";
 import { TILE_NAMES } from "./constants.js";
 import { panTo } from "./players/camera.js";
+import emitter from "./emitter.js";
 
 const tilesElemnt = document.getElementById( "tiles" );
 
@@ -19,10 +20,12 @@ export default class Game {
 	settings = seal( {
 		arenaIndex: 0,
 		crossers: 1,
+		duration: 120,
 	} );
 
 	constructor() {
 
+		emitter( this );
 		this.setArena( 0 );
 
 	}
@@ -94,8 +97,13 @@ export default class Game {
 		this.lastUpdate = time;
 
 		// Update is called for people who have recently joined
-		if ( this.round )
-			return this.round.update( time );
+		if ( this.round ) {
+
+			this.round.update( time );
+			this.dispatchEvent( "update", time );
+			return;
+
+		}
 
 		if (
 			this.players.length && this.receivedState &&
