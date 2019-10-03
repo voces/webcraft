@@ -29,8 +29,8 @@ export default ( { mode, crossers: winners, defenders: losers, scores } ) => {
 			const winnerExpected = winnerTransformed / ( winnerTransformed + loserTransformed );
 			const loserExpected = loserTransformed / ( winnerTransformed + loserTransformed );
 
-			winner.score[ mode ] += Math.round( K * ( 1 - winnerExpected ) );
-			loser.score[ mode ] += Math.round( K * ( 0 - loserExpected ) );
+			winner.score[ mode ] += K * ( 1 - winnerExpected );
+			loser.score[ mode ] += K * ( 0 - loserExpected );
 
 		} ) );
 
@@ -46,13 +46,13 @@ export const updateDisplay = () => {
 	game.players.forEach( player => {
 
 		const playerName = document.createElement( "span" );
-		playerName.textContent = player.color.name;
+		playerName.textContent = player.username;
 		playerName.style.color = player.color.hex;
 		playerName.classList.add( "player" );
 		container.appendChild( playerName );
 
 		const score = document.createElement( "span" );
-		score.textContent = player.score.standard;
+		score.textContent = player.score.standard.toFixed( 0 );
 		score.classList.add( "score" );
 		container.appendChild( score );
 

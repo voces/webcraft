@@ -94,7 +94,7 @@ export const panTo = ( { x, y, duration = 0.125 } ) => {
 
 	pan = Object.assign(
 		tweenPoints( [
-			{ x: arena.x, y: arena.y },
+			{ x: arena.x || 0, y: arena.y || 0 },
 			{ x: xCenter - x, y: yCenter - y },
 		] ),
 		{ duration }

@@ -3,6 +3,7 @@ import arenas from "./arenas/index.js";
 import seal from "./util/seal.js";
 import Round from "./Round.js";
 import { TILE_NAMES } from "./constants.js";
+import { panTo } from "./players/camera.js";
 
 const tilesElemnt = document.getElementById( "tiles" );
 
@@ -50,6 +51,13 @@ export default class Game {
 			tilesElemnt.appendChild( row );
 
 		}
+
+		// No need to divide by 2 since we tiles have a resolution of 0.5
+		panTo( {
+			x: this.arena.tiles[ 0 ].length,
+			y: this.arena.tiles.length,
+			duration: 0,
+		} );
 
 	}
 

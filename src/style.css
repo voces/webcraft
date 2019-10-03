@@ -1,4 +1,11 @@
 
+:root {
+    --blue: 70, 145, 246;
+    --bluecolor: rgb(var(--blue));
+    --bluebg: rgba(var(--blue), 0.5);
+    --blueshadow: rgba(var(--blue), 0.9);
+  }
+
 body {
     margin: 0;
 	background-color: #333;
@@ -7,6 +14,8 @@ body {
     overflow: hidden;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     text-shadow: black 1px 1px 0.125em;
+    font-weight: bold;
+    color: white;
 }
 
 #arena {
@@ -56,17 +65,17 @@ body {
     cursor: pointer;
 }
 .sprite.selected {
-    filter: drop-shadow(0.125em 0.1875em 0.375em rgb(70,145,246))
-        drop-shadow(0.125em 0.1875em 0.375em rgb(70,145,246));
+    filter: drop-shadow(0.125em 0.1875em 0.375em var(--bluecolor))
+        drop-shadow(0.125em 0.1875em 0.375em var(--bluecolor));
 }
 .sprite.selected:hover {
-    filter: drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246))
-        drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246))
-        drop-shadow(0.125em 0.1875em 0.5em rgb(70,145,246));
+    filter: drop-shadow(0.125em 0.1875em 0.5em var(--bluecolor))
+        drop-shadow(0.125em 0.1875em 0.5em var(--bluecolor))
+        drop-shadow(0.125em 0.1875em 0.5em var(--bluecolor));
 }
 
 .blueprint {
-	background-color: rgba(70,145,246,0.5);
+	background-color: var(--bluebg);
 }
 
 @keyframes death {
@@ -103,15 +112,16 @@ body {
     position: absolute;
     top: 1em;
     right: 1em;
-    background: rgba(70, 145, 246, 0.5);
+    background: var(--bluebg);
     display: grid;
-    grid-template-columns: 4em 4em;
+    grid-template-columns: fit-content(4em) fit-content(4em);
     color: white;
     font-weight: bold;
     border-radius: 0.25em;
-    box-shadow: 0 0 1em 0.125em rgba(70, 145, 246, 0.9);
+    box-shadow: 0 0 1em 0.125em var(--blueshadow);
     padding: 0.25em 0.5em;
 }
+#scores:empty { visibility: hidden; }
 
 #scores span { padding: 0.25em; }
 #scores .score { text-align: right; }
@@ -134,6 +144,26 @@ body {
     transition: 1s;
 }
 
+input {
+    padding: 0.5em;
+    font-family: inherit;
+    text-shadow: inherit;
+    border: none;
+    font-weight: bold;
+    box-shadow: 0 0 0.125em 0.125em var(--blueshadow);
+    color: white;
+    font-size: 100%;
+    outline: none;
+    background-color: var(--bluebg);
+}
+
+input::placeholder {
+    color: white;
+    /* font-weight: 600; */
+    font-style: italic;
+    opacity: 0.7;
+}
+
 #chat-input {
     visibility: hidden;
     position: absolute;
@@ -142,15 +172,30 @@ body {
     max-width: 30em;
     left: 50%;
     transform: translateX(-50%);
-    padding: 0.5em;
-    background: rgba(70, 145, 246, 0.5);
-    color: white;
-    font-size: 100%;
-    font-weight: bold;
-    border: none;
-    box-shadow: 0 0 0.125em 0.125em rgba(70, 145, 246, 0.9);
-    outline: none;
-    font-family: inherit;
-    text-shadow: inherit;
 }
 
+#login {
+    background-color: var(--bluebg);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    /* display: grid; */
+    text-align: center;
+}
+
+#login-name {
+    background: none;
+    box-shadow: none;
+    text-align: center;
+}
+
+.margin8 { margin: 8px; }
+.padding8 { padding: 8px; }
+.padding16 { padding: 16px; }
+.spacing4 > * { margin: 4px; }
+.spacing4 > :first-child { margin-top: 0; }
+.spacing4 > :last-child { margin-bottom: 0; }
+.spacing8 > * { margin: 8px; }
+.spacing8 > :first-child { margin-top: 0; }
+.spacing8 > :last-child { margin-bottom: 0; }

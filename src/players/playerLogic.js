@@ -10,6 +10,7 @@ import {
 import { updateDisplay } from "./elo.js";
 import Random from "../lib/alea.js";
 import "./chat.js";
+import "./login.js";
 
 const newPlayer = data => {
 
@@ -24,7 +25,11 @@ network.addEventListener( "connection", data => {
 
 	game.update( data );
 
-	const player = new Player( { id: data.connection, color: nextColor() } );
+	const player = new Player( {
+		color: nextColor(),
+		id: data.connection,
+		username: data.username,
+	} );
 
 	if ( game.localPlayer === undefined ) game.localPlayer = player;
 	else game.newPlayers = true;

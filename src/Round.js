@@ -152,8 +152,9 @@ export default class Round {
 					type: "state",
 					arena: game.settings.arenaIndex,
 					players: game.players.map( p => ( {
-						id: p.id, color:
-						colors.indexOf( p.color ),
+						color: colors.indexOf( p.color ),
+						id: p.id,
+						username: p.username,
 						score: p.score,
 					} ) ),
 				} );

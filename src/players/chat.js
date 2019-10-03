@@ -39,7 +39,7 @@ chatInput.addEventListener( "keydown", e => {
 
 } );
 
-const maxLength = 250;
+const maxLength = 256;
 network.addEventListener( "chat", ( { connection, message } ) => {
 
 	message = message.slice( 0, maxLength );
@@ -50,7 +50,7 @@ network.addEventListener( "chat", ( { connection, message } ) => {
 	const entry = document.createElement( "div" );
 
 	const playerName = document.createElement( "span" );
-	playerName.textContent = player.color.name;
+	playerName.textContent = player.username;
 	playerName.style.color = player.color.hex;
 	entry.appendChild( playerName );
 

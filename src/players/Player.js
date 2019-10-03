@@ -11,6 +11,11 @@ export default class Player {
 
 		Object.assign( this, data );
 
+		if ( ! data.username || parseInt( data.username ) === data.id )
+			Object.defineProperty( this, "username", {
+				get: () => this.color ? this.color.name : this.id,
+			} );
+
 	}
 
 }
