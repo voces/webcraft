@@ -110,18 +110,14 @@ export default class Crosser extends Unit {
 				this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
 
 			},
-			cleanup: () => {
-
-				if ( blueprint ) blueprint.kill();
-
-			},
+			cleanup: () => blueprint && blueprint.kill( { removeImmediately: true } ),
 		};
 
 	}
 
 	ascend() {
 
-		this.health = 0;
+		this._health = 0;
 		this.action = undefined;
 		dragSelect.removeSelectables( [ this.elem ] );
 		if ( this._selected )

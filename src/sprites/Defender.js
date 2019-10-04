@@ -10,6 +10,10 @@ export default class Defender extends Unit {
 
 	// 420 in WC3 on fast
 	speed = 6.5625;
+	weapon = {
+		...this.weapon,
+		damage: 40,
+	}
 
 	attack( target ) {
 

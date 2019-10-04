@@ -536,14 +536,16 @@ export default class Tilemap {
 		const realStart = { x: entity.x * this.resolution, y: entity.x * this.resolution };
 		const start = this.grid[ Math.round( entity.y * this.resolution - nudge ) ][ Math.round( entity.x * this.resolution - nudge ) ];
 		const targetTile = this.grid[ Math.round( target.y * this.resolution - nudge ) ][ Math.round( target.x * this.resolution - nudge ) ];
-		const end = targetTile && targetTile.pathable( pathing ) && cache._pathable( minimalTilemap, target.x, target.y ) ?
+		const end = targetTile && targetTile.pathable( pathing ) && cache._pathable( minimalTilemap, targetTile.x, targetTile.y ) ?
 			targetTile : ( () => {
 
 				const { x, y } = this.nearestPathing( target.x, target.y, entity );
 				return this.grid[ Math.floor( ( y - offset ) * this.resolution ) ][ Math.floor( ( x - offset ) * this.resolution ) ];
 
 			} )();
-		const realEnd = targetTile === end ? { x: target.x * this.resolution, y: target.y * this.resolution } : end;
+		const realEnd = targetTile === end ?
+			{ x: target.x * this.resolution, y: target.y * this.resolution } :
+			end;
 
 		const tag = Math.random();
 
@@ -747,7 +749,7 @@ export default class Tilemap {
 				[ { x: entity.x, y: entity.y } ] :
 				[ pathWorld[ 0 ] ],
 			...pathWorld.slice( 1 ),
-			...pathWorld[ pathWorld.length - 1 ].x !== realEnd.x || pathWorld[ pathWorld.length - 1 ].y !== realEnd.y ?
+			...pathWorld[ pathWorld.length - 1 ].x !== realEnd.x / this.resolution || pathWorld[ pathWorld.length - 1 ].y !== realEnd.y / this.resolution ?
 				[ { x: realEnd.x / this.resolution, y: realEnd.y / this.resolution } ] :
 				[],
 		];

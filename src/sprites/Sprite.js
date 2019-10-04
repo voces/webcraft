@@ -12,21 +12,25 @@ export default emitter( class Sprite {
 	static radius = 1;
 	static maxHealth = 1;
 
-	maxHealth = this.constructor.maxHealth;
-	health = this.maxHealth;
+	// maxHealth = this.constructor.maxHealth;
+	// health = this.maxHealth;
 	radius = this.radius || this.constructor.radius;
 	requiresPathing = PATHING_TYPES.WALKABLE;
 	blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
 	action;
 
-	constructor( { owner, x, y, selectable = true, id, ...rest } ) {
+	constructor( { x, y, selectable = true, id, ...rest } ) {
 
 		emitter( this );
 		Object.assign( this, rest );
+
 		this.id = id === undefined ? game.round.spriteId ++ : id;
-		this.owner = owner;
 		this.x = x;
 		this.y = y;
+		this.maxHealth = this.maxHealth || this.constructor.maxHealth;
+		this.health = this.health || this.maxHealth;
+
+		// Display
 		this.elem = document.createElement( "div" );
 		this.elem.classList.add( this.constructor.name.toLowerCase(), "sprite" );
 		this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
@@ -45,9 +49,11 @@ export default emitter( class Sprite {
 
 		}
 
+		// Lists
 		if ( this.owner ) this.owner.sprites.push( this );
 		if ( game.round ) game.round.sprites.push( this );
 
+		// TODO: move this into getters and setters
 		let action;
 		Object.defineProperty( this, "action", {
 			set: value => {
@@ -120,14 +126,40 @@ export default emitter( class Sprite {
 
 	kill( { removeImmediately = false } = {} ) {
 
-		if ( this.health <= 0 ) return;
-		this._death( { removeImmediately } );
+		if ( removeImmediately )
+			this._death( { removeImmediately: true } );
+		else
+			this.health = 0;
+
+	}
+
+	set health( value ) {
+
+		this._health = Math.min( Math.max( value, 0 ), this.maxHealth );
+
+		if ( this.elem && this._health )
+			this.elem.style.opacity = Math.max( this._health / this.maxHealth, 0.1 );
+
+		if ( value <= 0 && this.isAlive ) {
+
+			this.isAlive = false;
+			this._death();
+
+		} else
+			this.isAlive = true;
+
+	}
+
+	get health() {
+
+		return this._health;
 
 	}
 
 	_death( { removeImmediately = false } = {} ) {
 
-		this.health = 0;
+		if ( removeImmediately ) this._health = 0;
+
 		this.action = undefined;
 		dragSelect.removeSelectables( [ this.elem ] );
 		if ( this._selected )
