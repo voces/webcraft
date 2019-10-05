@@ -22,7 +22,7 @@ export default class Defender extends Unit {
 			pathingMap.path( this, target ) ) );
 		let renderProgress = 0;
 
-		const recalcPath = ( { x, y } ) => pathingMap.withoutEntity( target, () => {
+		const recalcPath = ( { x, y } ) => {
 
 			// Update self
 			if ( pathingMap.pathable( this, x, y ) ) {
@@ -44,10 +44,10 @@ export default class Defender extends Unit {
 			}
 
 			// Start new attack path
-			path = tweenPoints( pathingMap.path( this, target ) );
+			path = tweenPoints( pathingMap.withoutEntity( target, () => pathingMap.path( this, target ) ) );
 			renderProgress = 0;
 
-		} );
+		};
 
 		this.action = {
 			render: delta => {

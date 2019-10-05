@@ -6,7 +6,7 @@ import newPingMessage from "./ui/ping.js";
 let connection;
 
 const network = emitter( {
-	send: data => connection.send( JSON.stringify( Object.assign( data, { sent: Date.now() } ) ) ),
+	send: data => connection.send( JSON.stringify( Object.assign( data, { sent: performance.now() } ) ) ),
 	connect: ( username = "" ) => {
 
 		const host = location.port ? `${location.hostname}:${8080}` : `ws.${location.hostname}`;
@@ -17,7 +17,7 @@ const network = emitter( {
 			const json = JSON.parse( message.data );
 
 			if ( game.localPlayer && game.localPlayer.id === json.connection )
-				newPingMessage( { type: json.type, ping: Date.now() - json.sent } );
+				newPingMessage( { type: json.type, ping: performance.now() - json.sent } );
 
 			if ( typeof json.type === "string" && json.type.length )
 				network.dispatchEvent( json.type, json );

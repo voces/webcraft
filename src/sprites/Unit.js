@@ -11,7 +11,7 @@ export default class Unit extends Sprite {
 		damage: 1,
 		cooldown: 1.5,
 		last: 0,
-		range: 0.125,
+		range: 0.25,
 	}
 
 	constructor( props ) {
@@ -44,7 +44,6 @@ export default class Unit extends Sprite {
 					// Update self
 					this._x = x;
 					this._y = y;
-					pathingMap.updateEntity( this );
 
 					// Start new walk path
 					path = tweenPoints( pathingMap.path( this, target ) );

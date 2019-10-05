@@ -33,7 +33,7 @@ const hotkeys = {
 		type: "build",
 		obstruction: Tiny,
 	},
-	e: {
+	w: {
 		type: "build",
 		obstruction: Large,
 	},
@@ -144,7 +144,7 @@ network.addEventListener( "build", e => {
 	if ( ! player ) return;
 
 	const unit = player.sprites.find( s => s.id === builder && s instanceof Crosser );
-	if ( ! unit ) return;
+	if ( ! unit || typeof unit.buildAt !== "function" ) return;
 
 	unit.buildAt( game.round.pathingMap, { x, y }, obstructions[ obstruction ] );
 
@@ -230,7 +230,7 @@ network.addEventListener( "attack", ( { time, connection, attacker: attackerId, 
 	if ( ! player ) return;
 
 	const attacker = player.sprites.find( s => s.id === attackerId );
-	if ( ! attacker ) return;
+	if ( ! attacker || typeof attacker.attack !== "function" ) return;
 
 	const target = game.round.sprites.find( s => s.id === targetId );
 	if ( ! target ) return;

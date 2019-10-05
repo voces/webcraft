@@ -504,6 +504,18 @@ export default class Tilemap {
 
 	}
 
+	yBoundTile( yIndex ) {
+
+		return Math.max( Math.min( yIndex, this.heightMap - 1 ), 0 );
+
+	}
+
+	xBoundTile( xIndex ) {
+
+		return Math.max( Math.min( xIndex, this.widthMap - 1 ), 0 );
+
+	}
+
 	// Adapted from https://github.com/bgrins/javascript-astar/blob/master/astar.js
 	// towards Theta*
 	// This gets really sad when a path is not possible
@@ -533,19 +545,25 @@ export default class Tilemap {
 
 		const nudge = Number.EPSILON * entity.radius * this.widthWorld;
 		const offset = entity.radius % ( 1 / this.resolution );
+		// We can assume start is pathable
 		const realStart = { x: entity.x * this.resolution, y: entity.x * this.resolution };
-		const start = this.grid[ Math.round( entity.y * this.resolution - nudge ) ][ Math.round( entity.x * this.resolution - nudge ) ];
-		const targetTile = this.grid[ Math.round( target.y * this.resolution - nudge ) ][ Math.round( target.x * this.resolution - nudge ) ];
-		const end = targetTile && targetTile.pathable( pathing ) && cache._pathable( minimalTilemap, targetTile.x, targetTile.y ) ?
-			targetTile : ( () => {
+		const start = this.grid[ this.yBoundTile( Math.round( entity.y * this.resolution - nudge ) ) ][ this.xBoundTile( Math.round( entity.x * this.resolution - nudge ) ) ];
+		// For target, if the exact spot is pathable, we aim towards that; otherwise the nearest spot
+		const targetTile = this.grid[ this.yBoundTile( Math.round( target.y * this.resolution - nudge ) ) ][ this.xBoundTile( Math.round( target.x * this.resolution - nudge ) ) ];
+		const targetPathable = targetTile &&
+			targetTile.pathable( pathing ) &&
+			cache._pathable( cache.pointToTilemap( target.x, target.y, entity.radius, { type: pathing, includeOutOfBounds: true } ), targetTile.x, targetTile.y );
+		const endTile = targetPathable ?
+			targetTile :
+			( () => {
 
 				const { x, y } = this.nearestPathing( target.x, target.y, entity );
-				return this.grid[ Math.floor( ( y - offset ) * this.resolution ) ][ Math.floor( ( x - offset ) * this.resolution ) ];
+				return this.grid[ Math.round( ( y - offset ) * this.resolution ) ][ Math.round( ( x - offset ) * this.resolution ) ];
 
 			} )();
-		const realEnd = targetTile === end ?
+		const realEnd = targetPathable ?
 			{ x: target.x * this.resolution, y: target.y * this.resolution } :
-			end;
+			endTile;
 
 		const tag = Math.random();
 
@@ -572,9 +590,9 @@ export default class Tilemap {
 
 			const current = openHeap.pop();
 
-			if ( current === end ) {
+			if ( current === endTile ) {
 
-				best = end;
+				best = endTile;
 				break;
 
 			}
@@ -726,6 +744,8 @@ export default class Tilemap {
 		// 	fn, misses, hits,
 
 		// } ) ) );
+
+		// console.table( Object.entries( cache ).map( ( [ n, v ] ) => ( { n, misses: v.misses, hits: v.hits } ) ) );
 
 		if ( removed ) this.addEntity( entity );
 
@@ -916,7 +936,7 @@ export default class Tilemap {
 
 	updateEntity( entity ) {
 
-		const oldTiles = this.entities.get( entity );
+		const oldTiles = this.entities.get( entity ) || [];
 		const newTiles = [];
 		const { map, top, left, width, height } = this.pointToTilemap(
 			entity.x,

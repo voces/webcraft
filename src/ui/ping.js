@@ -9,14 +9,14 @@ export default message => {
 
 	// display the mode
 	const clone = [ ...pings ];
-	const mode = clone.sort( ( a, b ) => a.ping - b.ping )[ Math.min( 2, pings.length - 1 ) ];
-	elem.textContent = mode.ping + "ms";
 	elem.setAttribute(
 		"title",
 		clone
 			.reverse()
-			.map( ( { type, ping } ) => `${type}: ${ping}ms` )
+			.map( ( { type, ping } ) => `${type}: ${ping.toFixed( 1 )}ms` )
 			.join( "\n" )
 	);
+	const mode = clone.sort( ( a, b ) => a.ping - b.ping )[ Math.min( 2, pings.length - 1 ) ];
+	elem.textContent = mode.ping.toFixed( 1 ) + "ms";
 
 };

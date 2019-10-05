@@ -6,16 +6,17 @@ import tweenPoints from "../util/tweenPoints.js";
 const CAMERA_SPEED = 600;
 
 const arena = document.getElementById( "arena" );
-let keyboard;
+let keyboard = {};
+let mouse = {};
 let knownRound;
 let requestedAnimationFrame;
 let pan;
 
 const wasdMap = {
-	w: "ArrowUp",
-	a: "ArrowLeft",
-	s: "ArrowDown",
-	d: "ArrowRight",
+	// w: "ArrowUp",
+	// a: "ArrowLeft",
+	// s: "ArrowDown",
+	// d: "ArrowRight",
 };
 
 window.addEventListener( "keydown", e => {
@@ -51,6 +52,43 @@ window.addEventListener( "keyup", e => {
 
 } );
 
+const setMouseAndRender = direction => {
+
+	if ( mouse[ direction ] ) return;
+	if ( pan ) pan = undefined;
+	mouse[ direction ] = true;
+	renderCamera();
+
+};
+
+window.addEventListener( "mousemove", e => {
+
+	if ( e.pageX > window.innerWidth / 2 )
+
+		if ( e.pageX > window.innerWidth - 64 ) setMouseAndRender( "right" );
+		else mouse.right = false;
+
+	else if ( e.pageX < 64 ) setMouseAndRender( "left" );
+	else mouse.left = false;
+
+	if ( e.pageY > window.innerHeight / 2 )
+
+		if ( e.pageY > window.innerHeight - 64 ) setMouseAndRender( "down" );
+		else mouse.down = false;
+
+	else if ( e.pageY < 64 ) setMouseAndRender( "up" );
+	else mouse.up = false;
+
+} );
+
+window.addEventListener( "mouseout", e => {
+
+	if ( e.toElement || e.relatedTarget ) return;
+
+	mouse = {};
+
+} );
+
 let lastRender = 0;
 const renderCamera = time => {
 
@@ -76,7 +114,12 @@ const renderCamera = time => {
 		if ( keyboard.ArrowRight ) arena.style.left = ( arena.x = arena.x - delta * CAMERA_SPEED ) + "px";
 		if ( keyboard.ArrowLeft ) arena.style.left = ( arena.x = arena.x + delta * CAMERA_SPEED ) + "px";
 
-		if ( Object.values( keyboard ).some( Boolean ) )
+		if ( mouse.up ) arena.style.top = ( arena.y = arena.y + delta * CAMERA_SPEED ) + "px";
+		if ( mouse.down ) arena.style.top = ( arena.y = arena.y - delta * CAMERA_SPEED ) + "px";
+		if ( mouse.left ) arena.style.left = ( arena.x = arena.x + delta * CAMERA_SPEED ) + "px";
+		if ( mouse.right ) arena.style.left = ( arena.x = arena.x - delta * CAMERA_SPEED ) + "px";
+
+		if ( Object.values( keyboard ).some( Boolean ) || Object.values( mouse ).some( Boolean ) )
 			requestedAnimationFrame = requestAnimationFrame( renderCamera );
 		else requestedAnimationFrame = undefined;
 
