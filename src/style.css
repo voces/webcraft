@@ -211,3 +211,11 @@ input::placeholder {
 .spacing8 > * { margin: 8px; }
 .spacing8 > :first-child { margin-top: 0; margin-left: 0; }
 .spacing8 > :last-child { margin-bottom: 0; margin-right: 0; }
+
+#ping {
+    font-size: 80%;
+    color: yellow;
+    bottom: 0.25em;
+    left: 0.25em;
+    position: absolute;
+}
