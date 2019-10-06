@@ -1,5 +1,6 @@
 
 import network from "../network.js";
+import { document } from "../util/globals.js";
 
 const login = document.getElementById( "login" );
 const loginName = document.getElementById( "login-name" );

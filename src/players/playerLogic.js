@@ -12,18 +12,12 @@ import Random from "../lib/alea.js";
 import "./chat.js";
 import "./login.js";
 
-const newPlayer = data => {
-
-	const player = new Player( data );
-	game.players.push( player );
-	return player;
-
-};
-
 // Received when someone (including us) joins
 network.addEventListener( "connection", data => {
 
 	game.update( data );
+
+	game.random = new Random( data.time.toString() );
 
 	const player = new Player( {
 		color: nextColor(),
@@ -31,10 +25,8 @@ network.addEventListener( "connection", data => {
 		username: data.username,
 	} );
 
-	if ( game.localPlayer === undefined ) game.localPlayer = player;
+	if ( game.localPlayer === undefined && ! network.isHost ) game.localPlayer = player;
 	else game.newPlayers = true;
-
-	game.players.push( player );
 
 	updateDisplay();
 
@@ -65,7 +57,7 @@ network.addEventListener( "state", ( { time, arena, players: inputPlayers } ) =>
 
 	inputPlayers.forEach( ( { color, id, ...playerData } ) => {
 
-		const player = game.players.find( p => p.id === id ) || newPlayer( { ...playerData, id } );
+		const player = game.players.find( p => p.id === id ) || new Player( { ...playerData, id } );
 
 		if ( ! player.color || player.color.index !== color ) {
 
@@ -82,7 +74,7 @@ network.addEventListener( "state", ( { time, arena, players: inputPlayers } ) =>
 	game.setArena( arena );
 	game.receivedState = "state";
 	game.lastRoundEnd = time / 1000;
-	game.random = new Random( time );
+	// game.random = new Random( time );
 
 	updateDisplay();
 

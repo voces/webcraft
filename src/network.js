@@ -25,6 +25,11 @@ const network = emitter( {
 		} );
 
 	},
+	get isHost() {
+
+		return ! connection;
+
+	},
 } );
 
 export default network;

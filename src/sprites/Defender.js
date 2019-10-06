@@ -108,6 +108,11 @@ export default class Defender extends Unit {
 				else recalcPath( { x, y } );
 
 			},
+			toJSON: () => ( {
+				name: "attack",
+				path,
+				target: target.id,
+			} ),
 		};
 
 	}

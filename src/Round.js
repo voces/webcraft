@@ -11,6 +11,7 @@ import emitter from "./emitter.js";
 import { panTo } from "./players/camera.js";
 import network from "./network.js";
 import { colors } from "./players/colors.js";
+import { requestAnimationFrame, cancelAnimationFrame } from "./util/globals.js";
 
 // A round starts upon construction
 export default class Round {
@@ -143,10 +144,7 @@ export default class Round {
 			game.newPlayers = false;
 			game.receivedState = false;
 
-			const pool = this.players.filter( p => p.isHere );
-			const randomPlayerIndex = Math.floor( game.random() * pool.length );
-			const randomPlayer = pool[ randomPlayerIndex ];
-			if ( randomPlayer === game.localPlayer )
+			if ( network.isHost )
 				network.send( {
 					type: "state",
 					arena: game.settings.arenaIndex,
@@ -315,6 +313,18 @@ export default class Round {
 
 		const index = this.timeouts.findIndex( i => i.id === id );
 		if ( index >= 0 ) this.timeouts.splice( index, 1 );
+
+	}
+
+	toJSON() {
+
+		return {
+			crossers: this.crossers.map( c => c.id ),
+			defenders: this.defenders.map( d => d.id ),
+			expireAt: this.expireAt,
+			lastUpdate: this.lastUpdate,
+			sprites: this.sprites,
+		};
 
 	}
 

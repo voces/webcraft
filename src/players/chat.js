@@ -1,6 +1,7 @@
 
 import network from "../network.js";
 import game from "../index.js";
+import { document, window } from "../util/globals.js";
 
 const chatLog = document.getElementById( "chat-log" );
 const chatInput = document.getElementById( "chat-input" );

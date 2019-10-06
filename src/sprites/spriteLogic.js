@@ -17,6 +17,7 @@ import Basic from "./obstructions/Basic.js";
 import Huge from "./obstructions/Huge.js";
 import Tiny from "./obstructions/Tiny.js";
 import Large from "./obstructions/Large.js";
+import { document, window } from "../util/globals.js";
 
 const arena = document.getElementById( "arena" );
 

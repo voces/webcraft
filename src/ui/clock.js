@@ -1,5 +1,6 @@
 
 import game from "../index.js";
+import { document } from "../util/globals.js";
 
 const element = document.getElementById( "clock" );
 

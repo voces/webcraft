@@ -1,47 +1,59 @@
 
-import DragSelect from "../lib/DragSelect.js";
 import game from "../index.js";
 import { active } from "./obstructionPlacement.js";
+import swallow from "../util/swallow.js";
 
 let allSelectables;
 
-const dragSelect = new DragSelect( {
-	onDragStartBegin: () => {
+const dragSelect = typeof window !== "undefined" ? {} : swallow();
 
-		if ( active() ) return dragSelect.break();
+if ( typeof window !== "undefined" )
 
-	},
-	onDragMove: () => {
+	( async () => {
 
-		if ( allSelectables ) return;
-		allSelectables = [ ...dragSelect.getSelectables() ];
-		const localPlayer = game.localPlayer;
-		dragSelect.setSelectables( allSelectables.filter( s =>
-			s.sprite.owner === localPlayer ) );
+		const DragSelect = await import( "../lib/DragSelect.js" ).then( i => i.default );
 
-	},
-	callback: () => {
+		const internalDragSelect = new DragSelect( {
+			onDragStartBegin: () => {
 
-		if ( allSelectables )
-			dragSelect.addSelectables( allSelectables );
-		allSelectables = undefined;
+				if ( active() ) return internalDragSelect.break();
 
-	},
-	onElementSelect: element => {
+			},
+			onDragMove: () => {
 
-		const sprite = element.sprite;
-		sprite.selected = true;
+				if ( allSelectables ) return;
+				allSelectables = [ ...internalDragSelect.getSelectables() ];
+				const localPlayer = game.localPlayer;
+				internalDragSelect.setSelectables( allSelectables.filter( s =>
+					s.sprite.owner === localPlayer ) );
 
-	},
-	onElementUnselect: element => {
+			},
+			callback: () => {
 
-		const sprite = element.sprite;
-		sprite.selected = false;
+				if ( allSelectables )
+					internalDragSelect.addSelectables( allSelectables );
+				allSelectables = undefined;
 
-	},
-} );
+			},
+			onElementSelect: element => {
 
-const oldSelection = dragSelect.getSelection;
-dragSelect.getSelection = () => oldSelection.call( dragSelect ).map( e => e.sprite ).filter( e => e );
+				const sprite = element.sprite;
+				sprite.selected = true;
+
+			},
+			onElementUnselect: element => {
+
+				const sprite = element.sprite;
+				sprite.selected = false;
+
+			},
+		} );
+
+		dragSelect.getSelection = () => internalDragSelect.getSelection().map( e => e.sprite ).filter( Boolean );
+		dragSelect.setSelection = v => internalDragSelect.setSelection( v.map( v => v.elem ? v.elem : v ) );
+		dragSelect.addSelectables = v => internalDragSelect.addSelectables( v.map( v => v.elem ? v.elem : v ) );
+		dragSelect.removeSelectables = v => internalDragSelect.removeSelectables( v.map( v => v.elem ? v.elem : v ) );
+
+	} )();
 
 export default dragSelect;

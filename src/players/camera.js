@@ -2,6 +2,7 @@
 import game from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import tweenPoints from "../util/tweenPoints.js";
+import { document, requestAnimationFrame, window } from "../util/globals.js";
 
 const CAMERA_SPEED = 600;
 

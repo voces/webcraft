@@ -46,6 +46,9 @@ export default class Obstruction extends Sprite {
 				this.elem.style.opacity = renderedHealth / this.constructor.maxHealth;
 
 			},
+			toJSON: () => ( {
+				name: "construct",
+			} ),
 		};
 
 	}

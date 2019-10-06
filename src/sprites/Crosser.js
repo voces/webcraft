@@ -111,6 +111,12 @@ export default class Crosser extends Unit {
 
 			},
 			cleanup: () => blueprint && blueprint.kill( { removeImmediately: true } ),
+			toJSON: () => ( {
+				name: "buildAt",
+				obstruction: Obstruction.name,
+				target,
+				path,
+			} ),
 		};
 
 	}

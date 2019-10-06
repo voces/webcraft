@@ -5,6 +5,7 @@ import Round from "./Round.js";
 import { TILE_NAMES } from "./constants.js";
 import { panTo } from "./players/camera.js";
 import emitter from "./emitter.js";
+import { document } from "./util/globals.js";
 
 const tilesElemnt = document.getElementById( "tiles" );
 
@@ -110,6 +111,17 @@ export default class Game {
 			( ! this.lastRoundEnd || time > this.lastRoundEnd + 2 )
 		)
 			this.start( { time } );
+
+	}
+
+	toJSON() {
+
+		return {
+			arena: this.settings.arenaIndex,
+			lastRoundEnd: this.lastRoundEnd,
+			players: this.players,
+			round: this.round,
+		};
 
 	}
 

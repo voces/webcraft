@@ -3,12 +3,19 @@ import network from "./network.js";
 
 import Game from "./Game.js";
 import Random from "./lib/alea.js";
+import { document, location, window } from "./util/globals.js";
+import Player from "./players/Player.js";
+import {
+	take as takeColor,
+	release as releaseColor,
+} from "./players/colors.js";
+import { updateDisplay } from "./players/elo.js";
 import "./players/playerLogic.js";
 import "./sprites/spriteLogic.js";
 import "./players/camera.js";
 import "./ui/clock.js";
 
-const game = window.game = new Game();
+const game = globalThis.game = new Game();
 
 const arena = document.getElementById( "arena" );
 arena.x = 0;
@@ -17,14 +24,38 @@ arena.y = 0;
 // We receive this upon connecting; the only state we get is the number of connections
 network.addEventListener( "init", ( { connections } ) => {
 
-	if ( connections === 1 ) {
-
-		game.random = new Random( Date.now() );
+	if ( connections === 0 )
 		game.receivedState = "init";
 
-	}
-
 } );
+// network.addEventListener( "init", ( { time, state: { arena, players: inputPlayers, lastRoundEnd } } ) => {
+
+// 	game.update( { time } );
+
+// 	inputPlayers.forEach( ( { color, id, ...playerData } ) => {
+
+// 		const player = game.players.find( p => p.id === id ) || new Player( { ...playerData, id } );
+
+// 		if ( ! player.color || player.color.index !== color ) {
+
+// 			if ( player.color ) releaseColor( player.color );
+// 			player.color = takeColor( color );
+
+// 		}
+
+// 		player.score = playerData.score;
+
+// 	} );
+// 	game.players.sort( ( a, b ) => a.id - b.id );
+
+// 	game.setArena( arena );
+// 	game.receivedState = "state";
+// 	game.lastRoundEnd = lastRoundEnd;
+// 	game.random = new Random( time );
+
+// 	updateDisplay();
+
+// } );
 
 network.addEventListener( "update", e => {
 

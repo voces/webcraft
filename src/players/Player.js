@@ -1,4 +1,7 @@
 
+import { colors } from "./colors.js";
+import game from "../index.js";
+
 export default class Player {
 
 	score = {
@@ -15,6 +18,19 @@ export default class Player {
 			Object.defineProperty( this, "username", {
 				get: () => this.color ? this.color.name : this.id,
 			} );
+
+		game.players.push( this );
+
+	}
+
+	toJSON() {
+
+		return {
+			color: colors.indexOf( this.color ),
+			id: this.id,
+			username: this.username,
+			score: this.score,
+		};
 
 	}
 

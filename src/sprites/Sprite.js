@@ -3,6 +3,7 @@ import { PATHING_TYPES, WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import dragSelect from "./dragSelect.js";
 import game from "../index.js";
 import emitter from "../emitter.js";
+import { document } from "../util/globals.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById( "arena" );
@@ -199,6 +200,20 @@ export default emitter( class Sprite {
 
 		if ( arenaElement.contains( this.elem ) )
 			arenaElement.removeChild( this.elem );
+
+	}
+
+	toJSON() {
+
+		return {
+			action: this.action,
+			constructor: this.constructor.name,
+			health: this.health,
+			owner: this.owner.id,
+			x: this.x,
+			y: this.y,
+
+		};
 
 	}
 

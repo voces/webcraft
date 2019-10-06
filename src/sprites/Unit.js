@@ -62,6 +62,11 @@ export default class Unit extends Sprite {
 				this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
 
 			},
+			toJSON: () => ( {
+				name: "walkTo",
+				path,
+				target,
+			} ),
 		};
 
 	}

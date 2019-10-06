@@ -93,6 +93,7 @@ export default points => {
 
 		},
 		target: points[ points.length - 1 ],
+		toJSON: () => ( { points } ),
 	} );
 
 };
