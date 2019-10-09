@@ -1,5 +1,9 @@
 
-import { colors } from "./colors.js";
+import {
+	colors,
+	release as releaseColor,
+	take as takeColor,
+} from "./colors.js";
 import game from "../index.js";
 
 export default class Player {
@@ -35,3 +39,23 @@ export default class Player {
 	}
 
 }
+
+export const patchInState = playersState => {
+
+	playersState.forEach( ( { color, id, ...playerData } ) => {
+
+		const player = game.players.find( p => p.id === id ) || new Player( { ...playerData, id } );
+
+		if ( ! player.color || player.color.index !== color ) {
+
+			if ( player.color ) releaseColor( player.color );
+			player.color = takeColor( color );
+
+		}
+
+		player.score = playerData.score;
+
+	} );
+	game.players.sort( ( a, b ) => a.id - b.id );
+
+};

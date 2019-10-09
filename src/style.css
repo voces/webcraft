@@ -192,7 +192,6 @@ input::placeholder {
     top: 50%;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
-    /* display: grid; */
     text-align: center;
 }
 
@@ -218,4 +217,13 @@ input::placeholder {
     bottom: 0.25em;
     left: 0.25em;
     position: absolute;
+}
+
+#waiting-splash {
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    position: absolute;
+    background-color: var(--bluebg);
+    visibility: hidden;
 }

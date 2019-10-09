@@ -3,11 +3,14 @@ import Sprite from "../Sprite.js";
 import game from "../../index.js";
 import { INITIAL_OBSTRUCTION_PROGRESS } from "../../constants.js";
 import tweenValues from "../../util/tweenValues.js";
+import tilemap from "./tilemap.js";
 
 export default class Obstruction extends Sprite {
 
 	static buildTime = 1;
 	static armor = 0.15;
+
+	tilemap = tilemap( this.radius );
 
 	constructor( props ) {
 

@@ -70,7 +70,7 @@ export default points => {
 
 		// Calc percentage progress
 		const percentProgress = ( progress - annotatedPoints[ curPoint ].start ) /
-			annotatedPoints[ curPoint ].distance;
+			( annotatedPoints[ curPoint ].distance || Infinity );
 
 		if ( isNaN( annotatedPoints[ curPoint ].x ) || isNaN( percentProgress * annotatedPoints[ curPoint ].xDeltaToNext ) ) throw "NaN";
 

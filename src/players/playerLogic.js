@@ -1,10 +1,9 @@
 
 import network from "../network.js";
 import game from "../index.js";
-import Player from "./Player.js";
+import Player, { patchInState } from "./Player.js";
 import {
 	next as nextColor,
-	take as takeColor,
 	release as releaseColor,
 } from "./colors.js";
 import { updateDisplay } from "./elo.js";
@@ -54,26 +53,12 @@ network.addEventListener( "disconnection", ( { time, connection } ) => {
 
 } );
 
-// Received by the a random player upon someone connecting
+// Received by the the upon someone connecting after the round ends
 network.addEventListener( "state", ( { time, arena, players: inputPlayers } ) => {
 
 	game.update( { time } );
 
-	inputPlayers.forEach( ( { color, id, ...playerData } ) => {
-
-		const player = game.players.find( p => p.id === id ) || new Player( { ...playerData, id } );
-
-		if ( ! player.color || player.color.index !== color ) {
-
-			if ( player.color ) releaseColor( player.color );
-			player.color = takeColor( color );
-
-		}
-
-		player.score = playerData.score;
-
-	} );
-	game.players.sort( ( a, b ) => a.id - b.id );
+	patchInState( inputPlayers );
 
 	game.setArena( arena );
 	game.receivedState = "state";

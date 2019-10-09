@@ -18,6 +18,7 @@ import Huge from "./obstructions/Huge.js";
 import Tiny from "./obstructions/Tiny.js";
 import Large from "./obstructions/Large.js";
 import { document, window } from "../util/globals.js";
+import { panTo } from "../players/camera.js";
 
 const arena = document.getElementById( "arena" );
 
@@ -94,6 +95,23 @@ const hotkeys = {
 
 		if ( activeObstructionPlacement )
 			hideObstructionPlacement();
+
+	},
+	" ": () => {
+
+		const selection = dragSelect.getSelection();
+		if ( selection.length === 0 && game.localPlayer.sprites.length )
+			return dragSelect.setSelection( [ game.localPlayer.sprites[ 0 ] ] );
+
+		const { xSum, ySum } = selection.reduce(
+			( { xSum, ySum }, { x, y } ) =>
+				( { xSum: xSum + x, ySum: ySum + y } ),
+			{ xSum: 0, ySum: 0 }
+		);
+
+		const x = xSum / selection.length;
+		const y = ySum / selection.length;
+		panTo( { x, y } );
 
 	},
 };

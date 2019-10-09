@@ -154,7 +154,7 @@ export default class Tilemap {
 
 		const xTile = this.xWorldToTile( xWorld );
 		const yTile = this.yWorldToTile( yWorld );
-		const map = this.pointToTilemap(
+		const map = entity.tilemap || this.pointToTilemap(
 			xWorld,
 			yWorld,
 			entity.radius,
@@ -191,7 +191,7 @@ export default class Tilemap {
 
 		// If initial position is fine, push it
 		if ( this._pathable(
-			this.pointToTilemap(
+			entity.tilemap || this.pointToTilemap(
 				xWorld,
 				yWorld,
 				entity.radius,
@@ -214,7 +214,7 @@ export default class Tilemap {
 		const pathing = entity.requiresPathing === undefined ?
 			entity.pathing :
 			entity.requiresPathing;
-		const minimalTilemap = this.pointToTilemap(
+		const minimalTilemap = entity.tilemap || this.pointToTilemap(
 			entity.radius,
 			entity.radius,
 			entity.radius,
@@ -314,7 +314,7 @@ export default class Tilemap {
 
 		let minimalTilemap;
 		let offset;
-		if ( entity.structure ) {
+		if ( entity.tilemap ) {
 
 			minimalTilemap = entity.tilemap;
 			offset = {
@@ -908,7 +908,7 @@ export default class Tilemap {
 
 		const tiles = [];
 		const { map, top, left, width, height } =
-			this.pointToTilemap(
+			entity.tilemap || this.pointToTilemap(
 				entity.x,
 				entity.y,
 				entity.radius,
@@ -938,16 +938,17 @@ export default class Tilemap {
 
 		const oldTiles = this.entities.get( entity ) || [];
 		const newTiles = [];
-		const { map, top, left, width, height } = this.pointToTilemap(
-			entity.x,
-			entity.y,
-			entity.radius,
-			{
-				type: entity.blocksPathing === undefined ?
-					entity.pathing :
-					entity.blocksPathing,
-			}
-		);
+		const { map, top, left, width, height } =
+			entity.tilemap || this.pointToTilemap(
+				entity.x,
+				entity.y,
+				entity.radius,
+				{
+					type: entity.blocksPathing === undefined ?
+						entity.pathing :
+						entity.blocksPathing,
+				}
+			);
 		const tileX = this.xWorldToTile( entity.x );
 		const tileY = this.yWorldToTile( entity.y );
 		for ( let y = top; y < top + height; y ++ )

@@ -18,8 +18,20 @@ class Chat {
 	onEnter() {
 
 		chatInput.style.visibility = "hidden";
-		network.send( { type: "chat", message: chatInput.value } );
+		const message = chatInput.value;
+		if ( message.length ) {
+
+			network.send( { type: "chat", message: chatInput.value } );
+			chatInput.value = "";
+
+		}
+
+	}
+
+	onEscape() {
+
 		chatInput.value = "";
+		chatInput.style.visibility = "hidden";
 
 	}
 
@@ -36,7 +48,8 @@ window.addEventListener( "keydown", e => {
 chatInput.addEventListener( "keydown", e => {
 
 	e.stopPropagation();
-	if ( e.key === "Enter" ) chat.onEnter();
+	if ( e.key === "Enter" ) return chat.onEnter();
+	if ( e.key === "Escape" ) return chat.onEscape();
 
 } );
 
