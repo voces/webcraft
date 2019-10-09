@@ -119,6 +119,7 @@ export default class Game {
 		return {
 			arena: this.settings.arenaIndex,
 			lastRoundEnd: this.lastRoundEnd,
+			lastUpdate: this.lastUpdate,
 			players: this.players,
 			round: this.round,
 		};

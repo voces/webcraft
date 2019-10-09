@@ -41,10 +41,14 @@ network.addEventListener( "disconnection", ( { time, connection } ) => {
 	if ( playerIndex === - 1 ) return;
 	const player = game.players[ playerIndex ];
 
+	player.isHere = false;
+
+	if ( game.round )
+		game.round.onPlayerLeave( player );
+
 	game.players.splice( playerIndex, 1 );
 
 	releaseColor( player.color );
-	player.isHere = false;
 
 	updateDisplay();
 

@@ -84,7 +84,12 @@ export default class Defender extends Unit {
 					// Cooldown
 					if ( ! this.weapon.last || this.weapon.last + this.weapon.cooldown < game.round.lastUpdate ) {
 
-						target.damage( this.weapon.damage );
+						const ignoreArmor = isNaN( target.buildProgress ) || target.buildProgress < 1;
+						const effectiveArmor = ignoreArmor ? target.armor : 0;
+						const actualDamage = this.weapon.damage * ( 1 - effectiveArmor );
+
+						target.damage( actualDamage );
+
 						this.elem.classList.add( "attack" );
 						game.round.setTimeout(
 							() => this.elem && this.elem.classList.remove( "attack" ),

@@ -12,12 +12,12 @@ export default emitter( class Sprite {
 
 	static radius = 1;
 	static maxHealth = 1;
+	static armor = 0;
 
-	// maxHealth = this.constructor.maxHealth;
-	// health = this.maxHealth;
 	radius = this.radius || this.constructor.radius;
 	requiresPathing = PATHING_TYPES.WALKABLE;
 	blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
+	armor = this.constructor.armor;
 	action;
 
 	constructor( { x, y, selectable = true, id, ...rest } ) {
@@ -28,8 +28,7 @@ export default emitter( class Sprite {
 		this.id = id === undefined ? game.round.spriteId ++ : id;
 		this.x = x;
 		this.y = y;
-		this.maxHealth = this.maxHealth || this.constructor.maxHealth;
-		this.health = this.health || this.maxHealth;
+		this.health = this.health || this.constructor.maxHealth;
 
 		// Display
 		this.elem = document.createElement( "div" );
@@ -121,7 +120,6 @@ export default emitter( class Sprite {
 
 		if ( this.health <= 0 ) return;
 		this.health -= amount;
-		if ( this.health <= 0 ) this._death();
 
 	}
 
@@ -136,10 +134,10 @@ export default emitter( class Sprite {
 
 	set health( value ) {
 
-		this._health = Math.min( Math.max( value, 0 ), this.maxHealth );
+		this._health = Math.min( Math.max( value, 0 ), this.constructor.maxHealth );
 
 		if ( this.elem && this._health )
-			this.elem.style.opacity = Math.max( this._health / this.maxHealth, 0.1 );
+			this.elem.style.opacity = Math.max( this._health / this.constructor.maxHealth, 0.1 );
 
 		if ( value <= 0 && this.isAlive ) {
 

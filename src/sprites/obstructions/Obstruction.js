@@ -7,15 +7,16 @@ import tweenValues from "../../util/tweenValues.js";
 export default class Obstruction extends Sprite {
 
 	static buildTime = 1;
+	static armor = 0.15;
 
 	constructor( props ) {
 
 		super( props );
-		this.health = Math.round( Math.max( this.maxHealth * INITIAL_OBSTRUCTION_PROGRESS, 1 ) );
-		const tween = tweenValues( this.health, this.maxHealth );
+		this.health = Math.round( Math.max( this.constructor.maxHealth * INITIAL_OBSTRUCTION_PROGRESS, 1 ) );
+		const tween = tweenValues( this.health, this.constructor.maxHealth );
 		let lastHealth = this.health;
 		const start = game.round.lastUpdate;
-		let updateProgress = INITIAL_OBSTRUCTION_PROGRESS;
+		let buildProgress = INITIAL_OBSTRUCTION_PROGRESS;
 		let renderProgress = INITIAL_OBSTRUCTION_PROGRESS;
 		let renderedHealth = lastHealth;
 		let lastRenderedHealth = lastHealth;
@@ -23,8 +24,8 @@ export default class Obstruction extends Sprite {
 		this.action = {
 			update: delta => {
 
-				renderProgress = updateProgress = Math.min( updateProgress + delta / this.constructor.buildTime, 1 );
-				const newHealth = tween( updateProgress );
+				renderProgress = buildProgress = Math.min( buildProgress + delta / this.constructor.buildTime, 1 );
+				const newHealth = tween( buildProgress );
 				const deltaHealth = Math.round( newHealth - lastHealth );
 				this.health += deltaHealth;
 				renderedHealth = this.health;
@@ -48,6 +49,8 @@ export default class Obstruction extends Sprite {
 			},
 			toJSON: () => ( {
 				name: "construct",
+				buildProgress,
+				lastHealth,
 			} ),
 		};
 

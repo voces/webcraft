@@ -7,33 +7,38 @@ import { document } from "../util/globals.js";
 
 const K = 32;
 
-// We assume crossers are winners, but swap if not based on scores
-export default ( { mode, crossers: winners, defenders: losers, scores } ) => {
+const calculatePower = team => team.reduce( ( sum, player ) =>
+	sum + Math.pow( 10, player / 400 ), 0 );
 
-	if ( scores === 0 ) {
+const calculateExpectedWin = ( teamA, teamB ) => {
 
-		const temp = winners;
-		winners = losers;
-		losers = temp;
+	const teamAPower = calculatePower( teamA );
+	return teamAPower / ( teamAPower + calculatePower( teamB ) );
 
-		scores = 1;
+};
 
-	}
+const calculateNewRatings = ( teamA, teamB, score ) => {
 
-	for ( let i = 0; i < scores; i ++ )
+	const expectedWin = calculateExpectedWin( teamA, teamB );
+	const won = score > 0 ? 1 : 0;
+	const totalChange = ( Math.sqrt( score ) || 1 ) * K * ( won - expectedWin );
+	return [
+		teamA.map( player => player + totalChange / teamA.length ),
+		teamB.map( player => player - totalChange / teamB.length ),
+	];
 
-		winners.forEach( winner => losers.forEach( loser => {
+};
 
-			const winnerTransformed = Math.pow( 10, winner.score[ mode ] / 400 );
-			const loserTransformed = Math.pow( 10, loser.score[ mode ] / 400 );
+export default ( { mode, crossers, defenders, scores } ) => {
 
-			const winnerExpected = winnerTransformed / ( winnerTransformed + loserTransformed );
-			const loserExpected = loserTransformed / ( winnerTransformed + loserTransformed );
+	const newRatings = calculateNewRatings(
+		crossers.map( p => p.score[ mode ] ),
+		defenders.map( p => p.score[ mode ] ),
+		scores
+	);
 
-			winner.score[ mode ] += K * ( 1 - winnerExpected );
-			loser.score[ mode ] += K * ( 0 - loserExpected );
-
-		} ) );
+	newRatings[ 0 ].forEach( ( score, index ) => crossers[ index ].score[ mode ] = score );
+	newRatings[ 1 ].forEach( ( score, index ) => defenders[ index ].score[ mode ] = score );
 
 	updateDisplay();
 

@@ -239,7 +239,7 @@ export default class Round {
 					this.scores ++;
 					sprite.owner.sprite = undefined;
 
-					this.setTimeout( () => this.onCrosserRemoval(), 1 );
+					this.onCrosserRemoval();
 
 				}
 
@@ -325,6 +325,14 @@ export default class Round {
 			lastUpdate: this.lastUpdate,
 			sprites: this.sprites,
 		};
+
+	}
+
+	onPlayerLeave() {
+
+		if ( this.players.some( player => player.isHere ) ) return;
+
+		game.round = undefined;
 
 	}
 
