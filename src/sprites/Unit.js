@@ -77,4 +77,10 @@ export default class Unit extends Sprite {
 
 	}
 
+	stop() {
+
+		this.action = undefined;
+
+	}
+
 }

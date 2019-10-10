@@ -22,74 +22,99 @@ import { panTo } from "../players/camera.js";
 
 const arena = document.getElementById( "arena" );
 
-const hotkeys = {
+export const hotkeys = {
 	f: {
+		name: "Build Basic Box",
 		type: "build",
 		obstruction: Basic,
 	},
 	r: {
+		name: "Build Huge Box",
 		type: "build",
 		obstruction: Huge,
 	},
 	t: {
+		name: "Build Tiny Box",
 		type: "build",
 		obstruction: Tiny,
 	},
 	w: {
+		name: "Build Large Box",
 		type: "build",
 		obstruction: Large,
 	},
-	x: () => {
+	x: {
+		name: "Destoy Box",
+		description: "Destroys selected or last created box",
+		handler: () => {
 
-		if ( ! game.round || ! game.localPlayer.unit || ! ( game.localPlayer.unit instanceof Crosser ) )
-			return;
+			if ( ! game.round || ! game.localPlayer.unit || ! ( game.localPlayer.unit instanceof Crosser ) )
+				return;
 
-		const selection = dragSelect.getSelection();
+			const selection = dragSelect.getSelection();
 
-		const ownedUnits = selection
-			.filter( u => u.owner === game.localPlayer );
+			const ownedUnits = selection
+				.filter( u => u.owner === game.localPlayer );
 
-		dragSelect.setSelection( [ game.localPlayer.unit.elem ] );
+			dragSelect.setSelection( [ game.localPlayer.unit.elem ] );
 
-		// Kill selected obstructions
-		let includesObstruction = false;
-		ownedUnits.forEach( u => {
+			// Kill selected obstructions
+			let includesObstruction = false;
+			ownedUnits.forEach( u => {
 
-			if ( u instanceof Obstruction ) {
+				if ( u instanceof Obstruction ) {
 
-				network.send( { type: "kill", sprite: u.id } );
-				includesObstruction = true;
-
-			}
-
-		} );
-
-		// If no obstructions were selected, but a crosser was, kill the last obstruction
-		let crosser;
-		if ( ! includesObstruction && ( crosser = ownedUnits.find( u => u instanceof Crosser ) ) )
-			while ( crosser.obstructions.length ) {
-
-				const obstruction = crosser.obstructions.pop();
-				if ( obstruction && obstruction.health > 0 ) {
-
-					network.send( { type: "kill", sprite: obstruction.id } );
-					break;
+					network.send( { type: "kill", sprite: u.id } );
+					includesObstruction = true;
 
 				}
 
-			}
+			} );
 
+			// If no obstructions were selected, but a crosser was, kill the last obstruction
+			let crosser;
+			if ( ! includesObstruction && ( crosser = ownedUnits.find( u => u instanceof Crosser ) ) )
+				while ( crosser.obstructions.length ) {
+
+					const obstruction = crosser.obstructions.pop();
+					if ( obstruction && obstruction.health > 0 ) {
+
+						network.send( { type: "kill", sprite: obstruction.id } );
+						break;
+
+					}
+
+				}
+
+		},
 	},
-	h: () => {
+	h: {
+		name: "Hold Position",
+		handler: () => {
 
-		if ( ! game.round )
-			return;
+			if ( ! game.round )
+				return;
 
-		const ownedUnits = dragSelect.getSelection()
-			.filter( u => u.owner === game.localPlayer && u instanceof Unit );
+			const ownedUnits = dragSelect.getSelection()
+				.filter( u => u.owner === game.localPlayer && u instanceof Unit );
 
-		network.send( { type: "holdPosition", sprites: ownedUnits.map( u => u.id ) } );
+			network.send( { type: "holdPosition", sprites: ownedUnits.map( u => u.id ) } );
 
+		},
+	},
+	s: {
+		name: "Stop",
+		handler: () => {
+
+			if ( ! game.round )
+				return;
+
+			const ownedUnits = dragSelect.getSelection()
+				.filter( u => u.owner === game.localPlayer && u instanceof Unit );
+
+			network.send( { type: "stop", sprites: ownedUnits.map( u => u.id ) } );
+
+		},
 	},
 	Escape: () => {
 
@@ -209,6 +234,7 @@ window.addEventListener( "keydown", e => {
 	const hotkey = hotkeys[ e.key ];
 
 	if ( typeof hotkey === "function" ) return hotkey();
+	if ( typeof hotkey.handler === "function" ) return hotkey.handler();
 
 	if ( hotkey.type === "build" ) {
 
@@ -286,5 +312,20 @@ network.addEventListener( "holdPosition", ( { time, connection, sprites } ) => {
 	player.sprites
 		.filter( s => sprites.includes( s.id ) )
 		.forEach( s => s.holdPosition() );
+
+} );
+
+network.addEventListener( "stop", ( { time, connection, sprites } ) => {
+
+	game.update( { time } );
+
+	if ( ! game.round ) return;
+
+	const player = game.round.players.find( p => p.id === connection );
+	if ( ! player ) return;
+
+	player.sprites
+		.filter( s => sprites.includes( s.id ) )
+		.forEach( s => s.stop() );
 
 } );

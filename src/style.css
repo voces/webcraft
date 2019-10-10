@@ -16,6 +16,7 @@ body {
     text-shadow: black 1px 1px 0.125em;
     font-weight: bold;
     color: white;
+    user-select: none;
 }
 
 #arena {
@@ -227,3 +228,49 @@ input::placeholder {
     background-color: var(--bluebg);
     visibility: hidden;
 }
+
+#hotkeys {
+    position: absolute;
+    bottom: 0.5em;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#hotkeys .hotkey {
+    display: inline-block;
+    width: 3em;
+    height: 3em;
+    background-color: var(--bluebg);
+    border-radius: 0.5em;
+    margin: 0 0.25em;
+    text-align: center;
+    cursor: pointer;
+}
+
+#hotkeys .hotkey:hover .tooltip {
+    display: block;
+}
+
+#hotkeys .key {
+    line-height: 3em;
+}
+
+#hotkeys .tooltip {
+    text-align: left;
+    display: none;
+    position: absolute;
+    top: 0;
+    background-color: var(--bluebg);
+    transform: translateY(calc(-100% - 0.5em));
+    padding: 0.5em;
+    border-radius: 0.5em;
+}
+
+#hotkeys .highlight {
+    color: gold;
+}
+
+#hotkeys .description {
+    font-size: 75%;
+}
+

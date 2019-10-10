@@ -7,6 +7,7 @@ import { document, requestAnimationFrame, window } from "../util/globals.js";
 const CAMERA_SPEED = 600;
 
 const arena = document.getElementById( "arena" );
+const ui = document.getElementById( "ui" );
 let keyboard = {};
 let mouse = {};
 let knownRound;
@@ -63,6 +64,8 @@ const setMouseAndRender = direction => {
 };
 
 window.addEventListener( "mousemove", e => {
+
+	if ( ui.contains( e.target ) ) return mouse = {};
 
 	if ( e.pageX > window.innerWidth / 2 )
 

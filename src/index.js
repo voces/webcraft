@@ -4,6 +4,7 @@ import network from "./network.js";
 import Game from "./Game.js";
 // import Random from "./lib/alea.js";
 import { document, location, window } from "./util/globals.js";
+import { patchInState } from "./players/Player.js";
 // import Player from "./players/Player.js";
 // import {
 // 	take as takeColor,
@@ -15,7 +16,7 @@ import "./sprites/spriteLogic.js";
 import "./players/camera.js";
 import "./ui/clock.js";
 import "./ui/waitingSplash.js";
-import { patchInState } from "./players/Player.js";
+import "./ui/hotkeys.js";
 
 // eslint-disable-next-line no-undef
 const game = globalThis.game = new Game();
