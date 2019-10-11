@@ -13,6 +13,7 @@ export default class Player {
 	};
 	sprites = [];
 	isHere = true;
+	crosserPlays = 0;
 
 	constructor( data ) {
 
@@ -34,6 +35,7 @@ export default class Player {
 			id: this.id,
 			username: this.username,
 			score: this.score,
+			crosserPlays: this.crosserPlays,
 		};
 
 	}

@@ -19,7 +19,7 @@ export default class Game {
 	newPlayers = false;
 
 	settings = seal( {
-		arenaIndex: 0,
+		arenaIndex: - 1,
 		crossers: 1,
 		duration: 120,
 	} );
@@ -27,27 +27,30 @@ export default class Game {
 	constructor() {
 
 		emitter( this );
-		this.setArena( 0 );
+		this.setArena( Math.floor( ( this.random || Math.random )() * arenas.length ) );
 
 	}
 
 	setArena( arenaIndex ) {
 
+		if ( this.settings.arenaIndex === arenaIndex )
+			return;
+
 		this.settings.arenaIndex = arenaIndex;
 		this.arena = arenas[ arenaIndex ];
 
 		tilesElemnt.innerHTML = "";
-		for ( let y = 0; y < this.arena.layers.length; y ++ ) {
+		for ( let y = 0; y < this.arena.tiles.length; y ++ ) {
 
 			const row = document.createElement( "div" );
 			row.classList.add( "row" );
-			for ( let x = 0; x < this.arena.layers[ y ].length; x ++ ) {
+			for ( let x = 0; x < this.arena.tiles[ y ].length; x ++ ) {
 
 				const tile = document.createElement( "div" );
 				tile.classList.add(
 					"tile",
 					`layer-${this.arena.layers[ y ][ x ]}`,
-					TILE_NAMES[ this.arena.tiles[ y ][ x ] ]
+					TILE_NAMES[ this.arena.tiles[ y ][ x ] ] || "void"
 				);
 				row.appendChild( tile );
 
@@ -56,10 +59,9 @@ export default class Game {
 
 		}
 
-		// No need to divide by 2 since we tiles have a resolution of 0.5
 		panTo( {
-			x: this.arena.tiles[ 0 ].length,
-			y: this.arena.tiles.length,
+			x: this.arena.tiles[ 0 ].length / 2,
+			y: this.arena.tiles.length / 2,
 			duration: 0,
 		} );
 
@@ -83,6 +85,17 @@ export default class Game {
 	start( { time } ) {
 
 		if ( this.round ) throw new Error( "A round is already in progress" );
+
+		const plays = this.players[ 0 ].crosserPlays;
+		const newArena = plays >= 3 && this.players.every( p =>
+			p.crosserPlays === plays || p.crosserPlays >= 5 );
+
+		if ( newArena ) {
+
+			this.setArena( Math.floor( this.random() * arenas.length ) );
+			this.players.forEach( p => p.crosserPlays = 0 );
+
+		}
 
 		this.round = new Round( {
 			time,

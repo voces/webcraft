@@ -22,6 +22,7 @@ network.addEventListener( "connection", data => {
 		color: nextColor(),
 		id: data.connection,
 		username: data.username,
+		crosserPlays: Math.max( 0, ...game.players.map( p => p.crosserPlays ) ),
 	} );
 
 	if ( game.localPlayer === undefined && ! network.isHost ) game.localPlayer = player;
@@ -54,7 +55,12 @@ network.addEventListener( "disconnection", ( { time, connection } ) => {
 } );
 
 // Received by the the upon someone connecting after the round ends
-network.addEventListener( "state", ( { time, arena, players: inputPlayers } ) => {
+network.addEventListener( "state", ( {
+	time,
+	state: {
+		arena,
+		players: inputPlayers,
+	} } ) => {
 
 	game.update( { time } );
 

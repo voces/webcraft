@@ -34,8 +34,8 @@ body {
 }
 
 .tile {
-    width: 64px;
-    height: 64px;
+    width: 32px;
+    height: 32px;
     background-color: white;
     display: inline-block;
 }
@@ -45,6 +45,7 @@ body {
 .tile.start { background-color: #569656; }
 .tile.end { background-color: #569656; }
 .tile.spawn { background-color: green; }
+.tile.void { opacity: 0; }
 
 .layer-0 { opacity: 1.0; }
 .layer-1 { opacity: 0.9; }

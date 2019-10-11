@@ -26,10 +26,18 @@ arena.x = 0;
 arena.y = 0;
 
 // We receive this upon connecting; the only state we get is the number of connections
-network.addEventListener( "init", ( { connections, state: { players: inputPlayers } } ) => {
+network.addEventListener( "init", ( {
+	connections,
+	state: {
+		players: inputPlayers,
+		arena,
+	},
+} ) => {
 
 	if ( connections === 0 )
 		game.receivedState = "init";
+
+	game.setArena( arena );
 
 	patchInState( inputPlayers );
 

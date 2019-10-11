@@ -10,7 +10,6 @@ import elo from "./players/elo.js";
 import emitter from "./emitter.js";
 import { panTo } from "./players/camera.js";
 import network from "./network.js";
-import { colors } from "./players/colors.js";
 import { requestAnimationFrame, cancelAnimationFrame } from "./util/globals.js";
 
 // A round starts upon construction
@@ -53,9 +52,12 @@ export default class Round {
 
 			const player = remaining.splice( Math.floor( game.random() * remaining.length ), 1 )[ 0 ];
 			// const player = remaining.splice( 0, 1 )[ 0 ];
-			if ( this.crossers.length < this.settings.crossers )
+			if ( this.crossers.length < this.settings.crossers ) {
+
 				this.crossers.push( player );
-			else
+				player.crosserPlays ++;
+
+			} else
 				this.defenders.push( player );
 
 		}
@@ -64,6 +66,7 @@ export default class Round {
 
 	spawnUnits() {
 
+		// for ( let i = 0; i < 20; i ++ )
 		this.players.forEach( player => {
 
 			const isCrosser = this.crossers.includes( player );
@@ -84,12 +87,12 @@ export default class Round {
 				const xRand = game.random() * this.pathingMap.widthWorld;
 				const yRand = game.random() * this.pathingMap.heightWorld;
 
-				if ( this.arena.tiles[ Math.floor( yRand / 2 ) ][ Math.floor( xRand / 2 ) ] !== targetTile )
+				if ( this.arena.tiles[ Math.floor( yRand ) ][ Math.floor( xRand ) ] !== targetTile )
 					continue;
 
 				const { x, y } = this.pathingMap.nearestSpiralPathing( xRand, yRand, unit );
 
-				if ( this.arena.tiles[ Math.floor( y / 2 ) ][ Math.floor( x / 2 ) ] === targetTile ) {
+				if ( this.arena.tiles[ Math.floor( y ) ][ Math.floor( x ) ] === targetTile ) {
 
 					Object.assign( unit, { x, y } );
 					this.pathingMap.addEntity( unit );
@@ -147,13 +150,7 @@ export default class Round {
 			if ( network.isHost )
 				network.send( {
 					type: "state",
-					arena: game.settings.arenaIndex,
-					players: game.players.map( p => ( {
-						color: colors.indexOf( p.color ),
-						id: p.id,
-						username: p.username,
-						score: p.score,
-					} ) ),
+					state: game,
 				} );
 
 		} else
@@ -233,7 +230,7 @@ export default class Round {
 
 			if ( sprite instanceof Crosser )
 
-				if ( this.arena.tiles[ Math.floor( sprite.y / 2 ) ][ Math.floor( sprite.x / 2 ) ] === TILE_TYPES.END ) {
+				if ( this.arena.tiles[ Math.floor( sprite.y ) ][ Math.floor( sprite.x ) ] === TILE_TYPES.END ) {
 
 					sprite.ascend();
 					this.scores ++;
