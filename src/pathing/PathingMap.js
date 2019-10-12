@@ -552,7 +552,7 @@ export default class Tilemap {
 		const targetTile = this.grid[ this.yBoundTile( Math.round( target.y * this.resolution - nudge ) ) ][ this.xBoundTile( Math.round( target.x * this.resolution - nudge ) ) ];
 		const targetPathable = targetTile &&
 			targetTile.pathable( pathing ) &&
-			cache._pathable( cache.pointToTilemap( target.x, target.y, entity.radius, { type: pathing, includeOutOfBounds: true } ), targetTile.x, targetTile.y );
+			this.pathable( entity, target.x, target.y );
 		const endTile = targetPathable ?
 			targetTile :
 			( () => {
@@ -564,6 +564,13 @@ export default class Tilemap {
 		const realEnd = targetPathable ?
 			{ x: target.x * this.resolution, y: target.y * this.resolution } :
 			endTile;
+
+		// If we start and end on the same tile, just move between them
+		if ( start === endTile && this.pathable( entity ) )
+			return [
+				{ x: entity.x, y: entity.y },
+				{ x: realEnd.x / this.resolution, y: realEnd.y / this.resolution },
+			];
 
 		const tag = Math.random();
 

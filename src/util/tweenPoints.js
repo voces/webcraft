@@ -7,8 +7,6 @@ const elems = false;
 
 export default points => {
 
-	if ( points.length === 1 ) return Object.assign( () => points[ 0 ], { distance: 0 } );
-
 	if ( typeof document !== "undefined" )
 
 		if ( elems ) {
@@ -34,7 +32,7 @@ export default points => {
 
 	const annotatedPoints = points.map( p => ( { x: p.x, y: p.y } ) );
 	annotatedPoints[ 0 ].start = 0;
-	annotatedPoints[ 0 ].end = distance( points[ 1 ], points[ 0 ] );
+	annotatedPoints[ 0 ].end = points[ 1 ] ? distance( points[ 1 ], points[ 0 ] ) : 0;
 	for ( let i = 0; i < points.length; i ++ ) {
 
 		if ( i > 0 )
@@ -54,7 +52,7 @@ export default points => {
 	}
 
 	let curPoint = 0;
-	const func = progress => {
+	const func = points.length > 1 ? progress => {
 
 		if ( progress < 0 )
 			throw new Error( "Progress should be greater than 0" );
@@ -81,7 +79,7 @@ export default points => {
                 percentProgress * annotatedPoints[ curPoint ].yDeltaToNext,
 		};
 
-	};
+	} : () => points[ 0 ];
 
 	let internalProgress = 0;
 	return Object.assign( func, {

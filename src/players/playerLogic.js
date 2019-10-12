@@ -14,9 +14,9 @@ import "./login.js";
 // Received when someone (including us) joins
 network.addEventListener( "connection", data => {
 
-	game.update( data );
-
 	game.random = new Random( data.time.toString() );
+
+	game.update( data );
 
 	const player = new Player( {
 		color: nextColor(),

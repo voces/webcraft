@@ -1,7 +1,7 @@
 
 import { stringMap } from "./util.js";
 
-const blah = {
+export default {
 	// For jumping
 	layers: stringMap( `
         2222222222222222222222222222222222222222222222222222222
@@ -80,8 +80,3 @@ const blah = {
           0000000000
 ` ),
 };
-
-// blah.tiles = blah.layers.map( r => r.map( () => 0 ) );
-// blah.tiles[ Math.floor( blah.tiles.length / 2 ) ][ Math.floor( blah.tiles[ 0 ].length / 2 ) ] = 1;
-
-export default blah;

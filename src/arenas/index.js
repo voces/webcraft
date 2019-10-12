@@ -1,6 +1,7 @@
 
 import a from "./a.js";
 import b from "./b.js";
+import c from "./c.js";
 import { PATHING_TYPES } from "../pathing/constants.js";
 
 const getHeight = arena => arena.layers.length;
@@ -24,4 +25,5 @@ const addPathing = arena =>
 export default [
 	a,
 	b,
+	c,
 ].map( addPathing );

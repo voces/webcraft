@@ -37,8 +37,7 @@ export default class Crosser extends Unit {
 	buildAt( pathingMap, target, Obstruction ) {
 
 		let renderProgress = 0;
-		let rawPath = pathingMap.path( this, target );
-		let path = tweenPoints( rawPath );
+		let path = tweenPoints( pathingMap.path( this, target ) );
 		const blueprint = this.owner === game.localPlayer && new Blueprint( { ...target, radius: Obstruction.radius } );
 
 		this.action = {
@@ -52,8 +51,9 @@ export default class Crosser extends Unit {
 
 					this.action = undefined;
 
+					const actualDistance = Math.sqrt( ( path.target.x - target.x ) ** 2, ( path.target.y - target.y ) ** 2 );
 					// If the calculated path gets us there, create the obstruction
-					if ( rawPath[ rawPath.length - 1 ].x === target.x && rawPath[ rawPath.length - 1 ].y === target.y ) {
+					if ( actualDistance < BUILD_DISTANCE ) {
 
 						const obstruction = new Obstruction( {
 							x: target.x,
@@ -93,8 +93,7 @@ export default class Crosser extends Unit {
 					pathingMap.updateEntity( this );
 
 					// Start new build path
-					rawPath = pathingMap.path( this, target );
-					path = tweenPoints( rawPath );
+					path = tweenPoints( pathingMap.path( this, target ) );
 					renderProgress = 0;
 
 				}
