@@ -50,8 +50,11 @@ export default class Round {
 		const remaining = [ ...this.players ];
 		while ( remaining.length ) {
 
-			const player = remaining.splice( Math.floor( game.random() * remaining.length ), 1 )[ 0 ];
-			// const player = remaining.splice( 0, 1 )[ 0 ];
+			const lowPlays = Math.min( ...remaining.map( p => p.crosserPlays ) );
+			const low = remaining.filter( p => p.crosserPlays === lowPlays );
+
+			const player = low.splice( Math.floor( game.random() * low.length ), 1 )[ 0 ];
+			remaining.splice( remaining.indexOf( player ), 1 );
 			if ( this.crossers.length < this.settings.crossers ) {
 
 				this.crossers.push( player );

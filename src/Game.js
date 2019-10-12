@@ -97,6 +97,10 @@ export default class Game {
 
 		}
 
+		this.settings.crossers = this.players.length === 3 ?
+			1 : // hardcode 1v2
+			Math.ceil( this.players.length / 2 ); // otherwise just do 1v0, 1v1, 1v2, 2v2, 3v2, 3v3, 4v3, etc
+
 		this.round = new Round( {
 			time,
 			settings: this.settings,
