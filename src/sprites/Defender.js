@@ -55,13 +55,8 @@ export default class Defender extends Unit {
 				renderProgress += delta * this.speed;
 				const { x, y } = path( renderProgress );
 
-				const distanceToTarget = Math.sqrt( ( target.x - x ) ** 2 + ( target.y - y ) ** 2 );
-				if ( distanceToTarget >= this.weapon.range + this.radius + target.radius ) {
-
-					this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
-					this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
-
-				}
+				this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+				this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
 
 			},
 			update: delta => {

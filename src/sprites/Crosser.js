@@ -51,8 +51,6 @@ export default class Crosser extends Unit {
 				const actualDistance = Math.sqrt( ( x - target.x ) ** 2 + ( y - target.y ) ** 2 );
 				if ( actualDistance < BUILD_DISTANCE ) {
 
-					console.log( actualDistance );
-
 					this.action = undefined;
 
 					const obstruction = new Obstruction( {
