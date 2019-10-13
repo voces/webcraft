@@ -73,10 +73,12 @@ export const hotkeys = {
 
 			// If no obstructions were selected, but a crosser was, kill the last obstruction
 			let crosser;
-			if ( ! includesObstruction && ( crosser = ownedUnits.find( u => u instanceof Crosser ) ) )
-				while ( crosser.obstructions.length ) {
+			if ( ! includesObstruction && ( crosser = ownedUnits.find( u => u instanceof Crosser ) ) ) {
 
-					const obstruction = crosser.obstructions.pop();
+				const obstructions = [ ...crosser.obstructions ];
+				while ( obstructions.length ) {
+
+					const obstruction = obstructions.pop();
 					if ( obstruction && obstruction.health > 0 ) {
 
 						network.send( { type: "kill", sprite: obstruction.id } );
@@ -85,6 +87,8 @@ export const hotkeys = {
 					}
 
 				}
+
+			}
 
 		},
 	},
