@@ -2,6 +2,7 @@
 import BinaryHeap from "./BinaryHeap.js";
 import memoize from "./memoize.js";
 import { DIRECTION, PATHING_TYPES } from "../constants.js";
+import { document } from "../util/globals.js";
 
 const DEFAULT_RESOLUTION = 1;
 
@@ -59,6 +60,7 @@ class Tile {
 
 // const elems = [];
 const elems = false;
+const arena = document.getElementById( "arena" );
 
 // eslint-disable-next-line no-unused-vars
 export default class Tilemap {
@@ -116,22 +118,11 @@ export default class Tilemap {
 				// Below
 				if ( y < this.heightMap - 1 ) nodes.push( this.grid[ y + 1 ][ x ] );
 
-				// Reorder nodes to have some tie-breaking
-				// for ( let i = 0; i < nodes.length; i ++ ) {
-
-				// 	const i2 = Math.floor( nodes.length * ( random ? random() : Math.random() ) );
-				// 	if (i !== i2) {
-				// 		nodes = nodes.slice(0, i2) + nodes[i]
-				// 	}
-				// 	nodes.push( ...nodes.splice( i, 1 ) );
-
-				// }
-
 			}
 
 	}
 
-	_pathable( map, xTile, yTile ) {
+	_pathable( map, xTile, yTile, test ) {
 
 		if ( xTile < 0 || yTile < 0 || xTile >= this.widthMap || yTile >= this.heightMap )
 			return false;
@@ -140,7 +131,13 @@ export default class Tilemap {
 
 		for ( let y = yTile + map.top; y < yTile + map.height + map.top; y ++, i ++ )
 			for ( let x = xTile + map.left; x < xTile + map.width + map.left; x ++ )
-				if ( this.grid[ y ] === undefined || this.grid[ y ][ x ] === undefined || this.grid[ y ][ x ].pathing & map.map[ i ] )
+				if (
+					this.grid[ y ] === undefined ||
+					this.grid[ y ][ x ] === undefined ||
+					this.grid[ y ][ x ].pathing & map.map[ i ] ||
+					test && ! test( this.grid[ y ][ x ] )
+				)
+
 					return false;
 
 		return true;
@@ -184,7 +181,7 @@ export default class Tilemap {
 
 	}
 
-	nearestPathing( xWorld, yWorld, entity ) {
+	nearestPathing( xWorld, yWorld, entity, test ) {
 
 		const xTile = Math.max( Math.min( Math.round( xWorld * this.resolution ), this.widthMap - 1 ), 0 );
 		const yTile = Math.max( Math.min( Math.round( yWorld * this.resolution ), this.heightMap - 1 ), 0 );
@@ -203,7 +200,8 @@ export default class Tilemap {
 				}
 			),
 			xTile,
-			yTile
+			yTile,
+			test
 		) )
 			return { x: xWorld, y: yWorld };
 
@@ -226,20 +224,24 @@ export default class Tilemap {
 		// Create our heap
 		const distance = ( a, b ) => ( b.x - a.x ) ** 2 + ( b.y - a.y ) ** 2;
 		const tag = Math.random();
-		const openHeap = new BinaryHeap( node => node.__np );
+		const heap = new BinaryHeap( node => node.__np );
 
 		// Seed our heap
 		const start = this.grid[ yTile ][ xTile ];
 		start.__npTag = tag;
 		start.__np = distance( target, offset( start.world ) );
-		openHeap.push( start );
+		heap.push( start );
 
 		// Find a node!
-		while ( openHeap.length ) {
+		while ( heap.length ) {
 
-			const current = openHeap.pop();
+			const current = heap.pop();
 
-			if ( this._pathable( minimalTilemap, current.x, current.y ) )
+			if (
+				current.pathable( pathing ) &&
+				this._pathable( minimalTilemap, current.x, current.y, test )
+			)
+
 				return offset( current.world );
 
 			current.nodes.forEach( neighbor => {
@@ -248,7 +250,7 @@ export default class Tilemap {
 				neighbor.__npTag = tag;
 				neighbor.__np = distance( target, offset( neighbor.world ) );
 
-				openHeap.push( neighbor );
+				heap.push( neighbor );
 
 			} );
 
@@ -525,7 +527,7 @@ export default class Tilemap {
 
 		const cache = {
 			_linearPathable: memoize( ( ...args ) => this._linearPathable( ...args, cache ) ),
-			_pathable: memoize( ( ...args ) => this._pathable( ...args, cache ) ),
+			_pathable: memoize( ( ...args ) => this._pathable( ...args ) ),
 			pointToTilemap: memoize( ( ...args ) => this.pointToTilemap( ...args ) ),
 		};
 
@@ -546,8 +548,8 @@ export default class Tilemap {
 		const nudge = Number.EPSILON * entity.radius * this.widthWorld;
 		const offset = entity.radius % ( 1 / this.resolution );
 		// We can assume start is pathable
-		const realStart = { x: entity.x * this.resolution, y: entity.x * this.resolution };
-		const start = this.grid[ this.yBoundTile( Math.round( entity.y * this.resolution - nudge ) ) ][ this.xBoundTile( Math.round( entity.x * this.resolution - nudge ) ) ];
+		const startReal = { x: entity.x * this.resolution, y: entity.y * this.resolution };
+		const startTile = this.grid[ this.yBoundTile( Math.round( entity.y * this.resolution - nudge ) ) ][ this.xBoundTile( Math.round( entity.x * this.resolution - nudge ) ) ];
 		// For target, if the exact spot is pathable, we aim towards that; otherwise the nearest spot
 		const targetTile = this.grid[ this.yBoundTile( Math.round( target.y * this.resolution - nudge ) ) ][ this.xBoundTile( Math.round( target.x * this.resolution - nudge ) ) ];
 		const targetPathable = targetTile &&
@@ -561,105 +563,125 @@ export default class Tilemap {
 				return this.grid[ Math.round( ( y - offset ) * this.resolution ) ][ Math.round( ( x - offset ) * this.resolution ) ];
 
 			} )();
-		const realEnd = targetPathable ?
+		const endReal = targetPathable ?
 			{ x: target.x * this.resolution, y: target.y * this.resolution } :
 			endTile;
 
 		// If we start and end on the same tile, just move between them
-		if ( start === endTile && this.pathable( entity ) )
+		if ( startTile === endTile && this.pathable( entity ) )
 			return [
 				{ x: entity.x, y: entity.y },
-				{ x: realEnd.x / this.resolution, y: realEnd.y / this.resolution },
+				{ x: endReal.x / this.resolution, y: endReal.y / this.resolution },
 			];
 
-		const tag = Math.random();
-
 		// Estimated cost remaining
-		// const h = ( a, b ) => Math.abs( b.x - a.x ) + Math.abs( b.y - a.y );
 		const h = ( a, b ) => Math.sqrt( ( b.x - a.x ) ** 2 + ( b.y - a.y ) ** 2 );
-		const openHeap = new BinaryHeap( node => node.__f );
 
-		let best = start;
+		const startHeap = new BinaryHeap( node => node.__startRealPlusEstimatedCost );
+		const startTag = Math.random();
+		let startBest = startTile;
+		startHeap.push( startTile );
+		startTile.__startTag = startTag;
+		startTile.__startRealCostFromOrigin = h( startReal, startTile );
+		startTile.__startEstimatedCostRemaining = h( startTile, endReal );
+		startTile.__startRealPlusEstimatedCost = startTile.__startEstimatedCostRemaining + startTile.__startRealCostFromOrigin;
+		startTile.__startVisited = false;
+		startTile.__startClosed = false;
+		startTile.__startParent = null;
 
-		openHeap.push( start );
-		start.__dirty = tag;
-		// Real cost from start to node
-		start.__g = h( realStart, start );
-		// Estimated cost remaining
-		start.__h = h( start, realEnd );
-		// Real cost from start to node plus estimated cost remaining
-		start.__f = start.__g + start.__h;
-		start.__visited = false;
-		start.__closed = false;
-		start.__parent = null;
+		const endHeap = new BinaryHeap( node => node.__endRealPlusEstimatedCost );
+		const endTag = Math.random();
+		let endBest = endTile;
+		endHeap.push( endTile );
+		endTile.__endTag = endTag;
+		endTile.__endRealCostFromOrigin = h( endReal, endTile );
+		endTile.__endEstimatedCostRemaining = h( endTile, startReal );
+		endTile.__endRealPlusEstimatedCost = endTile.__endEstimatedCostRemaining + endTile.__endRealCostFromOrigin;
+		endTile.__endVisited = false;
+		endTile.__endClosed = false;
+		endTile.__endParent = null;
 
-		while ( openHeap.length ) {
+		let checksSinceBestChange = 0;
+		while ( startHeap.length ) {
 
-			const current = openHeap.pop();
+			// Degenerate case: target is close to start, but ~blocked off
+			if ( checksSinceBestChange ++ > 2500 ) break;
 
-			if ( current === endTile ) {
+			// Start to End
+			const startCurrent = startHeap.pop();
 
-				best = endTile;
+			if ( startCurrent === endTile ) {
+
+				startBest = endTile;
+				break;
+
+			} else if ( startCurrent.__endTag === endTag ) {
+
+				startBest = endBest = startCurrent;
 				break;
 
 			}
 
-			current.__closed = true;
+			startCurrent.__startClosed = true;
 
-			const neighbors = current.nodes;
+			const startNeighbors = startCurrent.nodes;
 
-			for ( let i = 0, length = neighbors.length; i < length; i ++ ) {
+			for ( let i = 0, length = startNeighbors.length; i < length; i ++ ) {
 
-				const neighbor = neighbors[ i ];
+				const neighbor = startNeighbors[ i ];
 
-				if ( neighbor.__dirty !== tag ) {
+				if ( neighbor.__startTag !== startTag ) {
 
-					neighbor.__dirty = tag;
-					neighbor.__h = 0;
-					neighbor.__f = 0;
-					neighbor.__g = 0;
-					neighbor.__visited = false;
-					neighbor.__closed = false;
-					neighbor.__parent = null;
+					neighbor.__startTag = startTag;
+					neighbor.__startEstimatedCostRemaining = 0;
+					neighbor.__startRealPlusEstimatedCost = 0;
+					neighbor.__startRealCostFromOrigin = 0;
+					neighbor.__startVisited = false;
+					neighbor.__startClosed = false;
+					neighbor.__startParent = null;
 
 				}
 
-				const wasVisited = neighbor.__visited;
+				const wasVisited = neighbor.__startVisited;
 
 				if ( ! wasVisited )
-					if ( neighbor.__closed || ! neighbor.pathable( pathing ) ) continue;
+					if ( neighbor.__startClosed || ! neighbor.pathable( pathing ) ) continue;
 					else if ( ! cache._pathable( minimalTilemap, neighbor.x, neighbor.y ) ) {
 
-						neighbor.__closed = true;
+						neighbor.__startClosed = true;
 						continue;
 
 					}
 
-				const gScore = current.__g + 1;
+				const gScore = startCurrent.__startRealCostFromOrigin + 1;
 
 				// Line of sight test (this is laggy, so disabled ATM)
-				if ( current.__parent && cache._linearPathable( entity, current.__parent, neighbor ) ) {
+				if ( startCurrent.__startParent && cache._linearPathable( entity, startCurrent.__startParent, neighbor ) ) {
 
-					const gScore = current.__parent.__g + h( current.__parent, neighbor );
+					const gScore = startCurrent.__startParent.__startRealCostFromOrigin + h( startCurrent.__startParent, neighbor );
 					// First visit or better score than previously known
-					if ( ! neighbor.__visited || gScore < neighbor.__g ) {
+					if ( ! neighbor.__startVisited || gScore < neighbor.__startRealCostFromOrigin ) {
 
-						neighbor.__visited = true;
-						neighbor.__parent = current.__parent;
-						neighbor.__h = neighbor.__h || h( neighbor, realEnd );
-						neighbor.__g = gScore;
-						neighbor.__f = neighbor.__g + neighbor.__h;
+						neighbor.__startVisited = true;
+						neighbor.__startParent = startCurrent.__startParent;
+						neighbor.__startEstimatedCostRemaining = neighbor.__startEstimatedCostRemaining || h( neighbor, endReal );
+						neighbor.__startRealCostFromOrigin = gScore;
+						neighbor.__startRealPlusEstimatedCost = neighbor.__startRealCostFromOrigin + neighbor.__startEstimatedCostRemaining;
 
-						if ( neighbor.__h < best.__h || neighbor.__h === best.__h && neighbor.__g < best.__g )
-							best = neighbor;
+						if ( neighbor.__startEstimatedCostRemaining < startBest.__startEstimatedCostRemaining || neighbor.__startEstimatedCostRemaining === startBest.__startEstimatedCostRemaining && neighbor.__startRealCostFromOrigin < startBest.__startRealCostFromOrigin ) {
+
+							startBest = neighbor;
+							checksSinceBestChange = 0;
+
+						}
 
 						if ( ! wasVisited )
-							openHeap.push( neighbor );
+							startHeap.push( neighbor );
 
 						else {
 
-							const index = openHeap.indexOf( neighbor );
-							if ( index >= 0 ) openHeap.sinkDown( index );
+							const index = startHeap.indexOf( neighbor );
+							if ( index >= 0 ) startHeap.sinkDown( index );
 
 						}
 
@@ -667,25 +689,157 @@ export default class Tilemap {
 
 					// First visit or better score than previously known
 
-				} else if ( ! neighbor.__visited || gScore < neighbor.__g ) {
+				} else if ( ! neighbor.__startVisited || gScore < neighbor.__startRealCostFromOrigin ) {
 
-					neighbor.__visited = true;
-					neighbor.__parent = current;
-					neighbor.__h = neighbor.__h || h( neighbor, realEnd );
-					neighbor.__g = gScore;
-					neighbor.__f = neighbor.__g + neighbor.__h;
+					neighbor.__startVisited = true;
+					neighbor.__startParent = startCurrent;
+					neighbor.__startEstimatedCostRemaining = neighbor.__startEstimatedCostRemaining || h( neighbor, endReal );
+					neighbor.__startRealCostFromOrigin = gScore;
+					neighbor.__startRealPlusEstimatedCost = neighbor.__startRealCostFromOrigin + neighbor.__startEstimatedCostRemaining;
 
-					// if ( target.x === 2.5 && target.y === 1.5 ) debugger;
-					if ( neighbor.__h < best.__h || neighbor.__h === best.__h && neighbor.__g < best.__g )
-						best = neighbor;
+					if ( neighbor.__startEstimatedCostRemaining < startBest.__startEstimatedCostRemaining || neighbor.__startEstimatedCostRemaining === startBest.__startEstimatedCostRemaining && neighbor.__startRealCostFromOrigin < startBest.__startRealCostFromOrigin ) {
+
+						startBest = neighbor;
+						checksSinceBestChange = 0;
+
+					}
 
 					if ( ! wasVisited )
-						openHeap.push( neighbor );
+						startHeap.push( neighbor );
 
 					else {
 
-						const index = openHeap.indexOf( neighbor );
-						if ( index >= 0 ) openHeap.sinkDown( index );
+						const index = startHeap.indexOf( neighbor );
+						if ( index >= 0 ) startHeap.sinkDown( index );
+
+					}
+
+				}
+
+			}
+
+			// End to Start
+
+			if ( ! endHeap.length ) {
+
+				const { x, y } = this.nearestPathing( target.x, target.y, entity, tile => tile.__endTag !== endTag );
+				const newEndtile = this.grid[ Math.round( ( y - offset ) * this.resolution ) ][ Math.round( ( x - offset ) * this.resolution ) ];
+
+				endBest = newEndtile;
+				endHeap.push( newEndtile );
+				newEndtile.__endTag = endTag;
+				newEndtile.__endRealCostFromOrigin = h( endReal, newEndtile );
+				newEndtile.__endEstimatedCostRemaining = h( newEndtile, startReal );
+				newEndtile.__endRealPlusEstimatedCost = newEndtile.__endEstimatedCostRemaining + newEndtile.__endRealCostFromOrigin;
+				newEndtile.__endVisited = false;
+				newEndtile.__endClosed = false;
+				newEndtile.__endParent = null;
+
+			}
+
+			const endCurrent = endHeap.pop();
+
+			if ( endCurrent === startTile ) {
+
+				endBest = startTile;
+				break;
+
+			} else if ( endCurrent.__startTag === startTag ) {
+
+				startBest = endBest = endCurrent;
+				break;
+
+			}
+
+			endCurrent.__endClosed = true;
+
+			const endNeighbors = endCurrent.nodes;
+
+			for ( let i = 0, length = endNeighbors.length; i < length; i ++ ) {
+
+				const neighbor = endNeighbors[ i ];
+
+				if ( neighbor.__endTag !== endTag ) {
+
+					neighbor.__endTag = endTag;
+					neighbor.__endEstimatedCostRemaining = 0;
+					neighbor.__endRealPlusEstimatedCost = 0;
+					neighbor.__endRealCostFromOrigin = 0;
+					neighbor.__endVisited = false;
+					neighbor.__endClosed = false;
+					neighbor.__endParent = null;
+
+				}
+
+				const wasVisited = neighbor.__endVisited;
+
+				if ( ! wasVisited )
+					if ( neighbor.__endClosed || ! neighbor.pathable( pathing ) ) continue;
+					else if ( ! cache._pathable( minimalTilemap, neighbor.x, neighbor.y ) ) {
+
+						neighbor.__endClosed = true;
+						continue;
+
+					}
+
+				const gScore = endCurrent.__endRealCostFromOrigin + 1;
+
+				// Line of sight test (this is laggy, so disabled ATM)
+				if ( endCurrent.__endParent && cache._linearPathable( entity, endCurrent.__endParent, neighbor ) ) {
+
+					const gScore = endCurrent.__endParent.__endRealCostFromOrigin + h( endCurrent.__endParent, neighbor );
+					// First visit or better score than previously known
+					if ( ! neighbor.__endVisited || gScore < neighbor.__endRealCostFromOrigin ) {
+
+						neighbor.__endVisited = true;
+						neighbor.__endParent = endCurrent.__endParent;
+						neighbor.__endEstimatedCostRemaining = neighbor.__endEstimatedCostRemaining || h( neighbor, startReal );
+						neighbor.__endRealCostFromOrigin = gScore;
+						neighbor.__endRealPlusEstimatedCost = neighbor.__endRealCostFromOrigin + neighbor.__endEstimatedCostRemaining;
+
+						if ( neighbor.__endEstimatedCostRemaining < endBest.__endEstimatedCostRemaining || neighbor.__endEstimatedCostRemaining === endBest.__endEstimatedCostRemaining && neighbor.__endRealCostFromOrigin < endBest.__endRealCostFromOrigin ) {
+
+							endBest = neighbor;
+							checksSinceBestChange = 0;
+
+						}
+
+						if ( ! wasVisited )
+							endHeap.push( neighbor );
+
+						else {
+
+							const index = endHeap.indexOf( neighbor );
+							if ( index >= 0 ) endHeap.sinkDown( index );
+
+						}
+
+					}
+
+					// First visit or better score than previously known
+
+				} else if ( ! neighbor.__endVisited || gScore < neighbor.__endRealCostFromOrigin ) {
+
+					neighbor.__endVisited = true;
+					neighbor.__endParent = endCurrent;
+					neighbor.__endEstimatedCostRemaining = neighbor.__endEstimatedCostRemaining || h( neighbor, startReal );
+					neighbor.__endRealCostFromOrigin = gScore;
+					neighbor.__endRealPlusEstimatedCost = neighbor.__endRealCostFromOrigin + neighbor.__endEstimatedCostRemaining;
+
+					if ( neighbor.__endEstimatedCostRemaining < endBest.__endEstimatedCostRemaining || neighbor.__endEstimatedCostRemaining === endBest.__endEstimatedCostRemaining && neighbor.__endRealCostFromOrigin < endBest.__endRealCostFromOrigin ) {
+
+						endBest = neighbor;
+						checksSinceBestChange = 0;
+
+					}
+
+					if ( ! wasVisited )
+						endHeap.push( neighbor );
+
+					else {
+
+						const index = endHeap.indexOf( neighbor );
+						if ( index >= 0 ) endHeap.sinkDown( index );
 
 					}
 
@@ -694,13 +848,16 @@ export default class Tilemap {
 			}
 
 		}
+		// console.log( checksSinceBestChange );
 
 		if ( elems ) {
 
-			elems.forEach( elem => document.body.removeChild( elem ) );
+			elems.forEach( elem => arena.removeChild( elem ) );
 			elems.splice( 0 );
-			const max = this.grid.reduce( ( max, row ) => row.reduce( ( max, cell ) => Math.max( max, cell.__dirty === tag && cell.__visited ? cell.__f : - Infinity ), max ), - Infinity );
-			const min = this.grid.reduce( ( min, row ) => row.reduce( ( min, cell ) => Math.min( min, cell.__dirty === tag && cell.__visited ? cell.__f : Infinity ), min ), Infinity );
+			const max = this.grid.reduce( ( max, row ) =>
+				row.reduce( ( max, cell ) => Math.max( max, cell.__startTag === startTag && cell.__startVisited ? cell.__startRealPlusEstimatedCost : cell.__endTag === endTag && cell.__endVisited ? cell.__endRealPlusEstimatedCost : - Infinity ), max ), - Infinity );
+			const min = this.grid.reduce( ( min, row ) =>
+				row.reduce( ( min, cell ) => Math.min( min, cell.__startTag === startTag && cell.__startVisited ? cell.__startRealPlusEstimatedCost : cell.__endTag === endTag && cell.__endVisited ? cell.__endRealPlusEstimatedCost : Infinity ), min ), Infinity );
 			const d = max - min;
 			//   0,   0, 255 = 0
 			//   0, 255, 255 = 0.25
@@ -712,7 +869,7 @@ export default class Tilemap {
 			const b = v => v < 0.25 ? 1 : v < 0.5 ? ( 0.5 - v ) * 4 : 0;
 			for ( let y = 0; y < this.grid.length; y ++ )
 				for ( let x = 0; x < this.grid[ y ].length; x ++ )
-					if ( this.grid[ y ][ x ].__dirty === tag && this.grid[ y ][ x ].__visited ) {
+					if ( this.grid[ y ][ x ].__startTag === startTag && this.grid[ y ][ x ].__startVisited || this.grid[ y ][ x ].__endTag === endTag && this.grid[ y ][ x ].__endVisited ) {
 
 						const div = document.createElement( "div" );
 						div.style.position = "absolute";
@@ -721,10 +878,10 @@ export default class Tilemap {
 						div.style.zIndex = 10000;
 						div.style.width = "16px";
 						div.style.height = "16px";
-						const v = ( this.grid[ y ][ x ].__f - min ) / d;
+						const v = ( ( this.grid[ y ][ x ].__startTag === startTag ? this.grid[ y ][ x ].__startRealPlusEstimatedCost : this.grid[ y ][ x ].__endRealPlusEstimatedCost ) - min ) / d;
 						div.style.background = `rgba(${r( v ) * 255}, ${g( v ) * 255}, ${b( v ) * 255}, 0.5)`;
 						div.cell = this.grid[ y ][ x ];
-						document.body.appendChild( div );
+						arena.appendChild( div );
 						elems.push( div );
 
 					}
@@ -732,27 +889,26 @@ export default class Tilemap {
 		}
 
 		const path = [];
-		let current = best;
+		let startCurrent = startBest;
+		while ( startCurrent ) {
 
-		while ( current ) {
+			path.unshift( startCurrent );
+			startCurrent = startCurrent.__startParent;
 
-			path.unshift( current );
-			current = current.__parent;
+		}
+		if ( startBest === endBest ) {
+
+			let endCurrent = startBest.__endParent;
+			while ( endCurrent ) {
+
+				path.push( endCurrent );
+				endCurrent = endCurrent.__endParent;
+
+			}
 
 		}
 
-		// console.log( "before", path );
-		// if ( path.length > 3 ) debugger;
-		// this._smooth( entity, path, cache );
-		// console.log( "after", path );
-
-		// console.table( Object.entries( cache ).map( ( [ fn, { misses, hits } ] ) => ( {
-
-		// 	fn, misses, hits,
-
-		// } ) ) );
-
-		// console.table( Object.entries( cache ).map( ( [ n, v ] ) => ( { n, misses: v.misses, hits: v.hits } ) ) );
+		this._smooth( entity, path, cache );
 
 		if ( removed ) this.addEntity( entity );
 
@@ -762,7 +918,8 @@ export default class Tilemap {
 		);
 
 		// We didn't reach the end; pick closest node
-		if ( best !== targetTile )
+		const last = path[ path.length - 1 ];
+		if ( last !== targetTile )
 			return [
 				...pathWorld[ 0 ].x !== entity.x || pathWorld[ 0 ].y !== entity.y ?
 					[ { x: entity.x, y: entity.y } ] :
@@ -776,20 +933,19 @@ export default class Tilemap {
 				[ { x: entity.x, y: entity.y } ] :
 				[ pathWorld[ 0 ] ],
 			...pathWorld.slice( 1 ),
-			...pathWorld[ pathWorld.length - 1 ].x !== realEnd.x / this.resolution || pathWorld[ pathWorld.length - 1 ].y !== realEnd.y / this.resolution ?
-				[ { x: realEnd.x / this.resolution, y: realEnd.y / this.resolution } ] :
+			...pathWorld[ pathWorld.length - 1 ].x !== endReal.x / this.resolution || pathWorld[ pathWorld.length - 1 ].y !== endReal.y / this.resolution ?
+				[ { x: endReal.x / this.resolution, y: endReal.y / this.resolution } ] :
 				[],
 		];
 
 	}
 
-	_smooth( entity, path, cache ) {
+	_smooth( entity, path, cache = this ) {
 
 		for ( let skip = path.length - 1; skip > 1; skip -- )
 			for ( let index = 0; index < path.length - skip; index ++ ) {
 
-				// if ( index === 1 && skip === 2 && entity.radius === 0.5 ) debugger;
-				const visible = ( cache || this )._linearPathable( entity, path[ index ], path[ index + skip ] );
+				const visible = cache._linearPathable( entity, path[ index ], path[ index + skip ] );
 				if ( visible ) {
 
 					path.splice( index + 1, skip - 1 );

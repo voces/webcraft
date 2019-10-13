@@ -5,7 +5,6 @@ import assert from "../../test/assert.js";
 
 import PathingMap from "./PathingMap.js";
 import { PATHING_TYPES } from "../constants.js";
-import { one, two } from "./PathingMap.testdata.js";
 import array2 from "../../test/array2.js";
 import jsStringify from "../../test/jsStringify.js";
 
@@ -633,23 +632,6 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 		} );
 
-		it( "generated", () => {
-
-			one.forEach( ( { x, y, nearest: expectedNearest, gridBefore, gridAfter } ) => {
-
-				const { pathingMap, nearest, entity } = setup( { x, y } );
-
-				assertGrid( pathingMap, gridBefore );
-				assert.deepStrictEqual( nearest, expectedNearest );
-
-				pathingMap.addEntity( entity );
-
-				assertGrid( pathingMap, gridAfter );
-
-			} );
-
-		} );
-
 	} );
 
 	// These are essentially "farms" that are 2x2, all spirals go up
@@ -717,14 +699,14 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const { pathingMap, nearest, entity } = setup( { x: 3, y: 3 } );
 			pathingMap.addEntity( entity );
 
-			assert.deepStrictEqual( nearest, { x: 2, y: 1 } );
+			assert.deepStrictEqual( nearest, { x: 2, y: 5 } );
 			assertGrid( pathingMap, [
-				[ 0, 1, 1, 0, 0, 0 ],
-				[ 0, 1, 1, 0, 0, 0 ],
-				[ 0, 0, 3, 3, 0, 0 ],
-				[ 0, 0, 3, 3, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
+				[ 0, 0, 3, 3, 0, 0 ],
+				[ 0, 0, 3, 3, 0, 0 ],
+				[ 0, 1, 1, 0, 0, 0 ],
+				[ 0, 1, 1, 0, 0, 0 ],
 			] );
 
 		} );
@@ -739,15 +721,15 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 			assert.deepStrictEqual(
 				nearest,
-				{ x: 3, y: 1 },
+				{ x: 4, y: 1 },
 			);
 
 			Object.assign( entityB, nearest );
 			pathingMap.addEntity( entityB );
 
 			assertGrid( pathingMap, [
-				[ 0, 0, 1, 1, 0, 0 ],
-				[ 0, 0, 1, 1, 0, 0 ],
+				[ 0, 0, 0, 1, 1, 0 ],
+				[ 0, 0, 0, 1, 1, 0 ],
 				[ 0, 0, 1, 1, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
@@ -766,7 +748,7 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 			assert.deepStrictEqual(
 				nearest,
-				{ x: 4, y: 5 },
+				{ x: 3, y: 5 },
 			);
 
 			Object.assign( entityB, nearest );
@@ -777,8 +759,8 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0 ],
-				[ 0, 0, 0, 1, 1, 0 ],
-				[ 0, 0, 0, 1, 1, 0 ],
+				[ 0, 0, 1, 1, 0, 0 ],
+				[ 0, 0, 1, 1, 0, 0 ],
 			] );
 
 		} );
@@ -793,7 +775,7 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 			assert.deepStrictEqual(
 				nearest,
-				{ x: 5, y: 2 },
+				{ x: 5, y: 4 },
 			);
 
 			Object.assign( entityB, nearest );
@@ -801,10 +783,10 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 			assertGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0 ],
-				[ 0, 0, 0, 0, 1, 1 ],
-				[ 0, 0, 1, 1, 1, 1 ],
-				[ 0, 0, 1, 1, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
+				[ 0, 0, 1, 1, 0, 0 ],
+				[ 0, 0, 1, 1, 1, 1 ],
+				[ 0, 0, 0, 0, 1, 1 ],
 				[ 0, 0, 0, 0, 0, 0 ],
 			] );
 
@@ -820,7 +802,7 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 			assert.deepStrictEqual(
 				nearest,
-				{ x: 1, y: 4 },
+				{ x: 1, y: 2 },
 			);
 
 			Object.assign( entityB, nearest );
@@ -828,29 +810,12 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 			assertGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0 ],
-				[ 0, 0, 0, 0, 0, 0 ],
-				[ 0, 0, 1, 1, 0, 0 ],
-				[ 1, 1, 1, 1, 0, 0 ],
 				[ 1, 1, 0, 0, 0, 0 ],
+				[ 1, 1, 1, 1, 0, 0 ],
+				[ 0, 0, 1, 1, 0, 0 ],
+				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
 			] );
-
-		} );
-
-		it( "generated", () => {
-
-			two.forEach( ( { x, y, nearest: expectedNearest, gridBefore, gridAfter } ) => {
-
-				const { pathingMap, nearest, entity } = setup( { x, y } );
-
-				assertGrid( pathingMap, gridBefore );
-				assert.deepStrictEqual( nearest, expectedNearest, `x=${x} y=${y}` );
-
-				pathingMap.addEntity( entity );
-
-				assertGrid( pathingMap, gridAfter );
-
-			} );
 
 		} );
 
