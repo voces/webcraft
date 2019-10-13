@@ -1,7 +1,13 @@
 
+import theDump from "./theDump.js";
 import theFarm from "./theFarm.js";
 import theGap from "./theGap.js";
 import theRock from "./theRock.js";
+import theTamedWoods from "./theTamedWoods.js";
+import theTarget from "./theTarget.js";
+import theTinyRectangle from "./theTinyRectangle.js";
+import theWoods from "./theWoods.js";
+
 import { PATHING_TYPES } from "../pathing/constants.js";
 
 const getHeight = arena => arena.layers.length;
@@ -23,7 +29,12 @@ const addPathing = arena =>
 	} );
 
 export default [
+	theDump,
 	theFarm,
 	theGap,
 	theRock,
+	theTamedWoods,
+	theTarget,
+	theTinyRectangle,
+	theWoods,
 ].map( addPathing );

@@ -27,8 +27,7 @@ export default class Game {
 	constructor() {
 
 		emitter( this );
-		this.setArena( 2 );
-		// this.setArena( Math.floor( ( this.random || Math.random )() * arenas.length ) );
+		this.setArena( Math.floor( ( this.random || Math.random )() * arenas.length ) );
 
 	}
 

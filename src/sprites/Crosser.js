@@ -81,25 +81,15 @@ export default class Crosser extends Unit {
 
 					this.action = undefined;
 
-					Object.assign( this, { x, y } );
-
-					// if ( path.distance < updateProgress + BUILD_DISTANCE ) {
-
-					// 	this.action = undefined;
-
-					// 	const actualDistance = Math.sqrt( ( path.target.x - target.x ) ** 2 + ( path.target.y - target.y ) ** 2 );
-					// 	// If the calculated path gets us there, create the obstruction
-					// 	if ( actualDistance < BUILD_DISTANCE ) {
-
-					// 		// Otherwise assign final coordinates
-
-					// 	} else Object.assign( this, { x, y } );
+					const position = pathingMap.withoutEntity( this, () => pathingMap.nearestPathing( x, y, this ) );
+					Object.assign( this, position );
 
 				} else {
 
 					// Update self
-					this._x = x;
-					this._y = y;
+					const position = pathingMap.withoutEntity( this, () => pathingMap.nearestPathing( x, y, this ) );
+					this._x = position.x;
+					this._y = position.y;
 
 					// Start new build path
 					path = tweenPoints( pathingMap.path( this, target ) );

@@ -1,5 +1,5 @@
 
-import { document, window } from "../util/globals.js";
+import { document, localStorage, window } from "../util/globals.js";
 
 const hotkeys = document.getElementById( "hotkeys" );
 
@@ -9,10 +9,14 @@ window.addEventListener( "keydown", e => {
 
 		e.preventDefault();
 
-		hotkeys.style.visibility = hotkeys.style.visibility === "hidden" ?
-			"visible" :
-			"hidden";
+		const showHotkeysUI = hotkeys.style.visibility === "hidden";
+
+		hotkeys.style.visibility = showHotkeysUI ? "visible" : "hidden";
+		localStorage.setItem( "showHotkeysUI", showHotkeysUI );
 
 	}
 
 } );
+
+const showHotkeysUI = localStorage.getItem( "showHotkeysUI" ) === "true";
+if ( ! showHotkeysUI ) hotkeys.style.visibility = "hidden";

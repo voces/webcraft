@@ -1,7 +1,7 @@
 
 import BinaryHeap from "./BinaryHeap.js";
 import memoize from "./memoize.js";
-import { PATHING_TYPES } from "../constants.js";
+import { DIRECTION, PATHING_TYPES } from "../constants.js";
 
 const DEFAULT_RESOLUTION = 1;
 
@@ -300,11 +300,11 @@ export default class Tilemap {
 		let direction =
 			Math.abs( 0.5 - xMiss ) > Math.abs( 0.5 - yMiss ) ?
 				xMiss < 0.5 ?
-					1 :
-					3 :
-				yMiss < 0.5 ?
-					2 :
-					0;
+					DIRECTION.LEFT :
+					DIRECTION.RIGHT :
+				yMiss < 0.5 && yMiss > 0 ?
+					DIRECTION.UP :
+					DIRECTION.DOWN;
 
 		let steps = 0;
 		const stride = entity.structure ? 2 : 1;
@@ -354,10 +354,10 @@ export default class Tilemap {
 
 			switch ( direction ) {
 
-				case 0: yTile += stride; break;
-				case 1: xTile -= stride; break;
-				case 2: yTile -= stride; break;
-				case 3: xTile += stride; break;
+				case DIRECTION.DOWN: yTile += stride; break;
+				case DIRECTION.RIGHT: xTile += stride; break;
+				case DIRECTION.UP: yTile -= stride; break;
+				case DIRECTION.LEFT: xTile -= stride; break;
 
 			}
 
