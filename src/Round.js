@@ -6,7 +6,7 @@ import Crosser from "./sprites/Crosser.js";
 import Defender from "./sprites/Defender.js";
 import dragSelect from "./sprites/dragSelect.js";
 import game from "./index.js";
-import elo from "./players/elo.js";
+import elo, { updateDisplay } from "./players/elo.js";
 import emitter from "./emitter.js";
 import { panTo } from "./players/camera.js";
 import network from "./network.js";
@@ -64,6 +64,8 @@ export default class Round {
 				this.defenders.push( player );
 
 		}
+
+		updateDisplay();
 
 	}
 

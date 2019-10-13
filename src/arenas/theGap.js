@@ -2,6 +2,7 @@
 import { stringMap } from "./util.js";
 
 export default {
+	name: "The Gap",
 	// For jumping
 	layers: stringMap( `
         222222222222222222222222

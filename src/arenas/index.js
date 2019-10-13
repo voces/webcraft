@@ -1,7 +1,7 @@
 
-import a from "./a.js";
-import b from "./b.js";
-import c from "./c.js";
+import theFarm from "./theFarm.js";
+import theGap from "./theGap.js";
+import theRock from "./theRock.js";
 import { PATHING_TYPES } from "../pathing/constants.js";
 
 const getHeight = arena => arena.layers.length;
@@ -23,7 +23,7 @@ const addPathing = arena =>
 	} );
 
 export default [
-	a,
-	b,
-	c,
+	theFarm,
+	theGap,
+	theRock,
 ].map( addPathing );

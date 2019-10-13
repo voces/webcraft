@@ -2,6 +2,7 @@
 import { stringMap } from "./util.js";
 
 export default {
+	name: "The Farm",
 	// For jumping
 	layers: stringMap( `
         2222222222222222222222222222222222222222222222222222222

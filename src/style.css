@@ -9,8 +9,8 @@
 body {
     margin: 0;
 	background-color: #333;
-	max-width: 100vw;
-	max-height: 100vh;
+	width: 100vw;
+	height: 100vh;
     overflow: hidden;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     text-shadow: black 1px 1px 0.125em;
@@ -128,7 +128,7 @@ body {
 #scores {
     background: var(--bluebg);
     display: inline-grid;
-    grid-template-columns: fit-content(4em) fit-content(4em);
+    grid-template-columns: fit-content(4em) fit-content(4em) fit-content(4em);
     color: white;
     font-weight: bold;
     border-radius: 0.5em;

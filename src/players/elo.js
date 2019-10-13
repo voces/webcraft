@@ -57,6 +57,11 @@ export const updateDisplay = () => {
 		playerName.classList.add( "player" );
 		container.appendChild( playerName );
 
+		const plays = document.createElement( "span" );
+		plays.textContent = player.crosserPlays.toFixed( 0 );
+		plays.classList.add( "plays" );
+		container.appendChild( plays );
+
 		const score = document.createElement( "span" );
 		score.textContent = player.score.standard.toFixed( 0 );
 		score.classList.add( "score" );

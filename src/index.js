@@ -14,9 +14,7 @@ import { patchInState } from "./players/Player.js";
 import "./players/playerLogic.js";
 import "./sprites/spriteLogic.js";
 import "./players/camera.js";
-import "./ui/clock.js";
-import "./ui/waitingSplash.js";
-import "./ui/hotkeys.js";
+import "./ui/index.js";
 
 // eslint-disable-next-line no-undef
 const game = globalThis.game = new Game();

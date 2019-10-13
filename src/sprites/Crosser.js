@@ -7,7 +7,8 @@ import game from "../index.js";
 import { stop as stopPlacement, active as activePlacement } from "./obstructionPlacement.js";
 import Blueprint from "./obstructions/Blueprint.js";
 
-const BUILD_DISTANCE = 2;
+// Math.SQRT2 (~1.41) allows building tinies across diag space
+const BUILD_DISTANCE = 1.4;
 
 export default class Crosser extends Unit {
 
@@ -47,50 +48,60 @@ export default class Crosser extends Unit {
 				const { x, y } = path( updateProgress );
 				if ( isNaN( x ) || isNaN( y ) ) throw new Error( `Returning NaN location x=${x} y=${y}` );
 
-				if ( path.distance < updateProgress + BUILD_DISTANCE ) {
+				const actualDistance = Math.sqrt( ( x - target.x ) ** 2 + ( y - target.y ) ** 2 );
+				if ( actualDistance < BUILD_DISTANCE ) {
+
+					console.log( actualDistance );
 
 					this.action = undefined;
 
-					const actualDistance = Math.sqrt( ( path.target.x - target.x ) ** 2, ( path.target.y - target.y ) ** 2 );
-					// If the calculated path gets us there, create the obstruction
-					if ( actualDistance < BUILD_DISTANCE ) {
+					const obstruction = new Obstruction( {
+						x: target.x,
+						y: target.y,
+						owner: this.owner,
+					} );
 
-						const obstruction = new Obstruction( {
-							x: target.x,
-							y: target.y,
-							owner: this.owner,
-						} );
+					pathingMap.withoutEntity( this, () => {
 
-						pathingMap.withoutEntity( this, () => {
+						if ( pathingMap.pathable( obstruction, target.x, target.y ) ) {
 
-							if ( pathingMap.pathable( obstruction, target.x, target.y ) ) {
+							pathingMap.addEntity( obstruction );
+							this.obstructions.push( obstruction );
 
-								pathingMap.addEntity( obstruction );
-								this.obstructions.push( obstruction );
+						} else
+							obstruction.kill( { removeImmediately: true } );
 
-							} else
-								obstruction.kill( { removeImmediately: true } );
+						const { x, y } = path( Math.max( path.distance - BUILD_DISTANCE, 0 ) );
+						const position = pathingMap.nearestSpiralPathing( x, y, this );
+						Object.assign( this, position );
 
-							const position = pathingMap.nearestSpiralPathing( x, y, this );
-							Object.assign( this, position );
+					} );
 
-						} );
+					// We're never going to get there
 
-						// Otherwise assign final coordinates
+				} else if ( path.distance < updateProgress ) {
 
-					} else {
+					this.action = undefined;
 
-						Object.assign( this, { x, y } );
-						pathingMap.updateEntity( this );
+					Object.assign( this, { x, y } );
 
-					}
+					// if ( path.distance < updateProgress + BUILD_DISTANCE ) {
+
+					// 	this.action = undefined;
+
+					// 	const actualDistance = Math.sqrt( ( path.target.x - target.x ) ** 2 + ( path.target.y - target.y ) ** 2 );
+					// 	// If the calculated path gets us there, create the obstruction
+					// 	if ( actualDistance < BUILD_DISTANCE ) {
+
+					// 		// Otherwise assign final coordinates
+
+					// 	} else Object.assign( this, { x, y } );
 
 				} else {
 
 					// Update self
 					this._x = x;
 					this._y = y;
-					pathingMap.updateEntity( this );
 
 					// Start new build path
 					path = tweenPoints( pathingMap.path( this, target ) );

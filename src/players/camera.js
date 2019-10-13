@@ -3,6 +3,7 @@ import game from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import tweenPoints from "../util/tweenPoints.js";
 import { document, requestAnimationFrame, window } from "../util/globals.js";
+import dragSelect from "../sprites/dragSelect.js";
 
 const CAMERA_SPEED = 800;
 
@@ -14,14 +15,20 @@ let knownRound;
 let requestedAnimationFrame;
 let pan;
 
-const wasdMap = {
-	// w: "ArrowUp",
-	// a: "ArrowLeft",
-	// s: "ArrowDown",
-	// d: "ArrowRight",
-};
-
 window.addEventListener( "keydown", e => {
+
+	if ( e.key === "f" && e.ctrlKey ) {
+
+		e.preventDefault();
+
+		if ( followInterval ) {
+
+			clearInterval( followInterval );
+			followInterval = undefined;
+
+		} else followInterval = setInterval( follow, 500 );
+
+	}
 
 	if ( ! game.round ) return;
 
@@ -33,7 +40,7 @@ window.addEventListener( "keydown", e => {
 	}
 	knownRound = game.round;
 
-	const key = wasdMap[ e.key ] || e.key;
+	const key = e.key;
 	if ( key.startsWith( "Arrow" ) && ! keyboard[ e.key ] ) {
 
 		if ( pan ) pan = undefined;
@@ -48,7 +55,7 @@ window.addEventListener( "keyup", e => {
 
 	if ( ! game.round || ! keyboard ) return;
 
-	const key = wasdMap[ e.key ] || e.key;
+	const key = e.key;
 	if ( key.startsWith( "Arrow" ) )
 		keyboard[ key ] = false;
 
@@ -123,6 +130,18 @@ const renderCamera = time => {
 		if ( mouse.left ) arena.style.left = ( arena.x = arena.x + delta * CAMERA_SPEED ) + "px";
 		if ( mouse.right ) arena.style.left = ( arena.x = arena.x - delta * CAMERA_SPEED ) + "px";
 
+		if ( mouse.up )
+			if ( mouse.left ) document.body.style.cursor = "nw-resize";
+			else if ( mouse.right ) document.body.style.cursor = "ne-resize";
+			else document.body.style.cursor = "n-resize";
+		else if ( mouse.down )
+			if ( mouse.left ) document.body.style.cursor = "sw-resize";
+			else if ( mouse.right ) document.body.style.cursor = "se-resize";
+			else document.body.style.cursor = "s-resize";
+		else if ( mouse.left ) document.body.style.cursor = "w-resize";
+		else if ( mouse.right ) document.body.style.cursor = "e-resize";
+		else document.body.style.cursor = "";
+
 		if ( Object.values( keyboard ).some( Boolean ) || Object.values( mouse ).some( Boolean ) )
 			requestedAnimationFrame = requestAnimationFrame( renderCamera );
 		else requestedAnimationFrame = undefined;
@@ -148,5 +167,24 @@ export const panTo = ( { x, y, duration = 0.125 } ) => {
 	);
 
 	renderCamera();
+
+};
+
+let followInterval;
+const follow = () => {
+
+	const selection = dragSelect.getSelection();
+
+	if ( selection.length === 0 ) return;
+
+	const { xSum, ySum } = selection.reduce(
+		( { xSum, ySum }, { x, y } ) =>
+			( { xSum: xSum + x, ySum: ySum + y } ),
+		{ xSum: 0, ySum: 0 }
+	);
+
+	const x = xSum / selection.length;
+	const y = ySum / selection.length;
+	panTo( { x, y, duration: 10 } );
 
 };
