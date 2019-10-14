@@ -62,6 +62,31 @@ class Tile {
 const elems = false;
 const arena = document.getElementById( "arena" );
 
+//   0,   0, 255 = 0
+//   0, 255, 255 = 0.25
+//   0, 255,   0 = 0.5
+// 255, 255,   0 = 0.75
+// 255,   0,   0 = 1
+const r = v => v < 0.5 ? 0 : v < 0.75 ? ( v - 0.5 ) * 4 : 1;
+const g = v => v < 0.25 ? v * 4 : v < 0.75 ? 1 : ( 1 - v ) * 4;
+const b = v => v < 0.25 ? 1 : v < 0.5 ? ( 0.5 - v ) * 4 : 0;
+
+const placeTile = ( x, y, v ) => {
+
+	const div = document.createElement( "div" );
+	div.style.position = "absolute";
+	div.style.top = y * 16 + "px";
+	div.style.left = x * 16 + "px";
+	div.style.zIndex = 10000;
+	div.style.width = "16px";
+	div.style.height = "16px";
+	div.style.background = `rgba(${r( v ) * 255}, ${g( v ) * 255}, ${b( v ) * 255}, 0.5)`;
+	// div.cell = this.grid[ y ][ x ];
+	arena.appendChild( div );
+	elems.push( div );
+
+};
+
 // eslint-disable-next-line no-unused-vars
 export default class Tilemap {
 
@@ -656,7 +681,7 @@ export default class Tilemap {
 				const gScore = startCurrent.__startRealCostFromOrigin + 1;
 
 				// Line of sight test (this is laggy, so disabled ATM)
-				if ( startCurrent.__startParent && cache._linearPathable( entity, startCurrent.__startParent, neighbor ) ) {
+				if ( startCurrent.__startParent && cache._linearPathable( entity, startCurrent.__startParent, neighbor, cache ) ) {
 
 					const gScore = startCurrent.__startParent.__startRealCostFromOrigin + h( startCurrent.__startParent, neighbor );
 					// First visit or better score than previously known
@@ -785,7 +810,7 @@ export default class Tilemap {
 				const gScore = endCurrent.__endRealCostFromOrigin + 1;
 
 				// Line of sight test (this is laggy, so disabled ATM)
-				if ( endCurrent.__endParent && cache._linearPathable( entity, endCurrent.__endParent, neighbor ) ) {
+				if ( endCurrent.__endParent && cache._linearPathable( entity, endCurrent.__endParent, neighbor, cache ) ) {
 
 					const gScore = endCurrent.__endParent.__endRealCostFromOrigin + h( endCurrent.__endParent, neighbor );
 					// First visit or better score than previously known
@@ -848,7 +873,6 @@ export default class Tilemap {
 			}
 
 		}
-		// console.log( checksSinceBestChange );
 
 		if ( elems ) {
 
@@ -859,32 +883,10 @@ export default class Tilemap {
 			const min = this.grid.reduce( ( min, row ) =>
 				row.reduce( ( min, cell ) => Math.min( min, cell.__startTag === startTag && cell.__startVisited ? cell.__startRealPlusEstimatedCost : cell.__endTag === endTag && cell.__endVisited ? cell.__endRealPlusEstimatedCost : Infinity ), min ), Infinity );
 			const d = max - min;
-			//   0,   0, 255 = 0
-			//   0, 255, 255 = 0.25
-			//   0, 255,   0 = 0.5
-			// 255, 255,   0 = 0.75
-			// 255,   0,   0 = 1
-			const r = v => v < 0.5 ? 0 : v < 0.75 ? ( v - 0.5 ) * 4 : 1;
-			const g = v => v < 0.25 ? v * 4 : v < 0.75 ? 1 : ( 1 - v ) * 4;
-			const b = v => v < 0.25 ? 1 : v < 0.5 ? ( 0.5 - v ) * 4 : 0;
 			for ( let y = 0; y < this.grid.length; y ++ )
 				for ( let x = 0; x < this.grid[ y ].length; x ++ )
-					if ( this.grid[ y ][ x ].__startTag === startTag && this.grid[ y ][ x ].__startVisited || this.grid[ y ][ x ].__endTag === endTag && this.grid[ y ][ x ].__endVisited ) {
-
-						const div = document.createElement( "div" );
-						div.style.position = "absolute";
-						div.style.top = y * 16 + "px";
-						div.style.left = x * 16 + "px";
-						div.style.zIndex = 10000;
-						div.style.width = "16px";
-						div.style.height = "16px";
-						const v = ( ( this.grid[ y ][ x ].__startTag === startTag ? this.grid[ y ][ x ].__startRealPlusEstimatedCost : this.grid[ y ][ x ].__endRealPlusEstimatedCost ) - min ) / d;
-						div.style.background = `rgba(${r( v ) * 255}, ${g( v ) * 255}, ${b( v ) * 255}, 0.5)`;
-						div.cell = this.grid[ y ][ x ];
-						arena.appendChild( div );
-						elems.push( div );
-
-					}
+					if ( this.grid[ y ][ x ].__startTag === startTag && this.grid[ y ][ x ].__startVisited || this.grid[ y ][ x ].__endTag === endTag && this.grid[ y ][ x ].__endVisited )
+						placeTile( x, y, ( ( this.grid[ y ][ x ].__startTag === startTag ? this.grid[ y ][ x ].__startRealPlusEstimatedCost : this.grid[ y ][ x ].__endRealPlusEstimatedCost ) - min ) / d );
 
 		}
 
@@ -943,18 +945,14 @@ export default class Tilemap {
 	_smooth( entity, path, cache = this ) {
 
 		for ( let skip = path.length - 1; skip > 1; skip -- )
-			for ( let index = 0; index < path.length - skip; index ++ ) {
-
-				const visible = cache._linearPathable( entity, path[ index ], path[ index + skip ] );
-				if ( visible ) {
+			for ( let index = 0; index < path.length - skip; index ++ )
+				if ( cache._linearPathable( entity, path[ index ], path[ index + skip ], cache ) ) {
 
 					path.splice( index + 1, skip - 1 );
-					skip ++;
+					skip = path.length;
 					break;
 
 				}
-
-			}
 
 	}
 
@@ -993,7 +991,7 @@ export default class Tilemap {
 			return false;
 
 		// Assert the path is pathable
-		const tan = Math.abs( ( endTile.x - startTile.x ) / ( endTile.y - startTile.y ) );
+		const tan = ( endTile.x - startTile.x ) / ( endTile.y - startTile.y );
 		const nudge = Number.EPSILON * entity.radius * this.widthWorld;
 		const radius = entity.radius * this.resolution - nudge;
 
@@ -1001,8 +999,10 @@ export default class Tilemap {
 
 			const yLow = Math.min( startTile.y, endTile.y );
 			const yHigh = Math.max( startTile.y, endTile.y );
-			const xLow = Math.min( Math.min( startTile.x, endTile.x ) ) - radius + entityOffset;
-			const xHigh = Math.max( Math.min( startTile.x, endTile.x ) ) + radius + entityOffset;
+			const xStart = startTile.y < endTile.y ? startTile.x : endTile.x;
+			const xLow = xStart - radius + entityOffset;
+			const xHigh = xStart + radius + entityOffset;
+
 			for ( let y = yLow; y <= yHigh; y += 0.5 ) {
 
 				const start = Math.floor( xLow + ( ( y - yLow ) * tan || 0 ) );
@@ -1030,12 +1030,14 @@ export default class Tilemap {
 
 		} else {
 
-			const tan = Math.abs( ( endTile.y - startTile.y ) / ( endTile.x - startTile.x ) );
+			const tan = ( endTile.y - startTile.y ) / ( endTile.x - startTile.x );
 
 			const xLow = Math.min( startTile.x, endTile.x );
 			const xHigh = Math.max( startTile.x, endTile.x );
-			const yLow = Math.min( Math.min( startTile.y, endTile.y ) ) - radius + entityOffset;
-			const yHigh = Math.max( Math.min( startTile.y, endTile.y ) ) + radius + entityOffset;
+			const yStart = startTile.x < endTile.x ? startTile.y : endTile.y;
+			const yLow = yStart - radius + entityOffset;
+			const yHigh = yStart + radius + entityOffset;
+
 			for ( let x = xLow; x <= xHigh; x += 0.5 ) {
 
 				const start = Math.floor( yLow + ( ( x - xLow ) * tan || 0 ) );
