@@ -3,7 +3,7 @@ import network from "./network.js";
 
 import Game from "./Game.js";
 // import Random from "./lib/alea.js";
-import { document, location, window } from "./util/globals.js";
+import { document, window } from "./util/globals.js";
 import { patchInState } from "./players/Player.js";
 // import Player from "./players/Player.js";
 // import {
@@ -81,14 +81,13 @@ window.addEventListener( "contextmenu", e => {
 
 } );
 
-const host = location.port ? `${location.hostname}:${8080}` : `ws.${location.hostname}`;
 let remainingErrors = 3;
 window.addEventListener( "error", event => {
 
 	if ( remainingErrors === 0 ) return;
 	remainingErrors --;
 
-	fetch( `http://${host}/error`, {
+	fetch( `http://${activeHost}/error`, {
 		method: "POST",
 		body: JSON.stringify( { stack: event.error.stack } ),
 		headers: { "Content-Type": "application/json" },

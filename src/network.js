@@ -2,15 +2,19 @@
 import emitter from "./emitter.js";
 import game from "./index.js";
 import newPingMessage from "./ui/ping.js";
+import { location } from "./util/globals.js";
 
 let connection;
 
+export const activeHost = location.port ?
+	`${location.hostname}:${8080}` :
+	`ws.${location.hostname}`;
+
 const network = emitter( {
 	send: data => connection.send( JSON.stringify( Object.assign( data, { sent: performance.now() } ) ) ),
-	connect: ( username = "" ) => {
+	connect: token => {
 
-		const host = location.port ? `${location.hostname}:${8080}` : `ws.${location.hostname}`;
-		connection = new WebSocket( `ws://${host}?${username}` );
+		connection = new WebSocket( `ws://${activeHost}?${encodeURIComponent( token )}` );
 
 		connection.addEventListener( "message", message => {
 
@@ -33,3 +37,24 @@ const network = emitter( {
 } );
 
 export default network;
+
+const wrappedFetch = ( url, body, options = {} ) => {
+
+	if ( ! url.match( /^\w+:\/\// ) )
+		url = `http://${activeHost}/${url.replace( /^\//, "" )}`;
+
+	if ( ! options.headers ) options.headers = {};
+	if ( ! options.headers[ "Content-Type" ] )
+		options.headers[ "Content-Type" ] = "application/json";
+
+	if ( body && typeof body !== "string" )
+		options.body = JSON.stringify( body );
+
+	if ( options.body && options.method === undefined )
+		options.method = "POST";
+
+	return fetch( url, options ).then( r => r.json() );
+
+};
+
+export { wrappedFetch as fetch };
