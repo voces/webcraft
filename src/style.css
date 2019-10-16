@@ -112,8 +112,8 @@ body {
 
 #top-right {
     position: absolute;
-    top: 0.5em;
-    right: 0.5em;
+    top: 1em;
+    right: 1em;
     flex: row;
 }
 
@@ -133,7 +133,6 @@ body {
     font-weight: bold;
     border-radius: 0.5em;
     box-shadow: 0 0 1em 0.125em var(--blueshadow);
-    padding: 0.25em 0.5em;
 }
 #scores:empty { visibility: hidden; }
 
@@ -229,9 +228,12 @@ button:hover {
 .spacing4 > * { margin: 4px; }
 .spacing4 > :first-child { margin-top: 0; margin-left: 0; }
 .spacing4 > :last-child { margin-bottom: 0; margin-right: 0; }
-.spacing8 > * { margin: 8px; }
-.spacing8 > :first-child { margin-top: 0; margin-left: 0; }
-.spacing8 > :last-child { margin-bottom: 0; margin-right: 0; }
+.v-spacing-8 > * { margin-top: 8px; margin-bottom: 8px }
+.v-spacing-8 > :first-child { margin-top: 0; }
+.v-spacing-8 > :last-child { margin-bottom: 0; }
+.h-spacing-8 > * { margin-left: 8px; margin-right: 8px; }
+.h-spacing-8 > :first-child { margin-left: 0; }
+.h-spacing-8 > :last-child { margin-right: 0; }
 
 #ping {
     font-size: 80%;
