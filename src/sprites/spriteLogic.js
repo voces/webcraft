@@ -22,38 +22,50 @@ import { panTo } from "../players/camera.js";
 
 const arena = document.getElementById( "arena" );
 
+const isOwn = u => u.owner === game.localPlayer;
+const includesSelectedUnit = condition => () =>
+	dragSelect.selection.some( condition );
+const hasOwnCrosser = includesSelectedUnit( u =>
+	isOwn( u ) && u instanceof Crosser );
+const hasOwnCrosserOrObstruction = includesSelectedUnit( u =>
+	isOwn( u ) && ( u instanceof Crosser || u instanceof Obstruction ) );
+const hasOwnUnit = includesSelectedUnit( u => isOwn( u ) && u instanceof Unit );
+
 export const hotkeys = {
 	f: {
 		name: "Build Basic Box",
 		type: "build",
 		obstruction: Basic,
+		activeWhen: hasOwnCrosser,
 	},
 	r: {
 		name: "Build Huge Box",
 		type: "build",
 		obstruction: Huge,
+		activeWhen: hasOwnCrosser,
 	},
 	t: {
 		name: "Build Tiny Box",
 		type: "build",
 		obstruction: Tiny,
+		activeWhen: hasOwnCrosser,
 	},
 	w: {
 		name: "Build Large Box",
 		type: "build",
 		obstruction: Large,
+		activeWhen: hasOwnCrosser,
 	},
 	x: {
 		name: "Destoy Box",
 		description: "Destroys selected or last created box",
+		activeWhen: hasOwnCrosserOrObstruction,
 		handler: () => {
 
 			if ( ! game.round || ! game.localPlayer.unit || ! ( game.localPlayer.unit instanceof Crosser ) )
 				return;
 
-			const selection = dragSelect.getSelection();
-
-			const ownedUnits = selection
+			const ownedUnits = dragSelect.selection
 				.filter( u => u.owner === game.localPlayer );
 
 			dragSelect.setSelection( [ game.localPlayer.unit.elem ] );
@@ -94,12 +106,13 @@ export const hotkeys = {
 	},
 	h: {
 		name: "Hold Position",
+		activeWhen: hasOwnUnit,
 		handler: () => {
 
 			if ( ! game.round )
 				return;
 
-			const ownedUnits = dragSelect.getSelection()
+			const ownedUnits = dragSelect.selection
 				.filter( u => u.owner === game.localPlayer && u instanceof Unit );
 
 			network.send( { type: "holdPosition", sprites: ownedUnits.map( u => u.id ) } );
@@ -108,12 +121,13 @@ export const hotkeys = {
 	},
 	s: {
 		name: "Stop",
+		activeWhen: hasOwnUnit,
 		handler: () => {
 
 			if ( ! game.round )
 				return;
 
-			const ownedUnits = dragSelect.getSelection()
+			const ownedUnits = dragSelect.selection
 				.filter( u => u.owner === game.localPlayer && u instanceof Unit );
 
 			network.send( { type: "stop", sprites: ownedUnits.map( u => u.id ) } );
@@ -128,18 +142,17 @@ export const hotkeys = {
 	},
 	" ": () => {
 
-		const selection = dragSelect.getSelection();
-		if ( selection.length === 0 && game.localPlayer.sprites.length )
+		if ( dragSelect.selection.length === 0 && game.localPlayer.sprites.length )
 			return dragSelect.setSelection( [ game.localPlayer.sprites[ 0 ] ] );
 
-		const { xSum, ySum } = selection.reduce(
+		const { xSum, ySum } = dragSelect.selection.reduce(
 			( { xSum, ySum }, { x, y } ) =>
 				( { xSum: xSum + x, ySum: ySum + y } ),
 			{ xSum: 0, ySum: 0 }
 		);
 
-		const x = xSum / selection.length;
-		const y = ySum / selection.length;
+		const x = xSum / dragSelect.selection.length;
+		const y = ySum / dragSelect.selection.length;
 		panTo( { x, y } );
 
 	},
@@ -171,7 +184,7 @@ const leftClick = e => {
 
 	hideObstructionPlacement();
 
-	const builder = dragSelect.getSelection()
+	const builder = dragSelect.selection
 		.find( s => s.owner === game.localPlayer && s instanceof Crosser );
 
 	if ( ! builder ) return;
@@ -203,9 +216,7 @@ const rightClick = e => {
 	const x = ( e.clientX - arena.x ) / WORLD_TO_GRAPHICS_RATIO;
 	const y = ( e.clientY - arena.y ) / WORLD_TO_GRAPHICS_RATIO;
 
-	const selection = dragSelect.getSelection();
-
-	const ownedSprites = selection
+	const ownedSprites = dragSelect.selection
 		.filter( u => u.owner === game.localPlayer );
 
 	const units = ownedSprites.filter( u => u instanceof Unit );
@@ -242,9 +253,7 @@ window.addEventListener( "keydown", e => {
 
 	if ( hotkey.type === "build" ) {
 
-		const selection = dragSelect.getSelection();
-
-		const ownerCrossers = selection
+		const ownerCrossers = dragSelect.selection
 			.filter( u => u.owner === game.localPlayer && u.constructor === Crosser );
 
 		if ( ownerCrossers.length ) showObstructionPlacement( hotkey.obstruction );

@@ -1,6 +1,7 @@
 
 import { hotkeys } from "../sprites/spriteLogic.js";
 import { document } from "../util/globals.js";
+import dragSelect from "../sprites/dragSelect.js";
 
 const container = document.getElementById( "hotkeys" );
 
@@ -9,6 +10,7 @@ const entries = Object.entries( hotkeys );
 const sortedHotkeys = qwertySort
 	.map( k => entries.find( ( [ key ] ) => key === k ) )
 	.filter( Boolean );
+const hotkeyIcons = [];
 sortedHotkeys.forEach( ( [ hotkey, spec ] ) => {
 
 	const charCode = hotkey.charCodeAt( 0 );
@@ -17,6 +19,7 @@ sortedHotkeys.forEach( ( [ hotkey, spec ] ) => {
 
 	const elem = document.createElement( "div" );
 	elem.classList.add( "hotkey" );
+	if ( spec.activeWhen ) hotkeyIcons.push( [ spec, elem ] );
 
 	const key = document.createElement( "span" );
 	key.classList.add( "key" );
@@ -46,3 +49,11 @@ sortedHotkeys.forEach( ( [ hotkey, spec ] ) => {
 	container.appendChild( elem );
 
 } );
+
+const toggleHotkeyIcons = () =>
+	hotkeyIcons.forEach( ( [ hotkey, elem ] ) =>
+		elem.style.display = hotkey.activeWhen() ? "" : "none" );
+
+setTimeout( toggleHotkeyIcons );
+
+dragSelect.addEventListener( "selection", () => toggleHotkeyIcons() );

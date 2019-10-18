@@ -173,18 +173,16 @@ export const panTo = ( { x, y, duration = 0.125 } ) => {
 let followInterval;
 const follow = () => {
 
-	const selection = dragSelect.getSelection();
+	if ( dragSelect.selection.length === 0 ) return;
 
-	if ( selection.length === 0 ) return;
-
-	const { xSum, ySum } = selection.reduce(
+	const { xSum, ySum } = dragSelect.selection.reduce(
 		( { xSum, ySum }, { x, y } ) =>
 			( { xSum: xSum + x, ySum: ySum + y } ),
 		{ xSum: 0, ySum: 0 }
 	);
 
-	const x = xSum / selection.length;
-	const y = ySum / selection.length;
+	const x = xSum / dragSelect.selection.length;
+	const y = ySum / dragSelect.selection.length;
 	panTo( { x, y, duration: 10 } );
 
 };

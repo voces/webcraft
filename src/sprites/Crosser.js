@@ -126,7 +126,7 @@ export default class Crosser extends Unit {
 		dragSelect.removeSelectables( [ this.elem ] );
 		if ( this._selected )
 			dragSelect.setSelection(
-				dragSelect.getSelection().filter( u => u !== this )
+				dragSelect.selection.filter( u => u !== this )
 			);
 		if ( this.owner ) {
 
