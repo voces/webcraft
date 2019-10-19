@@ -70,8 +70,7 @@ export default class Crosser extends Unit {
 							obstruction.kill( { removeImmediately: true } );
 
 						const { x, y } = path( Math.max( path.distance - BUILD_DISTANCE, 0 ) );
-						const position = pathingMap.nearestSpiralPathing( x, y, this );
-						Object.assign( this, position );
+						this.setPosition( pathingMap.nearestSpiralPathing( x, y, this ) );
 
 					} );
 
@@ -80,24 +79,18 @@ export default class Crosser extends Unit {
 				} else if ( path.distance < updateProgress ) {
 
 					this.action = undefined;
-
-					const position = pathingMap.withoutEntity( this, () => pathingMap.nearestPathing( x, y, this ) );
-					Object.assign( this, position );
+					this.setPosition( x, y );
 
 				} else {
 
 					// Update self
-					const position = pathingMap.withoutEntity( this, () => pathingMap.nearestPathing( x, y, this ) );
-					this._x = position.x;
-					this._y = position.y;
+					this._setPosition( x, y );
 
 					// Start new build path
 					path = tweenPoints( pathingMap.path( this, target ) );
 					renderProgress = 0;
 
 				}
-
-				pathingMap.updateEntity( this );
 
 			},
 			render: delta => {

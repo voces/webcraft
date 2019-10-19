@@ -2,6 +2,7 @@
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import tweenPoints from "../util/tweenPoints.js";
 import Sprite from "./Sprite.js";
+import game from "../index.js";
 
 export default class Unit extends Sprite {
 
@@ -13,11 +14,14 @@ export default class Unit extends Sprite {
 		last: 0,
 		range: 0.25,
 	}
+	facing = Math.PI / 2;
 
 	constructor( props ) {
 
 		super( props );
 
+		if ( this.isMirror && game.localPlayer.unit && game.round.defenders.includes( game.localPlayer ) )
+			this.elem.style.backgroundImage = "radial-gradient(rgba(0, 0, 255, 0.75), rgba(0, 0, 255, 0.75))";
 		this.elem.style.borderRadius = this.radius * WORLD_TO_GRAPHICS_RATIO + "px";
 
 	}
@@ -36,22 +40,19 @@ export default class Unit extends Sprite {
 
 				if ( path.distance < updateProgress ) {
 
-					Object.assign( this, { x, y } );
+					this.setPosition( x, y );
 					this.action = undefined;
 
 				} else {
 
 					// Update self
-					this._x = x;
-					this._y = y;
+					this._setPosition( x, y );
 
 					// Start new walk path
 					path = tweenPoints( pathingMap.path( this, target ) );
 					renderProgress = 0;
 
 				}
-
-				pathingMap.updateEntity( this );
 
 			},
 			render: delta => {

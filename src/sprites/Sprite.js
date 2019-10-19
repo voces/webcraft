@@ -67,6 +67,38 @@ export default emitter( class Sprite {
 
 	}
 
+	setPosition( pos, y ) {
+
+		this._setPosition( pos, y );
+		if ( this.elem ) {
+
+			this.elem.style.left = ( this._x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+			this.elem.style.top = ( this._y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
+
+		}
+
+	}
+
+	_setPosition( pos, y ) {
+
+		const { x: xBefore, y: yBefore } = this;
+
+		const x = typeof pos === "object" ? pos.x : pos;
+		if ( typeof pos === "object" ) y = pos.y;
+
+		const { x: newX, y: newY } = game.round.pathingMap.withoutEntity(
+			this,
+			() => game.round.pathingMap.nearestPathing( x, y, this )
+		);
+
+		this._x = newX;
+		this._y = newY;
+		if ( game.round && game.round.pathingMap.entities.has( this ) )
+			game.round.pathingMap.updateEntity( this );
+		this.facing = Math.atan2( this.y - yBefore, this.x - xBefore );
+
+	}
+
 	set x( x ) {
 
 		if ( isNaN( x ) ) throw new Error( "Cannot set Sprite#x to NaN" );

@@ -288,7 +288,7 @@ export default class Tilemap {
 
 	}
 
-	layer( xTile, yTile ) {
+	_layer( xTile, yTile ) {
 
 		if ( ! this.layers ) return;
 		if ( yTile < 0 ) return;
@@ -301,7 +301,25 @@ export default class Tilemap {
 
 	}
 
-	nearestSpiralPathing( xWorld, yWorld, entity/* , layer = entity.layer*/ ) {
+	layer( xWorld, yWorld ) {
+
+		if ( ! this.layers ) return;
+		if ( yWorld < 0 ) return;
+
+		xWorld = Math.floor( xWorld );
+		yWorld = Math.floor( yWorld );
+
+		if ( this.layers.length <= yWorld ) return;
+		return this.layers[ yWorld ][ xWorld ];
+
+	}
+
+	nearestSpiralPathing(
+		xWorld,
+		yWorld,
+		entity,
+		layer = this.layer( xWorld, yWorld )
+	) {
 
 		const originalX = xWorld;
 		const originalY = yWorld;
@@ -309,30 +327,33 @@ export default class Tilemap {
 		let xTile = this.xWorldToTile( xWorld );
 		let yTile = this.yWorldToTile( yWorld );
 
-		if ( entity.structure ) {
+		let attemptLayer = this._layer( xTile, yTile );
 
-			if ( this._pathable( entity.tilemap, xTile, yTile ) )
-				return {
-					x: this.xTileToWorld( xTile ),
-					y: this.yTileToWorld( yTile ),
-				};
+		if ( layer === attemptLayer )
+			if ( entity.structure ) {
 
-		} else if ( this._pathable(
-			this.pointToTilemap(
-				xWorld,
-				yWorld,
-				entity.radius,
-				{
-					includeOutOfBounds: true,
-					type: entity.requiresPathing === undefined ?
-						entity.pathing :
-						entity.requiresPathing,
-				}
-			),
-			xTile,
-			yTile
-		) )
-			return { x: xWorld, y: yWorld };
+				if ( this._pathable( entity.tilemap, xTile, yTile ) )
+					return {
+						x: this.xTileToWorld( xTile ),
+						y: this.yTileToWorld( yTile ),
+					};
+
+			} else if ( this._pathable(
+				this.pointToTilemap(
+					xWorld,
+					yWorld,
+					entity.radius,
+					{
+						includeOutOfBounds: true,
+						type: entity.requiresPathing === undefined ?
+							entity.pathing :
+							entity.requiresPathing,
+					}
+				),
+				xTile,
+				yTile
+			) )
+				return { x: xWorld, y: yWorld };
 
 		const xMiss = Math.abs( xWorld * this.resolution - xTile );
 		const yMiss = Math.abs( yWorld * this.resolution - yTile );
@@ -386,9 +407,6 @@ export default class Tilemap {
 		if ( this.grid[ yTile ] && this.grid[ yTile ][ xTile ] )
 			tried.push( this.grid[ yTile ][ xTile ] );
 
-		const layer = this.layer( xTile, yTile );
-		let attemptLayer = this.layer( xTile, yTile );
-
 		while (
 			! this._pathable( minimalTilemap, xTile, yTile ) ||
 			layer !== undefined && attemptLayer !== layer
@@ -416,7 +434,7 @@ export default class Tilemap {
 
 			} else steps --;
 
-			attemptLayer = this.layer( xTile, yTile );
+			attemptLayer = this._layer( xTile, yTile );
 
 		}
 
@@ -581,11 +599,15 @@ export default class Tilemap {
 			endTile;
 
 		// If we start and end on the same tile, just move between them
-		if ( startTile === endTile && this.pathable( entity ) )
+		if ( startTile === endTile && this.pathable( entity ) ) {
+
+			if ( removed ) this.addEntity( entity );
 			return [
 				{ x: entity.x, y: entity.y },
 				{ x: endReal.x / this.resolution, y: endReal.y / this.resolution },
 			];
+
+		}
 
 		// Estimated cost remaining
 		const h = ( a, b ) => Math.sqrt( ( b.x - a.x ) ** 2 + ( b.y - a.y ) ** 2 );

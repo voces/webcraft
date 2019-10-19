@@ -100,7 +100,7 @@ export default class Round {
 
 				if ( this.arena.tiles[ Math.floor( y ) ][ Math.floor( x ) ] === targetTile ) {
 
-					Object.assign( unit, { x, y } );
+					unit.setPosition( x, y );
 					this.pathingMap.addEntity( unit );
 
 					break;
