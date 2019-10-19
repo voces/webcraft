@@ -15,8 +15,9 @@ import Crosser from "./Crosser.js";
 import Obstruction from "./obstructions/Obstruction.js";
 import Basic from "./obstructions/Basic.js";
 import Huge from "./obstructions/Huge.js";
-import Tiny from "./obstructions/Tiny.js";
 import Large from "./obstructions/Large.js";
+import Stack from "./obstructions/Stack.js";
+import Tiny from "./obstructions/Tiny.js";
 import { document, window } from "../util/globals.js";
 import { panTo } from "../players/camera.js";
 import Defender from "./Defender.js";
@@ -54,6 +55,13 @@ export const hotkeys = {
 			if ( realDefenders.length ) network.send( { type: "mirror", sprites: realDefenders.map( u => u.id ) } );
 
 		},
+	},
+	a: {
+		name: "Build Stack Box",
+		description: "Can be built anywhere",
+		type: "build",
+		obstruction: Stack,
+		activeWhen: hasOwnCrosser,
 	},
 	t: {
 		name: "Build Tiny Box",
@@ -165,8 +173,9 @@ export const hotkeys = {
 const obstructions = {
 	Basic,
 	Huge,
-	Tiny,
 	Large,
+	Stack,
+	Tiny,
 };
 
 window.addEventListener( "mousedown", e => {

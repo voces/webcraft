@@ -31,6 +31,9 @@ const calculateNewRatings = ( teamA, teamB, score ) => {
 
 export default ( { mode, crossers, defenders, scores } ) => {
 
+	if ( defenders.length === 0 )
+		defenders = [ { score: { bulldog: 800 } } ];
+
 	const newRatings = calculateNewRatings(
 		crossers.map( p => p.score[ mode ] ),
 		defenders.map( p => p.score[ mode ] ),
@@ -63,7 +66,7 @@ export const updateDisplay = () => {
 		container.appendChild( plays );
 
 		const score = document.createElement( "span" );
-		score.textContent = player.score.standard.toFixed( 0 );
+		score.textContent = player.score[ game.settings.mode ].toFixed( 0 );
 		score.classList.add( "score" );
 		container.appendChild( score );
 

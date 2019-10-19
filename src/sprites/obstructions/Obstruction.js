@@ -1,7 +1,7 @@
 
 import Sprite from "../Sprite.js";
 import game from "../../index.js";
-import { INITIAL_OBSTRUCTION_PROGRESS } from "../../constants.js";
+import { INITIAL_OBSTRUCTION_PROGRESS, PATHING_TYPES } from "../../constants.js";
 import tweenValues from "../../util/tweenValues.js";
 import tilemap from "./tilemap.js";
 
@@ -9,8 +9,10 @@ export default class Obstruction extends Sprite {
 
 	static buildTime = 1;
 	static armor = 0.15;
+	static requiresPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
 
-	tilemap = tilemap( this.radius );
+	requiresTilemap = tilemap( this.radius, this.requiresPathing );
+	blocksTilemap = tilemap( this.radius, this.blocksPathing );
 
 	constructor( props ) {
 

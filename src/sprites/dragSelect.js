@@ -16,7 +16,14 @@ if ( typeof window !== "undefined" )
 
 		const DragSelect = await import( "../lib/DragSelect.js" ).then( i => i.default );
 
+		const selector = document.createElement( "div" );
+		selector.style.background = "rgba( 70, 145, 246, 0.3 )";
+		selector.style.border = "1px solid rgba( 70, 145, 246, 0.7 )";
+		selector.style.position = "absolute";
+		document.body.appendChild( selector );
+
 		const internalDragSelect = new DragSelect( {
+			selector,
 			onDragStartBegin: () => {
 
 				if ( active() ) return internalDragSelect.break();

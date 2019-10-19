@@ -70,63 +70,71 @@ export default class Round {
 
 	}
 
+	_spawnUnit( player, Unit, targetTile ) {
+
+		// Create the unit
+		const unit = ( player || {} ).unit = new Unit( {
+			owner: player,
+			x: 0,
+			y: 0,
+		} );
+
+		// Place it
+		let maxTries = 8192;
+		while ( -- maxTries ) {
+
+			const xRand = game.random() * this.pathingMap.widthWorld;
+			const yRand = game.random() * this.pathingMap.heightWorld;
+
+			if ( this.arena.tiles[ Math.floor( yRand ) ][ Math.floor( xRand ) ] !== targetTile )
+				continue;
+
+			const { x, y } = this.pathingMap.nearestSpiralPathing( xRand, yRand, unit );
+
+			if ( this.arena.tiles[ Math.floor( y ) ][ Math.floor( x ) ] === targetTile ) {
+
+				unit.setPosition( x, y );
+				this.pathingMap.addEntity( unit );
+
+				break;
+
+			}
+
+		}
+		if ( ! maxTries ) console.error( "Exhausted placement attempts" );
+
+		// Select + pan to it
+		if ( player === game.localPlayer ) {
+
+			dragSelect.setSelection( [ unit.elem ] );
+			panTo( unit );
+
+		}
+
+		// Add event listeners
+		if ( player )
+			unit.addEventListener( "death", () => {
+
+				player.unit = undefined;
+				if ( unit instanceof Crosser ) this.onCrosserRemoval();
+
+			} );
+
+	}
+
 	spawnUnits() {
 
-		// for ( let i = 0; i < 20; i ++ )
 		this.players.forEach( player => {
 
 			const isCrosser = this.crossers.includes( player );
 			const targetTile = isCrosser ? TILE_TYPES.START : TILE_TYPES.SPAWN;
 			const Unit = isCrosser ? Crosser : Defender;
-
-			// Create the unit
-			const unit = player.unit = new Unit( {
-				owner: player,
-				x: 0,
-				y: 0,
-			} );
-
-			// Place it
-			let maxTries = 8192;
-			while ( -- maxTries ) {
-
-				const xRand = game.random() * this.pathingMap.widthWorld;
-				const yRand = game.random() * this.pathingMap.heightWorld;
-
-				if ( this.arena.tiles[ Math.floor( yRand ) ][ Math.floor( xRand ) ] !== targetTile )
-					continue;
-
-				const { x, y } = this.pathingMap.nearestSpiralPathing( xRand, yRand, unit );
-
-				if ( this.arena.tiles[ Math.floor( y ) ][ Math.floor( x ) ] === targetTile ) {
-
-					unit.setPosition( x, y );
-					this.pathingMap.addEntity( unit );
-
-					break;
-
-				}
-
-			}
-			if ( ! maxTries ) console.error( "Exhausted placement attempts" );
-
-			// Select + pan to it
-			if ( player === game.localPlayer ) {
-
-				dragSelect.setSelection( [ unit.elem ] );
-				panTo( unit );
-
-			}
-
-			// Add event listeners
-			unit.addEventListener( "death", () => {
-
-				player.unit = undefined;
-				if ( isCrosser ) this.onCrosserRemoval();
-
-			} );
+			this._spawnUnit( player, Unit, targetTile );
 
 		} );
+
+		if ( this.players.length === 1 )
+			this._spawnUnit( null, Defender, TILE_TYPES.SPAWN );
 
 	}
 
@@ -142,7 +150,7 @@ export default class Round {
 	end() {
 
 		elo( {
-			mode: "standard",
+			mode: game.settings.mode,
 			crossers: this.crossers,
 			defenders: this.defenders,
 			scores: this.scores,

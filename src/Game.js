@@ -25,13 +25,13 @@ export default class Game {
 		arenaIndex: - 1,
 		crossers: 1,
 		duration: 120,
+		mode: "bulldog",
 	} );
 
 	constructor() {
 
 		emitter( this );
-		this.setArena( 1 );
-		// this.setArena( Math.floor( ( this.random || Math.random )() * arenas.length ) );
+		this.setArena( Math.floor( ( this.random || Math.random )() * arenas.length ) );
 
 	}
 

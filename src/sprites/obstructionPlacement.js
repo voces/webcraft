@@ -42,6 +42,7 @@ const updateCells = () => {
 
 	if ( ! game.round ) return;
 
+	const pathing = plannedObstruction.requiresPathing;
 	const radius = plannedObstruction.radius;
 	const xStart = snap( mouse.x ) - radius;
 	const yStart = snap( mouse.y ) - radius;
@@ -69,10 +70,10 @@ const updateCells = () => {
 		for ( let y = yStart; y < yFinal; y += 1 )
 			for ( let x = xStart; x < xFinal; x += 1 ) {
 
-				const pathable = grid[ y * 2 ] && grid[ y * 2 ][ x * 2 ] && ! grid[ y * 2 ][ x * 2 ].pathing &&
-					grid[ y * 2 ] && grid[ y * 2 ][ x * 2 + 1 ] && ! grid[ y * 2 ][ x * 2 + 1 ].pathing &&
-					grid[ y * 2 + 1 ] && grid[ y * 2 + 1 ][ x * 2 ] && ! grid[ y * 2 + 1 ][ x * 2 ].pathing &&
-					grid[ y * 2 + 1 ] && grid[ y * 2 + 1 ][ x * 2 + 1 ] && ! grid[ y * 2 + 1 ][ x * 2 + 1 ].pathing;
+				const pathable = grid[ y * 2 ] && grid[ y * 2 ][ x * 2 ] && grid[ y * 2 ][ x * 2 ].pathable( pathing ) &&
+					grid[ y * 2 ] && grid[ y * 2 ][ x * 2 + 1 ] && grid[ y * 2 ][ x * 2 + 1 ].pathable( pathing ) &&
+					grid[ y * 2 + 1 ] && grid[ y * 2 + 1 ][ x * 2 ] && grid[ y * 2 + 1 ][ x * 2 ].pathable( pathing ) &&
+					grid[ y * 2 + 1 ] && grid[ y * 2 + 1 ][ x * 2 + 1 ] && grid[ y * 2 + 1 ][ x * 2 + 1 ].pathable( pathing );
 
 				if ( pathable ) {
 

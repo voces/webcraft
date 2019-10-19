@@ -178,7 +178,7 @@ export default class Tilemap {
 
 		const xTile = this.xWorldToTile( xWorld );
 		const yTile = this.yWorldToTile( yWorld );
-		const map = entity.tilemap || this.pointToTilemap(
+		const map = entity.requiresTilemap || this.pointToTilemap(
 			xWorld,
 			yWorld,
 			entity.radius,
@@ -215,7 +215,7 @@ export default class Tilemap {
 
 		// If initial position is fine, push it
 		if ( this._pathable(
-			entity.tilemap || this.pointToTilemap(
+			entity.requiresTilemap || this.pointToTilemap(
 				xWorld,
 				yWorld,
 				entity.radius,
@@ -239,7 +239,7 @@ export default class Tilemap {
 		const pathing = entity.requiresPathing === undefined ?
 			entity.pathing :
 			entity.requiresPathing;
-		const minimalTilemap = entity.tilemap || this.pointToTilemap(
+		const minimalTilemap = entity.requiresTilemap || this.pointToTilemap(
 			entity.radius,
 			entity.radius,
 			entity.radius,
@@ -332,7 +332,7 @@ export default class Tilemap {
 		if ( layer === attemptLayer )
 			if ( entity.structure ) {
 
-				if ( this._pathable( entity.tilemap, xTile, yTile ) )
+				if ( this._pathable( entity.requiresTilemap, xTile, yTile ) )
 					return {
 						x: this.xTileToWorld( xTile ),
 						y: this.yTileToWorld( yTile ),
@@ -377,12 +377,12 @@ export default class Tilemap {
 
 		let minimalTilemap;
 		let offset;
-		if ( entity.tilemap ) {
+		if ( entity.requiresTilemap ) {
 
-			minimalTilemap = entity.tilemap;
+			minimalTilemap = entity.requiresTilemap;
 			offset = {
-				x: entity.tilemap.left / this.resolution,
-				y: entity.tilemap.top / this.resolution,
+				x: entity.requiresTilemap.left / this.resolution,
+				y: entity.requiresTilemap.top / this.resolution,
 			};
 
 		} else {
@@ -1083,7 +1083,7 @@ export default class Tilemap {
 
 		const tiles = [];
 		const { map, top, left, width, height } =
-			entity.tilemap || this.pointToTilemap(
+			entity.blocksTilemap || this.pointToTilemap(
 				entity.x,
 				entity.y,
 				entity.radius,
@@ -1114,7 +1114,7 @@ export default class Tilemap {
 		const oldTiles = this.entities.get( entity ) || [];
 		const newTiles = [];
 		const { map, top, left, width, height } =
-			entity.tilemap || this.pointToTilemap(
+			entity.blocksTilemap || this.pointToTilemap(
 				entity.x,
 				entity.y,
 				entity.radius,

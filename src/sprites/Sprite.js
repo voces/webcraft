@@ -13,14 +13,16 @@ export default emitter( class Sprite {
 	static radius = 1;
 	static maxHealth = 1;
 	static armor = 0;
+	static requiresPathing = PATHING_TYPES.WALKABLE;
+	static blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
 
 	radius = this.radius || this.constructor.radius;
-	requiresPathing = PATHING_TYPES.WALKABLE;
-	blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
+	requiresPathing = this.requiresPathing || this.constructor.requiresPathing;
+	blocksPathing = this.blocksPathing || this.constructor.blocksPathing;
 	armor = this.constructor.armor;
 	action;
 
-	constructor( { x, y, selectable = true, id, ...rest } ) {
+	constructor( { x, y, selectable = true, id, color, ...rest } ) {
 
 		emitter( this );
 		Object.assign( this, rest );
@@ -43,11 +45,11 @@ export default emitter( class Sprite {
 
 		if ( this.owner ) {
 
-			if ( this.owner.color )
+			if ( ! color && this.owner.color )
 				this.elem.style.backgroundColor = this.owner.color.hex;
 			this.elem.setAttribute( "owner", this.owner.id );
 
-		}
+		} else this.elem.style.backgroundColor = color || "white";
 
 		// Lists
 		if ( this.owner ) this.owner.sprites.push( this );
@@ -239,7 +241,7 @@ export default emitter( class Sprite {
 			action: this.action,
 			constructor: this.constructor.name,
 			health: this.health,
-			owner: this.owner.id,
+			owner: this.owner && this.owner.id,
 			x: this.x,
 			y: this.y,
 

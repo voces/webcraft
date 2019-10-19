@@ -11,6 +11,7 @@ export default class Unit extends Sprite {
 	weapon = {
 		damage: 1,
 		cooldown: 1.5,
+		// todo: add backswing (time before damage) and recovery (time after damage where the unit can't do anything)
 		last: 0,
 		range: 0.25,
 	}
@@ -20,7 +21,7 @@ export default class Unit extends Sprite {
 
 		super( props );
 
-		if ( this.isMirror && game.localPlayer.unit && game.round.defenders.includes( game.localPlayer ) )
+		if ( this.isMirror && game.localPlayer && game.localPlayer.unit && game.round.defenders.includes( game.localPlayer ) )
 			this.elem.style.backgroundImage = "radial-gradient(rgba(0, 0, 255, 0.75), rgba(0, 0, 255, 0.75))";
 		this.elem.style.borderRadius = this.radius * WORLD_TO_GRAPHICS_RATIO + "px";
 

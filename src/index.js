@@ -1,5 +1,5 @@
 
-import network from "./network.js";
+import network, { activeHost } from "./network.js";
 
 import Game from "./Game.js";
 // import Random from "./lib/alea.js";

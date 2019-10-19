@@ -54,11 +54,12 @@ export default class Defender extends Unit {
 				const range = this.weapon.range + this.radius + target.radius;
 				if ( distanceToTarget < range ) {
 
-					const projectedPosition = path( Math.max( path.distance - range, 0 ) );
-					x = projectedPosition.x;
-					y = projectedPosition.y;
+					const angle = Math.atan2( y - target.y, x - target.x );
+					x = target.x + range * Math.cos( angle );
+					y = target.y + range * Math.sin( angle );
 
 				}
+
 				this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
 				this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
 
@@ -78,7 +79,7 @@ export default class Defender extends Unit {
 
 				// Within range to attack
 				const distanceToTarget = Math.sqrt( ( target.x - x ) ** 2 + ( target.y - y ) ** 2 );
-				if ( distanceToTarget < this.weapon.range + this.radius + target.radius )
+				if ( distanceToTarget < this.weapon.range + this.radius + target.radius ) {
 
 					// Cooldown
 					if ( ! this.weapon.last || this.weapon.last + this.weapon.cooldown < game.round.lastUpdate ) {
@@ -103,13 +104,9 @@ export default class Defender extends Unit {
 
 						}
 
-					} else {
-
-						recalcPath( { x, y } );
-
 					}
 
-				else recalcPath( { x, y } );
+				} else recalcPath( { x, y } );
 
 			},
 			toJSON: () => ( {

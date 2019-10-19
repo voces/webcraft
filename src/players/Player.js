@@ -9,7 +9,7 @@ import game from "../index.js";
 export default class Player {
 
 	score = {
-		standard: 1000,
+		bulldog: 1000,
 	};
 	sprites = [];
 	isHere = true;
