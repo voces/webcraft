@@ -35,6 +35,7 @@ export default class Round {
 		this.arena = arenas[ settings.arenaIndex ];
 		this.pathingMap = new PathingMap( {
 			pathing: this.arena.pathing,
+			layers: this.arena.layers,
 			resolution: 2,
 		} );
 		this.expireAt = time + settings.duration;

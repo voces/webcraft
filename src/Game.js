@@ -9,6 +9,9 @@ import { document } from "./util/globals.js";
 
 const tilesElemnt = document.getElementById( "tiles" );
 
+const gradient = ( direction, first, second ) =>
+	`linear-gradient(to ${direction}, rgba(0,128,0,${( 10 - first ) * 0.1}), rgba(0,128,0,${( 10 - second ) * 0.1}))`;
+
 export default class Game {
 
 	localPlayer;
@@ -50,8 +53,40 @@ export default class Game {
 				tile.classList.add(
 					"tile",
 					`layer-${this.arena.layers[ y ][ x ]}`,
-					TILE_NAMES[ this.arena.tiles[ y ][ x ] ] || "void"
+					TILE_NAMES[ this.arena.tiles[ y ][ x ] ] || "void",
 				);
+
+				tile.style.height = "32px";
+				tile.style.width = "32px";
+
+				if ( y !== 0 && this.arena.layers[ y ][ x ] < this.arena.layers[ y - 1 ][ x ] )
+					if ( this.arena.layers[ y - 1 ][ x ] - this.arena.layers[ y ][ x ] === 1 )
+						Object.assign( tile.style, {
+							backgroundColor: "transparent",
+							backgroundImage: gradient( "top", this.arena.layers[ y ][ x ], this.arena.layers[ y - 1 ][ x ] ),
+						} );
+
+				if ( y < this.arena.tiles.length - 1 && this.arena.layers[ y ][ x ] < this.arena.layers[ y + 1 ][ x ] )
+					if ( this.arena.layers[ y + 1 ][ x ] - this.arena.layers[ y ][ x ] === 1 )
+						Object.assign( tile.style, {
+							backgroundColor: "transparent",
+							backgroundImage: gradient( "bottom", this.arena.layers[ y ][ x ], this.arena.layers[ y + 1 ][ x ] ),
+						} );
+
+				if ( x !== 0 && this.arena.layers[ y ][ x ] < this.arena.layers[ y ][ x - 1 ] )
+					if ( this.arena.layers[ y ][ x - 1 ] - this.arena.layers[ y ][ x ] === 1 )
+						Object.assign( tile.style, {
+							backgroundColor: "transparent",
+							backgroundImage: gradient( "left", this.arena.layers[ y ][ x ], this.arena.layers[ y ][ x - 1 ] ),
+						} );
+
+				if ( x < this.arena.tiles[ y ].length - 1 && this.arena.layers[ y ][ x ] < this.arena.layers[ y ][ x + 1 ] )
+					if ( this.arena.layers[ y ][ x + 1 ] - this.arena.layers[ y ][ x ] === 1 )
+						Object.assign( tile.style, {
+							backgroundColor: "transparent",
+							backgroundImage: gradient( "right", this.arena.layers[ y ][ x ], this.arena.layers[ y ][ x + 1 ] ),
+						} );
+
 				row.appendChild( tile );
 
 			}

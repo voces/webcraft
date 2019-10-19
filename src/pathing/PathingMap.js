@@ -93,9 +93,11 @@ export default class Tilemap {
 	// Maps entities to tiles
 	entities = new Map()
 
-	constructor( { pathing, resolution = DEFAULT_RESOLUTION } ) {
+	constructor( { pathing, resolution = DEFAULT_RESOLUTION, layers } ) {
 
 		this.resolution = resolution;
+
+		this.layers = layers;
 
 		this.heightWorld = pathing.length;
 		this.widthWorld = pathing[ 0 ].length;
@@ -286,6 +288,19 @@ export default class Tilemap {
 
 	}
 
+	layer( xTile, yTile ) {
+
+		if ( ! this.layers ) return;
+		if ( yTile < 0 ) return;
+
+		xTile = Math.floor( xTile / this.resolution );
+		yTile = Math.floor( yTile / this.resolution );
+
+		if ( this.layers.length <= yTile ) return;
+		return this.layers[ yTile ][ xTile ];
+
+	}
+
 	nearestSpiralPathing( xWorld, yWorld, entity/* , layer = entity.layer*/ ) {
 
 		const originalX = xWorld;
@@ -371,10 +386,12 @@ export default class Tilemap {
 		if ( this.grid[ yTile ] && this.grid[ yTile ][ xTile ] )
 			tried.push( this.grid[ yTile ][ xTile ] );
 
+		const layer = this.layer( xTile, yTile );
+		let attemptLayer = this.layer( xTile, yTile );
+
 		while (
 			! this._pathable( minimalTilemap, xTile, yTile ) ||
-			false
-			// layer !== undefined && attemptLayer !== layer
+			layer !== undefined && attemptLayer !== layer
 		) {
 
 			if ( ! remainingTries -- ) return { x: originalX, y: originalY };
@@ -399,38 +416,9 @@ export default class Tilemap {
 
 			} else steps --;
 
-			// if ( sameLevel ) {
-
-			// 	if ( minimalTilemap.width % 2 === 0 )
-			// 		xWorld = xTile * TILE_SIZE - this.widthWorld / 2;
-			// 	else
-			// 		xWorld = ( xTile + 0.5 ) * TILE_SIZE - this.widthWorld / 2;
-
-			// 	if ( minimalTilemap.height % 2 === 0 )
-			// 		yWorld = ( - yTile - 1 + this.heightWorld / TILE_SIZE ) * TILE_SIZE - this.heightWorld / 2;
-			// 	else
-			// 		yWorld = ( - yTile - 1 + this.heightWorld / TILE_SIZE + 0.5 ) * TILE_SIZE - this.heightWorld / 2;
-
-			// 	// attemptHeight = app.terrain.groundHeight( x, y );
-			// 	attemptHeight = 0;
-
-			// }
+			attemptLayer = this.layer( xTile, yTile );
 
 		}
-
-		// if ( ! sameLevel ) {
-
-		// 	if ( minimalTilemap.width % 2 === 0 )
-		// 		xWorld = xTile * TILE_SIZE - this.widthWorld / 2;
-		// 	else
-		// 		xWorld = ( xTile + 0.5 ) * TILE_SIZE - this.widthWorld / 2;
-
-		// 	if ( minimalTilemap.height % 2 === 0 )
-		// 		yWorld = ( - yTile - 1 + this.heightWorld / TILE_SIZE ) * TILE_SIZE - this.heightWorld / 2;
-		// 	else
-		// 		yWorld = ( - yTile - 1 + this.heightWorld / TILE_SIZE + 0.5 ) * TILE_SIZE - this.heightWorld / 2;
-
-		// }
 
 		return {
 			x: this.xTileToWorld( xTile ) + offset.x,
