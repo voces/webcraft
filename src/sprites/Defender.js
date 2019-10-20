@@ -54,9 +54,18 @@ export default class Defender extends Unit {
 				const range = this.weapon.range + this.radius + target.radius;
 				if ( distanceToTarget < range ) {
 
-					const angle = Math.atan2( y - target.y, x - target.x );
-					x = target.x + range * Math.cos( angle );
-					y = target.y + range * Math.sin( angle );
+					// Don't skip the unit back
+					const realDistanceToTarget = Math.sqrt( ( target.x - this.x ) ** 2 + ( target.y - this.y ) ** 2 );
+					if ( realDistanceToTarget > range )
+
+						// Don't jump forward
+						if ( Math.sqrt( ( path.origin.x - target.x ) ** 2 + ( path.origin.y - target.y ) ** 2 ) > range ) {
+
+							const newPoint = path.radialStepBack( range );
+							x = newPoint.x;
+							y = newPoint.y;
+
+						}
 
 				}
 
@@ -81,7 +90,7 @@ export default class Defender extends Unit {
 				const distanceToTarget = Math.sqrt( ( target.x - x ) ** 2 + ( target.y - y ) ** 2 );
 				if ( distanceToTarget < this.weapon.range + this.radius + target.radius ) {
 
-					// Cooldown
+					// Not on cooldown
 					if ( ! this.weapon.last || this.weapon.last + this.weapon.cooldown < game.round.lastUpdate ) {
 
 						const ignoreArmor = isNaN( target.buildProgress ) || target.buildProgress < 1;

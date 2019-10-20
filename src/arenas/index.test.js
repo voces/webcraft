@@ -10,7 +10,7 @@ describe( "arenas", () => {
 
 	it( "length", () => {
 
-		assert.equal( arenas.length, 1 );
+		assert.equal( arenas.length, 8 );
 
 	} );
 
@@ -20,7 +20,7 @@ describe( "arenas", () => {
 
 			assert.sameMembers(
 				Object.keys( arena ),
-				[ "layers", "tiles", "pathing" ]
+				[ "name", "layers", "tiles", "pathing" ]
 			);
 
 			assert.equal(

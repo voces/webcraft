@@ -90,7 +90,49 @@ export default points => {
 			return func( internalProgress );
 
 		},
+		origin: points[ 0 ],
 		target: points[ points.length - 1 ],
+		// https://math.stackexchange.com/questions/275529/check-if-line-intersects-with-circles-perimeter
+		// https://www.geogebra.org/geometry/dm7vez7p
+		radialStepBack: amount => {
+
+			if ( points.length === 1 ) return points[ 0 ];
+
+			let index = points.length - 2;
+			const origin = points[ index + 1 ];
+
+			let distance = Math.sqrt( ( origin.x - points[ index ].x ) ** 2 + ( origin.y - points[ index ].y ) ** 2 );
+			while ( distance < amount && index > 0 ) {
+
+				index --;
+				// if ( index < 0 ) break;
+				distance = Math.sqrt( ( origin.x - points[ index ].x ) ** 2 + ( origin.y - points[ index ].y ) ** 2 );
+
+			}
+
+			if ( index < 0 ) return points[ 0 ];
+
+			const u = {
+				x: points[ index ].x - origin.x,
+				y: points[ index ].y - origin.y,
+			};
+			const v = {
+				x: points[ index + 1 ].x - origin.x,
+				y: points[ index + 1 ].y - origin.y,
+			};
+
+			const a = ( u.x - v.x ) ** 2 + ( u.y - v.y ) ** 2;
+			const b = 2 * ( v.x * ( u.x - v.x ) + v.y * ( u.y - v.y ) );
+			const c = v.x ** 2 + v.y ** 2 - amount ** 2;
+			const disc = b ** 2 - 4 * a * c;
+			const progress = ( - b + Math.sqrt( disc ) ) / ( 2 * a );
+
+			return {
+				x: points[ index + 1 ].x + ( points[ index ].x - points[ index + 1 ].x ) * progress,
+				y: points[ index + 1 ].y + ( points[ index ].y - points[ index + 1 ].y ) * progress,
+			};
+
+		},
 		toJSON: () => ( { points } ),
 	} );
 

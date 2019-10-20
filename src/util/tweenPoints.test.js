@@ -64,4 +64,71 @@ describe( "tweenPoints", () => {
 
 	} );
 
+	describe( "radialStepBack", () => {
+
+		it( "simple", () => {
+
+			const tween = tweenPoints( [
+				{ x: 0, y: 0 },
+				{ x: 10, y: 0 },
+			] );
+			const result = tween.radialStepBack( 2.5 );
+			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
+
+			assert.deepStrictEqual( result, { x: 7.5, y: 0 } );
+			assert.isBelow( distance, 2.51 );
+			assert.isAbove( distance, 2.49 );
+
+		} );
+
+		it( "multiple steps", () => {
+
+			const tween = tweenPoints( [
+				{ x: 0, y: 0 },
+				{ x: 8, y: 0 },
+				{ x: 10, y: 0 },
+			] );
+			const result = tween.radialStepBack( 2.5 );
+			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
+
+			assert.deepStrictEqual( result, { x: 7.5, y: 0 } );
+			assert.isBelow( distance, 2.51 );
+			assert.isAbove( distance, 2.49 );
+
+		} );
+
+		it( "multiple complex steps", () => {
+
+			const tween = tweenPoints( [
+				{ x: 0, y: 0 },
+				{ x: 5, y: 0 },
+				{ x: 5, y: 5 },
+				{ x: 0, y: 5 },
+			] );
+			const result = tween.radialStepBack( 6 );
+			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
+
+			assert.deepStrictEqual( result, { x: 5, y: 1.6833752096445997 } );
+			assert.isBelow( distance, 6.01 );
+			assert.isAbove( distance, 5.99 );
+
+		} );
+
+		it( "project past start if need be", () => {
+
+			const tween = tweenPoints( [
+				{ x: 0, y: 0 },
+				{ x: 1, y: 0 },
+			] );
+			const result = tween.radialStepBack( 2 );
+			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
+
+			assert.deepStrictEqual( result, { x: - 1, y: 0 } );
+			assert.isBelow( distance, 2.01 );
+			assert.isAbove( distance, 1.99 );
+
+		} );
+
+	} );
+
 } );

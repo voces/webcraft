@@ -69,7 +69,7 @@ export default class Crosser extends Unit {
 						} else
 							obstruction.kill( { removeImmediately: true } );
 
-						const { x, y } = path( Math.max( path.distance - BUILD_DISTANCE, 0 ) );
+						const { x, y } = path.radialStepBack( BUILD_DISTANCE );
 						this.setPosition( pathingMap.nearestSpiralPathing( x, y, this ) );
 
 					} );
