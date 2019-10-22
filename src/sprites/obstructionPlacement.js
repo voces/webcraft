@@ -2,6 +2,7 @@
 import game from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { document, window } from "../util/globals.js";
+import { clientToWorld } from "../players/camera.js";
 
 let plannedObstruction;
 let pathable;
@@ -132,8 +133,7 @@ const updatePosition = () => {
 
 window.addEventListener( "mousemove", e => {
 
-	mouse.x = ( e.clientX - arena.x ) / WORLD_TO_GRAPHICS_RATIO;
-	mouse.y = ( e.clientY - arena.y ) / WORLD_TO_GRAPHICS_RATIO;
+	Object.assign( mouse, clientToWorld( { x: e.clientX, y: e.clientY } ) );
 
 	if ( plannedObstruction ) updatePosition();
 

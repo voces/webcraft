@@ -22,7 +22,8 @@ body {
 #arena {
 	position: absolute;
 	top: 0px;
-	left: 0px;
+    left: 0px;
+    transform-origin: top left;
 }
 
 #tiles {
@@ -257,6 +258,7 @@ button:hover {
     bottom: 0.5em;
     left: 50%;
     transform: translateX(-50%);
+    white-space: nowrap;
 }
 
 #hotkeys .hotkey {

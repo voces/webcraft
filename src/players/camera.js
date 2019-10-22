@@ -6,6 +6,7 @@ import { document, requestAnimationFrame, window } from "../util/globals.js";
 import dragSelect from "../sprites/dragSelect.js";
 
 const CAMERA_SPEED = 800;
+const ZOOM_SPEED = 1 / 500;
 
 const arena = document.getElementById( "arena" );
 const ui = document.getElementById( "ui" );
@@ -97,6 +98,20 @@ window.addEventListener( "mouseout", e => {
 	if ( e.toElement || e.relatedTarget ) return;
 
 	mouse = {};
+
+} );
+
+window.addEventListener( "wheel", e => {
+
+	const oldHeight = arena.clientHeight * arena.scale;
+	const oldWidth = arena.clientWidth * arena.scale;
+	arena.scale = Math.max( arena.scale + e.deltaY * ZOOM_SPEED, 0.10 );
+	arena.style.transform = `scale(${arena.scale})`;
+
+	// We should find where the camera is and scale as if that is the origin
+	// This just treats the center of the arena as the origin
+	arena.style.top = ( arena.y += ( oldHeight - arena.clientHeight * arena.scale ) / 2 ) + "px";
+	arena.style.left = ( arena.x += ( oldWidth - arena.clientWidth * arena.scale ) / 2 ) + "px";
 
 } );
 

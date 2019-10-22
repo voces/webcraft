@@ -22,6 +22,7 @@ const game = globalThis.game = new Game();
 const arena = document.getElementById( "arena" );
 arena.x = 0;
 arena.y = 0;
+arena.scale = 1;
 
 // We receive this upon connecting; the only state we get is the number of connections
 network.addEventListener( "init", ( {

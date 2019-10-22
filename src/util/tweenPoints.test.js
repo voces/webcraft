@@ -114,7 +114,7 @@ describe( "tweenPoints", () => {
 
 		} );
 
-		it( "project past start if need be", () => {
+		it( "project only to the origin point", () => {
 
 			const tween = tweenPoints( [
 				{ x: 0, y: 0 },
@@ -123,9 +123,9 @@ describe( "tweenPoints", () => {
 			const result = tween.radialStepBack( 2 );
 			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
 
-			assert.deepStrictEqual( result, { x: - 1, y: 0 } );
-			assert.isBelow( distance, 2.01 );
-			assert.isAbove( distance, 1.99 );
+			assert.deepStrictEqual( result, { x: 0, y: 0 } );
+			assert.isBelow( distance, 1.01 );
+			assert.isAbove( distance, 0.99 );
 
 		} );
 

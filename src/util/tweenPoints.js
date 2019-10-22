@@ -7,6 +7,8 @@ const elems = false;
 
 export default points => {
 
+	points = points.filter( ( p, i ) => points.findIndex( p2 => p2.x === p.x && p2.y === p.y ) === i );
+
 	if ( typeof document !== "undefined" )
 
 		if ( elems ) {
@@ -102,10 +104,10 @@ export default points => {
 			const origin = points[ index + 1 ];
 
 			let distance = Math.sqrt( ( origin.x - points[ index ].x ) ** 2 + ( origin.y - points[ index ].y ) ** 2 );
-			while ( distance < amount && index > 0 ) {
+			while ( distance < amount && index >= 0 ) {
 
 				index --;
-				// if ( index < 0 ) break;
+				if ( index < 0 ) break;
 				distance = Math.sqrt( ( origin.x - points[ index ].x ) ** 2 + ( origin.y - points[ index ].y ) ** 2 );
 
 			}

@@ -1,7 +1,6 @@
 
 import game from "../index.js";
 import network from "../network.js";
-import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import dragSelect from "./dragSelect.js";
 import {
 	active as activeObstructionPlacement,
@@ -18,11 +17,9 @@ import Huge from "./obstructions/Huge.js";
 import Large from "./obstructions/Large.js";
 import Stack from "./obstructions/Stack.js";
 import Tiny from "./obstructions/Tiny.js";
-import { document, window } from "../util/globals.js";
-import { panTo } from "../players/camera.js";
+import { window } from "../util/globals.js";
+import { panTo, clientToWorld } from "../players/camera.js";
 import Defender from "./Defender.js";
-
-const arena = document.getElementById( "arena" );
 
 const isOwn = u => u.owner === game.localPlayer;
 const includesSelectedUnit = condition => () =>
@@ -192,8 +189,9 @@ const leftClick = e => {
 	if ( ! obstructionPlacementValid() ) return;
 	const obstruction = activeObstructionPlacement();
 
-	const x = snap( ( e.clientX - arena.x ) / WORLD_TO_GRAPHICS_RATIO );
-	const y = snap( ( e.clientY - arena.y ) / WORLD_TO_GRAPHICS_RATIO );
+	const { x: xWorld, y: yWorld } = clientToWorld( { x: e.clientX, y: e.clientY } );
+	const x = snap( xWorld );
+	const y = snap( yWorld );
 
 	hideObstructionPlacement();
 
@@ -226,8 +224,7 @@ network.addEventListener( "build", e => {
 
 const rightClick = e => {
 
-	const x = ( e.clientX - arena.x ) / WORLD_TO_GRAPHICS_RATIO;
-	const y = ( e.clientY - arena.y ) / WORLD_TO_GRAPHICS_RATIO;
+	const { x, y } = clientToWorld( { x: e.clientX, y: e.clientY } );
 
 	const ownedSprites = dragSelect.selection
 		.filter( isOwn );
