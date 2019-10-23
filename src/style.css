@@ -188,14 +188,23 @@ button:hover {
     margin: auto;
 }
 
-#chat-input {
+#chat-input-container {
     visibility: hidden;
+}
+#chat-input, #chat-input-suggestion {
     position: absolute;
     bottom: 4em;
     width: 90%;
     max-width: 30em;
     left: 50%;
     transform: translateX(-50%);
+}
+#chat-input {
+    background: transparent;
+    box-shadow: none;
+}
+#chat-input-suggestion {
+    color: silver;
 }
 
 #login {

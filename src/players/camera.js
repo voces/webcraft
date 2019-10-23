@@ -4,6 +4,7 @@ import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import tweenPoints from "../util/tweenPoints.js";
 import { document, requestAnimationFrame, window } from "../util/globals.js";
 import dragSelect from "../sprites/dragSelect.js";
+import { registerCommand } from "../ui/chat.js";
 
 const CAMERA_SPEED = 800;
 const ZOOM_SPEED = 1 / 500;
@@ -101,11 +102,11 @@ window.addEventListener( "mouseout", e => {
 
 } );
 
-window.addEventListener( "wheel", e => {
+const setScale = scale => {
 
 	const oldHeight = arena.clientHeight * arena.scale;
 	const oldWidth = arena.clientWidth * arena.scale;
-	arena.scale = Math.max( arena.scale + e.deltaY * ZOOM_SPEED, 0.10 );
+	arena.scale = Math.max( scale, 0.10 );
 	arena.style.transform = `scale(${arena.scale})`;
 
 	// We should find where the camera is and scale as if that is the origin
@@ -113,7 +114,10 @@ window.addEventListener( "wheel", e => {
 	arena.style.top = ( arena.y += ( oldHeight - arena.clientHeight * arena.scale ) / 2 ) + "px";
 	arena.style.left = ( arena.x += ( oldWidth - arena.clientWidth * arena.scale ) / 2 ) + "px";
 
-} );
+};
+
+window.addEventListener( "wheel", e =>
+	setScale( arena.scale + e.deltaY * ZOOM_SPEED ) );
 
 let lastRender = 0;
 const renderCamera = time => {
@@ -201,3 +205,19 @@ const follow = () => {
 	panTo( { x, y, duration: 10 } );
 
 };
+
+registerCommand( {
+	name: "zoom",
+	comment: "Zooms in or out. Initial 1650",
+	args: [ { required: true, name: "level" } ],
+	handler: ( _, zoom ) => {
+
+		zoom = parseFloat( zoom );
+		setScale( 1650 / zoom );
+
+	} } );
+
+export const clientToWorld = ( { x, y } ) => ( {
+	x: ( x - arena.x ) / arena.scale / WORLD_TO_GRAPHICS_RATIO,
+	y: ( y - arena.y ) / arena.scale / WORLD_TO_GRAPHICS_RATIO,
+} );
