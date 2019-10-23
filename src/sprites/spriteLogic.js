@@ -13,6 +13,7 @@ import Unit from "./Unit.js";
 import Crosser from "./Crosser.js";
 import Obstruction from "./obstructions/Obstruction.js";
 import Basic from "./obstructions/Basic.js";
+import Dense from "./obstructions/Dense.js";
 import Huge from "./obstructions/Huge.js";
 import Large from "./obstructions/Large.js";
 import Stack from "./obstructions/Stack.js";
@@ -30,11 +31,18 @@ const hasOwnCrosserOrObstruction = includesSelectedUnit( u =>
 	isOwn( u ) && ( u instanceof Crosser || u instanceof Obstruction ) );
 const hasOwnUnit = includesSelectedUnit( u => isOwn( u ) && u instanceof Unit );
 
+// todo: change this to an array so multiple actions can shar the same hotkey (r = mirror + huge)
 export const hotkeys = {
 	f: {
 		name: "Build Basic Box",
 		type: "build",
 		obstruction: Basic,
+		activeWhen: hasOwnCrosser,
+	},
+	g: {
+		name: "Build Dense Box",
+		type: "build",
+		obstruction: Dense,
 		activeWhen: hasOwnCrosser,
 	},
 	r: {
@@ -169,6 +177,7 @@ export const hotkeys = {
 
 const obstructions = {
 	Basic,
+	Dense,
 	Huge,
 	Large,
 	Stack,

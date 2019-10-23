@@ -23,7 +23,7 @@ export default class Defender extends Unit {
 	speed = 6.5625;
 	weapon = {
 		...this.weapon,
-		damage: 40,
+		damage: 50,
 	}
 
 	attack( target ) {
