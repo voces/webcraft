@@ -3,6 +3,7 @@ import game from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { document, window } from "../util/globals.js";
 import { clientToWorld } from "../players/camera.js";
+import { appendErrorMessage } from "../ui/chat.js";
 
 let plannedObstruction;
 let pathable;
@@ -140,6 +141,18 @@ window.addEventListener( "mousemove", e => {
 } );
 
 export const start = obstruction => {
+
+	if ( obstruction.cost ) {
+
+		const check = game.localPlayer.checkResources( obstruction.cost );
+		if ( check.length ) {
+
+			appendErrorMessage( `Not enough ${check.join( " " )}` );
+			return;
+
+		}
+
+	}
 
 	plannedObstruction = obstruction;
 	updateSize();

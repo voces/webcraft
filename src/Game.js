@@ -26,6 +26,14 @@ export default class Game {
 		crossers: 1,
 		duration: 120,
 		mode: "bulldog",
+		resources: {
+			crossers: {
+				essence: {
+					starting: 100,
+					rate: 1,
+				},
+			},
+		},
 	} );
 
 	constructor() {

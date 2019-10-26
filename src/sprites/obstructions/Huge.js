@@ -6,5 +6,6 @@ export default class Huge extends Obstruction {
 	static radius = 2;
 	static maxHealth = 200;
 	static buildTime = 3;
+	static cost = { essence: 10 };
 
 }

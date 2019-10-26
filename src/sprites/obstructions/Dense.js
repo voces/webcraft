@@ -7,6 +7,7 @@ export default class Dense extends Obstruction {
 	static maxHealth = 240;
 	static buildTime = 1;
 	static armor = 0.25;
+	static cost = { essence: 4 };
 
 	constructor( props ) {
 

@@ -4,6 +4,8 @@
     --bluecolor: rgb(var(--blue));
     --bluebg: rgba(var(--blue), 0.5);
     --blueshadow: rgba(var(--blue), 0.9);
+    --red: 255, 0, 0;
+    --redcolor: rgb(var(--red));
   }
 
 body {
@@ -117,25 +119,22 @@ body {
     right: 1em;
     flex: row;
 }
-
-#clock {
+#top-right > span {
     background: var(--bluebg);
     box-shadow: 0 0 1em 0.125em var(--blueshadow);
-    padding: 0.25em 0.5em;
     border-radius: 0.5em;
+    padding: 0.25em 0.5em;
 }
-#clock:empty { visibility: hidden; }
+#top-right > span:empty { visibility: hidden; }
 
-#scores {
-    background: var(--bluebg);
+#top-right > #scores {
     display: inline-grid;
     grid-template-columns: fit-content(4em) fit-content(4em) fit-content(4em);
     color: white;
     font-weight: bold;
     border-radius: 0.5em;
-    box-shadow: 0 0 1em 0.125em var(--blueshadow);
+    padding: 0;
 }
-#scores:empty { visibility: hidden; }
 
 #scores span { padding: 0.25em; }
 #scores .score { text-align: right; }
@@ -157,6 +156,13 @@ body {
     opacity: 1;
     transition: 1s;
 }
+
+#chat-log p {
+    margin: 0.25em 0;
+}
+
+#chat-log > .server { color: var(--bluecolor); }
+#chat-log > .error { color: var(--redcolor); }
 
 input, button {
     padding: 0.5em;

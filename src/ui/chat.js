@@ -2,6 +2,9 @@
 import network from "../network.js";
 import game from "../index.js";
 import { document, window } from "../util/globals.js";
+import marked from "../lib/marked.js";
+
+marked.setOptions( { breaks: true } );
 
 const chatLog = document.getElementById( "chat-log" );
 const chatInputContainer = document.getElementById( "chat-input-container" );
@@ -79,7 +82,7 @@ chatInput.addEventListener( "input", () => {
 
 } );
 
-const appendMessage = html => {
+const _appendMessage = html => {
 
 	chatLog.appendChild( html );
 
@@ -92,6 +95,35 @@ const appendMessage = html => {
 
 };
 
+export const appendMessage = markdown => {
+
+	const div = document.createElement( "div" );
+	div.innerHTML = marked( markdown );
+
+	_appendMessage( div );
+
+};
+
+export const appendGameMessage = markdown => {
+
+	const div = document.createElement( "div" );
+	div.classList.add( "game" );
+	div.innerHTML = marked( markdown );
+
+	_appendMessage( div );
+
+};
+
+export const appendErrorMessage = markdown => {
+
+	const div = document.createElement( "div" );
+	div.classList.add( "error" );
+	div.innerHTML = marked( markdown );
+
+	_appendMessage( div );
+
+};
+
 const maxLength = 256;
 network.addEventListener( "chat", ( { connection, message } ) => {
 
@@ -100,17 +132,8 @@ network.addEventListener( "chat", ( { connection, message } ) => {
 	const player = game.players.find( p => p.id === connection );
 	if ( ! player ) return;
 
-	const entry = document.createElement( "div" );
-
-	const playerName = document.createElement( "span" );
-	playerName.textContent = player.username;
-	playerName.style.color = player.color.hex;
-	entry.appendChild( playerName );
-
-	const rest = document.createTextNode( `: ${message}` );
-	entry.append( rest );
-
-	appendMessage( entry );
+	const playerTag = `<span style="color: ${player.color.hex}">${player.username}</span>`;
+	_appendMessage( `${playerTag}: ${message}` );
 
 } );
 
@@ -204,35 +227,20 @@ registerCommand( {
 	comment: "Shows a list of all commands",
 	handler: () => {
 
-		const helpContainer = document.createElement( "div" );
+		appendGameMessage(
+			commands.map( command => {
 
-		commands.forEach( command => {
+				const args = command.args && command.args
+					.map( a => a.required ? `<${a.name}>` : `[${a.name}]` ).join( " " );
+				const comment = command.comment ?
+					`\n<span style="font-weight: normal;">${command.comment}</span>` :
+					"";
+				return "/" +
+				[ command.name, args ].filter( Boolean ).join( " " ) +
+				comment;
 
-			const args = command.args && command.args.map( a => a.required ? `<${a.name}>` : `[${a.name}]` ).join( " " );
-
-			const commandContainer = document.createElement( "div" );
-			commandContainer.style.marginBottom = "0.5em";
-			helpContainer.appendChild( commandContainer );
-
-			const format = document.createElement( "div" );
-			format.textContent = "/" + [ command.name, args ].filter( Boolean ).join( " " );
-			commandContainer.appendChild( format );
-
-			if ( command.comment )
-
-				command.comment.split( "\n" ).forEach( text => {
-
-					const line = document.createElement( "div" );
-					line.textContent = text;
-					line.style.fontWeight = "normal";
-					line.style.textIndent = "0";
-					commandContainer.appendChild( line );
-
-				} );
-
-		} );
-
-		appendMessage( helpContainer );
+			} ).join( "\n\n" )
+		);
 
 	},
 } );

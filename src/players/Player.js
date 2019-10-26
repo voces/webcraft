@@ -14,6 +14,7 @@ export default class Player {
 	sprites = [];
 	isHere = true;
 	crosserPlays = 0;
+	resources = { essence: 0 };
 
 	constructor( data ) {
 
@@ -25,6 +26,24 @@ export default class Player {
 			} );
 
 		game.players.push( this );
+
+	}
+
+	checkResources( resources ) {
+
+		const low = [];
+		for ( const resource in resources )
+			if ( this.resources[ resource ] < resources[ resource ] )
+				low.push( resource );
+
+		return low;
+
+	}
+
+	subtractResources( resources ) {
+
+		for ( const resource in resources )
+			this.resources[ resource ] -= resources[ resource ];
 
 	}
 

@@ -6,6 +6,7 @@ import dragSelect from "./dragSelect.js";
 import game from "../index.js";
 import { stop as stopPlacement, active as activePlacement } from "./obstructionPlacement.js";
 import Blueprint from "./obstructions/Blueprint.js";
+import { appendErrorMessage } from "../ui/chat.js";
 
 // Math.SQRT2 (~1.41) allows building tinies across diag space
 const BUILD_DISTANCE = 1.4;
@@ -52,6 +53,20 @@ export default class Crosser extends Unit {
 				if ( actualDistance < BUILD_DISTANCE ) {
 
 					this.action = undefined;
+
+					if ( Obstruction.cost ) {
+
+						const check = game.localPlayer.checkResources( Obstruction.cost );
+						if ( check.length ) {
+
+							appendErrorMessage( `Not enough ${check.join( " " )}` );
+							return;
+
+						}
+
+						game.localPlayer.subtractResources( Obstruction.cost );
+
+					}
 
 					const obstruction = new Obstruction( {
 						x: target.x,

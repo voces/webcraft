@@ -7,6 +7,7 @@ export default class Stack extends Obstruction {
 	static maxHealth = 15;
 	static buildTime = 2;
 	static requiresPathing = 0;
+	static cost = { essence: 15 };
 
 	constructor( props ) {
 
