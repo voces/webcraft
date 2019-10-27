@@ -8,7 +8,7 @@ setTimeout( () => {
 
 	game.addEventListener( "update", () => {
 
-		if ( ! game.round ) return;
+		if ( ! game.round || ! game.localPlayer ) return;
 		element.textContent = Math.floor( game.localPlayer.resources.essence );
 
 	} );

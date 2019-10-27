@@ -11,6 +11,7 @@ import emitter from "./emitter.js";
 import { panTo } from "./players/camera.js";
 import network from "./network.js";
 import { requestAnimationFrame, cancelAnimationFrame } from "./util/globals.js";
+import Resource from "./sprites/obstructions/Resource.js";
 
 // A round starts upon construction
 export default class Round {
@@ -335,15 +336,20 @@ export default class Round {
 
 	updateResources( delta ) {
 
+		const factor = this.crossers.reduce(
+			( sum, p ) =>
+				sum + p.sprites.reduce( ( sum, s ) =>
+					sum + ( s instanceof Resource ? 1 : 0 ), 0 ),
+			1
+		) / 2;
+
 		this.crossers.filter( p => p.unit ).forEach( crosser => {
 
 			for ( const resource in this.settings.resources.crossers )
 				crosser.resources[ resource ] +=
-					this.settings.resources.crossers[ resource ].rate * delta;
+					this.settings.resources.crossers[ resource ].rate * delta * factor;
 
 		} );
-
-		this.crossers.map( c => c.resources.essence );
 
 	}
 

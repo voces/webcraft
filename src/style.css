@@ -306,11 +306,13 @@ button:hover {
     border-radius: 0.5em;
 }
 
-#hotkeys .highlight {
-    color: gold;
-}
+#hotkeys .highlight { color: gold; }
 
-#hotkeys .description {
-    font-size: 75%;
-}
+#hotkeys .description { font-size: 75% }
 
+@keyframes resource {
+	0% { transform: rotate(0deg); }
+	90% { transform: rotate(0deg); }
+	100% { transform: rotate(180deg); }
+}
+.sprite.resource { animation: resource 2s infinite; }

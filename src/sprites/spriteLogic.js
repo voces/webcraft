@@ -16,6 +16,7 @@ import Basic from "./obstructions/Basic.js";
 import Dense from "./obstructions/Dense.js";
 import Huge from "./obstructions/Huge.js";
 import Large from "./obstructions/Large.js";
+import Resource from "./obstructions/Resource.js";
 import Stack from "./obstructions/Stack.js";
 import Tiny from "./obstructions/Tiny.js";
 import { window } from "../util/globals.js";
@@ -78,6 +79,13 @@ export const hotkeys = {
 		name: "Build Large Box",
 		type: "build",
 		obstruction: Large,
+		activeWhen: hasOwnCrosser,
+	},
+	e: {
+		name: "Build Resource Box",
+		description: "Increases essence generation for the entire team.",
+		type: "build",
+		obstruction: Resource,
 		activeWhen: hasOwnCrosser,
 	},
 	x: {
@@ -180,6 +188,7 @@ const obstructions = {
 	Dense,
 	Huge,
 	Large,
+	Resource,
 	Stack,
 	Tiny,
 };
