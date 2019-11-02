@@ -13,7 +13,8 @@ export default class Unit extends Sprite {
 		cooldown: 1.5,
 		// todo: add backswing (time before damage) and recovery (time after damage where the unit can't do anything)
 		last: 0,
-		range: 0.25,
+		range: 0.5,
+		projectile: "instant",
 	}
 	facing = Math.PI / 2;
 

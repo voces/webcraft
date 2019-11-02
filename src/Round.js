@@ -9,9 +9,13 @@ import game from "./index.js";
 import elo, { updateDisplay } from "./players/elo.js";
 import emitter from "./emitter.js";
 import { panTo } from "./players/camera.js";
+import Player from "./players/Player.js";
+import { colors } from "./players/colors.js";
 import network from "./network.js";
 import { requestAnimationFrame, cancelAnimationFrame } from "./util/globals.js";
 import Resource from "./sprites/obstructions/Resource.js";
+
+let placeholderPlayer;
 
 // A round starts upon construction
 export default class Round {
@@ -41,6 +45,13 @@ export default class Round {
 		} );
 		this.expireAt = time + settings.duration;
 
+		if ( ! placeholderPlayer )
+			placeholderPlayer = new Player( {
+				color: colors.white,
+				id: - 1,
+				score: { bulldog: 800 },
+			} );
+
 		this.pickTeams();
 		this.grantResources();
 		this.spawnUnits();
@@ -49,6 +60,9 @@ export default class Round {
 	}
 
 	pickTeams() {
+
+		if ( this.players.length === 1 )
+			this.players.push( placeholderPlayer );
 
 		const remaining = [ ...this.players ];
 		while ( remaining.length ) {
@@ -149,9 +163,6 @@ export default class Round {
 
 		} );
 
-		if ( this.players.length === 1 )
-			this._spawnUnit( null, Defender, TILE_TYPES.SPAWN );
-
 	}
 
 	onCrosserRemoval() {
@@ -171,6 +182,9 @@ export default class Round {
 			defenders: this.defenders,
 			scores: this.scores,
 		} );
+
+		const placeholderIndex = game.players.indexOf( placeholderPlayer );
+		if ( placeholderIndex >= 0 ) game.players.splice( placeholderIndex, 1 );
 
 		if ( game.newPlayers ) {
 
@@ -261,24 +275,47 @@ export default class Round {
 			if ( sprite.action )
 				sprite.action.update && sprite.action.update( delta );
 
-			else if ( sprite instanceof Defender ) {
+			else if ( sprite.autoAttack ) {
 
 				const { x, y } = sprite;
 
-				const nearest = this.crossers.reduce( ( { bestUnit, bestDistance }, testPlayer ) => {
+				const pool = sprite.owner
+					.getEnemySprites()
+					.filter( s => Number.isFinite( s.health ) )
+					.sort( ( a, b ) => {
 
-					const testUnit = testPlayer.unit;
-					if ( ! testUnit || testUnit.health <= 0 )
-						return { bestUnit, bestDistance };
+						// Prefer priority
+						if ( a.priority !== b.priority ) return b.priority - a.priority;
 
-					const testDistance = ( testUnit.x - x ) ** 2 + ( testUnit.y - y );
+						return ( a.x - x ) ** 2 + ( a.y - y ) ** 2 -
+						( ( b.x - x ) ** 2 + ( b.y - y ) ** 2 );
 
-					if ( ! bestUnit || bestDistance > testDistance )
-						return { bestUnit: testUnit, bestDistance: testDistance };
+					} );
 
-					return { bestUnit, bestDistance };
+				const nearest = pool
+					.find( u => {
 
-				}, {} ).bestUnit;
+						// If unit in range, that's it
+						const distanceToTarget = Math.sqrt( ( u.x - sprite.x ) ** 2 + ( u.y - sprite.y ) ** 2 );
+						if ( distanceToTarget < sprite.weapon.range + sprite.radius + u.radius )
+							return true;
+
+						// Otherwise, make sure we can get to it
+						if ( sprite.speed ) {
+
+							const endPoint = this.pathingMap.withoutEntity( u, () =>
+								this.pathingMap.path( sprite, u ) ).pop();
+							const distance = Math.sqrt(
+								( endPoint.x - u.x ) ** 2 + ( endPoint.y - u.y ) ** 2
+							);
+							if ( distance < sprite.weapon.range + sprite.radius + u.radius )
+								return true;
+
+						}
+
+						return false;
+
+					} ) || pool[ 0 ];
 
 				if ( nearest )
 					sprite.attack( nearest );

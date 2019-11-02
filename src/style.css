@@ -65,7 +65,7 @@ body {
     filter: drop-shadow(0.125em 0.1875em 0.375em rgba(0,0,0,0.5));
     position: absolute;
 }
-.sprite:hover {
+.sprite:hover:not(.doodad) {
     filter: drop-shadow(0.125em 0.1875em 0.5em rgba(0,0,0,0.6));
     cursor: pointer;
 }

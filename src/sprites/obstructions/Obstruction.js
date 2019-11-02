@@ -21,7 +21,7 @@ export default class Obstruction extends Sprite {
 		const tween = tweenValues( this.health, this.constructor.maxHealth );
 		let lastHealth = this.health;
 		const start = game.round.lastUpdate;
-		let buildProgress = INITIAL_OBSTRUCTION_PROGRESS;
+		this.buildProgress = INITIAL_OBSTRUCTION_PROGRESS;
 		let renderProgress = INITIAL_OBSTRUCTION_PROGRESS;
 		let renderedHealth = lastHealth;
 		let lastRenderedHealth = lastHealth;
@@ -29,8 +29,8 @@ export default class Obstruction extends Sprite {
 		this.action = {
 			update: delta => {
 
-				renderProgress = buildProgress = Math.min( buildProgress + delta / this.constructor.buildTime, 1 );
-				const newHealth = tween( buildProgress );
+				renderProgress = this.buildProgress = Math.min( this.buildProgress + delta / this.constructor.buildTime, 1 );
+				const newHealth = tween( this.buildProgress );
 				const deltaHealth = Math.round( newHealth - lastHealth );
 				this.health += deltaHealth;
 				renderedHealth = this.health;
@@ -54,7 +54,7 @@ export default class Obstruction extends Sprite {
 			},
 			toJSON: () => ( {
 				name: "construct",
-				buildProgress,
+				buildProgress: this.buildProgress,
 				lastHealth,
 			} ),
 		};

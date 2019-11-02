@@ -15,12 +15,15 @@ export default emitter( class Sprite {
 	static armor = 0;
 	static requiresPathing = PATHING_TYPES.WALKABLE;
 	static blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE;
+	static priority = 0;
 
 	radius = this.radius || this.constructor.radius;
 	requiresPathing = this.requiresPathing || this.constructor.requiresPathing;
 	blocksPathing = this.blocksPathing || this.constructor.blocksPathing;
 	armor = this.constructor.armor;
 	action;
+	priority = this.priority || this.constructor.priority;
+	effects = [];
 
 	constructor( { x, y, selectable = true, id, color, ...rest } ) {
 
@@ -42,6 +45,7 @@ export default emitter( class Sprite {
 		this.elem.sprite = this;
 		arenaElement.appendChild( this.elem );
 		if ( selectable ) dragSelect.addSelectables( [ this.elem ] );
+		else this.elem.classList.add( "doodad" );
 
 		if ( this.owner ) {
 
@@ -152,8 +156,14 @@ export default emitter( class Sprite {
 
 	damage( amount ) {
 
-		if ( this.health <= 0 ) return;
-		this.health -= amount;
+		const ignoreArmor = isNaN( this.buildProgress ) || this.buildProgress < 1;
+		const effectiveArmor = ignoreArmor ? this.armor : 0;
+		const actualDamage = amount * ( 1 - effectiveArmor );
+
+		if ( this.health <= 0 ) return actualDamage;
+		this.health -= actualDamage;
+
+		return actualDamage;
 
 	}
 

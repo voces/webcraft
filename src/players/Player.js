@@ -25,7 +25,9 @@ export default class Player {
 				get: () => this.color ? this.color.name : this.id,
 			} );
 
-		game.players.push( this );
+		// placeholder player (solo)
+		if ( data.id !== - 1 )
+			game.players.push( this );
 
 	}
 
@@ -44,6 +46,22 @@ export default class Player {
 
 		for ( const resource in resources )
 			this.resources[ resource ] -= resources[ resource ];
+
+	}
+
+	get enemies() {
+
+		if ( ! game.round ) return [];
+		const isCrosser = game.round.crossers.includes( this );
+		return isCrosser ? game.round.defenders : game.round.crossers;
+
+	}
+
+	getEnemySprites() {
+
+		return this.enemies
+			.map( p => p.sprites )
+			.flat();
 
 	}
 

@@ -13,7 +13,8 @@ const BUILD_DISTANCE = 1.4;
 
 export default class Crosser extends Unit {
 
-    static radius = 0.5;
+	static radius = 0.5;
+	static priority = 1;
 
 	// 380 in WC3 on fast
 	speed = 5.9375;

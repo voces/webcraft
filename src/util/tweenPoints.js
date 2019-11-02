@@ -1,5 +1,5 @@
 
-const distance = ( { x: x1, y: y1 }, { x: x2, y: y2 } ) =>
+const distanceBetweenPoints = ( { x: x1, y: y1 }, { x: x2, y: y2 } ) =>
 	Math.sqrt( ( x2 - x1 ) ** 2 + ( y2 - y1 ) ** 2 );
 
 // const elems = [];
@@ -34,7 +34,7 @@ export default points => {
 
 	const annotatedPoints = points.map( p => ( { x: p.x, y: p.y } ) );
 	annotatedPoints[ 0 ].start = 0;
-	annotatedPoints[ 0 ].end = points[ 1 ] ? distance( points[ 1 ], points[ 0 ] ) : 0;
+	annotatedPoints[ 0 ].end = points[ 1 ] ? distanceBetweenPoints( points[ 1 ], points[ 0 ] ) : 0;
 	for ( let i = 0; i < points.length; i ++ ) {
 
 		if ( i > 0 )
@@ -46,7 +46,7 @@ export default points => {
 			annotatedPoints[ i ].xDeltaToNext = annotatedPoints[ i + 1 ].x - annotatedPoints[ i ].x;
 			annotatedPoints[ i ].yDeltaToNext = annotatedPoints[ i + 1 ].y - annotatedPoints[ i ].y;
 			annotatedPoints[ i ].end = annotatedPoints[ i ].start +
-				distance( points[ i ], points[ i + 1 ] );
+				distanceBetweenPoints( points[ i ], points[ i + 1 ] );
 			annotatedPoints[ i ].distance = annotatedPoints[ i ].end - annotatedPoints[ i ].start;
 
 		}
@@ -83,12 +83,17 @@ export default points => {
 
 	} : () => points[ 0 ];
 
+	const distance = annotatedPoints[ points.length - 1 ].start;
 	let internalProgress = 0;
+
+	Object.defineProperty( func, "remaining", { get: () =>
+		distance - internalProgress } );
+
 	return Object.assign( func, {
-		distance: annotatedPoints[ points.length - 1 ].start,
+		distance,
 		step: deltaProgress => {
 
-			internalProgress += deltaProgress;
+			internalProgress = Math.min( distance, internalProgress + deltaProgress );
 			return func( internalProgress );
 
 		},

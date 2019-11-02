@@ -17,6 +17,7 @@ import Dense from "./obstructions/Dense.js";
 import Huge from "./obstructions/Huge.js";
 import Large from "./obstructions/Large.js";
 import Resource from "./obstructions/Resource.js";
+import Slow from "./obstructions/Slow.js";
 import Stack from "./obstructions/Stack.js";
 import Tiny from "./obstructions/Tiny.js";
 import { window } from "../util/globals.js";
@@ -61,6 +62,12 @@ export const hotkeys = {
 			if ( realDefenders.length ) network.send( { type: "mirror", sprites: realDefenders.map( u => u.id ) } );
 
 		},
+	},
+	q: {
+		name: "Build Slow Box",
+		type: "build",
+		obstruction: Slow,
+		activeWhen: hasOwnCrosser,
 	},
 	a: {
 		name: "Build Stack Box",
@@ -189,6 +196,7 @@ const obstructions = {
 	Huge,
 	Large,
 	Resource,
+	Slow,
 	Stack,
 	Tiny,
 };

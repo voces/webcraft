@@ -32,6 +32,8 @@ export const colors = [
 
 } );
 
+colors.forEach( color => colors[ color.name ] = color );
+
 export const next = () => {
 
 	const nextColor = colors.find( color => ! color.taken );

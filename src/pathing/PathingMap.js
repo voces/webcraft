@@ -156,8 +156,8 @@ export default class Tilemap {
 
 		let i = 0;
 
-		for ( let y = yTile + map.top; y < yTile + map.height + map.top; y ++, i ++ )
-			for ( let x = xTile + map.left; x < xTile + map.width + map.left; x ++ )
+		for ( let y = yTile + map.top; y < yTile + map.height + map.top; y ++ )
+			for ( let x = xTile + map.left; x < xTile + map.width + map.left; x ++, i ++ )
 				if (
 					this.grid[ y ] === undefined ||
 					this.grid[ y ][ x ] === undefined ||
@@ -1191,6 +1191,49 @@ export default class Tilemap {
 					height: `${cellSize}px`,
 					background: `rgba(${this.grid[ y ][ x ].pathing & 1 ? 255 : 0}, 0, ${this.grid[ y ][ x ].pathing & 2 ? 255 : 0}, 0.4)`,
 				} );
+				host.appendChild( cell );
+
+			}
+
+	}
+
+	paintMap( map, xTile, yTile ) {
+
+		const host = this.elem || ( this.elem = ( () => {
+
+			const elem = document.createElement( "div" );
+			document.getElementById( "arena" ).appendChild( elem );
+
+			return elem;
+
+		} )() );
+
+		const cellSize = 32 / this.resolution;
+
+		let i = 0;
+
+		for ( let y = yTile + map.top; y < yTile + map.height + map.top; y ++ )
+			for ( let x = xTile + map.left; x < xTile + map.width + map.left; x ++, i ++ ) {
+
+				const cell = document.createElement( "div" );
+				Object.assign( cell.style, {
+					zIndex: 10,
+					position: "absolute",
+					top: `${y * cellSize}px`,
+					left: `${x * cellSize}px`,
+					width: `${cellSize}px`,
+					height: `${cellSize}px`,
+					background:
+						this.grid[ y ] === undefined ||
+						this.grid[ y ][ x ] === undefined ||
+						this.grid[ y ][ x ].pathing & map.map[ i ]
+							? "rgba(255,0,0,0.5)" : "rgba(0,255,0,0.5)",
+				} );
+				cell.setAttribute( "x", x );
+				cell.setAttribute( "y", y );
+				cell.setAttribute( "i", i );
+				cell.setAttribute( "grid", this.grid[ y ] === undefined ? "no-y" : this.grid[ y ][ x ] === undefined ? "no-x" : this.grid[ y ][ x ].pathing );
+				cell.setAttribute( "map", map.map[ i ] );
 				host.appendChild( cell );
 
 			}

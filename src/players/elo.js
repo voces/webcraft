@@ -31,9 +31,6 @@ const calculateNewRatings = ( teamA, teamB, score ) => {
 
 export default ( { mode, crossers, defenders, scores } ) => {
 
-	if ( defenders.length === 0 )
-		defenders = [ { score: { bulldog: 800 } } ];
-
 	const newRatings = calculateNewRatings(
 		crossers.map( p => p.score[ mode ] ),
 		defenders.map( p => p.score[ mode ] ),

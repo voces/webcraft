@@ -1,8 +1,8 @@
 
-import { WORLD_TO_GRAPHICS_RATIO, MIRROR_SEPARATION } from "../constants.js";
-import tweenPoints from "../util/tweenPoints.js";
+import { MIRROR_SEPARATION } from "../constants.js";
 import Unit from "./Unit.js";
 import game from "../index.js";
+import attack from "./actions/attack.js";
 
 const getMirroringPosition = ( pos, entity, layer ) => {
 
@@ -18,6 +18,7 @@ const getMirroringPosition = ( pos, entity, layer ) => {
 export default class Defender extends Unit {
 
 	static radius = 1;
+	static maxHealth = Number.MAX_VALUE;
 
 	// 420 in WC3 on fast
 	speed = 6.5625;
@@ -26,104 +27,11 @@ export default class Defender extends Unit {
 		damage: 50,
 	}
 
+	autoAttack = true;
+
 	attack( target ) {
 
-		const pathingMap = game.round.pathingMap;
-		let path = tweenPoints( pathingMap.withoutEntity( target, () =>
-			pathingMap.path( this, target ) ) );
-		let renderProgress = 0;
-
-		const recalcPath = ( { x, y } ) => {
-
-			// Update self
-			this._setPosition( x, y );
-
-			// Start new attack path
-			path = tweenPoints( pathingMap.withoutEntity( target, () => pathingMap.path( this, target ) ) );
-			renderProgress = 0;
-
-		};
-
-		this.action = {
-			render: delta => {
-
-				renderProgress += delta * this.speed;
-				let { x, y } = path( renderProgress );
-
-				const distanceToTarget = Math.sqrt( ( target.x - x ) ** 2 + ( target.y - y ) ** 2 );
-				const range = this.weapon.range + this.radius + target.radius;
-				if ( distanceToTarget < range ) {
-
-					// Don't skip the unit back
-					const realDistanceToTarget = Math.sqrt( ( target.x - this.x ) ** 2 + ( target.y - this.y ) ** 2 );
-					if ( realDistanceToTarget > range )
-
-						// Don't jump forward
-						if ( Math.sqrt( ( path.origin.x - target.x ) ** 2 + ( path.origin.y - target.y ) ** 2 ) > range ) {
-
-							const newPoint = path.radialStepBack( range );
-							x = newPoint.x;
-							y = newPoint.y;
-
-						}
-
-				}
-
-				this.elem.style.left = ( x - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
-				this.elem.style.top = ( y - this.radius ) * WORLD_TO_GRAPHICS_RATIO + "px";
-
-			},
-			update: delta => {
-
-				const updateProgress = delta * this.speed;
-				const { x, y } = path( updateProgress );
-
-				if ( target.health <= 0 ) {
-
-					this.setPosition( x, y );
-					this.action = undefined;
-					return;
-
-				}
-
-				// Within range to attack
-				const distanceToTarget = Math.sqrt( ( target.x - x ) ** 2 + ( target.y - y ) ** 2 );
-				if ( distanceToTarget < this.weapon.range + this.radius + target.radius ) {
-
-					// Not on cooldown
-					if ( ! this.weapon.last || this.weapon.last + this.weapon.cooldown < game.round.lastUpdate ) {
-
-						const ignoreArmor = isNaN( target.buildProgress ) || target.buildProgress < 1;
-						const effectiveArmor = ignoreArmor ? target.armor : 0;
-						const actualDamage = this.isMirror ? 0 : this.weapon.damage * ( 1 - effectiveArmor );
-
-						target.damage( actualDamage );
-
-						this.elem.classList.add( "attack" );
-						game.round.setTimeout(
-							() => this.elem && this.elem.classList.remove( "attack" ),
-							0.250
-						);
-						this.weapon.last = game.round.lastUpdate;
-
-						if ( target.health <= 0 ) {
-
-							this.setPosition( x, y );
-							this.action = undefined;
-
-						}
-
-					}
-
-				} else recalcPath( { x, y } );
-
-			},
-			toJSON: () => ( {
-				name: "attack",
-				path,
-				target: target.id,
-			} ),
-		};
+		attack( this, target );
 
 	}
 
