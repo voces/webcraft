@@ -5,9 +5,12 @@ import {
 	BoxBufferGeometry,
 	Vector3
 } from "../node_modules/three/build/three.module.js";
-import Game from "../src/Game.mjs";
-import Graphics from "../src/systems/Graphics.mjs";
-import System from "../src/System.mjs";
+import Game from "../src/Game.js";
+import Graphics from "../src/systems/Graphics.js";
+import Mouse from "../src/mechanisms/Mouse.js";
+import CameraControls from "../src/mechanisms/CameraControls.js";
+import SinglePlayer from "../src/mechanisms/SinglePlayer.js";
+import System from "../src/System.js";
 
 class RotateBoxes extends System {
 
@@ -39,10 +42,10 @@ class RotateBoxes extends System {
 
 		object.axis.applyAxisAngle(
 			object.axisAcceleration,
-			Math.PI * delta / 1000
+			Math.PI * delta / 100
 		).normalize();
 
-		object.rotateOnAxis( object.axis, Math.PI / 100 * delta / 1000 );
+		object.rotateOnAxis( object.axis, Math.PI / 100 * delta / 100 );
 
 	}
 
@@ -56,8 +59,22 @@ class MyGame extends Game {
 
 		this.addSystem( new Graphics() );
 		this.addSystem( new RotateBoxes() );
-		for ( let i = 0; i < 100; i ++ )
-			this.add( new Mesh( new BoxBufferGeometry(), new MeshPhongMaterial() ) );
+		this.addMechanism( new Mouse() );
+		this.addMechanism( new CameraControls( {
+			camera: this.camera
+		} ) );
+
+		const material = new MeshPhongMaterial();
+		for ( let i = 0; i < 10; i ++ ) {
+
+			const mesh = new Mesh( new BoxBufferGeometry(), material );
+			mesh.position.x += ( Math.random() - 0.5 ) * 20;
+			mesh.position.y += ( Math.random() - 0.5 ) * 20;
+			this.add( mesh );
+
+		}
+
+		this.addMechanism( new SinglePlayer( this ) );
 
 		this.start();
 

@@ -7,7 +7,7 @@ import {
 	DirectionalLight,
 	Vector3
 } from "../../node_modules/three/build/three.module.js";
-import System from "../System.mjs";
+import System from "../System.js";
 
 export default class Graphics extends System {
 
@@ -15,6 +15,22 @@ export default class Graphics extends System {
 
 		super();
 		addEventListener( "resize", () => this.updateSize() );
+
+	}
+
+	get attachments() {
+
+		const attachments = {
+			graphics: this,
+			camera: {
+				get: () => this.camera,
+				set: camera => this.camera = camera
+			}
+		};
+
+		Object.defineProperty( this, "attachments", { value: attachments } );
+
+		return attachments;
 
 	}
 
@@ -79,18 +95,18 @@ export default class Graphics extends System {
 	get camera() {
 
 		const { width, height } = this.renderer.getSize();
-		const camera = new PerspectiveCamera( 75, width / height, 0.1, 10000 );
-		camera.position.z = 10;
-		camera.position.y = - 7;
-		camera.rotation.x = 0.6;
+		this.camera = new PerspectiveCamera( 75, width / height, 0.1, 10000 );
+		this.camera.position.z = 10;
+		this.camera.position.y = - 7;
+		this.camera.rotation.x = 0.6;
 
-		return this.camera = camera;
+		return this.camera;
 
 	}
 
 	set camera( camera ) {
 
-		Object.defineProperty( this, "camera", { value: camera } );
+		Object.defineProperty( this, "camera", { value: camera, writable: true } );
 		return camera;
 
 	}
@@ -100,14 +116,16 @@ export default class Graphics extends System {
 		this.renderer = new WebGLRenderer( { antialias: true } );
 		this.renderer.gammaOutput = true;
 		this.renderer.setClearColor( 0x000000 );
-		this.renderer.setPixelRatio( window.devicePixelRatio );
+		// this.renderer.setPixelRatio( window.devicePixelRatio );
+		this.renderer.setPixelRatio( 0.5 );
 		this.renderer.shadowMap.enabled = true;
 		if ( ! this.renderer.domElement.parentElement )
 			document.body.appendChild( this.renderer.domElement );
 
-		this.updateSize();
+		// helps with camera -> renderer -> updateSize -> camera
+		( async () => this.updateSize() )();
 
-		return this;
+		return this.renderer;
 
 	}
 
