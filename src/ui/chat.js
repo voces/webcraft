@@ -3,7 +3,7 @@ import network from "../network.js";
 import game from "../index.js";
 import { document, window } from "../util/globals.js";
 import marked from "../lib/marked.js";
-import { setDebugging } from "../pathing/PathingMap.js";
+import { toggleDebugging } from "../pathing/PathingMap.js";
 
 marked.setOptions( { breaks: true } );
 
@@ -259,5 +259,5 @@ registerCommand( {
 registerCommand( {
 	name: "debug",
 	comment: "Shows debugging information",
-	handler: () => setDebugging( true ),
+	handler: () => toggleDebugging( true ),
 } );

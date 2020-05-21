@@ -5,7 +5,16 @@ import { DIRECTION, PATHING_TYPES } from "../constants.js";
 import { document } from "../util/globals.js";
 
 let debugging = false;
-export const setDebugging = value => debugging = value;
+const elems = [];
+const arena = document.getElementById( "arena" );
+export const toggleDebugging = () => {
+
+	if ( debugging )
+		elems.forEach( elem => arena.removeChild( elem ) );
+
+	debugging = ! debugging;
+
+};
 
 const DEFAULT_RESOLUTION = 1;
 
@@ -60,9 +69,6 @@ class Tile {
 	}
 
 }
-
-const elems = [];
-const arena = document.getElementById( "arena" );
 
 //   0,   0, 255 = 0
 //   0, 255, 255 = 0.25

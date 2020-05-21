@@ -4,11 +4,11 @@
   "description": "Minimum viable product of Bulldog client",
   "main": "server/src/index.js",
   "devDependencies": {
-    "babel-eslint": "^10.0.3",
+    "babel-eslint": "^10.1.0",
     "chai": "^4.2.0",
-    "eslint": "^6.4.0",
-    "eslint-config-mdcs": "^4.2.3",
-    "eslint-config-verit": "^1.0.2",
+    "eslint": "^7.0.0",
+    "eslint-config-mdcs": "^5.0.0",
+    "eslint-config-verit": "^1.0.4",
     "verit-test": "^3.1.0"
   },
   "scripts": {
