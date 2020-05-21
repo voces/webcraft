@@ -3,6 +3,7 @@ import network from "../network.js";
 import game from "../index.js";
 import { document, window } from "../util/globals.js";
 import marked from "../lib/marked.js";
+import { setDebugging } from "../pathing/PathingMap.js";
 
 marked.setOptions( { breaks: true } );
 
@@ -133,7 +134,7 @@ network.addEventListener( "chat", ( { connection, message } ) => {
 	if ( ! player ) return;
 
 	const playerTag = `<span style="color: ${player.color.hex}">${player.username}</span>`;
-	_appendMessage( `${playerTag}: ${message}` );
+	appendMessage( `${playerTag}: ${message}` );
 
 } );
 
@@ -253,4 +254,10 @@ registerCommand( {
 		chatLog.innerHTML = "";
 
 	},
+} );
+
+registerCommand( {
+	name: "debug",
+	comment: "Shows debugging information",
+	handler: () => setDebugging( true ),
 } );

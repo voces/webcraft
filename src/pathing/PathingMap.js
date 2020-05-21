@@ -4,6 +4,9 @@ import memoize from "./memoize.js";
 import { DIRECTION, PATHING_TYPES } from "../constants.js";
 import { document } from "../util/globals.js";
 
+let debugging = false;
+export const setDebugging = value => debugging = value;
+
 const DEFAULT_RESOLUTION = 1;
 
 const MAX_TRIES = 8192;
@@ -58,8 +61,7 @@ class Tile {
 
 }
 
-// const elems = [];
-const elems = false;
+const elems = [];
 const arena = document.getElementById( "arena" );
 
 //   0,   0, 255 = 0
@@ -884,7 +886,7 @@ export default class Tilemap {
 
 		}
 
-		if ( elems ) {
+		if ( debugging ) {
 
 			elems.forEach( elem => arena.removeChild( elem ) );
 			elems.splice( 0 );
