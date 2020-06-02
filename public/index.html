@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div id="arena">
+        <div id="tiles"></div>
+    </div>
+    <div id="ui">
+        <div id="login" class="v-spacing-8 padding16">
+            <h2>notextures</h2>
+            <input id="login-name" maxLength="16" placeholder="username"/>
+            <button id="login-register">Register</button>
+            <input id="login-password" maxLength="16" placeholder="password" type="password"/>
+            <input id="login-verify-password" maxLength="16" placeholder="verify password" type="password"/>
+        </div>
+        <div id="commands"></div>
+        <div id="resources">
+            <div id="energy"></div>
+        </div>
+        <div id="top-right" class="h-spacing-8">
+            <span id="essence" title="Essence"></span>
+            <span id="clock"></span>
+            <span id="scores"></span>
+        </div>
+        <div id="chat-log"></div>
+        <div id="chat-input-container">
+            <input id="chat-input-suggestion" maxLength="256"/>
+            <input id="chat-input" maxLength="256"/>
+        </div>
+        <div id="ping"></div>
+        <div id="waiting-splash" class="padding16">Waiting for the round to end…</div>
+        <div id="hotkeys"></div>
+    </div>
+    <script type="module" src="js/index.js"></script>
+</body>
+</html>

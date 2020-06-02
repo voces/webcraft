@@ -1,0 +1,32 @@
+{
+	"compilerOptions": {
+		"baseUrl": "src",
+		"allowJs": true,
+		"target": "ES2020",
+		"lib": [ "es2019", "es2020", "DOM" ],
+		"moduleResolution": "node",
+		"strict": true,
+		"module": "ESNext",
+		"noImplicitAny": true,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
+		"strictNullChecks": true,
+		"paths": {
+			"*": [
+				"../node_modules/*/dist/index",
+				"../node_modules/*/index",
+				"../node_modules/*/lib/index",
+				"../node_modules/*",
+				"../node_modules/*/src/index"
+			],
+			"test": ["../test"]
+		},
+		"esModuleInterop": true,
+		"types": [
+			"@types/jest"
+		],
+		"noEmit": true
+	},
+	"include": ["src", "test"],
+	"exclude": ["node_modules"]
+}
