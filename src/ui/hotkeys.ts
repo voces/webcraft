@@ -1,6 +1,6 @@
 import { hotkeys, Hotkey } from "../sprites/spriteLogic.js";
 import { document } from "../util/globals.js";
-import dragSelect from "../sprites/dragSelect.js";
+import { dragSelect } from "../sprites/dragSelect.js";
 import { defined } from "../types.js";
 
 const container = document.getElementById("hotkeys")!;

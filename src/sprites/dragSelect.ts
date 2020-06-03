@@ -1,7 +1,7 @@
-import game from "../index.js";
+import { game } from "../index.js";
 import { active } from "./obstructionPlacement.js";
-import swallow from "../util/swallow.js";
-import emitter from "../emitter.js";
+import { swallow } from "../util/swallow.js";
+import { emitter } from "../emitter.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
 
 let allSelectables: SpriteElement[] | undefined;
@@ -33,7 +33,7 @@ type DragSelectEvents = {
 
 const host = emitter<typeof base, DragSelectEvents>(base);
 
-const dragSelect = typeof window !== "undefined" ? host : swallow(host);
+export const dragSelect = typeof window !== "undefined" ? host : swallow(host);
 
 function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
 	return value !== null && value !== undefined;
@@ -42,7 +42,7 @@ function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
 if (typeof window !== "undefined")
 	(async () => {
 		const DragSelect = await import("../lib/DragSelect.js").then(
-			(i) => i.default,
+			(i) => i.DragSelect,
 		);
 
 		const selector = document.createElement("div");
@@ -117,5 +117,3 @@ if (typeof window !== "undefined")
 		dragSelect.removeSelectables = (v: Sprite[]) =>
 			internalDragSelect.removeSelectables(v.map((v) => v.elem));
 	})();
-
-export default dragSelect;

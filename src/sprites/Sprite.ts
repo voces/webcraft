@@ -1,7 +1,7 @@
 import { PATHING_TYPES, WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
-import dragSelect from "./dragSelect.js";
-import game from "../index.js";
-import emitter, { Emitter } from "../emitter.js";
+import { dragSelect } from "./dragSelect.js";
+import { game } from "../index.js";
+import { emitter, Emitter } from "../emitter.js";
 import { document } from "../util/globals.js";
 import { Player } from "../players/Player.js";
 import { Round } from "../Round.js";

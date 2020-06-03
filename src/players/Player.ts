@@ -4,7 +4,7 @@ import {
 	take as takeColor,
 	Color,
 } from "./colors.js";
-import game from "../index.js";
+import { game } from "../index.js";
 import { ResourceMap, resourceKeys, Resource } from "../types.js";
 import { Unit } from "../sprites/Unit.js";
 import { Sprite } from "../sprites/Sprite.js";

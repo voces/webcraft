@@ -1,8 +1,8 @@
-import arenas from "./arenas/index.js";
+import { arenas } from "./arenas/index.js";
 import { Round } from "./Round.js";
 import { TILE_NAMES } from "./constants.js";
 import { panTo } from "./players/camera.js";
-import emitter, { Emitter } from "./emitter.js";
+import { emitter, Emitter } from "./emitter.js";
 import { document } from "./util/globals.js";
 import { Player } from "./players/Player.js";
 import { Arena } from "./arenas/types.js";

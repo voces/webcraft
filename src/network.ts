@@ -1,5 +1,5 @@
-import emitter from "./emitter.js";
-import game from "./index.js";
+import { emitter } from "./emitter.js";
+import { game } from "./index.js";
 import { newPingMessage } from "./ui/ping.js";
 import { location } from "./util/globals.js";
 import { obstructionMap } from "./sprites/obstructions/index.js";
@@ -142,9 +142,7 @@ const host = {
 	},
 };
 
-const network = emitter<typeof host, typeof networkEvents>(host);
-
-export default network;
+export const network = emitter<typeof host, typeof networkEvents>(host);
 
 const wrappedFetch = <T>(
 	url: string,

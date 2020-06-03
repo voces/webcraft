@@ -1,4 +1,4 @@
-import network, { fetch as rawFetch } from "../network.js";
+import { network, fetch as rawFetch } from "../network.js";
 import { document } from "../util/globals.js";
 
 const login = document.getElementById("login")!;

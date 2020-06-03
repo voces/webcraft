@@ -1,4 +1,4 @@
-import game from "../index.js";
+import { game } from "../index.js";
 import { document } from "../util/globals.js";
 import { Player } from "./Player.js";
 
@@ -29,7 +29,7 @@ const calculateNewRatings = (
 	];
 };
 
-export default ({
+export const elo = ({
 	mode,
 	crossers,
 	defenders,

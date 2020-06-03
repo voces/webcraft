@@ -1,4 +1,4 @@
-import game from "../index.js";
+import { game } from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { document, window } from "../util/globals.js";
 import { clientToWorld } from "../players/camera.js";

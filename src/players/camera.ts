@@ -1,8 +1,8 @@
-import game from "../index.js";
+import { game } from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { tweenPoints, PathTweener } from "../util/tweenPoints.js";
 import { document, requestAnimationFrame, window } from "../util/globals.js";
-import dragSelect from "../sprites/dragSelect.js";
+import { dragSelect } from "../sprites/dragSelect.js";
 import { registerCommand } from "../ui/chat.js";
 import { Round } from "../Round.js";
 import { Point } from "../pathing/PathingMap.js";

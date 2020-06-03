@@ -1,10 +1,10 @@
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { tweenPoints } from "../util/tweenPoints.js";
-import game from "../index.js";
+import { game } from "../index.js";
 import { Sprite, SpriteProps, SpriteEvents } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
-import attack from "./actions/attack.js";
+import { attack } from "./actions/attack.js";
 import { Emitter } from "../emitter.js";
 
 export type Weapon = {

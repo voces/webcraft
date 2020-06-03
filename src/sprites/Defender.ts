@@ -1,6 +1,6 @@
 import { MIRROR_SEPARATION } from "../constants.js";
 import { Unit, UnitProps } from "./Unit.js";
-import game from "../index.js";
+import { game } from "../index.js";
 import { Sprite } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 
@@ -29,7 +29,7 @@ type DefenderProps = UnitProps & {
 	autoAttack?: boolean;
 };
 
-export default class Defender extends Unit {
+export class Defender extends Unit {
 	static isDefender = (sprite: Defender | Sprite): sprite is Defender =>
 		sprite instanceof Defender;
 

@@ -25,7 +25,9 @@ export interface Emitter<Events extends EventMap> {
 	) => void;
 }
 
-export default <T, Events extends EventMap>(host: T): T & Emitter<Events> => {
+export const emitter = <T, Events extends EventMap>(
+	host: T,
+): T & Emitter<Events> => {
 	let events: EventMapArray<Events> = {};
 
 	const modifiedHost = host as T & Emitter<Events>;

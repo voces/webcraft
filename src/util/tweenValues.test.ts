@@ -1,4 +1,4 @@
-import tweenValues from "./tweenValues.js";
+import { tweenValues } from "./tweenValues.js";
 
 describe("tweenValues", () => {
 	it("negative", () => {

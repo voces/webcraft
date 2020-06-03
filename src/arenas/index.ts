@@ -53,7 +53,7 @@ const processArena = (arena: InternalArena): Arena => {
 	});
 };
 
-export default [
+export const arenas = [
 	theDump,
 	theFarm,
 	theGap,

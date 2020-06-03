@@ -1,4 +1,4 @@
-export default (
+export const array2 = (
 	x: number,
 	y: number,
 	fn: (x: number, y: number) => number = (): number => 0,

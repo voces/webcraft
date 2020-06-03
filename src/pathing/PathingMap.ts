@@ -1,4 +1,4 @@
-import BinaryHeap from "./BinaryHeap.js";
+import { BinaryHeap } from "./BinaryHeap.js";
 import { memoize } from "./memoize.js";
 import { DIRECTION, PATHING_TYPES } from "../constants.js";
 import { document } from "../util/globals.js";
@@ -117,14 +117,14 @@ export interface Point {
 
 interface Cache {
 	_linearPathable: (
-		...args: Parameters<typeof Tilemap.prototype._linearPathable>
-	) => ReturnType<typeof Tilemap.prototype._linearPathable>;
+		...args: Parameters<typeof PathingMap.prototype._linearPathable>
+	) => ReturnType<typeof PathingMap.prototype._linearPathable>;
 	_pathable: (
-		...args: Parameters<typeof Tilemap.prototype._pathable>
-	) => ReturnType<typeof Tilemap.prototype._pathable>;
+		...args: Parameters<typeof PathingMap.prototype._pathable>
+	) => ReturnType<typeof PathingMap.prototype._pathable>;
 	pointToTilemap: (
-		...args: Parameters<typeof Tilemap.prototype.pointToTilemap>
-	) => ReturnType<typeof Tilemap.prototype.pointToTilemap>;
+		...args: Parameters<typeof PathingMap.prototype.pointToTilemap>
+	) => ReturnType<typeof PathingMap.prototype.pointToTilemap>;
 }
 
 //   0,   0, 255 = 0
@@ -153,7 +153,7 @@ const placeTile = (x: number, y: number, v: number) => {
 };
 
 // eslint-disable-next-line no-unused-vars
-export default class Tilemap {
+export class PathingMap {
 	resolution: number;
 	layers?: number[][];
 	heightWorld: number;

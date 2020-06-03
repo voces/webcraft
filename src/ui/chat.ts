@@ -1,7 +1,7 @@
-import network from "../network.js";
-import game from "../index.js";
+import { network } from "../network.js";
+import { game } from "../index.js";
 import { document, window } from "../util/globals.js";
-import marked from "../lib/marked.js";
+import { marked } from "../lib/marked.js";
 import { toggleDebugging } from "../pathing/PathingMap.js";
 
 type Command = {
@@ -50,7 +50,7 @@ class Chat {
 	}
 }
 
-const chat = new Chat();
+export const chat = new Chat();
 
 window.addEventListener("keydown", (e) => {
 	if (!chat.active && e.key === "Enter") chat.activate();
@@ -178,8 +178,6 @@ const onCommandTab = (text: string) => {
 			return;
 		}
 };
-
-export default chat;
 
 export const registerCommand = ({
 	name,

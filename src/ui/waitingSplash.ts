@@ -1,4 +1,4 @@
-import network from "../network.js";
+import { network } from "../network.js";
 import { document } from "../util/globals.js";
 
 const elem = document.getElementById("waiting-splash")!;

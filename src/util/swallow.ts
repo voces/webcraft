@@ -23,4 +23,4 @@ const swallow = <T>(obj?: T): T =>
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	) as any) as T;
 
-export default swallow;
+export { swallow };

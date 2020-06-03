@@ -1,6 +1,6 @@
-import game from "../index.js";
-import network from "../network.js";
-import dragSelect from "./dragSelect.js";
+import { game } from "../index.js";
+import { network } from "../network.js";
+import { dragSelect } from "./dragSelect.js";
 import {
 	active as activeObstructionPlacement,
 	snap,
@@ -9,11 +9,11 @@ import {
 	valid as obstructionPlacementValid,
 } from "./obstructionPlacement.js";
 import { Unit } from "./Unit.js";
-import Crosser from "./Crosser.js";
+import { Crosser } from "./Crosser.js";
 import { Obstruction } from "./obstructions/Obstruction.js";
 import { window } from "../util/globals.js";
 import { panTo, clientToWorld } from "../players/camera.js";
-import Defender from "./Defender.js";
+import { Defender } from "./Defender.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
 import {
 	obstructionMap,

@@ -1,4 +1,4 @@
-import swallow from "./swallow.js";
+import { swallow } from "./swallow.js";
 
 describe("swallow", () => {
 	it("properties forever", () => {

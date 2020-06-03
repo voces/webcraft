@@ -1,4 +1,4 @@
-export default class BinaryHeap<T> extends Array<T> {
+export class BinaryHeap<T> extends Array<T> {
 	scoreFunc: (element: T) => number;
 
 	constructor(scoreFunc: (element: T) => number) {

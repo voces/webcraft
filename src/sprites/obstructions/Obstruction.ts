@@ -3,7 +3,7 @@ import {
 	INITIAL_OBSTRUCTION_PROGRESS,
 	PATHING_TYPES,
 } from "../../constants.js";
-import tweenValues from "../../util/tweenValues.js";
+import { tweenValues } from "../../util/tweenValues.js";
 import { toFootprint } from "./toFootprint.js";
 import { ResourceMap } from "../../types.js";
 import { Player } from "../../players/Player.js";

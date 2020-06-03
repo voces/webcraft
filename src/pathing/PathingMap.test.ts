@@ -1,6 +1,6 @@
-import PathingMap from "./PathingMap.js";
+import { PathingMap } from "./PathingMap.js";
 import { PATHING_TYPES } from "../constants.js";
-import array2 from "../../test/array2.js";
+import { array2 } from "../../test/array2.js";
 
 const pathing = [
 	[0, 1],

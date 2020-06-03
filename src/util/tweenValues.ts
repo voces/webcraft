@@ -1,4 +1,6 @@
-export default (...values: number[]): ((percentProgress: number) => number) => {
+export const tweenValues = (
+	...values: number[]
+): ((percentProgress: number) => number) => {
 	if (values.length === 1 && Array.isArray(values[0])) values = values[0];
 
 	const totalDiff = values.reduce(

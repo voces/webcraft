@@ -16,7 +16,7 @@ const isInRange = (attacker: Unit, target: Sprite) => {
 	);
 };
 
-export default (attacker: Unit, target: Sprite): void => {
+export const attack = (attacker: Unit, target: Sprite): void => {
 	if (!attacker.weapon) return;
 
 	const pathingMap = attacker.round.pathingMap;

@@ -1,5 +1,5 @@
-import network from "../network.js";
-import game from "../index.js";
+import { network } from "../network.js";
+import { game } from "../index.js";
 import { Player, patchInState } from "./Player.js";
 import { next as nextColor, release as releaseColor } from "./colors.js";
 import { updateDisplay } from "./elo.js";

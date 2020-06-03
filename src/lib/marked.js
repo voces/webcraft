@@ -1546,7 +1546,7 @@ function checkSanitizeDeprecation(opt) {
  * Marked
  */
 
-function marked(src, opt, callback) {
+export function marked(src, opt, callback) {
   // throw error in case of non string input
   if (typeof src === 'undefined' || src === null) {
     throw new Error('marked(): input parameter is undefined or null');
@@ -1694,7 +1694,6 @@ marked.Slugger = Slugger;
 
 marked.parse = marked;
 
-export default marked;
 // if (typeof module !== 'undefined' && typeof exports === 'object') {
 //   module.exports = marked;
 // } else if (typeof define === 'function' && define.amd) {

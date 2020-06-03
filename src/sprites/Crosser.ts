@@ -1,8 +1,8 @@
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { tweenPoints } from "../util/tweenPoints.js";
 import { Unit, UnitProps } from "./Unit.js";
-import dragSelect from "./dragSelect.js";
-import game from "../index.js";
+import { dragSelect } from "./dragSelect.js";
+import { game } from "../index.js";
 import {
 	stop as stopPlacement,
 	active as activePlacement,
@@ -16,7 +16,7 @@ import { Blueprint } from "./obstructions/Blueprint.js";
 // Math.SQRT2 (~1.41) allows building tinies across diag space
 const BUILD_DISTANCE = 1.4;
 
-export default class Crosser extends Unit {
+export class Crosser extends Unit {
 	static radius = 0.5;
 	static priority = 1;
 
