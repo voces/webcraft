@@ -1,7 +1,7 @@
 module.exports = {
 	globals: { "ts-jest": { tsConfig: "tsconfig.test.json" } },
-	moduleDirectories: [ "node_modules", "src" ],
-	moduleFileExtensions: [ "ts", "js" ],
+	moduleDirectories: ["node_modules", "src"],
+	moduleFileExtensions: ["ts", "js"],
 	moduleNameMapper: {
 		"^test/(.*)$": "<rootDir>/test/$1",
 	},
@@ -12,5 +12,5 @@ module.exports = {
 	testEnvironment: "node",
 	testRegex: "(/src/.*\\.test)\\.ts$",
 	transformIgnorePatterns: [],
-	resolver: "jest-ts-webcompat-resolver"
+	resolver: "jest-ts-webcompat-resolver",
 };
