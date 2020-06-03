@@ -1,9 +1,5 @@
 
-import chai from "chai";
-
 import tweenValues from "./tweenValues.js";
-
-const assert = chai.assert;
 
 describe( "tweenValues", () => {
 
@@ -11,7 +7,7 @@ describe( "tweenValues", () => {
 
 		const tween = tweenValues( 0, 1 );
 
-		assert.equal( tween( - 1 ), 0 );
+		expect( tween( - 1 ) ).toEqual( 0 );
 
 	} );
 
@@ -19,7 +15,7 @@ describe( "tweenValues", () => {
 
 		const tween = tweenValues( 0, 1 );
 
-		assert.equal( tween( 2 ), 1 );
+		expect( tween( 2 ) ).toEqual( 1 );
 
 	} );
 
@@ -27,7 +23,7 @@ describe( "tweenValues", () => {
 
 		const tween = tweenValues( 0, 1 );
 
-		assert.equal( tween( 0 ), 0 );
+		expect( tween( 0 ) ).toEqual( 0 );
 
 	} );
 
@@ -35,7 +31,7 @@ describe( "tweenValues", () => {
 
 		const tween = tweenValues( 0, 1 );
 
-		assert.equal( tween( 1 ), 1 );
+		expect( tween( 1 ) ).toEqual( 1 );
 
 	} );
 
@@ -43,9 +39,9 @@ describe( "tweenValues", () => {
 
 		const tween = tweenValues( 0, 2 );
 
-		assert.equal( tween( 0.25 ), 0.5 );
-		assert.equal( tween( 0.5 ), 1 );
-		assert.equal( tween( 0.75 ), 1.5 );
+		expect( tween( 0.25 ) ).toEqual( 0.5 );
+		expect( tween( 0.5 ) ).toEqual( 1 );
+		expect( tween( 0.75 ) ).toEqual( 1.5 );
 
 	} );
 
@@ -53,13 +49,13 @@ describe( "tweenValues", () => {
 
 		const tween = tweenValues( 0, 1, 4 );
 
-		assert.equal( tween( - 1 ), 0 );
-		assert.equal( tween( 0 ), 0 );
-		assert.equal( tween( 1 / 4 ), 1 );
-		assert.equal( tween( 1 / 2 ), 2 );
-		assert.equal( tween( 3 / 4 ), 3 );
-		assert.equal( tween( 1 ), 4 );
-		assert.equal( tween( 2 ), 4 );
+		expect( tween( - 1 ) ).toEqual( 0 );
+		expect( tween( 0 ) ).toEqual( 0 );
+		expect( tween( 1 / 4 ) ).toEqual( 1 );
+		expect( tween( 1 / 2 ) ).toEqual( 2 );
+		expect( tween( 3 / 4 ) ).toEqual( 3 );
+		expect( tween( 1 ) ).toEqual( 4 );
+		expect( tween( 2 ) ).toEqual( 4 );
 
 	} );
 

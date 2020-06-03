@@ -1,27 +1,15 @@
 
-import { inspect } from "util";
-import assert from "../../test/assert.js";
-
 import PathingMap from "./PathingMap.js";
 import { PATHING_TYPES } from "../constants.js";
 import array2 from "../../test/array2.js";
-import jsStringify from "../../test/jsStringify.js";
 
 const pathing = [[ 0, 1 ], [ 2, 3 ]];
 
 const gridToPathing = ( grid: typeof PathingMap.prototype.grid ) =>
 	grid.map( row => row.map( tile => tile.pathing ) );
 
-const assertGrid = ( pathingMap: PathingMap, expected: number[][] ) => {
-
-	const actual = gridToPathing( pathingMap.grid );
-	assert.deepStrictEqual(
-		actual,
-		expected,
-		`Expected\n${inspect( expected, false, 2, true )}\nbut got\n${inspect( actual, false, 2, true )}`,
-	);
-
-};
+const expectGrid = ( pathingMap: PathingMap, grid: number[][] ) =>
+	expect( gridToPathing( pathingMap.grid ) ).toEqual( grid );
 
 describe( "PathingMap#constructor", () => {
 
@@ -29,16 +17,16 @@ describe( "PathingMap#constructor", () => {
 
 		const pathingMap = new PathingMap( { pathing } );
 
-		assertGrid( pathingMap, [
+		expectGrid( pathingMap, [
 			[ 0, 1 ],
 			[ 2, 3 ],
 		] );
 
-		assert.equal( pathingMap.resolution, 1 );
-		assert.equal( pathingMap.heightWorld, 2 );
-		assert.equal( pathingMap.widthWorld, 2 );
-		assert.equal( pathingMap.heightMap, 2 );
-		assert.equal( pathingMap.widthMap, 2 );
+		expect( pathingMap.resolution ).toEqual( 1 );
+		expect( pathingMap.heightWorld ).toEqual( 2 );
+		expect( pathingMap.widthWorld ).toEqual( 2 );
+		expect( pathingMap.heightMap ).toEqual( 2 );
+		expect( pathingMap.widthMap ).toEqual( 2 );
 
 	} );
 
@@ -46,16 +34,16 @@ describe( "PathingMap#constructor", () => {
 
 		const pathingMap = new PathingMap( { pathing } );
 
-		assertGrid( pathingMap, [
+		expectGrid( pathingMap, [
 			[ 0, 1 ],
 			[ 2, 3 ],
 		] );
 
-		assert.equal( pathingMap.resolution, 1 );
-		assert.equal( pathingMap.heightWorld, 2 );
-		assert.equal( pathingMap.widthWorld, 2 );
-		assert.equal( pathingMap.heightMap, 2 );
-		assert.equal( pathingMap.widthMap, 2 );
+		expect( pathingMap.resolution ).toEqual( 1 );
+		expect( pathingMap.heightWorld ).toEqual( 2 );
+		expect( pathingMap.widthWorld ).toEqual( 2 );
+		expect( pathingMap.heightMap ).toEqual( 2 );
+		expect( pathingMap.widthMap ).toEqual( 2 );
 
 	} );
 
@@ -63,18 +51,18 @@ describe( "PathingMap#constructor", () => {
 
 		const pathingMap = new PathingMap( { pathing, resolution: 2 } );
 
-		assertGrid( pathingMap, [
+		expectGrid( pathingMap, [
 			[ 0, 0, 1, 1 ],
 			[ 0, 0, 1, 1 ],
 			[ 2, 2, 3, 3 ],
 			[ 2, 2, 3, 3 ],
 		] );
 
-		assert.equal( pathingMap.resolution, 2 );
-		assert.equal( pathingMap.heightWorld, 2 );
-		assert.equal( pathingMap.widthWorld, 2 );
-		assert.equal( pathingMap.heightMap, 4 );
-		assert.equal( pathingMap.widthMap, 4 );
+		expect( pathingMap.resolution ).toEqual( 2 );
+		expect( pathingMap.heightWorld ).toEqual( 2 );
+		expect( pathingMap.widthWorld ).toEqual( 2 );
+		expect( pathingMap.heightMap ).toEqual( 4 );
+		expect( pathingMap.widthMap ).toEqual( 4 );
 
 	} );
 
@@ -82,7 +70,7 @@ describe( "PathingMap#constructor", () => {
 
 		const pathingMap = new PathingMap( { pathing, resolution: 3 } );
 
-		assertGrid( pathingMap, [
+		expectGrid( pathingMap, [
 			[ 0, 0, 0, 1, 1, 1 ],
 			[ 0, 0, 0, 1, 1, 1 ],
 			[ 0, 0, 0, 1, 1, 1 ],
@@ -91,11 +79,11 @@ describe( "PathingMap#constructor", () => {
 			[ 2, 2, 2, 3, 3, 3 ],
 		] );
 
-		assert.equal( pathingMap.resolution, 3 );
-		assert.equal( pathingMap.heightWorld, 2 );
-		assert.equal( pathingMap.widthWorld, 2 );
-		assert.equal( pathingMap.heightMap, 6 );
-		assert.equal( pathingMap.widthMap, 6 );
+		expect( pathingMap.resolution ).toEqual( 3 );
+		expect( pathingMap.heightWorld ).toEqual( 2 );
+		expect( pathingMap.widthWorld ).toEqual( 2 );
+		expect( pathingMap.heightMap ).toEqual( 6 );
+		expect( pathingMap.widthMap ).toEqual( 6 );
 
 	} );
 
@@ -107,8 +95,8 @@ describe( "PathingMap#xWorldToTile", () => {
 
 		const pathingMap = new PathingMap( { pathing } );
 
-		assert.equal( pathingMap.xWorldToTile( 0.5 ), 0 );
-		assert.equal( pathingMap.xWorldToTile( 1.5 ), 1 );
+		expect( pathingMap.xWorldToTile( 0.5 ) ).toEqual( 0 );
+		expect( pathingMap.xWorldToTile( 1.5 ) ).toEqual( 1 );
 
 	} );
 
@@ -116,10 +104,10 @@ describe( "PathingMap#xWorldToTile", () => {
 
 		const pathingMap = new PathingMap( { pathing, resolution: 2 } );
 
-		assert.equal( pathingMap.xWorldToTile( 0.25 ), 0 );
-		assert.equal( pathingMap.xWorldToTile( 0.75 ), 1 );
-		assert.equal( pathingMap.xWorldToTile( 1.25 ), 2 );
-		assert.equal( pathingMap.xWorldToTile( 1.75 ), 3 );
+		expect( pathingMap.xWorldToTile( 0.25 ) ).toEqual( 0 );
+		expect( pathingMap.xWorldToTile( 0.75 ) ).toEqual( 1 );
+		expect( pathingMap.xWorldToTile( 1.25 ) ).toEqual( 2 );
+		expect( pathingMap.xWorldToTile( 1.75 ) ).toEqual( 3 );
 
 	} );
 
@@ -131,8 +119,8 @@ describe( "PathingMap#yWorldToTile", () => {
 
 		const pathingMap = new PathingMap( { pathing } );
 
-		assert.equal( pathingMap.yWorldToTile( 0.5 ), 0 );
-		assert.equal( pathingMap.yWorldToTile( 1.5 ), 1 );
+		expect( pathingMap.yWorldToTile( 0.5 ) ).toEqual( 0 );
+		expect( pathingMap.yWorldToTile( 1.5 ) ).toEqual( 1 );
 
 	} );
 
@@ -140,10 +128,10 @@ describe( "PathingMap#yWorldToTile", () => {
 
 		const pathingMap = new PathingMap( { pathing, resolution: 2 } );
 
-		assert.equal( pathingMap.yWorldToTile( 0.25 ), 0 );
-		assert.equal( pathingMap.yWorldToTile( 0.75 ), 1 );
-		assert.equal( pathingMap.yWorldToTile( 1.25 ), 2 );
-		assert.equal( pathingMap.yWorldToTile( 1.75 ), 3 );
+		expect( pathingMap.yWorldToTile( 0.25 ) ).toEqual( 0 );
+		expect( pathingMap.yWorldToTile( 0.75 ) ).toEqual( 1 );
+		expect( pathingMap.yWorldToTile( 1.25 ) ).toEqual( 2 );
+		expect( pathingMap.yWorldToTile( 1.75 ) ).toEqual( 3 );
 
 	} );
 
@@ -155,8 +143,8 @@ describe( "PathingMap#xTileToWorld", () => {
 
 		const pathingMap = new PathingMap( { pathing } );
 
-		assert.equal( pathingMap.xTileToWorld( 0 ), 0 );
-		assert.equal( pathingMap.xTileToWorld( 1 ), 1 );
+		expect( pathingMap.xTileToWorld( 0 ) ).toEqual( 0 );
+		expect( pathingMap.xTileToWorld( 1 ) ).toEqual( 1 );
 
 	} );
 
@@ -164,10 +152,10 @@ describe( "PathingMap#xTileToWorld", () => {
 
 		const pathingMap = new PathingMap( { pathing, resolution: 2 } );
 
-		assert.equal( pathingMap.xTileToWorld( 0 ), 0 );
-		assert.equal( pathingMap.xTileToWorld( 1 ), 0.5 );
-		assert.equal( pathingMap.xTileToWorld( 2 ), 1 );
-		assert.equal( pathingMap.xTileToWorld( 3 ), 1.5 );
+		expect( pathingMap.xTileToWorld( 0 ) ).toEqual( 0 );
+		expect( pathingMap.xTileToWorld( 1 ) ).toEqual( 0.5 );
+		expect( pathingMap.xTileToWorld( 2 ) ).toEqual( 1 );
+		expect( pathingMap.xTileToWorld( 3 ) ).toEqual( 1.5 );
 
 	} );
 
@@ -179,8 +167,8 @@ describe( "PathingMap#yTileToWorld", () => {
 
 		const pathingMap = new PathingMap( { pathing } );
 
-		assert.equal( pathingMap.yTileToWorld( 0 ), 0 );
-		assert.equal( pathingMap.yTileToWorld( 1 ), 1 );
+		expect( pathingMap.yTileToWorld( 0 ) ).toEqual( 0 );
+		expect( pathingMap.yTileToWorld( 1 ) ).toEqual( 1 );
 
 	} );
 
@@ -188,10 +176,10 @@ describe( "PathingMap#yTileToWorld", () => {
 
 		const pathingMap = new PathingMap( { pathing, resolution: 2 } );
 
-		assert.equal( pathingMap.yTileToWorld( 0 ), 0 );
-		assert.equal( pathingMap.yTileToWorld( 1 ), 0.5 );
-		assert.equal( pathingMap.yTileToWorld( 2 ), 1 );
-		assert.equal( pathingMap.yTileToWorld( 3 ), 1.5 );
+		expect( pathingMap.yTileToWorld( 0 ) ).toEqual( 0 );
+		expect( pathingMap.yTileToWorld( 1 ) ).toEqual( 0.5 );
+		expect( pathingMap.yTileToWorld( 2 ) ).toEqual( 1 );
+		expect( pathingMap.yTileToWorld( 3 ) ).toEqual( 1.5 );
 
 	} );
 
@@ -203,97 +191,82 @@ describe( "PathingMap#pointToTilemap", () => {
 
 	it( "top-left corner (0.25)", () => {
 
-		assert.deepEqual(
-			pathingMap.pointToTilemap( 0.25, 0.25, 0.25 ),
-			{
-				map: Array( 4 ).fill( PATHING_TYPES.WALKABLE ),
-				top: - 1,
-				left: - 1,
-				width: 2,
-				height: 2,
-			},
-		);
+		expect( pathingMap.pointToTilemap( 0.25, 0.25, 0.25 ) ).toEqual( {
+			map: Array( 4 ).fill( PATHING_TYPES.WALKABLE ),
+			top: - 1,
+			left: - 1,
+			width: 2,
+			height: 2,
+		} );
 
 	} );
 
 	it( "top-left corner (0.5)", () => {
 
-		assert.deepEqual(
-			pathingMap.pointToTilemap( 0.5, 0.5, 0.5 ),
-			{
-				map: Array( 16 ).fill( PATHING_TYPES.WALKABLE ),
-				top: - 2,
-				left: - 2,
-				width: 4,
-				height: 4,
-			},
-		);
+		expect( pathingMap.pointToTilemap( 0.5, 0.5, 0.5 ) ).toEqual( {
+			map: Array( 16 ).fill( PATHING_TYPES.WALKABLE ),
+			top: - 2,
+			left: - 2,
+			width: 4,
+			height: 4,
+		} );
 
 	} );
 
 	it( "top-left corner (1)", () => {
 
-		assert.deepEqual(
-			pathingMap.pointToTilemap( 1, 1, 1 ),
-			{
-				map: [
-					0, 1, 1, 1, 1, 1, 1, 0,
-					1, 1, 1, 1, 1, 1, 1, 1,
-					1, 1, 1, 1, 1, 1, 1, 1,
-					1, 1, 1, 1, 1, 1, 1, 1,
-					1, 1, 1, 1, 1, 1, 1, 1,
-					1, 1, 1, 1, 1, 1, 1, 1,
-					1, 1, 1, 1, 1, 1, 1, 1,
-					0, 1, 1, 1, 1, 1, 1, 0,
-				],
-				top: - 4,
-				left: - 4,
-				width: 8,
-				height: 8,
-			},
-		);
+		expect( pathingMap.pointToTilemap( 1, 1, 1 ) ).toEqual( {
+			map: [
+				0, 1, 1, 1, 1, 1, 1, 0,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1, 1, 1, 1,
+				0, 1, 1, 1, 1, 1, 1, 0,
+			],
+			top: - 4,
+			left: - 4,
+			width: 8,
+			height: 8,
+		} );
 
 	} );
 
 	it( "offset (right-down)", () => {
 
-		assert.deepEqual(
-			pathingMap.pointToTilemap( 1.01, 1.01, 0.5 ),
-			{
-				map: [
-					1, 1, 1, 1, 0,
-					1, 1, 1, 1, 1,
-					1, 1, 1, 1, 1,
-					1, 1, 1, 1, 0,
-					0, 1, 1, 0, 0,
-				],
-				top: - 2,
-				left: - 2,
-				width: 5,
-				height: 5,
-			},
-		);
+		expect( pathingMap.pointToTilemap( 1.01, 1.01, 0.5 ) ).toEqual( {
+			map: [
+				1, 1, 1, 1, 0,
+				1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1,
+				1, 1, 1, 1, 0,
+				0, 1, 1, 0, 0,
+			],
+			top: - 2,
+			left: - 2,
+			width: 5,
+			height: 5,
+		} );
 
 	} );
 
 	it( "offset (left-up)", () => {
 
-		assert.deepEqual(
-			pathingMap.pointToTilemap( 0.99, 0.99, 0.5 ),
-			{
-				map: [
-					0, 0, 1, 1, 0,
-					0, 1, 1, 1, 1,
-					1, 1, 1, 1, 1,
-					1, 1, 1, 1, 1,
-					0, 1, 1, 1, 1,
-				],
-				top: - 2,
-				left: - 2,
-				width: 5,
-				height: 5,
-			},
-		);
+		expect( pathingMap.pointToTilemap( 0.99, 0.99, 0.5 ) ).toEqual( {
+			map: [
+				0, 0, 1, 1, 0,
+				0, 1, 1, 1, 1,
+				1, 1, 1, 1, 1,
+				1, 1, 1, 1, 1,
+				0, 1, 1, 1, 1,
+			],
+			top: - 2,
+			left: - 2,
+			width: 5,
+			height: 5,
+		} );
 
 	} );
 
@@ -309,7 +282,7 @@ describe( "adding, removing, and updating entities", () => {
 
 			const pathingMap = new PathingMap( { pathing } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
@@ -323,7 +296,7 @@ describe( "adding, removing, and updating entities", () => {
 			const entity = { radius: 2, x: 3.1, y: 3.9, pathing: PATHING_TYPES.WALKABLE };
 			pathingMap.addEntity( entity );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0, 0, 0 ],
 				[ 0, 1, 1, 1, 1, 0, 0, 0 ],
@@ -340,7 +313,7 @@ describe( "adding, removing, and updating entities", () => {
 
 			const pathingMap = new PathingMap( { pathing } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
@@ -356,7 +329,7 @@ describe( "adding, removing, and updating entities", () => {
 			const entityB = { radius: 2, x: 4.1, y: 4.9, pathing: PATHING_TYPES.BUILDABLE };
 			pathingMap.addEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0, 0, 0 ],
 				[ 0, 1, 1, 3, 3, 0, 0, 0 ],
@@ -379,7 +352,7 @@ describe( "adding, removing, and updating entities", () => {
 			const entity = { radius: 2, x: 3.1, y: 3.9, pathing: PATHING_TYPES.WALKABLE };
 			pathingMap.addEntity( entity );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0, 0, 0 ],
 				[ 0, 1, 1, 1, 1, 0, 0, 0 ],
@@ -392,7 +365,7 @@ describe( "adding, removing, and updating entities", () => {
 
 			pathingMap.removeEntity( entity );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
@@ -413,7 +386,7 @@ describe( "adding, removing, and updating entities", () => {
 			const entityB = { radius: 2, x: 4.1, y: 4.9, pathing: PATHING_TYPES.BUILDABLE };
 			pathingMap.addEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0, 0, 0 ],
 				[ 0, 1, 1, 3, 3, 0, 0, 0 ],
@@ -426,7 +399,7 @@ describe( "adding, removing, and updating entities", () => {
 
 			pathingMap.removeEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0, 0, 0 ],
 				[ 0, 1, 1, 1, 1, 0, 0, 0 ],
@@ -449,7 +422,7 @@ describe( "adding, removing, and updating entities", () => {
 			const entity = { radius: 2, x: 3.1, y: 3.9, pathing: PATHING_TYPES.WALKABLE };
 			pathingMap.addEntity( entity );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0, 0, 0 ],
 				[ 0, 1, 1, 1, 1, 0, 0, 0 ],
@@ -463,7 +436,7 @@ describe( "adding, removing, and updating entities", () => {
 			Object.assign( entity, { x: 4.1, y: 4.9, pathing: PATHING_TYPES.WALKABLE } );
 			pathingMap.updateEntity( entity );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 1, 1, 0, 0, 0 ],
@@ -484,7 +457,7 @@ describe( "adding, removing, and updating entities", () => {
 			const entityB = { radius: 2, x: 4.1, y: 4.9, pathing: PATHING_TYPES.BUILDABLE };
 			pathingMap.addEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0, 0, 0 ],
 				[ 0, 1, 1, 3, 3, 0, 0, 0 ],
@@ -498,7 +471,7 @@ describe( "adding, removing, and updating entities", () => {
 			Object.assign( entityB, { x: 4.1, y: 3.9 } );
 			pathingMap.updateEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 3, 2, 0, 0, 0 ],
 				[ 0, 1, 3, 3, 3, 2, 0, 0 ],
@@ -524,7 +497,7 @@ describe( "Pathing#pathable", () => {
 		const pathingMap = new PathingMap( { pathing } );
 		const entity = { x: 1, y: 1, radius: 1, pathing: PATHING_TYPES.WALKABLE };
 
-		assert.equal( pathingMap.pathable( entity ), true );
+		expect( pathingMap.pathable( entity ) ).toBeTruthy();
 
 	} );
 
@@ -535,7 +508,7 @@ describe( "Pathing#pathable", () => {
 		const entityB = { x: 1.5, y: 1.5, radius: 1, pathing: PATHING_TYPES.WALKABLE };
 		pathingMap.addEntity( entityA );
 
-		assert.equal( pathingMap.pathable( entityB ), false );
+		expect( pathingMap.pathable( entityB ) ).toBeFalsy();
 
 	} );
 
@@ -546,7 +519,7 @@ describe( "Pathing#pathable", () => {
 		const entityB = { x: 3, y: 1, radius: 1, pathing: PATHING_TYPES.WALKABLE };
 		pathingMap.addEntity( entityA );
 
-		assert.equal( pathingMap.pathable( entityB ), true );
+		expect( pathingMap.pathable( entityB ) ).toBeTruthy();
 
 	} );
 
@@ -573,16 +546,16 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 			const { pathingMap, nearest, entity } = setup( { x: 1.5, y: 1.25 } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 3, 0 ],
 				[ 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual( nearest, { x: 1.5, y: 0.5 } );
+			expect( nearest ).toEqual( { x: 1.5, y: 0.5 } );
 
 			pathingMap.addEntity( entity );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 1, 0 ],
 				[ 0, 3, 0 ],
 				[ 0, 0, 0 ],
@@ -595,8 +568,8 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const { pathingMap, nearest, entity } = setup( { x: 1.5, y: 1.75 } );
 			pathingMap.addEntity( entity );
 
-			assert.deepStrictEqual( nearest, { x: 1.5, y: 2.5 } );
-			assertGrid( pathingMap, [
+			expect( nearest ).toEqual( { x: 1.5, y: 2.5 } );
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 3, 0 ],
 				[ 0, 1, 0 ],
@@ -609,8 +582,8 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const { pathingMap, nearest, entity } = setup( { x: 1.25, y: 1.5 } );
 			pathingMap.addEntity( entity );
 
-			assert.deepStrictEqual( nearest, { x: 0.5, y: 1.5 } );
-			assertGrid( pathingMap, [
+			expect( nearest ).toEqual( { x: 0.5, y: 1.5 } );
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 1, 3, 0 ],
 				[ 0, 0, 0 ],
@@ -623,8 +596,8 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const { pathingMap, nearest, entity } = setup( { x: 1.75, y: 1.5 } );
 			pathingMap.addEntity( entity );
 
-			assert.deepStrictEqual( nearest, { x: 2.5, y: 1.5 } );
-			assertGrid( pathingMap, [
+			expect( nearest ).toEqual( { x: 2.5, y: 1.5 } );
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 3, 1 ],
 				[ 0, 0, 0 ],
@@ -654,7 +627,7 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 
 			const { pathingMap, nearest, entity } = setup( { x: 0.75, y: 0.75 } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 3, 3, 0, 0 ],
@@ -662,11 +635,11 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual( nearest, { x: 1, y: 1 } );
+			expect( nearest ).toEqual( { x: 1, y: 1 } );
 
 			pathingMap.addEntity( entity );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 1, 1, 0, 0, 0, 0 ],
 				[ 1, 1, 0, 0, 0, 0 ],
 				[ 0, 0, 3, 3, 0, 0 ],
@@ -682,8 +655,8 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const { pathingMap, nearest, entity } = setup( { x: - 1, y: - 1 } );
 			pathingMap.addEntity( entity );
 
-			assert.deepStrictEqual( nearest, { x: 1, y: 1 } );
-			assertGrid( pathingMap, [
+			expect( nearest ).toEqual( { x: 1, y: 1 } );
+			expectGrid( pathingMap, [
 				[ 1, 1, 0, 0, 0, 0 ],
 				[ 1, 1, 0, 0, 0, 0 ],
 				[ 0, 0, 3, 3, 0, 0 ],
@@ -699,8 +672,8 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const { pathingMap, nearest, entity } = setup( { x: 3, y: 3 } );
 			pathingMap.addEntity( entity );
 
-			assert.deepStrictEqual( nearest, { x: 2, y: 5 } );
-			assertGrid( pathingMap, [
+			expect( nearest ).toEqual( { x: 2, y: 5 } );
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 3, 3, 0, 0 ],
@@ -719,15 +692,12 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const entityB = { radius: 1, x: 0, y: 0, pathing: PATHING_TYPES.WALKABLE };
 			const nearest = pathingMap.nearestSpiralPathing( 3, 2, entityB );
 
-			assert.deepStrictEqual(
-				nearest,
-				{ x: 4, y: 1 },
-			);
+			expect( nearest ).toEqual( { x: 4, y: 1 } );
 
 			Object.assign( entityB, nearest );
 			pathingMap.addEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 1, 1, 0 ],
 				[ 0, 0, 0, 1, 1, 0 ],
 				[ 0, 0, 1, 1, 0, 0 ],
@@ -746,15 +716,12 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const entityB = { radius: 1, x: 0, y: 0, pathing: PATHING_TYPES.WALKABLE };
 			const nearest = pathingMap.nearestSpiralPathing( 3, 4, entityB );
 
-			assert.deepStrictEqual(
-				nearest,
-				{ x: 3, y: 5 },
-			);
+			expect( nearest ).toEqual( { x: 3, y: 5 } );
 
 			Object.assign( entityB, nearest );
 			pathingMap.addEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0 ],
@@ -773,15 +740,12 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const entityB = { radius: 1, x: 0, y: 0, pathing: PATHING_TYPES.WALKABLE };
 			const nearest = pathingMap.nearestSpiralPathing( 4, 3, entityB );
 
-			assert.deepStrictEqual(
-				nearest,
-				{ x: 5, y: 4 },
-			);
+			expect( nearest ).toEqual( { x: 5, y: 4 } );
 
 			Object.assign( entityB, nearest );
 			pathingMap.addEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 1, 1, 0, 0 ],
@@ -800,15 +764,12 @@ describe( "PathingMap#nearestSpiralPathing", () => {
 			const entityB = { radius: 1, x: 0, y: 0, pathing: PATHING_TYPES.WALKABLE };
 			const nearest = pathingMap.nearestSpiralPathing( 2, 3, entityB );
 
-			assert.deepStrictEqual(
-				nearest,
-				{ x: 1, y: 2 },
-			);
+			expect( nearest ).toEqual( { x: 1, y: 2 } );
 
 			Object.assign( entityB, nearest );
 			pathingMap.addEntity( entityB );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0 ],
 				[ 1, 1, 0, 0, 0, 0 ],
 				[ 1, 1, 1, 1, 0, 0 ],
@@ -827,7 +788,7 @@ describe( "PathingMap#_linearPathable", () => {
 
 	describe( "radius=0.5", () => {
 
-		it( "open", () => {
+		describe( "open", () => {
 
 			const pathing = [
 				[ 0, 0, 0 ],
@@ -849,17 +810,17 @@ describe( "PathingMap#_linearPathable", () => {
 							const start = { x: x1, y: y1 };
 							const end = { x: x2, y: y2 };
 
-							assert.equal(
-								pathingMap._linearPathable( entity, start, end ),
-								true,
-								jsStringify( { start, end } ),
-							);
+							it( `start=${JSON.stringify( start )}, end=${JSON.stringify( end )}`, () => {
+
+								expect( pathingMap._linearPathable( entity, start, end ) ).toBeTruthy();
+
+							} );
 
 						}
 
 		} );
 
-		it( "blocked", () => {
+		describe( "blocked", () => {
 
 			const pathing = [
 				[ 0, 0, 0 ],
@@ -881,11 +842,12 @@ describe( "PathingMap#_linearPathable", () => {
 							const start = { x: x1, y: y1 };
 							const end = { x: x2, y: y2 };
 
-							assert.equal(
-								pathingMap._linearPathable( entity, start, end ),
-								dx !== 0 && dy !== 0 || dx && y1 === 1 || dy && x1 === 1 ? false : true,
-								jsStringify( { start, end } ),
-							);
+							it( `start=${JSON.stringify( start )}, end=${JSON.stringify( end )}`, () => {
+
+								expect( pathingMap._linearPathable( entity, start, end ) )
+									.toEqual( dx !== 0 && dy !== 0 || dx && y1 === 1 || dy && x1 === 1 ? false : true );
+
+							} );
 
 						}
 
@@ -895,7 +857,7 @@ describe( "PathingMap#_linearPathable", () => {
 
 	describe( "radius=1", () => {
 
-		it( "open", () => {
+		describe( "open", () => {
 
 			const pathing = [
 				[ 0, 0, 0, 0, 0, 0 ],
@@ -920,17 +882,17 @@ describe( "PathingMap#_linearPathable", () => {
 							const start = { x: x1, y: y1 };
 							const end = { x: x2, y: y2 };
 
-							assert.equal(
-								pathingMap._linearPathable( entity, start, end ),
-								true,
-								jsStringify( { start, end } ),
-							);
+							it( `start=${JSON.stringify( start )}, end=${JSON.stringify( end )}`, () => {
+
+								expect( pathingMap._linearPathable( entity, start, end ) ).toBeTruthy();
+
+							} );
 
 						}
 
 		} );
 
-		it( "blocked", () => {
+		describe( "blocked", () => {
 
 			const pathing = [
 				[ 0, 0, 0, 0, 0, 0 ],
@@ -955,7 +917,9 @@ describe( "PathingMap#_linearPathable", () => {
 							const start = { x: x1, y: y1 };
 							const end = { x: x2, y: y2 };
 
-							const expected =
+							it( `start=${JSON.stringify( start )}, end=${JSON.stringify( end )}`, () => {
+
+								const expected =
 								// Start or end in invalid places
 								x1 === 0 || x2 === 0 || y1 === 0 || y2 === 0 ||
 								x1 > 1 && x1 < 5 && y1 > 2 && y1 < 5 ||
@@ -968,11 +932,9 @@ describe( "PathingMap#_linearPathable", () => {
 									false :
 									true;
 
-							assert.equal(
-								pathingMap._linearPathable( entity, start, end ),
-								expected,
-								jsStringify( { start, end } ),
-							);
+								expect( pathingMap._linearPathable( entity, start, end ) ).toEqual( expected );
+
+							} );
 
 						}
 
@@ -1004,21 +966,19 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 0.5 } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 3, 0 ],
 				[ 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 0.5 },
-				),
-				[
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 0.5 },
-				],
-			);
+
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 0.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 0.5 },
+			] );
 
 		} );
 
@@ -1026,23 +986,21 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 1.5 } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 3, 0 ],
 				[ 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 1.5 },
-				),
-				[
-					{ x: 0.5, y: 1.5 },
-					{ x: 0.5, y: 2.5 },
-					{ x: 2.5, y: 2.5 },
-					{ x: 2.5, y: 1.5 },
-				],
-			);
+
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 1.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 1.5 },
+				{ x: 0.5, y: 2.5 },
+				{ x: 2.5, y: 2.5 },
+				{ x: 2.5, y: 1.5 },
+			] );
 
 		} );
 
@@ -1050,21 +1008,19 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 0.5 } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 3, 0 ],
 				[ 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 0.5, y: 2.5 },
-				),
-				[
-					{ x: 0.5, y: 0.5 },
-					{ x: 0.5, y: 2.5 },
-				],
-			);
+
+			expect( pathingMap.path(
+				entity,
+				{ x: 0.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 0.5 },
+				{ x: 0.5, y: 2.5 },
+			] );
 
 		} );
 
@@ -1072,22 +1028,21 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 1.5, y: 0.5 } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 3, 0 ],
 				[ 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 1.5, y: 2.5 },
-				),
-				[
-					{ x: 1.5, y: 0.5 },
-					{ x: 2.5, y: 0.5 },
-					{ x: 2.5, y: 2.5 },
-					{ x: 1.5, y: 2.5 },
-				],
+
+			expect( pathingMap.path(
+				entity,
+				{ x: 1.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 1.5, y: 0.5 },
+				{ x: 2.5, y: 0.5 },
+				{ x: 2.5, y: 2.5 },
+				{ x: 1.5, y: 2.5 },
+			],
 			);
 
 		} );
@@ -1096,21 +1051,19 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 0.5, pathing: array2( 3, 3 ) } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 0, 0 ],
 				[ 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 2.5 },
-				),
-				[
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 2.5 },
-				],
-			);
+
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 2.5 },
+			] );
 
 		} );
 
@@ -1118,22 +1071,20 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 0.5 } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0 ],
 				[ 0, 3, 0 ],
 				[ 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 2.5 },
-				),
-				[
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 0.5 },
-					{ x: 2.5, y: 2.5 },
-				],
-			);
+
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 0.5 },
+				{ x: 2.5, y: 2.5 },
+			] );
 
 		} );
 
@@ -1145,18 +1096,15 @@ describe( "PathingMap#path", () => {
 				[ 0, 3, 0 ],
 			] } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 2.5 },
-				),
-				[
-					{ x: 0.5, y: 2.5 },
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 0.5 },
-					{ x: 2.5, y: 2.5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 2.5 },
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 0.5 },
+				{ x: 2.5, y: 2.5 },
+			] );
 
 		} );
 
@@ -1185,16 +1133,13 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 1, y: 1 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 5, y: 1 },
-				),
-				[
-					{ x: 1, y: 1 },
-					{ x: 5, y: 1 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 5, y: 1 },
+			) ).toEqual( [
+				{ x: 1, y: 1 },
+				{ x: 5, y: 1 },
+			] );
 
 		} );
 
@@ -1202,18 +1147,15 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 1, y: 3 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 5, y: 3 },
-				),
-				[
-					{ x: 1, y: 3 },
-					{ x: 1, y: 1 },
-					{ x: 5, y: 1 },
-					{ x: 5, y: 3 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 5, y: 3 },
+			) ).toEqual( [
+				{ x: 1, y: 3 },
+				{ x: 1, y: 1 },
+				{ x: 5, y: 1 },
+				{ x: 5, y: 3 },
+			] );
 
 		} );
 
@@ -1221,16 +1163,13 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 1, y: 1 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 1, y: 5 },
-				),
-				[
-					{ x: 1, y: 1 },
-					{ x: 1, y: 5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 1, y: 5 },
+			) ).toEqual( [
+				{ x: 1, y: 1 },
+				{ x: 1, y: 5 },
+			] );
 
 		} );
 
@@ -1238,18 +1177,15 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 3, y: 1 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 3, y: 5 },
-				),
-				[
-					{ x: 3, y: 1 },
-					{ x: 1, y: 1 },
-					{ x: 1, y: 5 },
-					{ x: 3, y: 5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 3, y: 5 },
+			) ).toEqual( [
+				{ x: 3, y: 1 },
+				{ x: 1, y: 1 },
+				{ x: 1, y: 5 },
+				{ x: 3, y: 5 },
+			] );
 
 		} );
 
@@ -1257,16 +1193,13 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 1, y: 1, pathing: array2( 6, 6 ) } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 5, y: 5 },
-				),
-				[
-					{ x: 1, y: 1 },
-					{ x: 5, y: 5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 5, y: 5 },
+			) ).toEqual( [
+				{ x: 1, y: 1 },
+				{ x: 5, y: 5 },
+			] );
 
 		} );
 
@@ -1274,17 +1207,14 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 1, y: 1 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 5, y: 5 },
-				),
-				[
-					{ x: 1, y: 1 },
-					{ x: 5, y: 1 },
-					{ x: 5, y: 5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 5, y: 5 },
+			) ).toEqual( [
+				{ x: 1, y: 1 },
+				{ x: 5, y: 1 },
+				{ x: 5, y: 5 },
+			] );
 
 		} );
 
@@ -1300,17 +1230,15 @@ describe( "PathingMap#path", () => {
 			];
 			const { pathingMap, entity } = setup( { x: 1, y: 5, pathing } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 5, y: 5 },
-				),
-				[
-					{ x: 1, y: 5 },
-					{ x: 1, y: 1 },
-					{ x: 5, y: 1 },
-					{ x: 5, y: 5 },
-				],
+			expect( pathingMap.path(
+				entity,
+				{ x: 5, y: 5 },
+			) ).toEqual( [
+				{ x: 1, y: 5 },
+				{ x: 1, y: 1 },
+				{ x: 5, y: 1 },
+				{ x: 5, y: 5 },
+			],
 			);
 
 		} );
@@ -1338,7 +1266,7 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 0.5 } );
 
-			assertGrid( pathingMap, [
+			expectGrid( pathingMap, [
 				[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
@@ -1352,16 +1280,13 @@ describe( "PathingMap#path", () => {
 				[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
 				[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
 			] );
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 0.5 },
-				),
-				[
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 0.5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 0.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 0.5 },
+			] );
 
 		} );
 
@@ -1369,18 +1294,15 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 1.5 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 1.5 },
-				),
-				[
-					{ x: 0.5, y: 1.5 },
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 0.5 },
-					{ x: 2.5, y: 1.5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 1.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 1.5 },
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 0.5 },
+				{ x: 2.5, y: 1.5 },
+			] );
 
 		} );
 
@@ -1388,16 +1310,13 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 0.5 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 0.5, y: 2.5 },
-				),
-				[
-					{ x: 0.5, y: 0.5 },
-					{ x: 0.5, y: 2.5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 0.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 0.5 },
+				{ x: 0.5, y: 2.5 },
+			] );
 
 		} );
 
@@ -1405,18 +1324,15 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 1.5, y: 0.5 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 1.5, y: 2.5 },
-				),
-				[
-					{ x: 1.5, y: 0.5 },
-					{ x: 0.5, y: 0.5 },
-					{ x: 0.5, y: 2.5 },
-					{ x: 1.5, y: 2.5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 1.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 1.5, y: 0.5 },
+				{ x: 0.5, y: 0.5 },
+				{ x: 0.5, y: 2.5 },
+				{ x: 1.5, y: 2.5 },
+			] );
 
 		} );
 
@@ -1424,16 +1340,13 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 0.5, pathing: array2( 3, 3 ) } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 2.5 },
-				),
-				[
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 2.5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 2.5 },
+			] );
 
 		} );
 
@@ -1441,17 +1354,14 @@ describe( "PathingMap#path", () => {
 
 			const { pathingMap, entity } = setup( { x: 0.5, y: 0.5 } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 2.5 },
-				),
-				[
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 0.5 },
-					{ x: 2.5, y: 2.5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 0.5 },
+				{ x: 2.5, y: 2.5 },
+			] );
 
 		} );
 
@@ -1463,18 +1373,15 @@ describe( "PathingMap#path", () => {
 				[ 0, 3, 0 ],
 			] } );
 
-			assert.deepStrictEqual(
-				pathingMap.path(
-					entity,
-					{ x: 2.5, y: 2.5 },
-				),
-				[
-					{ x: 0.5, y: 2.5 },
-					{ x: 0.5, y: 0.5 },
-					{ x: 2.5, y: 0.5 },
-					{ x: 2.5, y: 2.5 },
-				],
-			);
+			expect( pathingMap.path(
+				entity,
+				{ x: 2.5, y: 2.5 },
+			) ).toEqual( [
+				{ x: 0.5, y: 2.5 },
+				{ x: 0.5, y: 0.5 },
+				{ x: 2.5, y: 0.5 },
+				{ x: 2.5, y: 2.5 },
+			] );
 
 		} );
 

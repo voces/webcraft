@@ -1,9 +1,5 @@
 
-import chai from "chai";
-
 import { tweenPoints } from "./tweenPoints.js";
-
-const assert = chai.assert;
 
 describe( "tweenPoints", () => {
 
@@ -16,34 +12,13 @@ describe( "tweenPoints", () => {
 			{ x: 1, y: 0 },
 		] );
 
-		assert.deepStrictEqual(
-			tween( 0 ),
-			{ x: 0, y: 0 },
-		);
-		assert.deepStrictEqual(
-			tween( 0.5 ),
-			{ x: 0, y: 0.5 },
-		);
-		assert.deepStrictEqual(
-			tween( 1 ),
-			{ x: 0, y: 1 },
-		);
-		assert.deepStrictEqual(
-			tween( 1.5 ),
-			{ x: 0.5, y: 1 },
-		);
-		assert.deepStrictEqual(
-			tween( 2 ),
-			{ x: 1, y: 1 },
-		);
-		assert.deepStrictEqual(
-			tween( 2.5 ),
-			{ x: 1, y: 0.5 },
-		);
-		assert.deepStrictEqual(
-			tween( 3 ),
-			{ x: 1, y: 0 },
-		);
+		expect( tween( 0 ) ).toEqual( { x: 0, y: 0 } );
+		expect( tween( 0.5 ) ).toEqual( { x: 0, y: 0.5 } );
+		expect( tween( 1 ) ).toEqual( { x: 0, y: 1 } );
+		expect( tween( 1.5 ) ).toEqual( { x: 0.5, y: 1 } );
+		expect( tween( 2 ) ).toEqual( { x: 1, y: 1 } );
+		expect( tween( 2.5 ) ).toEqual( { x: 1, y: 0.5 } );
+		expect( tween( 3 ) ).toEqual( { x: 1, y: 0 } );
 
 	} );
 
@@ -56,10 +31,7 @@ describe( "tweenPoints", () => {
 		] );
 
 		for ( let d = 0; d <= 3; d += 0.5 )
-			assert.deepStrictEqual(
-				tween( d ),
-				{ x: 0, y: d },
-			);
+			expect( tween( d ) ).toEqual( { x: 0, y: d } );
 
 	} );
 
@@ -74,9 +46,9 @@ describe( "tweenPoints", () => {
 			const result = tween.radialStepBack( 2.5 );
 			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
 
-			assert.deepStrictEqual( result, { x: 7.5, y: 0 } );
-			assert.isBelow( distance, 2.51 );
-			assert.isAbove( distance, 2.49 );
+			expect( result ).toEqual( { x: 7.5, y: 0 } );
+			expect( distance ).toBeLessThan( 2.51 );
+			expect( distance ).toBeGreaterThan( 2.49 );
 
 		} );
 
@@ -90,9 +62,9 @@ describe( "tweenPoints", () => {
 			const result = tween.radialStepBack( 2.5 );
 			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
 
-			assert.deepStrictEqual( result, { x: 7.5, y: 0 } );
-			assert.isBelow( distance, 2.51 );
-			assert.isAbove( distance, 2.49 );
+			expect( result ).toEqual( { x: 7.5, y: 0 } );
+			expect( distance ).toBeLessThan( 2.51 );
+			expect( distance ).toBeGreaterThan( 2.49 );
 
 		} );
 
@@ -107,9 +79,9 @@ describe( "tweenPoints", () => {
 			const result = tween.radialStepBack( 6 );
 			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
 
-			assert.deepStrictEqual( result, { x: 5, y: 1.6833752096445997 } );
-			assert.isBelow( distance, 6.01 );
-			assert.isAbove( distance, 5.99 );
+			expect( result ).toEqual( { x: 5, y: 1.6833752096445997 } );
+			expect( distance ).toBeLessThan( 6.01 );
+			expect( distance ).toBeGreaterThan( 5.99 );
 
 		} );
 
@@ -122,9 +94,9 @@ describe( "tweenPoints", () => {
 			const result = tween.radialStepBack( 2 );
 			const distance = Math.sqrt( ( tween.target.x - result.x ) ** 2 + ( tween.target.y - result.y ) ** 2 );
 
-			assert.deepStrictEqual( result, { x: 0, y: 0 } );
-			assert.isBelow( distance, 1.01 );
-			assert.isAbove( distance, 0.99 );
+			expect( result ).toEqual( { x: 0, y: 0 } );
+			expect( distance ).toBeLessThan( 1.01 );
+			expect( distance ).toBeGreaterThan( 0.99 );
 
 		} );
 

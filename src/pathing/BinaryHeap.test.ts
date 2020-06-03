@@ -1,20 +1,15 @@
 
-import chai from "chai";
-
 import BinaryHeap from "./BinaryHeap.js";
-
-const assert = chai.assert;
 
 describe( "BinaryHeap#constructor", () => {
 
-	it( "sets params and is an array", () => {
+	it( "sets params", () => {
 
 		const fn = () => 0;
 
 		const heap = new BinaryHeap( fn );
 
-		assert.equal( heap.scoreFunc, fn );
-		assert.equal( heap instanceof Array, true );
+		expect( heap.scoreFunc ).toBe( fn );
 
 	} );
 
@@ -30,10 +25,7 @@ describe( "BinaryHeap#push", () => {
 		heap.push( element1 );
 		heap.push( element2 );
 
-		assert.deepStrictEqual(
-			heap,
-			[ element1, element2 ],
-		);
+		expect( [ ...heap ] ).toEqual( [ element1, element2 ] );
 
 	} );
 
@@ -50,10 +42,7 @@ describe( "BinaryHeap#pop", () => {
 		heap.push( element2 );
 		heap.pop();
 
-		assert.deepStrictEqual(
-			heap,
-			[ element2 ],
-		);
+		expect( [ ...heap ] ).toEqual( [ element2 ] );
 
 	} );
 
@@ -69,10 +58,7 @@ describe( "BinaryHeap#remove", () => {
 		heap.push( 2 );
 		heap.remove( 1 );
 
-		assert.deepStrictEqual(
-			heap,
-			[ 2, 3 ],
-		);
+		expect( [ ...heap ] ).toEqual( [ 2, 3 ] );
 
 	} );
 
@@ -86,30 +72,25 @@ describe( "BinaryHeap#bubbleUp", () => {
 		for ( let i = 20; i > 0; i -- )
 			heap.push( i );
 
-		assert.deepStrictEqual(
-			heap,
-			[
-				1, 2, 7, 4, 3,
-				10, 8, 11, 5, 12,
-				13, 19, 15, 16, 9,
-				20, 14, 17, 6, 18,
-			],
-		);
+		expect( [ ...heap ] ).toEqual( [
+			1, 2, 7, 4, 3,
+			10, 8, 11, 5, 12,
+			13, 19, 15, 16, 9,
+			20, 14, 17, 6, 18,
+		] );
 
 		const index = heap.length;
 		heap[ index ] = 0;
 		heap.bubbleUp( index );
 
-		assert.deepStrictEqual(
-			heap,
-			[
-				0,
-				1, 7, 4, 2, 10,
-				8, 11, 5, 3, 13,
-				19, 15, 16, 9, 20,
-				14, 17, 6, 18, 12,
-			],
-		);
+		expect(
+			[ ...heap ] ).toEqual( [
+			0,
+			1, 7, 4, 2, 10,
+			8, 11, 5, 3, 13,
+			19, 15, 16, 9, 20,
+			14, 17, 6, 18, 12,
+		] );
 
 	} );
 
@@ -123,29 +104,23 @@ describe( "BinaryHeap#sinkDown", () => {
 		for ( let i = 19; i >= 0; i -- )
 			heap.push( i );
 
-		assert.deepStrictEqual(
-			heap,
-			[
-				0, 1, 6, 3, 2,
-				9, 7, 10, 4, 11,
-				12, 18, 14, 15, 8,
-				19, 13, 16, 5, 17,
-			],
-		);
+		expect( [ ...heap ] ).toEqual( [
+			0, 1, 6, 3, 2,
+			9, 7, 10, 4, 11,
+			12, 18, 14, 15, 8,
+			19, 13, 16, 5, 17,
+		] );
 
 		heap.unshift( 20 );
 		heap.sinkDown( 0 );
 
-		assert.deepStrictEqual(
-			heap,
-			[
-				0, 3, 1, 6, 4,
-				2, 9, 7, 10, 5,
-				11, 12, 18, 14, 15,
-				8, 19, 13, 16, 20,
-				17,
-			],
-		);
+		expect( [ ...heap ] ).toEqual( [
+			0, 3, 1, 6, 4,
+			2, 9, 7, 10, 5,
+			11, 12, 18, 14, 15,
+			8, 19, 13, 16, 20,
+			17,
+		] );
 
 	} );
 

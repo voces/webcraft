@@ -1,9 +1,5 @@
 
-import chai from "chai";
-
 import { approx } from "./irrationality.js";
-
-const assert = chai.assert;
 
 describe( "approx", () => {
 
@@ -21,10 +17,8 @@ describe( "approx", () => {
 
 				it( `${n}/${d}`, () => {
 
-					assert.deepStrictEqual(
-						approx( n / d ),
-						{ numerator: n, denominator: d },
-					);
+					expect( approx( n / d ) )
+						.toEqual( { numerator: n, denominator: d } );
 
 				} );
 
@@ -43,8 +37,7 @@ describe( "approx", () => {
 
 				it( `${input.n}/${input.d} => ${output.n}/${output.d}`, () => {
 
-					assert.deepStrictEqual(
-						approx( input.n / input.d ),
+					expect( approx( input.n / input.d ) ).toEqual(
 						{ numerator: output.n, denominator: output.d },
 					);
 
@@ -67,8 +60,7 @@ describe( "approx", () => {
 
 			it( `${input.n}/${input.d} => ${output.n}/${output.d}`, () => {
 
-				assert.deepStrictEqual(
-					approx( input.n / input.d, 1e-10 ),
+				expect( approx( input.n / input.d, 1e-10 ) ).toEqual(
 					{ numerator: output.n, denominator: output.d },
 				);
 
