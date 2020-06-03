@@ -1,11 +1,10 @@
-
 import { stringMap } from "./util.js";
 import { InternalArena } from "./types.js";
 
 export const theTinyRectangle: InternalArena = {
 	name: "The Tiny Rectangle",
 	// For jumping
-	layers: stringMap( `
+	layers: stringMap(`
 		 222222222222222222222222222222222222222
 		2222222222222222222222222222222222222222
 		222                                   22
@@ -20,12 +19,12 @@ export const theTinyRectangle: InternalArena = {
 		22                                    22
 		2222222222222222222222222222222222222222
 		2222222222222222222222222222222222222222
-    ` ),
+    `),
 	// 0 = open space
 	// 1 = crosser spawn
 	// 2 = crosser target
 	// 3 = defender spawn
-	tiles: stringMap( `
+	tiles: stringMap(`
 		 000000000000000000000000000000000000000
 		0000000000000000000000000000000000000000
 		0000000000000000000000000000000000000000
@@ -40,5 +39,5 @@ export const theTinyRectangle: InternalArena = {
 		0000000000000000000000000000000000000000
 		0000000000000000000000000000000000000000
 		0000000000000000000000000000000000000000
-    ` ),
+    `),
 };

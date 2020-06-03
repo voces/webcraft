@@ -1,4 +1,3 @@
-
 import network, { activeHost } from "./network.js";
 
 import { Game } from "./Game.js";
@@ -17,30 +16,21 @@ import "./players/camera.js";
 import "./ui/index.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const game = ( globalThis as any ).game = new Game();
+const game = ((globalThis as any).game = new Game());
 
-Object.assign(
-	document.getElementById( "arena" )!,
-	{ x: 0, y: 0, scale: 1 },
-);
+Object.assign(document.getElementById("arena")!, { x: 0, y: 0, scale: 1 });
 
 // We receive this upon connecting; the only state we get is the number of connections
-network.addEventListener( "init", ( {
-	connections,
-	state: {
-		players: inputPlayers,
-		arena,
+network.addEventListener(
+	"init",
+	({ connections, state: { players: inputPlayers, arena } }) => {
+		if (connections === 0) game.receivedState = "init";
+
+		game.setArena(arena);
+
+		patchInState(inputPlayers);
 	},
-} ) => {
-
-	if ( connections === 0 )
-		game.receivedState = "init";
-
-	game.setArena( arena );
-
-	patchInState( inputPlayers );
-
-} );
+);
 // network.addEventListener( "init", ( { time, state: { arena, players: inputPlayers, lastRoundEnd } } ) => {
 
 // 	game.update( { time } );
@@ -70,31 +60,25 @@ network.addEventListener( "init", ( {
 
 // } );
 
-network.addEventListener( "update", e => {
+network.addEventListener("update", (e) => {
+	game.update(e);
+});
 
-	game.update( e );
-
-} );
-
-window.addEventListener( "contextmenu", ( e: Event ) => {
-
+window.addEventListener("contextmenu", (e: Event) => {
 	e.preventDefault();
-
-} );
+});
 
 let remainingErrors = 3;
-window.addEventListener( "error", ( event: {error: Error} ) => {
+window.addEventListener("error", (event: { error: Error }) => {
+	if (remainingErrors === 0) return;
+	remainingErrors--;
 
-	if ( remainingErrors === 0 ) return;
-	remainingErrors --;
-
-	fetch( `http://${activeHost}/error`, {
+	fetch(`http://${activeHost}/error`, {
 		method: "POST",
-		body: JSON.stringify( { stack: event.error.stack } ),
+		body: JSON.stringify({ stack: event.error.stack }),
 		headers: { "Content-Type": "application/json" },
-	} );
-
-} );
-setInterval( () => remainingErrors = Math.min( 3, remainingErrors + 1 ), 5000 );
+	});
+});
+setInterval(() => (remainingErrors = Math.min(3, remainingErrors + 1)), 5000);
 
 export default game;

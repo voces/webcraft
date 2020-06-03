@@ -1,11 +1,10 @@
-
 import { stringMap } from "./util.js";
 import { InternalArena } from "./types.js";
 
 export const theDump: InternalArena = {
 	name: "The Dump",
 	// For jumping
-	layers: stringMap( `
+	layers: stringMap(`
 		2222222222222222
 		2222222222222222
 		2200000000000022
@@ -38,12 +37,12 @@ export const theDump: InternalArena = {
 		    22222200000000000000000002000000000022
 		      222222222222222222222222222222222222
 		      222222222222222222222222222222222222
-    ` ),
+    `),
 	// 0 = open space
 	// 1 = crosser spawn
 	// 2 = crosser target
 	// 3 = defender spawn
-	tiles: stringMap( `
+	tiles: stringMap(`
 		0000000000000000
 		0000000000000000
 		0000000000000000
@@ -76,5 +75,5 @@ export const theDump: InternalArena = {
 		    00000000000000000000000000000000000000
 		      000000000000000000000000000000000000
 		      000000000000000000000000000000000000
-    ` ),
+    `),
 };

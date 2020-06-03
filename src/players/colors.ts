@@ -1,12 +1,11 @@
-
 export interface Color {
 	index: number;
 	name: string;
 	hex: string;
-	r: number,
-	b: number,
+	r: number;
+	b: number;
 	g: number;
-	red: number,
+	red: number;
 	blue: number;
 	green: number;
 	taken: number;
@@ -34,7 +33,7 @@ type ColorName =
 	| "coral"
 	| "beige"
 	| "white"
-	| "black"
+	| "black";
 
 type Colors = Color[] & Record<ColorName, Color>;
 
@@ -61,39 +60,34 @@ const colorsArr: Color[] = [
 	{ index: 19, name: "beige", hex: "#FFFAC8" },
 	{ index: 20, name: "white", hex: "#FFFFFF" },
 	{ index: 21, name: "black", hex: "#000000" },
-].map( color => {
-
-	const red = parseInt( color.hex.slice( 1, 3 ), 16 );
-	const green = parseInt( color.hex.slice( 3, 5 ), 16 );
-	const blue = parseInt( color.hex.slice( 5, 7 ), 16 );
+].map((color) => {
+	const red = parseInt(color.hex.slice(1, 3), 16);
+	const green = parseInt(color.hex.slice(3, 5), 16);
+	const blue = parseInt(color.hex.slice(5, 7), 16);
 	return { ...color, r: red, g: green, b: blue, red, green, blue, taken: 0 };
+});
 
-} );
-
-export const colors: Colors = Object.assign( colorsArr, ...colorsArr.map( c => ( { [ c.name ]: c } ) ) );
+export const colors: Colors = Object.assign(
+	colorsArr,
+	...colorsArr.map((c) => ({ [c.name]: c })),
+);
 
 export const next = (): Color => {
-
-	const nextColor = colors.find( color => ! color.taken );
-	if ( ! nextColor ) throw new Error( "ran out of colors" );
-	return take( nextColor );
-
+	const nextColor = colors.find((color) => !color.taken);
+	if (!nextColor) throw new Error("ran out of colors");
+	return take(nextColor);
 };
 
-export const take = ( color: Color | number ): Color => {
-
-	if ( typeof color === "number" ) color = colors[ color ];
+export const take = (color: Color | number): Color => {
+	if (typeof color === "number") color = colors[color];
 	color.taken += 1;
 
 	return color;
-
 };
 
-export const release = ( color: Color | number ): Color => {
-
-	if ( typeof color === "number" ) color = colors[ color ];
+export const release = (color: Color | number): Color => {
+	if (typeof color === "number") color = colors[color];
 	color.taken -= 1;
 
 	return color;
-
 };

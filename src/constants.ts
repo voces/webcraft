@@ -1,13 +1,7 @@
-
 import { ValueOf } from "./types.js";
 
 // A map
-export const TILE_NAMES = [
-	"open",
-	"start",
-	"end",
-	"spawn",
-];
+export const TILE_NAMES = ["open", "start", "end", "spawn"];
 export const TILE_TYPES = {
 	OPEN: 0,
 	START: 1,

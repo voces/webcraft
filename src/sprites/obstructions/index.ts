@@ -1,4 +1,3 @@
-
 import { Basic } from "./Basic.js";
 import { Dense } from "./Dense.js";
 import { Huge } from "./Huge.js";
@@ -21,6 +20,6 @@ export const obstructionMap = {
 	Tiny,
 };
 
-export type ObstructionSubclass = ValueOf<typeof obstructionMap>
+export type ObstructionSubclass = ValueOf<typeof obstructionMap>;
 
 export { Basic, Dense, Huge, Large, Resource, Slow, Stack, Tiny };
