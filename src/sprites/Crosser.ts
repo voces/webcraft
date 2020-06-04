@@ -17,18 +17,21 @@ import { Blueprint } from "./obstructions/Blueprint.js";
 const BUILD_DISTANCE = 1.4;
 
 export class Crosser extends Unit {
-	static radius = 0.5;
-	static priority = 1;
-
 	static isCrosser = (sprite: Crosser | Sprite): sprite is Crosser =>
 		sprite instanceof Crosser;
+
+	static defaults = {
+		...Unit.defaults,
+		radius: 0.5,
+		priority: 1,
+	};
 
 	// 380 in WC3 on fast
 	speed = 5.9375;
 	obstructions: Obstruction[] = [];
 
 	constructor(props: UnitProps) {
-		super(props);
+		super({ ...Crosser.defaults, ...props });
 
 		this.addEventListener("death", () => {
 			// Kill all their sprites

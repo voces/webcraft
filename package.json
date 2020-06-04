@@ -22,12 +22,13 @@
     "typescript": "^3.9.3"
   },
   "scripts": {
-	"build": "tsc --build tsconfig.build.json",
-	"lint": "eslint 'src/**/*.ts' --quiet --fix",
+    "build": "tsc --build tsconfig.build.json",
+    "lint": "eslint 'src/**/*.ts' --quiet --fix",
     "jest": "jest --silent",
     "start": "node --experimental-modules --no-warnings server/src/index.js",
     "test": "jest"
   },
   "author": "verit",
-  "license": "ISC"
+  "license": "ISC",
+  "type": "module"
 }

@@ -87,9 +87,7 @@ window.addEventListener("mousemove", (e) => {
 });
 
 window.addEventListener("mouseout", (e) => {
-	// TODO: TypeScript doesn't like toElement...
-	// if ( e.toElement || e.relatedTarget ) return;
-	if (!e.relatedTarget) return;
+	if (e.relatedTarget) return;
 
 	mouse = emptyMouse();
 });

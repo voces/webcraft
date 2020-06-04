@@ -26,9 +26,13 @@ export type PathTweener = {
 };
 
 export const tweenPoints = (points: Point[]): PathTweener => {
+	// remove duplicates
 	points = points.filter(
 		(p, i) => points.findIndex((p2) => p2.x === p.x && p2.y === p.y) === i,
 	);
+
+	if (points.some((p) => isNaN(p.x) || isNaN(p.y)))
+		console.error(new Error("received bad point"));
 
 	if (typeof document !== "undefined")
 		if (elems) {
@@ -101,6 +105,8 @@ export const tweenPoints = (points: Point[]): PathTweener => {
 					const percentProgress =
 						(progress - annotatedPoints[curPoint].start) /
 						(annotatedPoints[curPoint].distance || Infinity);
+
+					if (curPoint === points.length - 1) return points[curPoint];
 
 					if (
 						isNaN(annotatedPoints[curPoint].x) ||

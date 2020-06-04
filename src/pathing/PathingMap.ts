@@ -777,7 +777,8 @@ export class PathingMap {
 						continue;
 					}
 
-				const gScore = startCurrent.__startRealCostFromOrigin ?? 0 + 1;
+				const gScore =
+					(startCurrent.__startRealCostFromOrigin ?? 0) + 1;
 
 				// Line of sight test (this is laggy)
 				if (
@@ -790,8 +791,8 @@ export class PathingMap {
 					)
 				) {
 					const gScore =
-						startCurrent.__startParent.__startRealCostFromOrigin ??
-						0 + h(startCurrent.__startParent, neighbor);
+						(startCurrent.__startParent.__startRealCostFromOrigin ??
+							0) + h(startCurrent.__startParent, neighbor);
 					// First visit or better score than previously known
 					if (
 						!neighbor.__startVisited ||
@@ -930,7 +931,7 @@ export class PathingMap {
 						continue;
 					}
 
-				const gScore = endCurrent.__endRealCostFromOrigin ?? 0 + 1;
+				const gScore = (endCurrent.__endRealCostFromOrigin ?? 0) + 1;
 
 				// Line of sight test (this is laggy, so disabled ATM)
 				if (
@@ -943,8 +944,8 @@ export class PathingMap {
 					)
 				) {
 					const gScore =
-						endCurrent.__endParent.__endRealCostFromOrigin ??
-						0 + h(endCurrent.__endParent, neighbor);
+						(endCurrent.__endParent.__endRealCostFromOrigin ?? 0) +
+						h(endCurrent.__endParent, neighbor);
 					// First visit or better score than previously known
 					if (
 						!neighbor.__endVisited ||
@@ -1066,10 +1067,17 @@ export class PathingMap {
 						placeTile(
 							x,
 							y,
-							(this.grid[y][x].__startTag === startTag
-								? this.grid[y][x].__startRealPlusEstimatedCost
-								: this.grid[y][x].__endRealPlusEstimatedCost) ??
-								0 - min / d,
+							((this.grid[y][x].__startTag === startTag &&
+							this.grid[y][x].__startVisited
+								? this.grid[y][x]
+										.__startRealPlusEstimatedCost ?? 0
+								: this.grid[y][x].__endTag === endTag &&
+								  this.grid[y][x].__endVisited
+								? this.grid[y][x].__endRealPlusEstimatedCost ??
+								  0
+								: Infinity) -
+								min) /
+								d,
 						);
 		}
 

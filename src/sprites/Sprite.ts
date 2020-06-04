@@ -105,6 +105,12 @@ class Sprite implements Emitter<SpriteEvents> {
 			throw new Error("trying to create a sprite outside a round");
 		this.round = round;
 
+		// For display, but we want to set this early since setters reference
+		// it
+		this.elem = Object.assign(document.createElement("div"), {
+			sprite: this,
+		});
+
 		this.radius = radius;
 		this.requiresPathing = requiresPathing;
 		this.blocksPathing = blocksPathing;
@@ -121,9 +127,6 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.facing = facing;
 
 		// Display
-		this.elem = Object.assign(document.createElement("div"), {
-			sprite: this,
-		});
 		this.elem.classList.add(this.constructor.name.toLowerCase(), "sprite");
 		this.elem.style.left =
 			(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
