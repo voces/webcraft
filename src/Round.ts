@@ -13,7 +13,7 @@ import { colors } from "./players/colors.js";
 import { network } from "./network.js";
 import { requestAnimationFrame, cancelAnimationFrame } from "./util/globals.js";
 import { Resource } from "./sprites/obstructions/index.js";
-import { Settings, teamKeys } from "./types.js";
+import { Settings, teamKeys, resourceKeys } from "./types.js";
 import { Arena } from "./arenas/types.js";
 import { Unit } from "./sprites/Unit.js";
 import { Sprite } from "./sprites/Sprite.js";
@@ -117,12 +117,13 @@ class Round {
 	grantResources(): void {
 		for (const team of teamKeys)
 			if (team in this.settings.resources)
-				this[team].forEach((player) =>
-					Object.assign(
-						player.resources,
-						this.settings.resources[team],
-					),
-				);
+				this[team].forEach((player) => {
+					for (const resource of resourceKeys) {
+						player.resources[resource] = this.settings.resources[
+							team
+						][resource].starting;
+					}
+				});
 	}
 
 	_spawnUnit(
@@ -392,14 +393,16 @@ class Round {
 				1,
 			) / 2;
 
-		this.crossers
-			.filter((p) => p.unit)
-			.forEach((player) => {
-				const essenseRate = this.settings.resources.crossers?.essence
-					.rate;
-				if (!essenseRate) return;
-				player.resources.essence += essenseRate * delta * factor;
-			});
+		for (const team of teamKeys)
+			if (team in this.settings.resources)
+				this[team].forEach((player) => {
+					for (const resource of resourceKeys) {
+						player.resources[resource] +=
+							this.settings.resources[team][resource].rate *
+							delta *
+							factor;
+					}
+				});
 	}
 
 	update(time: number) {

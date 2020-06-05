@@ -25,7 +25,7 @@
 
 // Reformatted and swapped functions with lambdas, but otherwise the same
 
-interface AleaState {
+export interface AleaState {
 	c: number;
 	s0: number;
 	s1: number;

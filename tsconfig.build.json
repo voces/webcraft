@@ -13,14 +13,14 @@
 		"alwaysStrict": true,
 		"strictNullChecks": true,
 		"paths": { "*": [
-			"../node_modules/*/dist/index",
-			"../node_modules/*/index",
+			"../node_modules/*/src/index",
 			"../node_modules/*/lib/index",
-			"../node_modules/*",
-			"../node_modules/*/src/index"
+			"../node_modules/*/index",
+			"../node_modules/*/dist/index"
 		] },
 		"esModuleInterop": true,
-		"types": []
+		"types": [],
+		"declaration": true
 	},
 	"include": ["src"],
 	"exclude": [

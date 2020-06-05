@@ -3,6 +3,7 @@ import { active } from "./obstructionPlacement.js";
 import { swallow } from "../util/swallow.js";
 import { emitter } from "../emitter.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
+import DragSelectClass from "../lib/DragSelect.js";
 
 let allSelectables: SpriteElement[] | undefined;
 
@@ -42,7 +43,7 @@ function notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
 if (typeof window !== "undefined")
 	(async () => {
 		const DragSelect = await import("../lib/DragSelect.js").then(
-			(i) => i.DragSelect,
+			(i) => i.default,
 		);
 
 		const selector = document.createElement("div");
@@ -51,7 +52,7 @@ if (typeof window !== "undefined")
 		selector.style.position = "absolute";
 		document.body.appendChild(selector);
 
-		const internalDragSelect = (new DragSelect({
+		const internalDragSelect = new DragSelect({
 			selector,
 			onDragStartBegin: () => {
 				if (active()) return internalDragSelect.break();
@@ -84,15 +85,7 @@ if (typeof window !== "undefined")
 				const sprite = element.sprite;
 				sprite.selected = false;
 			},
-		}) as unknown) as {
-			break: () => void;
-			getSelectables: () => SpriteElement[];
-			setSelectables: (sprites: SpriteElement[]) => void;
-			addSelectables: (sprites: SpriteElement[]) => void;
-			removeSelectables: (sprites: SpriteElement[]) => void;
-			getSelection: () => SpriteElement[];
-			setSelection: (sprites: SpriteElement[]) => void;
-		};
+		}) as DragSelectClass<SpriteElement>;
 
 		dragSelect.getSelection = () =>
 			internalDragSelect

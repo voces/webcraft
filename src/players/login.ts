@@ -1,7 +1,7 @@
 import { network, fetch as rawFetch } from "../network.js";
 import { document } from "../util/globals.js";
 
-const login = document.getElementById("login")!;
+const login = <HTMLFormElement>document.getElementById("login");
 const username = <HTMLInputElement>document.getElementById("login-name");
 const register = document.getElementById("login-register")!;
 const password = <HTMLInputElement>document.getElementById("login-password");
@@ -10,6 +10,8 @@ const verifyPassword = <HTMLInputElement>(
 );
 
 username.focus();
+
+login.onsubmit = (e) => e.preventDefault();
 
 const setFormState = (disabled: boolean) =>
 	[username, password, verifyPassword].forEach(

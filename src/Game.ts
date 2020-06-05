@@ -25,7 +25,7 @@ class Game {
 	host?: Player;
 	players: Player[] = [];
 	arena: Arena = arenas[0];
-	receivedState: false | "init" | "state" = false;
+	receivedState: false | "init" | "state" | "host" = false;
 	newPlayers = false;
 	random = alea("");
 	round?: Round;
@@ -44,6 +44,7 @@ class Game {
 					rate: 1,
 				},
 			},
+			defenders: { essence: { starting: 0, rate: 0 } },
 		},
 	};
 

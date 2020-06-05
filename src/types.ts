@@ -19,8 +19,9 @@ export interface Settings {
 	crossers: number;
 	duration: number;
 	mode: "bulldog";
-	resources: Partial<
-		Record<Team, Record<Resource, { starting: number; rate: number }>>
+	resources: Record<
+		Team,
+		Record<Resource, { starting: number; rate: number }>
 	>;
 }
 

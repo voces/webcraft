@@ -23,6 +23,7 @@
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "dev": "tsc --build tsconfig.build.json -w",
     "lint": "eslint 'src/**/*.ts' --quiet --fix",
     "jest": "jest --silent",
     "start": "node --experimental-modules --no-warnings server/src/index.js",
@@ -30,5 +31,6 @@
   },
   "author": "verit",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {}
 }

@@ -67,7 +67,7 @@ export class Crosser extends Unit {
 					this.action = undefined;
 
 					if (ObstructionClass.defaults.cost) {
-						const check = game.localPlayer.checkResources(
+						const check = this.owner.checkResources(
 							ObstructionClass.defaults.cost,
 						);
 						if (check?.length) {
@@ -75,7 +75,7 @@ export class Crosser extends Unit {
 							return;
 						}
 
-						game.localPlayer.subtractResources(
+						this.owner.subtractResources(
 							ObstructionClass.defaults.cost,
 						);
 					}

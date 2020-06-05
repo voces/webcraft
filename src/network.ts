@@ -111,7 +111,7 @@ const networkEvents = {
 /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
 
 const host = {
-	send: <T>(data: T) =>
+	send: <T extends Record<string, unknown>>(data: T) =>
 		connection.send(
 			JSON.stringify(Object.assign(data, { sent: performance.now() })),
 		),
