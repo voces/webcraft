@@ -55,7 +55,7 @@ export class Defender extends Unit {
 		autoAttack = Defender.defaults.autoAttack,
 		...props
 	}: DefenderProps) {
-		super({ ...Defender.defaults, ...props });
+		super({ ...Defender.clonedDefaults, ...props });
 		this.autoAttack = autoAttack;
 	}
 
@@ -93,7 +93,7 @@ export class Defender extends Unit {
 			x: this.x,
 			y: this.y,
 			owner: this.owner,
-			isMirror: true,
+			isIllusion: true,
 		});
 		const mirrorPos = getMirroringPosition(pos2, mirror, layer);
 		mirror.setPosition(mirrorPos);

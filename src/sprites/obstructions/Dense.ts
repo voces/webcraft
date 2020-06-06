@@ -9,7 +9,7 @@ export class Dense extends Obstruction {
 	};
 
 	constructor(props: ObstructionProps) {
-		super({ ...Dense.defaults, ...props });
+		super({ ...Dense.clonedDefaults, ...props });
 
 		this.elem.style.boxShadow = "inset 0 0 16px rgba(0,0,0,0.75)";
 	}

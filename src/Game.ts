@@ -82,15 +82,14 @@ class Game {
 						this.arena.layers[y - 1][x] -
 							this.arena.layers[y][x] ===
 						1
-					)
-						Object.assign(tile.style, {
-							backgroundColor: "transparent",
-							backgroundImage: gradient(
-								"top",
-								this.arena.layers[y][x],
-								this.arena.layers[y - 1][x],
-							),
-						});
+					) {
+						tile.style.backgroundColor = "transparent";
+						tile.style.backgroundImage = gradient(
+							"top",
+							this.arena.layers[y][x],
+							this.arena.layers[y - 1][x],
+						);
+					}
 
 				if (
 					y < this.arena.tiles.length - 1 &&
@@ -100,15 +99,14 @@ class Game {
 						this.arena.layers[y + 1][x] -
 							this.arena.layers[y][x] ===
 						1
-					)
-						Object.assign(tile.style, {
-							backgroundColor: "transparent",
-							backgroundImage: gradient(
-								"bottom",
-								this.arena.layers[y][x],
-								this.arena.layers[y + 1][x],
-							),
-						});
+					) {
+						tile.style.backgroundColor = "transparent";
+						tile.style.backgroundImage = gradient(
+							"bottom",
+							this.arena.layers[y][x],
+							this.arena.layers[y + 1][x],
+						);
+					}
 
 				if (
 					x !== 0 &&
@@ -118,15 +116,14 @@ class Game {
 						this.arena.layers[y][x - 1] -
 							this.arena.layers[y][x] ===
 						1
-					)
-						Object.assign(tile.style, {
-							backgroundColor: "transparent",
-							backgroundImage: gradient(
-								"left",
-								this.arena.layers[y][x],
-								this.arena.layers[y][x - 1],
-							),
-						});
+					) {
+						tile.style.backgroundColor = "transparent";
+						tile.style.backgroundImage = gradient(
+							"left",
+							this.arena.layers[y][x],
+							this.arena.layers[y][x - 1],
+						);
+					}
 
 				if (
 					x < this.arena.tiles[y].length - 1 &&
@@ -136,15 +133,14 @@ class Game {
 						this.arena.layers[y][x + 1] -
 							this.arena.layers[y][x] ===
 						1
-					)
-						Object.assign(tile.style, {
-							backgroundColor: "transparent",
-							backgroundImage: gradient(
-								"right",
-								this.arena.layers[y][x],
-								this.arena.layers[y][x + 1],
-							),
-						});
+					) {
+						tile.style.backgroundColor = "transparent";
+						tile.style.backgroundImage = gradient(
+							"right",
+							this.arena.layers[y][x],
+							this.arena.layers[y][x + 1],
+						);
+					}
 
 				row.appendChild(tile);
 			}

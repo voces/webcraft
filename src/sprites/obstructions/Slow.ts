@@ -1,112 +1,8 @@
-import { Sprite, SpriteProps, Effect } from "../Sprite.js";
+import { Sprite, Effect } from "../Sprite.js";
 import { Obstruction, ObstructionProps } from "./Obstruction.js";
-import { tweenPoints } from "../../util/tweenPoints.js";
-import { WORLD_TO_GRAPHICS_RATIO } from "../../constants.js";
-import { Point } from "../../pathing/PathingMap.js";
-import { Player } from "../../players/Player.js";
 import { Unit, Weapon } from "../Unit.js";
-
-type ProjectileProps = Omit<SpriteProps, "x" | "y"> & {
-	producer: Sprite;
-	target: Point;
-	speed?: number;
-	owner: Player;
-	splash?: number;
-	damage: number;
-	onDamage?: (target: Sprite, damage: number, projectile: Projectile) => void;
-	x?: number;
-	y?: number;
-};
-
-class Projectile extends Sprite {
-	static defaults = {
-		...Sprite.defaults,
-		radius: 3,
-		speed: 4,
-		splash: 2.5,
-		maxHealth: Infinity,
-		selectable: false,
-	};
-
-	speed: number;
-	owner!: Player;
-	splash: number;
-	damageAmount: number;
-	onDamage?: (target: Sprite, damage: number, projectile: Projectile) => void;
-
-	constructor({
-		producer,
-		target,
-		speed = Projectile.defaults.speed,
-		splash = Projectile.defaults.splash,
-		damage,
-		onDamage,
-		...props
-	}: ProjectileProps) {
-		super({
-			...Projectile.defaults,
-			...props,
-			x: props.x ?? producer.x,
-			y: props.y ?? producer.y,
-		});
-
-		this.splash = splash;
-		this.damageAmount = damage;
-		this.onDamage = onDamage;
-
-		this.speed = speed;
-		this.elem.style.borderRadius = "50%";
-		this.elem.style.backgroundColor = "transparent";
-		this.elem.style.backgroundImage =
-			"radial-gradient(rgba(0, 0, 255, 0.25), transparent)";
-
-		const { x, y } = target;
-
-		const path = tweenPoints([
-			{ x: this.x, y: this.y },
-			{ x, y },
-		]);
-		const renderPath = tweenPoints([
-			{ x: this.x, y: this.y },
-			{ x, y },
-		]);
-
-		this.action = {
-			render: (delta) => {
-				const { x, y } = renderPath.step(delta * (this.speed || 0));
-				this.elem.style.left =
-					(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-				this.elem.style.top =
-					(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-			},
-			update: (delta) => {
-				const point = path.step(delta * (this.speed || 0));
-				Object.assign(this, point);
-				if (path.remaining === 0) {
-					this.action = undefined;
-
-					this.owner
-						.getEnemySprites()
-						.filter((s) => Number.isFinite(s.health))
-						.forEach((target) => {
-							const distance = Math.sqrt(
-								(target.x - x) ** 2 + (target.y - y) ** 2,
-							);
-							if (distance > this.splash) return;
-
-							const actualDamage = target.damage(
-								this.damageAmount,
-							);
-							if (this.onDamage)
-								this.onDamage(target, actualDamage, this);
-						});
-
-					this.remove();
-				}
-			},
-		};
-	}
-}
+import { clone } from "../../util/clone.js";
+import { Projectile } from "../projectiles/Projectile.js";
 
 const slowTimeout = (target: Sprite) =>
 	target.round.setTimeout(() => {
@@ -183,11 +79,11 @@ export class Slow extends Obstruction {
 	weapon: Weapon;
 
 	constructor({
-		weapon = Slow.defaults.weapon,
+		weapon = clone(Slow.defaults.weapon),
 		autoAttack = Slow.defaults.autoAttack,
 		...props
 	}: SlowProps) {
-		super({ ...props });
+		super({ ...Slow.clonedDefaults, ...props });
 
 		this.weapon = weapon;
 		this.autoAttack = autoAttack;

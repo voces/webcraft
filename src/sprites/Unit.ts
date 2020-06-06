@@ -14,49 +14,50 @@ export type Weapon = {
 	projectile:
 		| "instant"
 		| (<T extends Sprite>(target: Sprite, attacker: T) => void);
-	last?: number;
+	last: number;
 	enabled: boolean;
 	onDamage?: (target: Sprite, damage: number, attacker: Sprite) => void;
 };
 
 export type UnitProps = SpriteProps & {
-	isMirror?: boolean;
+	isIllusion?: boolean;
 	owner: Player;
-	weapon?: Weapon;
 	speed?: number;
+	weapon?: Weapon;
 };
 
 class Unit extends Sprite {
 	static isUnit = (sprite: Unit | Sprite): sprite is Unit =>
 		sprite instanceof Unit;
 
-	speed: number;
-	isMirror: boolean;
-	owner!: Player;
-	weapon?: Weapon;
-	mirrors?: Unit[];
-
 	static defaults = {
 		...Sprite.defaults,
-		isMirror: false,
+		isIllusion: false,
+		// 380 in WC3
 		speed: 5.938,
 	};
 
+	autoAttack?: boolean;
+	isIllusion: boolean;
+	mirrors?: Unit[];
+	owner!: Player;
+	speed: number;
+	weapon?: Weapon;
+
 	constructor({
-		isMirror = Unit.defaults.isMirror,
+		isIllusion = Unit.defaults.isIllusion,
 		weapon,
-		// 380 in WC3
 		speed = Unit.defaults.speed,
 		...props
 	}: UnitProps) {
 		super(props);
 
 		this.weapon = weapon;
-		this.isMirror = isMirror;
+		this.isIllusion = isIllusion;
 		this.speed = speed;
 
 		if (
-			this.isMirror &&
+			this.isIllusion &&
 			game.localPlayer &&
 			game.localPlayer.unit &&
 			this.round.defenders.includes(game.localPlayer)
@@ -113,11 +114,17 @@ class Unit extends Sprite {
 	}
 
 	holdPosition(): void {
-		this.action = {};
+		this.action = { toJSON: () => ({ name: "hold" }) };
 	}
 
 	stop(): void {
 		this.action = undefined;
+	}
+
+	toJSON() {
+		return {
+			...super.toJSON(),
+		};
 	}
 }
 

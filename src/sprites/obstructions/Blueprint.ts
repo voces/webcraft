@@ -11,6 +11,6 @@ export class Blueprint extends Sprite {
 	};
 
 	constructor(props: SpriteProps) {
-		super({ ...Blueprint.defaults, ...props });
+		super({ ...Blueprint.clonedDefaults, ...props });
 	}
 }

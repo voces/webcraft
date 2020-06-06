@@ -83,7 +83,7 @@ export const hotkeys: Record<string, Hotkey> = {
 				showObstructionPlacement(Huge);
 
 			const realDefenders = ownUnits.filter(
-				(u) => Unit.isUnit(u) && !u.isMirror,
+				(u) => Unit.isUnit(u) && !u.isIllusion,
 			);
 			if (realDefenders.length)
 				network.send({

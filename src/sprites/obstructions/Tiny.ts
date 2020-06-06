@@ -8,6 +8,6 @@ export class Tiny extends Obstruction {
 	};
 
 	constructor(props: ObstructionProps) {
-		super({ ...Tiny.defaults, ...props });
+		super({ ...Tiny.clonedDefaults, ...props });
 	}
 }

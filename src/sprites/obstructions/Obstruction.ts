@@ -1,4 +1,4 @@
-import { Sprite, SpriteProps } from "../Sprite.js";
+import { Sprite } from "../../sprites/Sprite.js";
 import {
 	INITIAL_OBSTRUCTION_PROGRESS,
 	PATHING_TYPES,
@@ -7,18 +7,20 @@ import { tweenValues } from "../../util/tweenValues.js";
 import { toFootprint } from "./toFootprint.js";
 import { ResourceMap } from "../../types.js";
 import { Player } from "../../players/Player.js";
+import { Unit, UnitProps } from "../../sprites/Unit.js";
 
-export type ObstructionProps = SpriteProps & {
+export type ObstructionProps = UnitProps & {
 	buildTime?: number;
 	cost?: ResourceMap;
 	owner: Player;
 };
 
-export abstract class Obstruction extends Sprite {
+export abstract class Obstruction extends Unit {
 	static defaults = {
-		...Sprite.defaults,
+		...Unit.defaults,
 		cost: { essence: 1 },
 		requiresPathing: PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE,
+		speed: 0,
 	};
 
 	static isObstruction = (
@@ -32,7 +34,7 @@ export abstract class Obstruction extends Sprite {
 	owner!: Player;
 
 	constructor({ buildTime = 1, ...props }: ObstructionProps) {
-		super(props);
+		super({ ...Obstruction.clonedDefaults, ...props });
 
 		this.health = Math.round(
 			Math.max(this.maxHealth * INITIAL_OBSTRUCTION_PROGRESS, 1),
@@ -47,6 +49,8 @@ export abstract class Obstruction extends Sprite {
 		let renderProgress = INITIAL_OBSTRUCTION_PROGRESS;
 		let renderedHealth = lastHealth;
 		let lastRenderedHealth = lastHealth;
+
+		this.elem.style.borderRadius = "";
 
 		this.action = {
 			update: (delta) => {

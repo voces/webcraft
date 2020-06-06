@@ -5,7 +5,7 @@ import { emitter, Emitter } from "../emitter.js";
 import { document } from "../util/globals.js";
 import { Player } from "../players/Player.js";
 import { Round } from "../Round.js";
-import { Weapon } from "./Unit.js";
+import { clone } from "../util/clone.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
@@ -42,7 +42,9 @@ type Action = {
 	render?: (delta: number) => void;
 	// TODO: type this
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	toJSON?: () => any;
+	toJSON: () => {
+		name: string;
+	};
 };
 
 export type SpriteEvents = {
@@ -68,9 +70,6 @@ class Sprite implements Emitter<SpriteEvents> {
 	_health!: number;
 
 	// todo: move these to unit
-	autoAttack?: boolean;
-	weapon?: Weapon;
-	speed?: number;
 	buildProgress?: number;
 
 	private _x!: number;
@@ -79,6 +78,10 @@ class Sprite implements Emitter<SpriteEvents> {
 	static defaults = {
 		radius: 1,
 	};
+
+	static get clonedDefaults() {
+		return clone(this.defaults);
+	}
 
 	// static canAttack = <T extends Sprite & {attack: ( sprite: Sprite ) => void}>( sprite: Sprite | T ): sprite is T => "attack" in sprite
 

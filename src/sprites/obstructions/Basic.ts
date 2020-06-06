@@ -7,6 +7,6 @@ export class Basic extends Obstruction {
 	};
 
 	constructor(props: ObstructionProps) {
-		super({ ...Basic.defaults, ...props });
+		super({ ...Basic.clonedDefaults, ...props });
 	}
 }

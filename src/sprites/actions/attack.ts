@@ -42,6 +42,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 
 	attacker.action = {
 		toJSON: () => ({
+			name: "attack",
 			target: target.id,
 		}),
 	};
@@ -119,12 +120,11 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 		if (isInRange(attacker, target)) {
 			// Not on cooldown
 			if (
-				!attacker.weapon.last ||
 				attacker.weapon.last + attacker.weapon.cooldown <
-					attacker.round.lastUpdate
+				attacker.round.lastUpdate
 			) {
 				if (attacker.weapon.projectile === "instant") {
-					const damage = attacker.isMirror
+					const damage = attacker.isIllusion
 						? 0
 						: attacker.weapon.damage;
 					const actualDamage = target.damage(damage);

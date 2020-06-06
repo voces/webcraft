@@ -31,7 +31,7 @@ export class Crosser extends Unit {
 	obstructions: Obstruction[] = [];
 
 	constructor(props: UnitProps) {
-		super({ ...Crosser.defaults, ...props });
+		super({ ...Crosser.clonedDefaults, ...props });
 
 		this.addEventListener("death", () => {
 			// Kill all their sprites

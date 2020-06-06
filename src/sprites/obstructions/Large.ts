@@ -10,6 +10,6 @@ export class Large extends Obstruction {
 	};
 
 	constructor(props: ObstructionProps) {
-		super({ ...Large.defaults, ...props });
+		super({ ...Large.clonedDefaults, ...props });
 	}
 }

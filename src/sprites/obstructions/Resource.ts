@@ -8,6 +8,6 @@ export class Resource extends Obstruction {
 	};
 
 	constructor(props: ObstructionProps) {
-		super({ ...Resource.defaults, ...props });
+		super({ ...Resource.clonedDefaults, ...props });
 	}
 }

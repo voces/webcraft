@@ -6,8 +6,8 @@
 		"target": "ES2020",
 		"lib": [ "es2019", "es2020", "DOM" ],
 		"moduleResolution": "node",
-		"module": "ESNext",
 		"strict": true,
+		"module": "ESNext",
 		"noImplicitAny": true,
 		"noImplicitThis": true,
 		"alwaysStrict": true,
@@ -20,7 +20,8 @@
 		] },
 		"esModuleInterop": true,
 		"types": [],
-		"declaration": true
+		"declaration": true,
+		"sourceMap": true
 	},
 	"include": ["src"],
 	"exclude": [
