@@ -7,6 +7,7 @@ export class Huge extends Obstruction {
 		maxHealth: 200,
 		buildTime: 3,
 		cost: { essence: 10 },
+		buildHotkey: "r" as const,
 	};
 
 	constructor(props: ObstructionProps) {

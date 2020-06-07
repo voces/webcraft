@@ -10,20 +10,56 @@ import {
 import { appendErrorMessage } from "../ui/chat.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Sprite } from "./Sprite.js";
-import { Obstruction, ObstructionSubclass } from "./obstructions/index.js";
+import {
+	Obstruction,
+	ObstructionSubclass,
+	Basic,
+	Dense,
+	Huge,
+	Large,
+	Resource,
+	Slow,
+	Stack,
+	Tiny,
+} from "./obstructions/index.js";
 import { Blueprint } from "./obstructions/Blueprint.js";
+import { Button } from "./spriteLogic.js";
+import { network } from "../network.js";
+
+const destroyLastBox = {
+	name: "Destroy box",
+	description: "Destroys selected or last created box",
+	hotkey: "x" as const,
+	type: "custom" as const,
+	handler: (): void => {
+		const crosser = game.localPlayer.unit;
+		if (!crosser || !Crosser.isCrosser(crosser)) return;
+		const obstructions = [...crosser.obstructions];
+		while (obstructions.length) {
+			const obstruction = obstructions.pop();
+			if (obstruction && obstruction.health > 0) {
+				network.send({
+					type: "kill",
+					sprites: [obstruction.id],
+				});
+				break;
+			}
+		}
+	},
+};
 
 // Math.SQRT2 (~1.41) allows building tinies across diag space
 const BUILD_DISTANCE = 1.4;
 
 export class Crosser extends Unit {
-	static isCrosser = (sprite: Crosser | Sprite): sprite is Crosser =>
+	static isCrosser = (sprite: Sprite): sprite is Crosser =>
 		sprite instanceof Crosser;
 
 	static defaults = {
 		...Unit.defaults,
-		radius: 0.5,
 		priority: 1,
+		radius: 0.5,
+		builds: [Basic, Dense, Huge, Large, Resource, Slow, Stack, Tiny],
 	};
 
 	// 380 in WC3 on fast
@@ -167,5 +203,11 @@ export class Crosser extends Unit {
 		this.elem.classList.add("ascend");
 
 		this.round.setTimeout(() => this.remove(), 1);
+	}
+
+	get buttons(): Button[] {
+		const buttons = super.buttons;
+		buttons.push(destroyLastBox);
+		return buttons;
 	}
 }

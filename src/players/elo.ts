@@ -1,6 +1,7 @@
 import { game } from "../index.js";
 import { document } from "../util/globals.js";
 import { Player } from "./Player.js";
+import { emptyElement } from "../util/html.js";
 
 // Formula taken from
 // https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/
@@ -58,7 +59,7 @@ export const elo = ({
 
 const container = document.getElementById("scores")!;
 export const updateDisplay = (): void => {
-	container.innerHTML = "";
+	emptyElement(container);
 
 	game.players.forEach((player) => {
 		const playerName = document.createElement("span");

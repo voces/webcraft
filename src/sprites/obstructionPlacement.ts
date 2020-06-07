@@ -3,9 +3,10 @@ import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { document, window } from "../util/globals.js";
 import { clientToWorld } from "../players/camera.js";
 import { appendErrorMessage } from "../ui/chat.js";
-import { ObstructionSubclass } from "./obstructions/index.js";
+import { Obstruction } from "./obstructions/index.js";
+import { emptyElement } from "../util/html.js";
 
-let plannedObstruction: ObstructionSubclass | undefined;
+let plannedObstruction: typeof Obstruction | undefined;
 let pathable: boolean;
 const mouse = { x: 0, y: 0 };
 const arena = document.getElementById("arena")!;
@@ -70,7 +71,7 @@ const updateCells = () => {
 		const xFinal = xStart + radius * 2;
 		const yFinal = yStart + radius * 2;
 
-		container.innerHTML = "";
+		emptyElement(container);
 
 		let overallPathable = true;
 		const grid = unit.round.pathingMap.grid;
@@ -149,7 +150,7 @@ window.addEventListener("mousemove", (e) => {
 	if (plannedObstruction) updatePosition();
 });
 
-export const start = (obstruction: ObstructionSubclass): void => {
+export const start = (obstruction: typeof Obstruction): void => {
 	if (obstruction.defaults.cost) {
 		const check = game.localPlayer.checkResources(
 			obstruction.defaults.cost,

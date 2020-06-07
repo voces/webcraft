@@ -177,8 +177,8 @@ export const panTo = ({
 	y: number;
 	duration?: number;
 }): void => {
-	x *= WORLD_TO_GRAPHICS_RATIO;
-	y *= WORLD_TO_GRAPHICS_RATIO;
+	x *= WORLD_TO_GRAPHICS_RATIO * arena.scale;
+	y *= WORLD_TO_GRAPHICS_RATIO * arena.scale;
 
 	const xCenter = window.innerWidth / 2;
 	const yCenter = window.innerHeight / 2;

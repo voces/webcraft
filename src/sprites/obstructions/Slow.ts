@@ -20,8 +20,7 @@ type SlowProps = ObstructionProps & {
 };
 
 export class Slow extends Obstruction {
-	static isSlow = (sprite: Slow | Sprite): sprite is Slow =>
-		sprite instanceof Slow;
+	static isSlow = (sprite: Sprite): sprite is Slow => sprite instanceof Slow;
 
 	static defaults = {
 		...Obstruction.defaults,
@@ -72,6 +71,7 @@ export class Slow extends Obstruction {
 				});
 			},
 		},
+		buildHotkey: "q" as const,
 	};
 
 	autoAttack: boolean;

@@ -1,5 +1,4 @@
 import { network, activeHost } from "./network.js";
-
 import { Game } from "./Game.js";
 import { document, window } from "./util/globals.js";
 import { patchInState } from "./players/Player.js";

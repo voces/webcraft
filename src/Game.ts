@@ -8,6 +8,7 @@ import { Player } from "./players/Player.js";
 import { Arena } from "./arenas/types.js";
 import { alea } from "./lib/alea.js";
 import { Settings } from "./types.js";
+import { emptyElement } from "./util/html.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -59,7 +60,7 @@ class Game {
 		this.settings.arenaIndex = arenaIndex;
 		this.arena = arenas[arenaIndex];
 
-		tilesElemnt.innerHTML = "";
+		emptyElement(tilesElemnt);
 		for (let y = 0; y < this.arena.tiles.length; y++) {
 			const row = document.createElement("div");
 			row.classList.add("row");

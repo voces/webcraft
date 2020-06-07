@@ -8,6 +8,8 @@ export class Stack extends Obstruction {
 		buildTime: 2,
 		requiresPathing: 0,
 		cost: { essence: 15 },
+		buildHotkey: "a" as const,
+		buildDescription: "Can be built anywhere",
 	};
 
 	constructor(props: ObstructionProps) {

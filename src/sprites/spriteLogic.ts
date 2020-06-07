@@ -12,214 +12,57 @@ import { Unit } from "./Unit.js";
 import { Crosser } from "./Crosser.js";
 import { Obstruction } from "./obstructions/Obstruction.js";
 import { window } from "../util/globals.js";
-import { panTo, clientToWorld } from "../players/camera.js";
+import { clientToWorld } from "../players/camera.js";
 import { Defender } from "./Defender.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
-import {
-	obstructionMap,
-	Basic,
-	Dense,
-	Huge,
-	Slow,
-	Stack,
-	Tiny,
-	Large,
-	Resource,
-	ObstructionSubclass,
-} from "./obstructions/index.js";
+import { obstructionMap } from "./obstructions/index.js";
+import { activeHotkeys } from "../ui/hotkeys.js";
 
 const isOwn = (u: Sprite) => u.owner === game.localPlayer;
-const includesSelectedUnit = (condition: (sprite: Sprite) => boolean) => () =>
-	dragSelect.selection.some(condition);
-const hasOwnCrosser = includesSelectedUnit(
-	(u) => isOwn(u) && u instanceof Crosser,
+
+export type Button = {
+	description?: string;
+	name: string;
+	hotkey:
+		| "a"
+		| "b"
+		| "c"
+		| "d"
+		| "e"
+		| "f"
+		| "g"
+		| "h"
+		| "i"
+		| "j"
+		| "k"
+		| "l"
+		| "m"
+		| "n"
+		| "o"
+		| "p"
+		| "q"
+		| "r"
+		| "s"
+		| "t"
+		| "u"
+		| "v"
+		| "w"
+		| "x"
+		| "y"
+		| "z"
+		| " "
+		| "Escape";
+	elem?: HTMLElement;
+} & (
+	| {
+			type: "build";
+			obstruction: typeof Obstruction;
+	  }
+	| {
+			type: "custom";
+			handler: () => void;
+	  }
 );
-const hasOwnCrosserOrObstruction = includesSelectedUnit(
-	(u) => isOwn(u) && (u instanceof Crosser || u instanceof Obstruction),
-);
-const hasOwnUnit = includesSelectedUnit((u) => isOwn(u) && u instanceof Unit);
-
-export type Hotkey =
-	| ({
-			activeWhen: () => boolean;
-			description?: string;
-			name: string;
-	  } & (
-			| {
-					type: "build";
-					obstruction: ObstructionSubclass;
-			  }
-			| {
-					type: "custom";
-					handler: () => void;
-			  }
-	  ))
-	| (() => void);
-
-// todo: change this to an array so multiple actions can shar the same hotkey (r = mirror + huge)
-export const hotkeys: Record<string, Hotkey> = {
-	f: {
-		name: "Build Basic Box",
-		type: "build",
-		obstruction: Basic,
-		activeWhen: hasOwnCrosser,
-	},
-	g: {
-		name: "Build Dense Box",
-		type: "build",
-		obstruction: Dense,
-		activeWhen: hasOwnCrosser,
-	},
-	r: {
-		name: "Build Huge Box",
-		type: "custom",
-		activeWhen: hasOwnUnit,
-		handler: (): void => {
-			const ownUnits = dragSelect.selection.filter(
-				(u) => u.owner === game.localPlayer && u instanceof Unit,
-			);
-
-			if (ownUnits.some((u) => u instanceof Crosser))
-				showObstructionPlacement(Huge);
-
-			const realDefenders = ownUnits.filter(
-				(u) => Unit.isUnit(u) && !u.isIllusion,
-			);
-			if (realDefenders.length)
-				network.send({
-					type: "mirror",
-					sprites: realDefenders.map((u) => u.id),
-				});
-		},
-	},
-	q: {
-		name: "Build Slow Box",
-		type: "build",
-		obstruction: Slow,
-		activeWhen: hasOwnCrosser,
-	},
-	a: {
-		name: "Build Stack Box",
-		description: "Can be built anywhere",
-		type: "build",
-		obstruction: Stack,
-		activeWhen: hasOwnCrosser,
-	},
-	t: {
-		name: "Build Tiny Box",
-		type: "build",
-		obstruction: Tiny,
-		activeWhen: hasOwnCrosser,
-	},
-	w: {
-		name: "Build Large Box",
-		type: "build",
-		obstruction: Large,
-		activeWhen: hasOwnCrosser,
-	},
-	e: {
-		name: "Build Resource Box",
-		description: "Increases essence generation for the entire team.",
-		type: "build",
-		obstruction: Resource,
-		activeWhen: hasOwnCrosser,
-	},
-	x: {
-		name: "Destoy Box",
-		description: "Destroys selected or last created box",
-		type: "custom",
-		activeWhen: hasOwnCrosserOrObstruction,
-		handler: (): void => {
-			const playerCrosser = game.localPlayer.unit;
-			if (!playerCrosser) return;
-
-			const ownedUnits = dragSelect.selection.filter(isOwn);
-
-			dragSelect.setSelection([playerCrosser]);
-
-			const obstructions = ownedUnits.filter(Obstruction.isObstruction);
-
-			// Kill selected obstructions
-			if (obstructions.length)
-				network.send({
-					type: "kill",
-					sprites: obstructions.map((u) => u.id),
-				});
-
-			// If no obstructions were selected, but a crosser was, kill the last obstruction
-			let crosser: Crosser | undefined;
-			if (
-				!obstructions.length &&
-				(crosser = ownedUnits.find(Crosser.isCrosser))
-			) {
-				const obstructions = [...crosser.obstructions];
-				while (obstructions.length) {
-					const obstruction = obstructions.pop();
-					if (obstruction && obstruction.health > 0) {
-						network.send({
-							type: "kill",
-							sprites: [obstruction.id],
-						});
-						break;
-					}
-				}
-			}
-		},
-	},
-	h: {
-		name: "Hold Position",
-		type: "custom",
-		activeWhen: hasOwnUnit,
-		handler: (): void => {
-			if (!game.round) return;
-
-			const ownedUnits = dragSelect.selection.filter(
-				(u) => u.owner === game.localPlayer && u instanceof Unit,
-			);
-
-			network.send({
-				type: "holdPosition",
-				sprites: ownedUnits.map((u) => u.id),
-			});
-		},
-	},
-	s: {
-		name: "Stop",
-		type: "custom",
-		activeWhen: hasOwnUnit,
-		handler: (): void => {
-			if (!game.round) return;
-
-			const ownedUnits = dragSelect.selection.filter(
-				(u) => u.owner === game.localPlayer && u instanceof Unit,
-			);
-
-			network.send({
-				type: "stop",
-				sprites: ownedUnits.map((u) => u.id),
-			});
-		},
-	},
-	Escape: (): void => {
-		if (activeObstructionPlacement()) hideObstructionPlacement();
-	},
-	" ": (): void => {
-		if (
-			dragSelect.selection.length === 0 &&
-			game.localPlayer.sprites.length
-		)
-			return dragSelect.setSelection([game.localPlayer.sprites[0]]);
-
-		const { xSum, ySum } = dragSelect.selection.reduce(
-			({ xSum, ySum }, { x, y }) => ({ xSum: xSum + x, ySum: ySum + y }),
-			{ xSum: 0, ySum: 0 },
-		);
-
-		const x = xSum / dragSelect.selection.length;
-		const y = ySum / dragSelect.selection.length;
-		panTo({ x, y });
-	},
-};
 
 window.addEventListener("mousedown", (e) => {
 	if (!game.round) return;
@@ -227,11 +70,6 @@ window.addEventListener("mousedown", (e) => {
 	if (e.button === 2 || e.ctrlKey) return rightClick(e);
 	if (e.button === 0) leftClick(e);
 });
-
-type Event = {
-	time: number;
-	connection: number;
-};
 
 const leftClick = (e: MouseEvent) => {
 	if (!obstructionPlacementValid()) return;
@@ -318,10 +156,10 @@ const rightClick = (e: MouseEvent) => {
 window.addEventListener("keydown", (e) => {
 	if (!game.round) return;
 
-	const hotkey = hotkeys[e.key];
+	const hotkey = activeHotkeys.find((b) => b.hotkey === e.key);
 	if (!hotkey) return;
 
-	if (typeof hotkey === "function") return hotkey();
+	// if (typeof hotkey === "function") return hotkey();
 	if (hotkey.type === "custom") return hotkey.handler();
 
 	if (hotkey.type === "build") {

@@ -6,6 +6,7 @@ export class Dense extends Obstruction {
 		maxHealth: 240,
 		armor: 0.25,
 		cost: { essence: 4 },
+		buildHotkey: "g" as const,
 	};
 
 	constructor(props: ObstructionProps) {

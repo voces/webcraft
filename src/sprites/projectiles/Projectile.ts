@@ -3,16 +3,21 @@ import { tweenPoints } from "../../util/tweenPoints.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../../constants.js";
 import { Point } from "../../pathing/PathingMap.js";
 import { Player } from "../../players/Player.js";
-import { clone } from "../../util/clone.js";
+import { Unit } from "../Unit.js";
 
 type ProjectileProps = Omit<SpriteProps, "x" | "y"> & {
-	producer: Sprite;
+	producer: Unit;
 	target: Point;
 	speed?: number;
 	owner: Player;
 	splash?: number;
 	damage: number;
-	onDamage?: (target: Sprite, damage: number, projectile: Projectile) => void;
+	onDamage?: (
+		target: Sprite,
+		damage: number,
+		attacker: Unit,
+		projectile: Projectile,
+	) => void;
 	x?: number;
 	y?: number;
 };
@@ -31,8 +36,13 @@ export class Projectile extends Sprite {
 	owner!: Player;
 	splash: number;
 	damageAmount: number;
-	onDamage?: (target: Sprite, damage: number, projectile: Projectile) => void;
-	producer?: Sprite;
+	onDamage?: (
+		target: Sprite,
+		damage: number,
+		attacker: Unit,
+		projectile: Projectile,
+	) => void;
+	producer?: Unit;
 
 	constructor({
 		producer,
@@ -100,7 +110,12 @@ export class Projectile extends Sprite {
 								this.damageAmount,
 							);
 							if (this.onDamage)
-								this.onDamage(target, actualDamage, this);
+								this.onDamage(
+									target,
+									actualDamage,
+									producer,
+									this,
+								);
 						});
 
 					this.remove();

@@ -1,29 +1,23 @@
-import { hotkeys, Hotkey } from "../sprites/spriteLogic.js";
+import { Button } from "../sprites/spriteLogic.js";
 import { document } from "../util/globals.js";
 import { dragSelect } from "../sprites/dragSelect.js";
 import { defined } from "../types.js";
+import { Unit } from "../sprites/Unit.js";
+import { emptyElement } from "../util/html.js";
+import { game } from "../index.js";
+import { panTo } from "../players/camera.js";
 
 const container = document.getElementById("hotkeys")!;
 
 const qwertySort = "qwertyuiopasdfghjklzxcvbnm".split("");
-const entries = Object.entries(hotkeys);
-const sortedHotkeys = qwertySort
-	.map((k) => entries.find(([key]) => key === k))
-	.filter(defined);
-const hotkeyIcons: [Hotkey, HTMLDivElement][] = [];
-sortedHotkeys.forEach(([hotkey, spec]) => {
-	const charCode = hotkey.charCodeAt(0);
-	// Only sure a-z
-	if (hotkey.length > 1 || charCode < 97 || charCode > 122) return;
 
+const genNode = (button: Button) => {
 	const elem = document.createElement("div");
 	elem.classList.add("hotkey");
-	if (typeof spec !== "function" && spec.activeWhen)
-		hotkeyIcons.push([spec, elem]);
 
 	const key = document.createElement("span");
 	key.classList.add("key");
-	key.textContent = hotkey.toUpperCase();
+	key.textContent = button.hotkey.toUpperCase();
 	elem.appendChild(key);
 
 	const tooltip = document.createElement("div");
@@ -31,38 +25,87 @@ sortedHotkeys.forEach(([hotkey, spec]) => {
 
 	const title = document.createElement("div");
 	title.classList.add("title");
-	const hotkeyIndex = spec.name.toLowerCase().indexOf(hotkey);
+	const hotkeyIndex = button.name.toLowerCase().indexOf(button.hotkey);
 	const casedHotkey =
-		hotkeyIndex >= 0 ? spec.name[hotkeyIndex] : hotkey.toUpperCase();
+		hotkeyIndex >= 0
+			? button.name[hotkeyIndex]
+			: button.hotkey.toUpperCase();
 	const highlight = `<span class="highlight">${casedHotkey}</span>`;
 	title.innerHTML =
 		hotkeyIndex >= 0
-			? spec.name.slice(0, hotkeyIndex) +
+			? button.name.slice(0, hotkeyIndex) +
 			  highlight +
-			  spec.name.slice(hotkeyIndex + 1)
-			: spec.name + ` (${highlight})`;
+			  button.name.slice(hotkeyIndex + 1)
+			: button.name + ` (${highlight})`;
 	tooltip.appendChild(title);
 
 	const description = document.createElement("div");
 	description.classList.add("description");
-	if (typeof spec !== "function" && spec.description)
-		description.textContent = spec.description;
+	if (button.description) description.textContent = button.description;
 	tooltip.appendChild(description);
 
 	elem.appendChild(tooltip);
 
-	container.appendChild(elem);
+	button.elem = elem;
+
+	return elem;
+};
+
+export const activeHotkeys: Button[] = [];
+
+const center = {
+	name: "Center",
+	hotkey: " " as const,
+	type: "custom" as const,
+	handler: (): void => {
+		if (
+			dragSelect.selection.length === 0 &&
+			game.localPlayer.sprites.length
+		)
+			return dragSelect.setSelection([game.localPlayer.sprites[0]]);
+
+		const { xSum, ySum } = dragSelect.selection.reduce(
+			({ xSum, ySum }, { x, y }) => ({ xSum: xSum + x, ySum: ySum + y }),
+			{ xSum: 0, ySum: 0 },
+		);
+		const x = xSum / dragSelect.selection.length;
+		const y = ySum / dragSelect.selection.length;
+		panTo({ x, y });
+	},
+};
+
+const aCharCode = "a".charCodeAt(0);
+const zCharCode = "z".charCodeAt(0);
+
+dragSelect.addEventListener("selection", (sprites) => {
+	// Clear hotkeys
+	emptyElement(container);
+	activeHotkeys.splice(0);
+	activeHotkeys.push(center);
+
+	// Get buttons
+	const units = sprites.filter(Unit.isUnit);
+	if (!units.length) return;
+
+	let activeUnit = units[0];
+	for (let i = 1; i < units.length; i++)
+		if (units[i].priority > activeUnit.priority) activeUnit = units[i];
+	const buttons = activeUnit.buttons;
+	const sortedButtons = qwertySort
+		.map((k) => buttons.find((b) => b.hotkey === k))
+		.filter(defined);
+	activeHotkeys.push(...sortedButtons);
+
+	activeHotkeys.forEach((button) => {
+		const charCode = button.hotkey.charCodeAt(0);
+		if (
+			charCode < aCharCode ||
+			charCode > zCharCode ||
+			button.hotkey.length > 1
+		)
+			return;
+
+		const elem = button.elem ?? genNode(button);
+		container.appendChild(elem);
+	});
 });
-
-const toggleHotkeyIcons = () =>
-	hotkeyIcons.forEach(
-		([hotkey, elem]) =>
-			(elem.style.display =
-				typeof hotkey !== "function" && hotkey.activeWhen()
-					? ""
-					: "none"),
-	);
-
-setTimeout(toggleHotkeyIcons);
-
-dragSelect.addEventListener("selection", () => toggleHotkeyIcons());

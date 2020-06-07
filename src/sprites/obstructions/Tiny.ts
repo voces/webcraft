@@ -5,6 +5,7 @@ export class Tiny extends Obstruction {
 		...Obstruction.defaults,
 		radius: 0.5,
 		maxHealth: 40,
+		buildHotkey: "t" as const,
 	};
 
 	constructor(props: ObstructionProps) {

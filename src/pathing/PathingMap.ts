@@ -2,6 +2,7 @@ import { BinaryHeap } from "./BinaryHeap.js";
 import { memoize } from "./memoize.js";
 import { DIRECTION, PATHING_TYPES } from "../constants.js";
 import { document } from "../util/globals.js";
+import { emptyElement } from "../util/html.js";
 
 let debugging = false;
 const elems: HTMLElement[] = [];
@@ -1356,7 +1357,7 @@ export class PathingMap {
 				return elem;
 			})());
 
-		host.innerHTML = "";
+		emptyElement(host);
 		const cellSize = 32 / this.resolution;
 
 		for (let y = 0; y < this.heightMap; y++)

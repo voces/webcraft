@@ -5,8 +5,10 @@
  * @param obj
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const swallow = <T>(obj?: T): T =>
-	(new Proxy(
+const swallow = <T>(obj?: T): T => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const memory: T = {} as any;
+	return (new Proxy(
 		Object.assign(
 			() => {
 				/* do nothing */
@@ -14,13 +16,19 @@ const swallow = <T>(obj?: T): T =>
 			{ valueOf: () => 0 },
 		),
 		{
-			get: (_, prop) => {
-				if (prop === Symbol.toPrimitive) return () => 0;
+			get: (_, prop: keyof T) => {
+				if (prop in memory) return memory[prop];
+				if (prop === Symbol.toPrimitive) return () => 1;
 				return swallow();
+			},
+			set: (_, prop: keyof T, value) => {
+				memory[prop] = value;
+				return true;
 			},
 			apply: () => swallow(),
 		},
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	) as any) as T;
+};
 
 export { swallow };

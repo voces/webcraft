@@ -6,6 +6,7 @@ import { document } from "../util/globals.js";
 import { Player } from "../players/Player.js";
 import { Round } from "../Round.js";
 import { clone } from "../util/clone.js";
+import { Button } from "./spriteLogic.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
@@ -305,6 +306,10 @@ class Sprite implements Emitter<SpriteEvents> {
 
 		if (arenaElement.contains(this.elem))
 			arenaElement.removeChild(this.elem);
+	}
+
+	get buttons(): Button[] {
+		return [];
 	}
 
 	toJSON() {

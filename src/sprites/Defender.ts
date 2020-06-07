@@ -3,6 +3,28 @@ import { Unit, UnitProps } from "./Unit.js";
 import { game } from "../index.js";
 import { Sprite } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
+import { dragSelect } from "./dragSelect.js";
+import { network } from "../network.js";
+import { Button } from "./spriteLogic.js";
+
+const mirror = {
+	name: "Mirror Image",
+	hotkey: "r" as const,
+	type: "custom" as const,
+	handler: (): void => {
+		const ownUnits = dragSelect.selection.filter(
+			(u) => u.owner === game.localPlayer && Unit.isUnit(u),
+		);
+		const realDefenders = ownUnits.filter(
+			(u) => Unit.isUnit(u) && !u.isIllusion,
+		);
+		if (realDefenders.length)
+			network.send({
+				type: "mirror",
+				sprites: realDefenders.map((u) => u.id),
+			});
+	},
+};
 
 const getMirroringPosition = (pos: Point, entity: Sprite, layer?: number) => {
 	if (!game.round)
@@ -30,7 +52,7 @@ type DefenderProps = UnitProps & {
 };
 
 export class Defender extends Unit {
-	static isDefender = (sprite: Defender | Sprite): sprite is Defender =>
+	static isDefender = (sprite: Sprite): sprite is Defender =>
 		sprite instanceof Defender;
 
 	static defaults = {
@@ -100,5 +122,11 @@ export class Defender extends Unit {
 		mirror.facing = oldFacing;
 		this.round.pathingMap.addEntity(mirror);
 		this.mirrors = [mirror];
+	}
+
+	get buttons(): Button[] {
+		const buttons = super.buttons;
+		if (!this.isIllusion) buttons.push(mirror);
+		return buttons;
 	}
 }

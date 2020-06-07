@@ -3,6 +3,7 @@ import { game } from "../index.js";
 import { document, window } from "../util/globals.js";
 import { marked } from "../lib/marked.js";
 import { toggleDebugging } from "../pathing/PathingMap.js";
+import { emptyElement } from "../util/html.js";
 
 type Command = {
 	name: string;
@@ -241,7 +242,7 @@ registerCommand({
 	name: "clear",
 	comment: "Clears the chat log",
 	handler: () => {
-		chatLog.innerHTML = "";
+		emptyElement(chatLog);
 	},
 });
 

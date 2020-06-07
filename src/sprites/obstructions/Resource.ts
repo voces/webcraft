@@ -5,6 +5,8 @@ export class Resource extends Obstruction {
 		...Obstruction.defaults,
 		maxHealth: 20,
 		cost: { essence: 35 },
+		buildHotkey: "e" as const,
+		buildDescription: "Increases essence generation for the entire team.",
 	};
 
 	constructor(props: ObstructionProps) {

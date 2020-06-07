@@ -1,3 +1,5 @@
+import { network } from "../network.js";
+import { dragSelect } from "./dragSelect.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { tweenPoints } from "../util/tweenPoints.js";
 import { game } from "../index.js";
@@ -6,6 +8,59 @@ import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
 import { attack } from "./actions/attack.js";
 import { Emitter } from "../emitter.js";
+import { Button } from "./spriteLogic.js";
+import { Obstruction } from "./obstructions/index.js";
+import {
+	active as activeObstructionPlacement,
+	stop as hideObstructionPlacement,
+} from "./obstructionPlacement.js";
+
+const holdPosition = {
+	name: "Hold Position",
+	hotkey: "h" as const,
+	type: "custom" as const,
+	handler: (): void => {
+		if (!game.round) return;
+
+		const ownedUnits = dragSelect.selection.filter(
+			(u) =>
+				u.owner === game.localPlayer && Unit.isUnit(u) && u.speed > 0,
+		);
+
+		network.send({
+			type: "holdPosition",
+			sprites: ownedUnits.map((u) => u.id),
+		});
+	},
+};
+
+const stop = {
+	name: "Stop",
+	hotkey: "s" as const,
+	type: "custom" as const,
+	handler: (): void => {
+		if (!game.round) return;
+
+		const ownedUnits = dragSelect.selection.filter(
+			(u) => u.owner === game.localPlayer && Unit.isUnit(u),
+		);
+
+		network.send({
+			type: "stop",
+			sprites: ownedUnits.map((u) => u.id),
+		});
+	},
+};
+
+const cancel = {
+	name: "Cancel",
+	hotkey: "Escape" as const,
+	type: "custom" as const,
+	handler: (): void => {
+		console.log("cancel?", activeObstructionPlacement());
+		if (activeObstructionPlacement()) hideObstructionPlacement();
+	},
+};
 
 export type Weapon = {
 	damage: number;
@@ -24,11 +79,14 @@ export type UnitProps = SpriteProps & {
 	owner: Player;
 	speed?: number;
 	weapon?: Weapon;
+	name?: string;
+	builds?: typeof Obstruction[];
 };
 
+// `Seeing Class extends value undefined is not a constructor or null`? Import
+// Player before Sprite.
 class Unit extends Sprite {
-	static isUnit = (sprite: Unit | Sprite): sprite is Unit =>
-		sprite instanceof Unit;
+	static isUnit = (sprite: Sprite): sprite is Unit => sprite instanceof Unit;
 
 	static defaults = {
 		...Sprite.defaults,
@@ -43,18 +101,24 @@ class Unit extends Sprite {
 	owner!: Player;
 	speed: number;
 	weapon?: Weapon;
+	name: string;
+	builds: typeof Obstruction[];
 
 	constructor({
 		isIllusion = Unit.defaults.isIllusion,
-		weapon,
+		name,
 		speed = Unit.defaults.speed,
+		weapon,
+		builds = [],
 		...props
 	}: UnitProps) {
 		super(props);
 
-		this.weapon = weapon;
 		this.isIllusion = isIllusion;
+		this.name = name ?? this.constructor.name;
 		this.speed = speed;
+		this.weapon = weapon;
+		this.builds = builds;
 
 		if (
 			this.isIllusion &&
@@ -119,6 +183,20 @@ class Unit extends Sprite {
 
 	stop(): void {
 		this.action = undefined;
+	}
+
+	get buttons() {
+		const buildList = this.builds.map((klass) => klass.buildButton);
+		const buttons: Button[] = buildList;
+		if (buildList.length > 0) {
+			buildList.push(cancel);
+		}
+
+		if (this.speed > 0) {
+			buttons.push(holdPosition, stop);
+		}
+
+		return buttons;
 	}
 
 	toJSON() {
