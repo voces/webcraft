@@ -6,7 +6,7 @@ import { document } from "../util/globals.js";
 import { Player } from "../players/Player.js";
 import { Round } from "../Round.js";
 import { clone } from "../util/clone.js";
-import { Button } from "./spriteLogic.js";
+import { Action } from "./spriteLogic.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
@@ -37,7 +37,7 @@ export type Effect = {
 	timeout: number;
 };
 
-type Action = {
+type Activity = {
 	cleanup?: () => void;
 	update?: (delta: number) => void;
 	render?: (delta: number) => void;
@@ -58,7 +58,7 @@ class Sprite implements Emitter<SpriteEvents> {
 	requiresPathing: number;
 	blocksPathing: number;
 	armor: number;
-	action: Action | undefined;
+	activity: Activity | undefined;
 	isAlive: boolean;
 	priority: number;
 	effects: Effect[] = [];
@@ -155,13 +155,13 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.round.sprites.push(this);
 
 		// TODO: move this into getters and setters
-		let action: Action | undefined;
-		Object.defineProperty(this, "action", {
+		let activity: Activity | undefined;
+		Object.defineProperty(this, "activity", {
 			set: (value) => {
-				if (action?.cleanup) action.cleanup();
-				action = value;
+				if (activity?.cleanup) activity.cleanup();
+				activity = value;
 			},
-			get: () => action,
+			get: () => activity,
 		});
 	}
 
@@ -273,7 +273,7 @@ class Sprite implements Emitter<SpriteEvents> {
 	_death({ removeImmediately = false } = {}) {
 		if (removeImmediately) this._health = 0;
 
-		this.action = undefined;
+		this.activity = undefined;
 		dragSelect.removeSelectables([this]);
 		if (this._selected)
 			dragSelect.setSelection(
@@ -308,13 +308,13 @@ class Sprite implements Emitter<SpriteEvents> {
 			arenaElement.removeChild(this.elem);
 	}
 
-	get buttons(): Button[] {
+	get actions(): Action[] {
 		return [];
 	}
 
 	toJSON() {
 		return {
-			action: this.action,
+			activity: this.activity,
 			constructor: this.constructor.name,
 			health: this.health,
 			owner: this.owner && this.owner.id,

@@ -6,9 +6,9 @@ import { game } from "../index.js";
 import { Sprite, SpriteProps, SpriteEvents } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
-import { attack } from "./actions/attack.js";
+import { attack } from "./activities/attack.js";
 import { Emitter } from "../emitter.js";
-import { Button } from "./spriteLogic.js";
+import { Action } from "./spriteLogic.js";
 import { Obstruction } from "./obstructions/index.js";
 import {
 	active as activeObstructionPlacement,
@@ -140,7 +140,7 @@ class Unit extends Sprite {
 		let renderProgress = 0;
 		let path = tweenPoints(this.round.pathingMap.path(this, target));
 
-		this.action = {
+		this.activity = {
 			update: (delta: number) => {
 				const updateProgress = delta * this.speed;
 				const { x, y } = path(updateProgress);
@@ -149,7 +149,7 @@ class Unit extends Sprite {
 
 				if (path.distance < updateProgress) {
 					this.setPosition(x, y);
-					this.action = undefined;
+					this.activity = undefined;
 				} else {
 					// Update self
 					this._setPosition(x, y);
@@ -178,25 +178,25 @@ class Unit extends Sprite {
 	}
 
 	holdPosition(): void {
-		this.action = { toJSON: () => ({ name: "hold" }) };
+		this.activity = { toJSON: () => ({ name: "hold" }) };
 	}
 
 	stop(): void {
-		this.action = undefined;
+		this.activity = undefined;
 	}
 
-	get buttons() {
-		const buildList = this.builds.map((klass) => klass.buildButton);
-		const buttons: Button[] = buildList;
+	get actions() {
+		const buildList = this.builds.map((klass) => klass.buildAction);
+		const actions: Action[] = buildList;
 		if (buildList.length > 0) {
 			buildList.push(cancel);
 		}
 
 		if (this.speed > 0) {
-			buttons.push(holdPosition, stop);
+			actions.push(holdPosition, stop);
 		}
 
-		return buttons;
+		return actions;
 	}
 
 	toJSON() {

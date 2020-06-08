@@ -82,7 +82,7 @@ export class Projectile extends Sprite {
 			{ x, y },
 		]);
 
-		this.action = {
+		this.activity = {
 			render: (delta) => {
 				const { x, y } = renderPath.step(delta * (this.speed || 0));
 				this.elem.style.left =
@@ -95,7 +95,7 @@ export class Projectile extends Sprite {
 				this.x = point.x;
 				this.y = point.y;
 				if (path.remaining === 0) {
-					this.action = undefined;
+					this.activity = undefined;
 
 					this.owner
 						.getEnemySprites()

@@ -40,7 +40,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 	// Attacker can't move and target is not in range; do nothing
 	if (!attacker.speed && !isInRange(attacker, target)) return;
 
-	attacker.action = {
+	attacker.activity = {
 		toJSON: () => ({
 			name: "attack",
 			target: target.id,
@@ -55,7 +55,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 		);
 
 		// We only render the attacker moving
-		attacker.action.render = (delta) => {
+		attacker.activity.render = (delta) => {
 			if (!attacker.weapon) return;
 
 			const range =
@@ -93,9 +93,9 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 		};
 	}
 
-	attacker.action.update = (delta) => {
+	attacker.activity.update = (delta) => {
 		if (!attacker.weapon) {
-			attacker.action = undefined;
+			attacker.activity = undefined;
 			return;
 		}
 
@@ -112,7 +112,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 		if (target.health <= 0) {
 			// Target dead, update position and complete
 			if (attacker.speed) attacker.setPosition(x, y);
-			attacker.action = undefined;
+			attacker.activity = undefined;
 			return;
 		}
 
@@ -137,7 +137,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 
 					if (target.health <= 0) {
 						if (attacker.speed) attacker.setPosition(x, y);
-						attacker.action = undefined;
+						attacker.activity = undefined;
 					}
 				} else attacker.weapon.projectile(target, attacker);
 
@@ -151,7 +151,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 				attacker.weapon.last = attacker.round.lastUpdate;
 			}
 		} else if (path && path.distance === 0) {
-			attacker.action = undefined;
+			attacker.activity = undefined;
 			attacker.setPosition(x, y);
 		} else if (attacker.speed) recalcPath({ x, y });
 	};

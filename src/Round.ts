@@ -273,8 +273,8 @@ class Round {
 
 	updateSprites(delta: number) {
 		this.sprites.forEach((sprite) => {
-			if (sprite.action)
-				sprite.action.update && sprite.action.update(delta);
+			if (sprite.activity)
+				sprite.activity.update && sprite.activity.update(delta);
 			else if (
 				Unit.isUnit(sprite) &&
 				sprite.autoAttack &&
@@ -431,9 +431,9 @@ class Round {
 
 		this.sprites.forEach(
 			(sprite) =>
-				sprite.action &&
-				sprite.action.render &&
-				sprite.action.render(delta),
+				sprite.activity &&
+				sprite.activity.render &&
+				sprite.activity.render(delta),
 		);
 	}
 

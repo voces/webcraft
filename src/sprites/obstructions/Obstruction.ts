@@ -8,7 +8,7 @@ import { toFootprint } from "./toFootprint.js";
 import { ResourceMap } from "../../types.js";
 import { Player } from "../../players/Player.js";
 import { Unit, UnitProps } from "../Unit.js";
-import { Button } from "../spriteLogic.js";
+import { Action } from "../spriteLogic.js";
 import { game } from "../../index.js";
 import { dragSelect } from "../dragSelect.js";
 import { network } from "../../network.js";
@@ -45,7 +45,7 @@ export type ObstructionProps = UnitProps & {
 export abstract class Obstruction extends Unit {
 	static defaults = {
 		...Unit.defaults,
-		buildHotkey: undefined as Button["hotkey"] | undefined,
+		buildHotkey: undefined as Action["hotkey"] | undefined,
 		buildDescription: undefined as string | undefined,
 		cost: { essence: 1 },
 		requiresPathing: PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE,
@@ -61,11 +61,11 @@ export abstract class Obstruction extends Unit {
 	buildTime: number;
 	owner!: Player;
 
-	private static _buildButton: Button;
+	private static _buildAction: Action;
 
-	static get buildButton(): Button {
-		if (this._buildButton) return this._buildButton;
-		this._buildButton = {
+	static get buildAction(): Action {
+		if (this._buildAction) return this._buildAction;
+		this._buildAction = {
 			name: this.name,
 			hotkey: this.defaults.buildHotkey!,
 			description: this.defaults.buildDescription,
@@ -73,7 +73,7 @@ export abstract class Obstruction extends Unit {
 			obstruction: this,
 		};
 
-		return this._buildButton;
+		return this._buildAction;
 	}
 
 	constructor({ buildTime = 1, ...props }: ObstructionProps) {
@@ -95,7 +95,7 @@ export abstract class Obstruction extends Unit {
 
 		this.elem.style.borderRadius = "";
 
-		this.action = {
+		this.activity = {
 			update: (delta) => {
 				renderProgress = this.buildProgress = Math.min(
 					this.buildProgress + delta / this.buildTime,
@@ -109,7 +109,7 @@ export abstract class Obstruction extends Unit {
 				lastRenderedHealth = lastHealth;
 
 				if (this.round.lastUpdate >= start + this.buildTime)
-					this.action = undefined;
+					this.activity = undefined;
 			},
 			render: (delta) => {
 				renderProgress = Math.min(
@@ -133,9 +133,9 @@ export abstract class Obstruction extends Unit {
 		};
 	}
 
-	get buttons(): Button[] {
-		const buttons = super.buttons;
-		buttons.push(destroySelf);
-		return buttons;
+	get actions(): Action[] {
+		const actions = super.actions;
+		actions.push(destroySelf);
+		return actions;
 	}
 }

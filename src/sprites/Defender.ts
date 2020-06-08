@@ -5,7 +5,7 @@ import { Sprite } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { dragSelect } from "./dragSelect.js";
 import { network } from "../network.js";
-import { Button } from "./spriteLogic.js";
+import { Action } from "./spriteLogic.js";
 
 const mirror = {
 	name: "Mirror Image",
@@ -102,7 +102,7 @@ export class Defender extends Unit {
 			pos2 = temp;
 		}
 
-		this.action = undefined;
+		this.activity = undefined;
 
 		const layer = this.round.pathingMap.layer(this.x, this.y);
 
@@ -124,9 +124,9 @@ export class Defender extends Unit {
 		this.mirrors = [mirror];
 	}
 
-	get buttons(): Button[] {
-		const buttons = super.buttons;
-		if (!this.isIllusion) buttons.push(mirror);
-		return buttons;
+	get actions(): Action[] {
+		const actions = super.actions;
+		if (!this.isIllusion) actions.push(mirror);
+		return actions;
 	}
 }

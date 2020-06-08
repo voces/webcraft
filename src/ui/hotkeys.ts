@@ -1,4 +1,4 @@
-import { Button } from "../sprites/spriteLogic.js";
+import { Action } from "../sprites/spriteLogic.js";
 import { document } from "../util/globals.js";
 import { dragSelect } from "../sprites/dragSelect.js";
 import { defined } from "../types.js";
@@ -11,13 +11,13 @@ const container = document.getElementById("hotkeys")!;
 
 const qwertySort = "qwertyuiopasdfghjklzxcvbnm".split("");
 
-const genNode = (button: Button) => {
+const genNode = (action: Action) => {
 	const elem = document.createElement("div");
 	elem.classList.add("hotkey");
 
 	const key = document.createElement("span");
 	key.classList.add("key");
-	key.textContent = button.hotkey.toUpperCase();
+	key.textContent = action.hotkey.toUpperCase();
 	elem.appendChild(key);
 
 	const tooltip = document.createElement("div");
@@ -25,33 +25,33 @@ const genNode = (button: Button) => {
 
 	const title = document.createElement("div");
 	title.classList.add("title");
-	const hotkeyIndex = button.name.toLowerCase().indexOf(button.hotkey);
+	const hotkeyIndex = action.name.toLowerCase().indexOf(action.hotkey);
 	const casedHotkey =
 		hotkeyIndex >= 0
-			? button.name[hotkeyIndex]
-			: button.hotkey.toUpperCase();
+			? action.name[hotkeyIndex]
+			: action.hotkey.toUpperCase();
 	const highlight = `<span class="highlight">${casedHotkey}</span>`;
 	title.innerHTML =
 		hotkeyIndex >= 0
-			? button.name.slice(0, hotkeyIndex) +
+			? action.name.slice(0, hotkeyIndex) +
 			  highlight +
-			  button.name.slice(hotkeyIndex + 1)
-			: button.name + ` (${highlight})`;
+			  action.name.slice(hotkeyIndex + 1)
+			: action.name + ` (${highlight})`;
 	tooltip.appendChild(title);
 
 	const description = document.createElement("div");
 	description.classList.add("description");
-	if (button.description) description.textContent = button.description;
+	if (action.description) description.textContent = action.description;
 	tooltip.appendChild(description);
 
 	elem.appendChild(tooltip);
 
-	button.elem = elem;
+	action.elem = elem;
 
 	return elem;
 };
 
-export const activeHotkeys: Button[] = [];
+export const activeHotkeys: Action[] = [];
 
 const center = {
 	name: "Center",
@@ -83,29 +83,29 @@ dragSelect.addEventListener("selection", (sprites) => {
 	activeHotkeys.splice(0);
 	activeHotkeys.push(center);
 
-	// Get buttons
+	// Get actions
 	const units = sprites.filter(Unit.isUnit);
 	if (!units.length) return;
 
 	let activeUnit = units[0];
 	for (let i = 1; i < units.length; i++)
 		if (units[i].priority > activeUnit.priority) activeUnit = units[i];
-	const buttons = activeUnit.buttons;
-	const sortedButtons = qwertySort
-		.map((k) => buttons.find((b) => b.hotkey === k))
+	const actions = activeUnit.actions;
+	const sortedActions = qwertySort
+		.map((k) => actions.find((b) => b.hotkey === k))
 		.filter(defined);
-	activeHotkeys.push(...sortedButtons);
+	activeHotkeys.push(...sortedActions);
 
-	activeHotkeys.forEach((button) => {
-		const charCode = button.hotkey.charCodeAt(0);
+	activeHotkeys.forEach((action) => {
+		const charCode = action.hotkey.charCodeAt(0);
 		if (
 			charCode < aCharCode ||
 			charCode > zCharCode ||
-			button.hotkey.length > 1
+			action.hotkey.length > 1
 		)
 			return;
 
-		const elem = button.elem ?? genNode(button);
+		const elem = action.elem ?? genNode(action);
 		container.appendChild(elem);
 	});
 });

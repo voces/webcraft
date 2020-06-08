@@ -23,7 +23,7 @@ import {
 	Tiny,
 } from "./obstructions/index.js";
 import { Blueprint } from "./obstructions/Blueprint.js";
-import { Button } from "./spriteLogic.js";
+import { Action } from "./spriteLogic.js";
 import { network } from "../network.js";
 
 const destroyLastBox = {
@@ -89,7 +89,7 @@ export class Crosser extends Unit {
 				  })
 				: undefined;
 
-		this.action = {
+		this.activity = {
 			update: (delta) => {
 				const updateProgress = delta * this.speed;
 				const { x, y } = path(updateProgress);
@@ -100,7 +100,7 @@ export class Crosser extends Unit {
 					(x - target.x) ** 2 + (y - target.y) ** 2,
 				);
 				if (actualDistance < BUILD_DISTANCE) {
-					this.action = undefined;
+					this.activity = undefined;
 
 					if (ObstructionClass.defaults.cost) {
 						const check = this.owner.checkResources(
@@ -146,7 +146,7 @@ export class Crosser extends Unit {
 
 					// We're never going to get there
 				} else if (path.distance < updateProgress) {
-					this.action = undefined;
+					this.activity = undefined;
 					this.setPosition(x, y);
 				} else {
 					// Update self
@@ -180,7 +180,7 @@ export class Crosser extends Unit {
 
 	ascend(): void {
 		this._health = 0;
-		this.action = undefined;
+		this.activity = undefined;
 		dragSelect.removeSelectables([this]);
 		if (this._selected)
 			dragSelect.setSelection(
@@ -205,9 +205,9 @@ export class Crosser extends Unit {
 		this.round.setTimeout(() => this.remove(), 1);
 	}
 
-	get buttons(): Button[] {
-		const buttons = super.buttons;
-		buttons.push(destroyLastBox);
-		return buttons;
+	get actions(): Action[] {
+		const actions = super.actions;
+		actions.push(destroyLastBox);
+		return actions;
 	}
 }

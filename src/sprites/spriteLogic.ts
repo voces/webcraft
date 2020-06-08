@@ -20,7 +20,7 @@ import { activeHotkeys } from "../ui/hotkeys.js";
 
 const isOwn = (u: Sprite) => u.owner === game.localPlayer;
 
-export type Button = {
+export type Action = {
 	description?: string;
 	name: string;
 	hotkey:
