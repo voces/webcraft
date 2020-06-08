@@ -187,10 +187,11 @@ class Unit extends Sprite {
 
 	get actions() {
 		const buildList = this.builds.map((klass) => klass.buildAction);
-		const actions: Action[] = buildList;
 		if (buildList.length > 0) {
 			buildList.push(cancel);
 		}
+
+		const actions: Action[] = buildList;
 
 		if (this.speed > 0) {
 			actions.push(holdPosition, stop);

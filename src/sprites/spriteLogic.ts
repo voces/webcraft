@@ -155,8 +155,13 @@ const rightClick = (e: MouseEvent) => {
 
 window.addEventListener("keydown", (e) => {
 	if (!game.round) return;
+	console.log(e.key);
 
 	const hotkey = activeHotkeys.find((b) => b.hotkey === e.key);
+	console.log(
+		hotkey,
+		activeHotkeys.map((b) => b.hotkey),
+	);
 	if (!hotkey) return;
 
 	// if (typeof hotkey === "function") return hotkey();

@@ -10,6 +10,7 @@ import { panTo } from "../players/camera.js";
 const container = document.getElementById("hotkeys")!;
 
 const qwertySort = "qwertyuiopasdfghjklzxcvbnm".split("");
+qwertySort.push("Escape");
 
 const genNode = (action: Action) => {
 	const elem = document.createElement("div");
