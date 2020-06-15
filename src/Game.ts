@@ -11,6 +11,7 @@ import { Settings } from "./types.js";
 import { emptyElement } from "./util/html.js";
 import { Context } from "./Context.js";
 import { Network } from "./Network.js";
+import { UI } from "./ui/index.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -25,6 +26,11 @@ const gradient = (
 
 class Game {
 	private network: Network;
+	addNetworkListener: Network["addEventListener"];
+	connect: Network["connect"];
+
+	ui: UI;
+
 	localPlayer!: Player;
 	host?: Player;
 	players: Player[] = [];
@@ -54,8 +60,21 @@ class Game {
 
 	constructor(network: Network) {
 		emitter(this);
+
 		this.network = network;
+		this.addNetworkListener = this.network.addEventListener.bind(
+			this.network,
+		);
+		this.connect = this.network.connect.bind(this.network);
+
+		this.ui = new UI(this);
+
 		this.setArena(Math.floor(this.random() * arenas.length));
+	}
+
+	/* This should only be used by servers that need to rewrite bits. */
+	public get __UNSAFE_network() {
+		return this.network;
 	}
 
 	transmit<T extends Record<string, unknown>>(data: T): void {

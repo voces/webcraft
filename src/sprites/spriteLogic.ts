@@ -100,8 +100,8 @@ const leftClick = (e: MouseEvent) => {
 };
 
 setTimeout(() => {
-	const { game, network } = context;
-	network.addEventListener("build", (e) => {
+	const { game } = context;
+	game.addNetworkListener("build", (e) => {
 		const { x, y, time, connection, obstruction, builder } = e;
 
 		game.update({ time });
@@ -179,7 +179,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 setTimeout(() => {
-	context.network.addEventListener(
+	context.game.addNetworkListener(
 		"move",
 		({ time, connection, sprites, x, y }) => {
 			context.game.update({ time });
@@ -198,7 +198,7 @@ setTimeout(() => {
 		},
 	);
 
-	context.network.addEventListener(
+	context.game.addNetworkListener(
 		"attack",
 		({ time, connection, attackers, target: targetId }) => {
 			context.game.update({ time });
@@ -222,25 +222,22 @@ setTimeout(() => {
 		},
 	);
 
-	context.network.addEventListener(
-		"kill",
-		({ time, sprites, connection }) => {
-			context.game.update({ time });
+	context.game.addNetworkListener("kill", ({ time, sprites, connection }) => {
+		context.game.update({ time });
 
-			if (!context.game.round) return;
+		if (!context.game.round) return;
 
-			const player = context.game.round.players.find(
-				(p) => p.id === connection,
-			);
-			if (!player) return;
+		const player = context.game.round.players.find(
+			(p) => p.id === connection,
+		);
+		if (!player) return;
 
-			player.sprites
-				.filter((s) => sprites.includes(s.id))
-				.forEach((s) => s.kill());
-		},
-	);
+		player.sprites
+			.filter((s) => sprites.includes(s.id))
+			.forEach((s) => s.kill());
+	});
 
-	context.network.addEventListener(
+	context.game.addNetworkListener(
 		"holdPosition",
 		({ time, connection, sprites }) => {
 			context.game.update({ time });
@@ -259,26 +256,23 @@ setTimeout(() => {
 		},
 	);
 
-	context.network.addEventListener(
-		"stop",
-		({ time, connection, sprites }) => {
-			context.game.update({ time });
+	context.game.addNetworkListener("stop", ({ time, connection, sprites }) => {
+		context.game.update({ time });
 
-			if (!context.game.round) return;
+		if (!context.game.round) return;
 
-			const player = context.game.round.players.find(
-				(p) => p.id === connection,
-			);
-			if (!player) return;
+		const player = context.game.round.players.find(
+			(p) => p.id === connection,
+		);
+		if (!player) return;
 
-			player.sprites
-				.filter((s) => sprites.includes(s.id))
-				.filter(Unit.isUnit)
-				.forEach((s) => s.stop());
-		},
-	);
+		player.sprites
+			.filter((s) => sprites.includes(s.id))
+			.filter(Unit.isUnit)
+			.forEach((s) => s.stop());
+	});
 
-	context.network.addEventListener(
+	context.game.addNetworkListener(
 		"mirror",
 		({ time, connection, sprites }) => {
 			context.game.update({ time });

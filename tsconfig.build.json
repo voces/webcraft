@@ -12,14 +12,14 @@
 		"noImplicitThis": true,
 		"alwaysStrict": true,
 		"strictNullChecks": true,
-		"paths": { "*": [
-			"../node_modules/*/src/index",
-			"../node_modules/*/lib/index",
-			"../node_modules/*/index",
-			"../node_modules/*/dist/index"
-		] },
 		"esModuleInterop": true,
 		"types": [],
+		// "paths": { "*": [
+		// 	"../node_modules/*/src/index",
+		// 	"../node_modules/*/lib/index",
+		// 	"../node_modules/*/index",
+		// 	"../node_modules/*/dist/index"
+		// ] },
 		"declaration": true,
 		"sourceMap": true
 	},

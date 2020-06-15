@@ -6,11 +6,10 @@ import "./players/playerLogic.js";
 import "./sprites/spriteLogic.js";
 import "./players/camera.js";
 import "./ui/index.js";
-import { gameContext, networkContext } from "./superContext.js";
+import { gameContext } from "./superContext.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const network = ((globalThis as any).network = new Network());
-networkContext.set(network);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const game = ((globalThis as any).game = new Game(network));
@@ -19,7 +18,7 @@ gameContext.set(game);
 Object.assign(document.getElementById("arena")!, { x: 0, y: 0, scale: 1 });
 
 // We receive this upon connecting; the only state we get is the number of connections
-network.addEventListener(
+game.addNetworkListener(
 	"init",
 	({ connections, state: { players: inputPlayers, arena } }) => {
 		if (connections === 0) game.receivedState = "init";
@@ -30,7 +29,7 @@ network.addEventListener(
 	},
 );
 
-network.addEventListener("update", (e) => {
+game.addNetworkListener("update", (e) => {
 	game.update(e);
 });
 

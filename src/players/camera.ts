@@ -5,7 +5,7 @@ import { dragSelect } from "../sprites/dragSelect.js";
 import { registerCommand } from "../ui/chat.js";
 import { Round } from "../Round.js";
 import { Point } from "../pathing/PathingMap.js";
-import { context } from "../superContext.js";
+import { UI } from "../ui/index.js";
 
 type Direction = "right" | "left" | "down" | "up";
 
@@ -14,53 +14,26 @@ const ZOOM_SPEED = 1 / 500;
 
 const arena = document.getElementById("arena") as HTMLElement &
 	Point & { scale: number };
-const ui = document.getElementById("ui")!;
+const uiElem = document.getElementById("ui")!;
 let keyboard: Record<string, boolean> = {};
-const emptyMouse = () => ({
-	right: false,
-	left: false,
-	down: false,
-	up: false,
-});
-let mouse = emptyMouse();
+
+type Mouse = {
+	left: boolean;
+	right: boolean;
+	up: boolean;
+	down: boolean;
+};
+const emptyMouse = (mouse?: Mouse): Mouse => {
+	const empty = { right: false, left: false, down: false, up: false };
+	if (!mouse) return empty;
+	return Object.assign(mouse, empty);
+};
+const mouse = emptyMouse();
+
 let knownRound: Round;
 let requestedAnimationFrame: number | undefined;
 let pan: (PathTweener & { duration: number }) | undefined;
 let followInterval: number | undefined;
-
-window.addEventListener("keydown", (e) => {
-	if (e.key === "f" && e.ctrlKey) {
-		e.preventDefault();
-
-		if (followInterval) {
-			clearInterval(followInterval);
-			followInterval = undefined;
-		} else followInterval = setInterval(follow, 500);
-	}
-
-	if (!context.game.round) return;
-
-	if (knownRound !== context.game.round) {
-		keyboard = {};
-		lastRender = 0;
-	}
-
-	knownRound = context.game.round;
-
-	const key = e.key;
-	if (key.startsWith("Arrow") && !keyboard[e.key]) {
-		if (pan) pan = undefined;
-		keyboard[key] = true;
-		if (!requestedAnimationFrame) renderCamera();
-	}
-});
-
-window.addEventListener("keyup", (e) => {
-	if (!context.game.round || !keyboard) return;
-
-	const key = e.key;
-	if (key.startsWith("Arrow")) keyboard[key] = false;
-});
 
 const setMouseAndRender = (direction: Direction) => {
 	if (mouse[direction]) return;
@@ -68,29 +41,6 @@ const setMouseAndRender = (direction: Direction) => {
 	mouse[direction] = true;
 	renderCamera();
 };
-
-window.addEventListener("mousemove", (e) => {
-	if (e.target && e.target instanceof Element && ui.contains(e.target))
-		return (mouse = emptyMouse());
-
-	if (e.pageX > window.innerWidth / 2)
-		if (e.pageX > window.innerWidth - 64) setMouseAndRender("right");
-		else mouse.right = false;
-	else if (e.pageX < 64) setMouseAndRender("left");
-	else mouse.left = false;
-
-	if (e.pageY > window.innerHeight / 2)
-		if (e.pageY > window.innerHeight - 64) setMouseAndRender("down");
-		else mouse.down = false;
-	else if (e.pageY < 64) setMouseAndRender("up");
-	else mouse.up = false;
-});
-
-window.addEventListener("mouseout", (e) => {
-	if (e.relatedTarget) return;
-
-	mouse = emptyMouse();
-});
 
 const setScale = (scale: number) => {
 	const oldHeight = arena.clientHeight * arena.scale;
@@ -106,9 +56,62 @@ const setScale = (scale: number) => {
 		(arena.x += (oldWidth - arena.clientWidth * arena.scale) / 2) + "px";
 };
 
-window.addEventListener("wheel", (e) =>
-	setScale(arena.scale + e.deltaY * ZOOM_SPEED),
-);
+export const initCameraListeners = (ui: UI): void => {
+	ui.addEventListener("keyDown", ({ key, ctrlDown, game }) => {
+		if (key === "f" && ctrlDown) {
+			if (followInterval) {
+				clearInterval(followInterval);
+				followInterval = undefined;
+			} else followInterval = setInterval(follow, 500);
+		}
+
+		if (!game.round) return;
+
+		if (knownRound !== game.round) {
+			keyboard = {};
+			lastRender = 0;
+		}
+
+		knownRound = game.round;
+
+		if (key.startsWith("Arrow") && !keyboard[key]) {
+			if (pan) pan = undefined;
+			keyboard[key] = true;
+			if (!requestedAnimationFrame) renderCamera();
+		}
+	});
+
+	ui.addEventListener("keyUp", ({ key, game }) => {
+		if (!game.round || !keyboard) return;
+
+		if (key.startsWith("Arrow")) keyboard[key] = false;
+	});
+
+	ui.addEventListener("mouseMove", ({ target, x, y }) => {
+		if (target && target instanceof Element && uiElem.contains(target))
+			return emptyMouse(mouse);
+
+		if (x > window.innerWidth - 48) setMouseAndRender("right");
+		else if (x > window.innerWidth / 2) mouse.right = false;
+		else if (x > 48) mouse.left = false;
+		else setMouseAndRender("left");
+
+		if (y > window.innerHeight - 48) setMouseAndRender("down");
+		else if (y > window.innerHeight / 2) mouse.down = false;
+		else if (y > 48) mouse.up = false;
+		else setMouseAndRender("up");
+	});
+
+	ui.addEventListener("mouseOut", ({ relatedTarget }) => {
+		if (relatedTarget) return;
+
+		emptyMouse(mouse);
+	});
+
+	ui.addEventListener("wheel", ({ deltaY }) =>
+		setScale(arena.scale + deltaY * ZOOM_SPEED),
+	);
+};
 
 let lastRender: number | undefined = 0;
 const renderCamera = (time?: number) => {

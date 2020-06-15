@@ -114,7 +114,7 @@ export const appendErrorMessage = (markdown: string): void => {
 
 const maxLength = 256;
 setTimeout(() => {
-	context.network.addEventListener("chat", ({ connection, message }) => {
+	context.game.addNetworkListener("chat", ({ connection, message }) => {
 		message = message.slice(0, maxLength);
 
 		const player = context.game.players.find((p) => p.id === connection);

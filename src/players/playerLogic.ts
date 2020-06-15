@@ -7,7 +7,7 @@ import { context } from "../superContext.js";
 
 setTimeout(() => {
 	// Received when someone (including us) joins
-	context.network.addEventListener("connection", (data) => {
+	context.game.addNetworkListener("connection", (data) => {
 		const { game } = context;
 		game.random = alea(data.time.toString());
 
@@ -32,31 +32,28 @@ setTimeout(() => {
 	});
 
 	// Received when someone leaves
-	context.network.addEventListener(
-		"disconnection",
-		({ time, connection }) => {
-			context.game.update({ time });
+	context.game.addNetworkListener("disconnection", ({ time, connection }) => {
+		context.game.update({ time });
 
-			const playerIndex = context.game.players.findIndex(
-				(p) => p.id === connection,
-			);
-			if (playerIndex === -1) return;
-			const player = context.game.players[playerIndex];
+		const playerIndex = context.game.players.findIndex(
+			(p) => p.id === connection,
+		);
+		if (playerIndex === -1) return;
+		const player = context.game.players[playerIndex];
 
-			player.isHere = false;
+		player.isHere = false;
 
-			if (context.game.round) context.game.round.onPlayerLeave();
+		if (context.game.round) context.game.round.onPlayerLeave();
 
-			context.game.players.splice(playerIndex, 1);
+		context.game.players.splice(playerIndex, 1);
 
-			if (player.color) releaseColor(player.color);
+		if (player.color) releaseColor(player.color);
 
-			updateDisplay();
-		},
-	);
+		updateDisplay();
+	});
 
 	// Received by the the upon someone connecting after the round ends
-	context.network.addEventListener(
+	context.game.addNetworkListener(
 		"state",
 		({ time, state: { arena, players: inputPlayers } }) => {
 			context.game.update({ time });

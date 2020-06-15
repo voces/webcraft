@@ -4,11 +4,11 @@ import { context } from "../superContext.js";
 const elem = document.getElementById("waiting-splash")!;
 
 setTimeout(() => {
-	context.network.addEventListener("init", ({ connections }) => {
+	context.game.addNetworkListener("init", ({ connections }) => {
 		if (connections !== 0) elem.style.visibility = "visible";
 	});
 
-	context.network.addEventListener("state", () => {
+	context.game.addNetworkListener("state", () => {
 		elem.style.visibility = "hidden";
 	});
 });

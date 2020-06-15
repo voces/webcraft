@@ -39,7 +39,7 @@ const markInputInvalid = (input: HTMLInputElement, message: string) => {
 };
 
 const connect = (token: string) => {
-	context.network.connect(token);
+	context.game.connect(token);
 	login.style.visibility = "hidden";
 };
 
@@ -87,7 +87,7 @@ password.addEventListener("keydown", async (e: KeyboardEvent) => {
 		});
 
 		if (result.token) {
-			context.network.connect(result.token);
+			context.game.connect(result.token);
 			login.style.visibility = "hidden";
 			return;
 		}
