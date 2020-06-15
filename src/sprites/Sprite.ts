@@ -1,12 +1,12 @@
 import { PATHING_TYPES, WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { dragSelect } from "./dragSelect.js";
-import { game } from "../index.js";
 import { emitter, Emitter } from "../emitter.js";
 import { document } from "../util/globals.js";
 import { Player } from "../players/Player.js";
 import { Round } from "../Round.js";
 import { clone } from "../util/clone.js";
 import { Action } from "./spriteLogic.js";
+import { context } from "../superContext.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
@@ -104,7 +104,7 @@ class Sprite implements Emitter<SpriteEvents> {
 	}: SpriteProps) {
 		emitter<Sprite, SpriteEvents>(this);
 
-		const round = game.round;
+		const round = context.game.round;
 		if (!round)
 			throw new Error("trying to create a sprite outside a round");
 		this.round = round;
@@ -192,8 +192,11 @@ class Sprite implements Emitter<SpriteEvents> {
 
 		this._x = newX;
 		this._y = newY;
-		if (game.round && game.round.pathingMap.entities.has(this))
-			game.round.pathingMap.updateEntity(this);
+		if (
+			context.game.round &&
+			context.game.round.pathingMap.entities.has(this)
+		)
+			context.game.round.pathingMap.updateEntity(this);
 		this.facing = Math.atan2(this.y - yBefore, this.x - xBefore);
 	}
 
@@ -284,10 +287,10 @@ class Sprite implements Emitter<SpriteEvents> {
 			if (index >= 0) this.owner.sprites.splice(index, 1);
 		}
 
-		if (game.round) {
-			game.round.pathingMap.removeEntity(this);
-			const index = game.round.sprites.indexOf(this);
-			if (index >= 0) game.round.sprites.splice(index, 1);
+		if (context.game.round) {
+			context.game.round.pathingMap.removeEntity(this);
+			const index = context.game.round.sprites.indexOf(this);
+			if (index >= 0) context.game.round.sprites.splice(index, 1);
 		}
 
 		this.dispatchEvent("death");
@@ -302,7 +305,8 @@ class Sprite implements Emitter<SpriteEvents> {
 
 	remove() {
 		this.removeEventListeners();
-		if (game.round) game.round.pathingMap.removeEntity(this);
+		if (context.game.round)
+			context.game.round.pathingMap.removeEntity(this);
 
 		if (arenaElement.contains(this.elem))
 			arenaElement.removeChild(this.elem);

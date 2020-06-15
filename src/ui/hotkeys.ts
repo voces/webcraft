@@ -4,8 +4,8 @@ import { dragSelect } from "../sprites/dragSelect.js";
 import { defined } from "../types.js";
 import { Unit } from "../sprites/Unit.js";
 import { emptyElement } from "../util/html.js";
-import { game } from "../index.js";
 import { panTo } from "../players/camera.js";
+import { context } from "../superContext.js";
 
 const container = document.getElementById("hotkeys")!;
 
@@ -61,9 +61,11 @@ const center = {
 	handler: (): void => {
 		if (
 			dragSelect.selection.length === 0 &&
-			game.localPlayer.sprites.length
+			context.game.localPlayer.sprites.length
 		)
-			return dragSelect.setSelection([game.localPlayer.sprites[0]]);
+			return dragSelect.setSelection([
+				context.game.localPlayer.sprites[0],
+			]);
 
 		const { xSum, ySum } = dragSelect.selection.reduce(
 			({ xSum, ySum }, { x, y }) => ({ xSum: xSum + x, ySum: ySum + y }),

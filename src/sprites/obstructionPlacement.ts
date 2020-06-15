@@ -1,10 +1,10 @@
-import { game } from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { document, window } from "../util/globals.js";
 import { clientToWorld } from "../players/camera.js";
 import { appendErrorMessage } from "../ui/chat.js";
 import { Obstruction } from "./obstructions/index.js";
 import { emptyElement } from "../util/html.js";
+import { context } from "../superContext.js";
 
 let plannedObstruction: typeof Obstruction | undefined;
 let pathable: boolean;
@@ -48,7 +48,7 @@ const createCell = (pathable: boolean) => {
 
 // We shouldn't just nuke the cells
 const updateCells = () => {
-	if (!game.round || !plannedObstruction) return;
+	if (!context.game.round || !plannedObstruction) return;
 
 	const pathing = plannedObstruction.defaults.requiresPathing;
 	const radius = plannedObstruction.defaults.radius;
@@ -64,10 +64,10 @@ const updateCells = () => {
 	// xStartLast = xStart;
 	// yStartLast = yStart;
 
-	const unit = game.localPlayer.unit;
+	const unit = context.game.localPlayer.unit;
 	if (!unit) return;
 
-	game.round.pathingMap.withoutEntity(unit, () => {
+	context.game.round.pathingMap.withoutEntity(unit, () => {
 		const xFinal = xStart + radius * 2;
 		const yFinal = yStart + radius * 2;
 
@@ -152,7 +152,7 @@ window.addEventListener("mousemove", (e) => {
 
 export const start = (obstruction: typeof Obstruction): void => {
 	if (obstruction.defaults.cost) {
-		const check = game.localPlayer.checkResources(
+		const check = context.game.localPlayer.checkResources(
 			obstruction.defaults.cost,
 		);
 		if (check.length) {

@@ -9,9 +9,8 @@ import { ResourceMap } from "../../types.js";
 import { Player } from "../../players/Player.js";
 import { Unit, UnitProps } from "../Unit.js";
 import { Action } from "../spriteLogic.js";
-import { game } from "../../index.js";
 import { dragSelect } from "../dragSelect.js";
-import { network } from "../../network.js";
+import { context } from "../../superContext.js";
 
 const destroySelf = {
 	name: "Destroy box",
@@ -20,6 +19,7 @@ const destroySelf = {
 	type: "custom" as const,
 	handler: (): void => {
 		// Get currently selected boxes
+		const game = context.game;
 		const obstructions = dragSelect.selection.filter(
 			(s) => s.owner === game.localPlayer && Obstruction.isObstruction,
 		);
@@ -29,7 +29,7 @@ const destroySelf = {
 		if (playerCrosser) dragSelect.setSelection([playerCrosser]);
 
 		// Kill selected obstructions
-		network.send({
+		game.transmit({
 			type: "kill",
 			sprites: obstructions.map((u) => u.id),
 		});

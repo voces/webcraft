@@ -1,7 +1,7 @@
-import { game } from "../index.js";
 import { document } from "../util/globals.js";
 import { Player } from "./Player.js";
 import { emptyElement } from "../util/html.js";
+import { context } from "../superContext.js";
 
 // Formula taken from
 // https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/
@@ -61,7 +61,7 @@ const container = document.getElementById("scores")!;
 export const updateDisplay = (): void => {
 	emptyElement(container);
 
-	game.players.forEach((player) => {
+	context.game.players.forEach((player) => {
 		const playerName = document.createElement("span");
 		playerName.textContent = player.username;
 		if (player.color?.hex) playerName.style.color = player.color?.hex;
@@ -74,7 +74,7 @@ export const updateDisplay = (): void => {
 		container.appendChild(plays);
 
 		const score = document.createElement("span");
-		score.textContent = player.score[game.settings.mode].toFixed(0);
+		score.textContent = player.score[context.game.settings.mode].toFixed(0);
 		score.classList.add("score");
 		container.appendChild(score);
 	});

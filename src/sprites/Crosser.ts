@@ -2,7 +2,6 @@ import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { tweenPoints } from "../util/tweenPoints.js";
 import { Unit, UnitProps } from "./Unit.js";
 import { dragSelect } from "./dragSelect.js";
-import { game } from "../index.js";
 import {
 	stop as stopPlacement,
 	active as activePlacement,
@@ -24,7 +23,7 @@ import {
 } from "./obstructions/index.js";
 import { Blueprint } from "./obstructions/Blueprint.js";
 import { Action } from "./spriteLogic.js";
-import { network } from "../network.js";
+import { context } from "../superContext.js";
 
 const destroyLastBox = {
 	name: "Destroy box",
@@ -32,13 +31,14 @@ const destroyLastBox = {
 	hotkey: "x" as const,
 	type: "custom" as const,
 	handler: (): void => {
+		const game = context.game;
 		const crosser = game.localPlayer.unit;
 		if (!crosser || !Crosser.isCrosser(crosser)) return;
 		const obstructions = [...crosser.obstructions];
 		while (obstructions.length) {
 			const obstruction = obstructions.pop();
 			if (obstruction && obstruction.health > 0) {
-				network.send({
+				game.transmit({
 					type: "kill",
 					sprites: [obstruction.id],
 				});
@@ -82,7 +82,7 @@ export class Crosser extends Unit {
 		let renderProgress = 0;
 		let path = tweenPoints(this.round.pathingMap.path(this, target));
 		const blueprint =
-			this.owner === game.localPlayer
+			this.owner === context.game.localPlayer
 				? new Blueprint({
 						...target,
 						radius: ObstructionClass.defaults.radius,
@@ -191,10 +191,10 @@ export class Crosser extends Unit {
 			if (index >= 0) this.owner.sprites.splice(index, 1);
 		}
 
-		if (game.round) {
-			game.round.pathingMap.removeEntity(this);
-			const index = game.round.sprites.indexOf(this);
-			if (index >= 0) game.round.sprites.splice(index, 1);
+		if (context.game.round) {
+			context.game.round.pathingMap.removeEntity(this);
+			const index = context.game.round.sprites.indexOf(this);
+			if (index >= 0) context.game.round.sprites.splice(index, 1);
 		}
 
 		// Cancel any active placements

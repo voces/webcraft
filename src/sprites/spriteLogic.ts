@@ -1,5 +1,3 @@
-import { game } from "../index.js";
-import { network } from "../network.js";
 import { dragSelect } from "./dragSelect.js";
 import {
 	active as activeObstructionPlacement,
@@ -17,8 +15,9 @@ import { Defender } from "./Defender.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
 import { obstructionMap } from "./obstructions/index.js";
 import { activeHotkeys } from "../ui/hotkeys.js";
+import { context } from "../superContext.js";
 
-const isOwn = (u: Sprite) => u.owner === game.localPlayer;
+const isOwn = (u: Sprite) => u.owner === context.game.localPlayer;
 
 export type Action = {
 	description?: string;
@@ -65,7 +64,7 @@ export type Action = {
 );
 
 window.addEventListener("mousedown", (e) => {
-	if (!game.round) return;
+	if (!context.game.round) return;
 
 	if (e.button === 2 || e.ctrlKey) return rightClick(e);
 	if (e.button === 0) leftClick(e);
@@ -73,6 +72,7 @@ window.addEventListener("mousedown", (e) => {
 
 const leftClick = (e: MouseEvent) => {
 	if (!obstructionPlacementValid()) return;
+	const game = context.game;
 	const obstruction = activeObstructionPlacement()!;
 
 	const { x: xWorld, y: yWorld } = clientToWorld({
@@ -90,7 +90,7 @@ const leftClick = (e: MouseEvent) => {
 
 	if (!builder) return;
 
-	network.send({
+	game.transmit({
 		type: "build",
 		builder: builder.id,
 		x,
@@ -99,25 +99,29 @@ const leftClick = (e: MouseEvent) => {
 	});
 };
 
-network.addEventListener("build", (e) => {
-	const { x, y, time, connection, obstruction, builder } = e;
+setTimeout(() => {
+	const { game, network } = context;
+	network.addEventListener("build", (e) => {
+		const { x, y, time, connection, obstruction, builder } = e;
 
-	game.update({ time });
+		game.update({ time });
 
-	if (!game.round) return;
+		if (!game.round) return;
 
-	const player = game.round.players.find((p) => p.id === connection);
-	if (!player) return;
+		const player = game.round.players.find((p) => p.id === connection);
+		if (!player) return;
 
-	const unit = player.sprites.find(
-		(s) => s.id === builder && s instanceof Crosser,
-	);
-	if (!unit || !Crosser.isCrosser(unit)) return;
+		const unit = player.sprites.find(
+			(s) => s.id === builder && s instanceof Crosser,
+		);
+		if (!unit || !Crosser.isCrosser(unit)) return;
 
-	unit.buildAt({ x, y }, obstructionMap[obstruction]);
+		unit.buildAt({ x, y }, obstructionMap[obstruction]);
+	});
 });
 
 const rightClick = (e: MouseEvent) => {
+	const game = context.game;
 	const { x, y } = clientToWorld({ x: e.clientX, y: e.clientY });
 
 	const ownedSprites = dragSelect.selection.filter(isOwn);
@@ -138,9 +142,10 @@ const rightClick = (e: MouseEvent) => {
 			else toMove.push(unit.id);
 	});
 
-	if (toMove.length) network.send({ type: "move", sprites: toMove, x, y });
+	if (toMove.length) game.transmit({ type: "move", sprites: toMove, x, y });
+
 	if (toAttack.length)
-		network.send({
+		game.transmit({
 			type: "attack",
 			attackers: toAttack,
 			x,
@@ -154,14 +159,9 @@ const rightClick = (e: MouseEvent) => {
 };
 
 window.addEventListener("keydown", (e) => {
-	if (!game.round) return;
-	console.log(e.key);
+	if (!context.game.round) return;
 
 	const hotkey = activeHotkeys.find((b) => b.hotkey === e.key);
-	console.log(
-		hotkey,
-		activeHotkeys.map((b) => b.hotkey),
-	);
 	if (!hotkey) return;
 
 	// if (typeof hotkey === "function") return hotkey();
@@ -169,98 +169,131 @@ window.addEventListener("keydown", (e) => {
 
 	if (hotkey.type === "build") {
 		const ownerCrossers = dragSelect.selection.filter(
-			(u) => u.owner === game.localPlayer && u.constructor === Crosser,
+			(u) =>
+				u.owner === context.game.localPlayer &&
+				u.constructor === Crosser,
 		);
 
 		if (ownerCrossers.length) showObstructionPlacement(hotkey.obstruction);
 	}
 });
 
-network.addEventListener("move", ({ time, connection, sprites, x, y }) => {
-	game.update({ time });
+setTimeout(() => {
+	context.network.addEventListener(
+		"move",
+		({ time, connection, sprites, x, y }) => {
+			context.game.update({ time });
 
-	if (!game.round) return;
+			if (!context.game.round) return;
 
-	const player = game.round.players.find((p) => p.id === connection);
-	if (!player) return;
+			const player = context.game.round.players.find(
+				(p) => p.id === connection,
+			);
+			if (!player) return;
 
-	player.sprites
-		.filter((s) => sprites.includes(s.id))
-		.filter(Unit.isUnit)
-		.forEach((s) => s.walkTo({ x, y }));
-});
+			player.sprites
+				.filter((s) => sprites.includes(s.id))
+				.filter(Unit.isUnit)
+				.forEach((s) => s.walkTo({ x, y }));
+		},
+	);
 
-network.addEventListener(
-	"attack",
-	({ time, connection, attackers, target: targetId }) => {
-		game.update({ time });
+	context.network.addEventListener(
+		"attack",
+		({ time, connection, attackers, target: targetId }) => {
+			context.game.update({ time });
 
-		if (!game.round) return;
+			if (!context.game.round) return;
 
-		const player = game.round.players.find((p) => p.id === connection);
-		if (!player) return;
+			const player = context.game.round.players.find(
+				(p) => p.id === connection,
+			);
+			if (!player) return;
 
-		const target = game.round.sprites.find((s) => s.id === targetId);
-		if (!target) return;
+			const target = context.game.round.sprites.find(
+				(s) => s.id === targetId,
+			);
+			if (!target) return;
 
-		player.sprites
-			.filter((s) => attackers.includes(s.id))
-			.filter(Defender.isDefender)
-			.forEach((s) => s.attack(target));
-	},
-);
+			player.sprites
+				.filter((s) => attackers.includes(s.id))
+				.filter(Defender.isDefender)
+				.forEach((s) => s.attack(target));
+		},
+	);
 
-network.addEventListener("kill", ({ time, sprites, connection }) => {
-	game.update({ time });
+	context.network.addEventListener(
+		"kill",
+		({ time, sprites, connection }) => {
+			context.game.update({ time });
 
-	if (!game.round) return;
+			if (!context.game.round) return;
 
-	const player = game.round.players.find((p) => p.id === connection);
-	if (!player) return;
+			const player = context.game.round.players.find(
+				(p) => p.id === connection,
+			);
+			if (!player) return;
 
-	player.sprites
-		.filter((s) => sprites.includes(s.id))
-		.forEach((s) => s.kill());
-});
+			player.sprites
+				.filter((s) => sprites.includes(s.id))
+				.forEach((s) => s.kill());
+		},
+	);
 
-network.addEventListener("holdPosition", ({ time, connection, sprites }) => {
-	game.update({ time });
+	context.network.addEventListener(
+		"holdPosition",
+		({ time, connection, sprites }) => {
+			context.game.update({ time });
 
-	if (!game.round) return;
+			if (!context.game.round) return;
 
-	const player = game.round.players.find((p) => p.id === connection);
-	if (!player) return;
+			const player = context.game.round.players.find(
+				(p) => p.id === connection,
+			);
+			if (!player) return;
 
-	player.sprites
-		.filter((s) => sprites.includes(s.id))
-		.filter(Unit.isUnit)
-		.forEach((s) => s.holdPosition());
-});
+			player.sprites
+				.filter((s) => sprites.includes(s.id))
+				.filter(Unit.isUnit)
+				.forEach((s) => s.holdPosition());
+		},
+	);
 
-network.addEventListener("stop", ({ time, connection, sprites }) => {
-	game.update({ time });
+	context.network.addEventListener(
+		"stop",
+		({ time, connection, sprites }) => {
+			context.game.update({ time });
 
-	if (!game.round) return;
+			if (!context.game.round) return;
 
-	const player = game.round.players.find((p) => p.id === connection);
-	if (!player) return;
+			const player = context.game.round.players.find(
+				(p) => p.id === connection,
+			);
+			if (!player) return;
 
-	player.sprites
-		.filter((s) => sprites.includes(s.id))
-		.filter(Unit.isUnit)
-		.forEach((s) => s.stop());
-});
+			player.sprites
+				.filter((s) => sprites.includes(s.id))
+				.filter(Unit.isUnit)
+				.forEach((s) => s.stop());
+		},
+	);
 
-network.addEventListener("mirror", ({ time, connection, sprites }) => {
-	game.update({ time });
+	context.network.addEventListener(
+		"mirror",
+		({ time, connection, sprites }) => {
+			context.game.update({ time });
 
-	if (!game.round) return;
+			if (!context.game.round) return;
 
-	const player = game.round.players.find((p) => p.id === connection);
-	if (!player) return;
+			const player = context.game.round.players.find(
+				(p) => p.id === connection,
+			);
+			if (!player) return;
 
-	player.sprites
-		.filter((s) => sprites.includes(s.id))
-		.filter(Defender.isDefender)
-		.forEach((s) => s.mirror());
+			player.sprites
+				.filter((s) => sprites.includes(s.id))
+				.filter(Defender.isDefender)
+				.forEach((s) => s.mirror());
+		},
+	);
 });

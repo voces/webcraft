@@ -4,10 +4,11 @@ import {
 	take as takeColor,
 	Color,
 } from "./colors.js";
-import { game } from "../index.js";
 import { ResourceMap, resourceKeys, Resource } from "../types.js";
 import { Unit } from "../sprites/Unit.js";
 import { Sprite } from "../sprites/Sprite.js";
+import { context } from "../superContext.js";
+import { Game } from "../Game.js";
 
 export interface PlayerState {
 	color: number | undefined;
@@ -20,6 +21,7 @@ export interface PlayerState {
 }
 
 export class Player {
+	game: Game;
 	score = {
 		bulldog: 1000,
 	};
@@ -32,7 +34,8 @@ export class Player {
 	color?: Color;
 	unit?: Unit;
 
-	constructor(data: Partial<Player>) {
+	constructor({ game, ...data }: Partial<Player> & { game: Game }) {
+		this.game = game;
 		Object.assign(this, data);
 
 		if (!data.username || parseInt(data.username) === data.id)
@@ -59,9 +62,9 @@ export class Player {
 	}
 
 	get enemies(): Player[] {
-		if (!game.round) return [];
-		const isCrosser = game.round.crossers.includes(this);
-		return isCrosser ? game.round.defenders : game.round.crossers;
+		if (!this.game.round) return [];
+		const isCrosser = this.game.round.crossers.includes(this);
+		return isCrosser ? this.game.round.defenders : this.game.round.crossers;
 	}
 
 	getEnemySprites(): Sprite[] {
@@ -82,8 +85,8 @@ export class Player {
 export const patchInState = (playersState: PlayerState[]): void => {
 	playersState.forEach(({ color, id, ...playerData }) => {
 		const player =
-			game.players.find((p) => p.id === id) ||
-			new Player({ ...playerData, id });
+			context.game.players.find((p) => p.id === id) ||
+			new Player({ ...playerData, id, game: context.game });
 
 		if (color && (!player.color || player.color.index !== color)) {
 			if (player.color) releaseColor(player.color);
@@ -92,5 +95,5 @@ export const patchInState = (playersState: PlayerState[]): void => {
 
 		player.score = playerData.score;
 	});
-	game.players.sort((a, b) => a.id - b.id);
+	context.game.players.sort((a, b) => a.id - b.id);
 };

@@ -1,5 +1,6 @@
-import { network, fetch as rawFetch } from "../network.js";
+import { fetch as rawFetch } from "../Network.js";
 import { document } from "../util/globals.js";
+import { context } from "../superContext.js";
 
 const login = <HTMLFormElement>document.getElementById("login");
 const username = <HTMLInputElement>document.getElementById("login-name");
@@ -38,7 +39,7 @@ const markInputInvalid = (input: HTMLInputElement, message: string) => {
 };
 
 const connect = (token: string) => {
-	network.connect(token);
+	context.network.connect(token);
 	login.style.visibility = "hidden";
 };
 
@@ -86,7 +87,7 @@ password.addEventListener("keydown", async (e: KeyboardEvent) => {
 		});
 
 		if (result.token) {
-			network.connect(result.token);
+			context.network.connect(result.token);
 			login.style.visibility = "hidden";
 			return;
 		}

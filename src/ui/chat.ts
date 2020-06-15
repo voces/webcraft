@@ -1,9 +1,8 @@
-import { network } from "../network.js";
-import { game } from "../index.js";
 import { document, window } from "../util/globals.js";
 import { marked } from "../lib/marked.js";
 import { toggleDebugging } from "../pathing/PathingMap.js";
 import { emptyElement } from "../util/html.js";
+import { context } from "../superContext.js";
 
 type Command = {
 	name: string;
@@ -38,7 +37,10 @@ class Chat {
 		chatInputContainer.style.visibility = "hidden";
 		const message = chatInput.value;
 		if (message.length) {
-			network.send({ type: "chat", message: chatInput.value });
+			context.game.transmit({
+				type: "chat",
+				message: chatInput.value,
+			});
 			chatInput.value = "";
 			chatInputSuggestion.value = "";
 		}
@@ -111,14 +113,16 @@ export const appendErrorMessage = (markdown: string): void => {
 };
 
 const maxLength = 256;
-network.addEventListener("chat", ({ connection, message }) => {
-	message = message.slice(0, maxLength);
+setTimeout(() => {
+	context.network.addEventListener("chat", ({ connection, message }) => {
+		message = message.slice(0, maxLength);
 
-	const player = game.players.find((p) => p.id === connection);
-	if (!player) return;
+		const player = context.game.players.find((p) => p.id === connection);
+		if (!player) return;
 
-	const playerTag = `<span style="color: ${player.color?.hex}">${player.username}</span>`;
-	appendMessage(`${playerTag}: ${message}`);
+		const playerTag = `<span style="color: ${player.color?.hex}">${player.username}</span>`;
+		appendMessage(`${playerTag}: ${message}`);
+	});
 });
 
 const onCommandInput = (text: string) => {

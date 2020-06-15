@@ -1,11 +1,8 @@
-import { emitter } from "./emitter.js";
-import { game } from "./index.js";
+import { emitter, Emitter } from "./emitter.js";
 import { newPingMessage } from "./ui/ping.js";
 import { location } from "./util/globals.js";
 import { obstructionMap } from "./sprites/obstructions/index.js";
 import { Game } from "./Game.js";
-
-let connection: WebSocket;
 
 export const activeHost = location.port
 	? `${location.hostname}:${8080}`
@@ -110,39 +107,67 @@ const networkEvents = {
 };
 /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
 
-const host = {
-	send: <T extends Record<string, unknown>>(data: T) =>
-		connection.send(
+class Network {
+	private connection?: WebSocket;
+	private localPlayerId?: number;
+
+	constructor() {
+		emitter(this);
+	}
+
+	send<T extends Record<string, unknown>>(data: T): void {
+		if (!this.connection) {
+			throw new Error("Network has not been connected");
+		}
+
+		this.connection.send(
 			JSON.stringify(Object.assign(data, { sent: performance.now() })),
-		),
-	connect: (token: string) => {
-		connection = new WebSocket(
+		);
+	}
+
+	connect(token: string): void {
+		this.connection = new WebSocket(
 			`ws://${activeHost}?${encodeURIComponent(token)}`,
 		);
 
-		connection.addEventListener("message", (message) => {
-			const json = JSON.parse(message.data);
+		this.connection.addEventListener("message", (message) =>
+			this.onMessage(message),
+		);
+	}
 
-			if (game.localPlayer && game.localPlayer.id === json.connection)
-				newPingMessage({
-					type: json.type,
-					ping: performance.now() - json.sent,
-				});
+	onMessage(message: MessageEvent) {
+		const json = JSON.parse(message.data);
 
-			if (typeof json.type === "string" && json.type.length) {
-				if (!(json.type in networkEvents))
-					console.warn("untyped event", json);
+		if (this.localPlayerId === json.connection)
+			newPingMessage({
+				type: json.type,
+				ping: performance.now() - json.sent,
+			});
 
-				network.dispatchEvent(json.type, json);
-			}
-		});
-	},
-	get isHost() {
-		return !connection;
-	},
-};
+		if (typeof json.type === "string" && json.type.length) {
+			if (!(json.type in networkEvents))
+				console.warn("untyped event", json);
 
-export const network = emitter<typeof host, typeof networkEvents>(host);
+			if (json.type === "connection") this.onConnection(json);
+
+			this.dispatchEvent(json.type, json);
+		}
+	}
+
+	private onConnection(message: ConnectionEvent) {
+		if (this.localPlayerId === undefined && !this.isHost)
+			this.localPlayerId = message.connection;
+	}
+
+	get isHost(): boolean {
+		return !this.connection;
+	}
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface Network extends Emitter<typeof networkEvents> {}
+
+export { Network };
 
 const wrappedFetch = <T>(
 	url: string,

@@ -9,6 +9,8 @@ import { Arena } from "./arenas/types.js";
 import { alea } from "./lib/alea.js";
 import { Settings } from "./types.js";
 import { emptyElement } from "./util/html.js";
+import { Context } from "./Context.js";
+import { Network } from "./Network.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -22,6 +24,7 @@ const gradient = (
 	}), rgba(0,128,0,${(10 - second) * 0.1}))`;
 
 class Game {
+	private network: Network;
 	localPlayer!: Player;
 	host?: Player;
 	players: Player[] = [];
@@ -49,9 +52,18 @@ class Game {
 		},
 	};
 
-	constructor() {
+	constructor(network: Network) {
 		emitter(this);
+		this.network = network;
 		this.setArena(Math.floor(this.random() * arenas.length));
+	}
+
+	transmit<T extends Record<string, unknown>>(data: T): void {
+		this.network.send(data);
+	}
+
+	get isHost(): boolean {
+		return this.network.isHost;
 	}
 
 	setArena(arenaIndex: number) {
@@ -191,6 +203,7 @@ class Game {
 			time,
 			settings: this.settings,
 			players: this.players,
+			game: this,
 		});
 	}
 
@@ -230,5 +243,7 @@ type GameEvents = {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Game extends Emitter<GameEvents> {}
+
+export const gameContext = new Context<Game>();
 
 export { Game };

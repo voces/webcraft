@@ -1,8 +1,6 @@
-import { network } from "../network.js";
 import { dragSelect } from "./dragSelect.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { tweenPoints } from "../util/tweenPoints.js";
-import { game } from "../index.js";
 import { Sprite, SpriteProps, SpriteEvents } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
@@ -14,12 +12,14 @@ import {
 	active as activeObstructionPlacement,
 	stop as hideObstructionPlacement,
 } from "./obstructionPlacement.js";
+import { context } from "../superContext.js";
 
 const holdPosition = {
 	name: "Hold Position",
 	hotkey: "h" as const,
 	type: "custom" as const,
 	handler: (): void => {
+		const game = context.game;
 		if (!game.round) return;
 
 		const ownedUnits = dragSelect.selection.filter(
@@ -27,7 +27,7 @@ const holdPosition = {
 				u.owner === game.localPlayer && Unit.isUnit(u) && u.speed > 0,
 		);
 
-		network.send({
+		game.transmit({
 			type: "holdPosition",
 			sprites: ownedUnits.map((u) => u.id),
 		});
@@ -39,13 +39,14 @@ const stop = {
 	hotkey: "s" as const,
 	type: "custom" as const,
 	handler: (): void => {
+		const game = context.game;
 		if (!game.round) return;
 
 		const ownedUnits = dragSelect.selection.filter(
 			(u) => u.owner === game.localPlayer && Unit.isUnit(u),
 		);
 
-		network.send({
+		game.transmit({
 			type: "stop",
 			sprites: ownedUnits.map((u) => u.id),
 		});
@@ -122,9 +123,9 @@ class Unit extends Sprite {
 
 		if (
 			this.isIllusion &&
-			game.localPlayer &&
-			game.localPlayer.unit &&
-			this.round.defenders.includes(game.localPlayer)
+			context.game.localPlayer &&
+			context.game.localPlayer.unit &&
+			this.round.defenders.includes(context.game.localPlayer)
 		)
 			this.elem.style.backgroundImage =
 				"radial-gradient(rgba(0, 0, 255, 0.75), rgba(0, 0, 255, 0.75))";

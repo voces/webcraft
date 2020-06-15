@@ -1,9 +1,9 @@
-import { game } from "../index.js";
 import { active } from "./obstructionPlacement.js";
 import { swallow } from "../util/swallow.js";
 import { emitter } from "../emitter.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
 import DragSelectClass from "../lib/DragSelect.js";
+import { context } from "../superContext.js";
 
 let allSelectables: SpriteElement[] | undefined;
 
@@ -60,7 +60,7 @@ if (typeof window !== "undefined")
 			onDragMove: () => {
 				if (allSelectables) return;
 				allSelectables = [...internalDragSelect.getSelectables()];
-				const localPlayer = game.localPlayer;
+				const localPlayer = context.game.localPlayer;
 				internalDragSelect.setSelectables(
 					allSelectables.filter(
 						(s) => s.sprite.owner === localPlayer,

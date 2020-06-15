@@ -4,19 +4,19 @@ import { TILE_TYPES, TileType } from "./constants.js";
 import { Crosser } from "./sprites/Crosser.js";
 import { Defender } from "./sprites/Defender.js";
 import { dragSelect } from "./sprites/dragSelect.js";
-import { game } from "./index.js";
 import { elo, updateDisplay } from "./players/elo.js";
 import { emitter, Emitter } from "./emitter.js";
 import { panTo } from "./players/camera.js";
 import { Player } from "./players/Player.js";
 import { colors } from "./players/colors.js";
-import { network } from "./network.js";
 import { requestAnimationFrame, cancelAnimationFrame } from "./util/globals.js";
 import { Resource } from "./sprites/obstructions/index.js";
 import { Settings, teamKeys, resourceKeys } from "./types.js";
 import { Arena } from "./arenas/types.js";
 import { Unit } from "./sprites/Unit.js";
 import { Sprite } from "./sprites/Sprite.js";
+import { context } from "./superContext.js";
+import { Game } from "./Game.js";
 
 let placeholderPlayer: Player;
 
@@ -36,6 +36,7 @@ type Timeout = {
 
 // A round starts upon construction
 class Round {
+	game: Game;
 	players: Player[];
 	crossers: Player[] = [];
 	defenders: Player[] = [];
@@ -60,13 +61,17 @@ class Round {
 		time,
 		settings,
 		players,
+		game,
 	}: {
 		time: number;
 		settings: Settings;
 		players: Player[];
+		game: Game;
 	}) {
-		if (!game.round) game.round = this;
 		emitter(this);
+		this.game = game;
+		// We set this for downstream constructor logic
+		this.game.round = this;
 		this.lastUpdate = time;
 		this.lastRender = Date.now() / 1000;
 		this.settings = settings;
@@ -84,6 +89,7 @@ class Round {
 				color: colors.white,
 				id: -1,
 				score: { bulldog: 800 },
+				game,
 			});
 
 		this.pickTeams();
@@ -101,7 +107,7 @@ class Round {
 			const low = remaining.filter((p) => p.crosserPlays === lowPlays);
 
 			const player = low.splice(
-				Math.floor(game.random() * low.length),
+				Math.floor(context.game.random() * low.length),
 				1,
 			)[0];
 			remaining.splice(remaining.indexOf(player), 1);
@@ -141,8 +147,8 @@ class Round {
 		// Place it
 		let maxTries = 8192;
 		while (--maxTries) {
-			const xRand = game.random() * this.pathingMap.widthWorld;
-			const yRand = game.random() * this.pathingMap.heightWorld;
+			const xRand = context.game.random() * this.pathingMap.widthWorld;
+			const yRand = context.game.random() * this.pathingMap.heightWorld;
 
 			if (
 				this.arena.tiles[Math.floor(yRand)][Math.floor(xRand)] !==
@@ -167,7 +173,7 @@ class Round {
 		if (!maxTries) console.error("Exhausted placement attempts");
 
 		// Select + pan to it
-		if (player === game.localPlayer) {
+		if (player === context.game.localPlayer) {
 			dragSelect.setSelection([unit]);
 			panTo(unit);
 		}
@@ -197,25 +203,28 @@ class Round {
 
 	end(): void {
 		elo({
-			mode: game.settings.mode,
+			mode: context.game.settings.mode,
 			crossers: this.crossers,
 			defenders: this.defenders,
 			scores: this.scores,
 		});
 
-		const placeholderIndex = game.players.indexOf(placeholderPlayer);
-		if (placeholderIndex >= 0) game.players.splice(placeholderIndex, 1);
+		const placeholderIndex = context.game.players.indexOf(
+			placeholderPlayer,
+		);
+		if (placeholderIndex >= 0)
+			context.game.players.splice(placeholderIndex, 1);
 
-		if (game.newPlayers) {
-			game.newPlayers = false;
-			game.receivedState = false;
+		if (context.game.newPlayers) {
+			context.game.newPlayers = false;
+			context.game.receivedState = false;
 
-			if (network.isHost)
-				network.send({
+			if (this.game.isHost)
+				this.game.transmit({
 					type: "state",
-					state: game,
+					state: context.game,
 				});
-		} else game.lastRoundEnd = game.lastUpdate;
+		} else context.game.lastRoundEnd = context.game.lastUpdate;
 
 		this.setTimeout(() => {
 			[...this.sprites].forEach((sprite) => sprite.kill());
@@ -224,7 +233,7 @@ class Round {
 
 			this.setTimeout(() => {
 				this.removeEventListeners();
-				game.round = undefined;
+				context.game.round = undefined;
 			}, 0.25);
 		}, 1);
 	}
@@ -268,7 +277,7 @@ class Round {
 	onPlayerLeave(/* player: Player */) {
 		if (this.players.some((player) => player.isHere)) return;
 
-		game.round = undefined;
+		context.game.round = undefined;
 	}
 
 	updateSprites(delta: number) {

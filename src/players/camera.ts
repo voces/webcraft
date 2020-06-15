@@ -1,4 +1,3 @@
-import { game } from "../index.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
 import { tweenPoints, PathTweener } from "../util/tweenPoints.js";
 import { document, requestAnimationFrame, window } from "../util/globals.js";
@@ -6,6 +5,7 @@ import { dragSelect } from "../sprites/dragSelect.js";
 import { registerCommand } from "../ui/chat.js";
 import { Round } from "../Round.js";
 import { Point } from "../pathing/PathingMap.js";
+import { context } from "../superContext.js";
 
 type Direction = "right" | "left" | "down" | "up";
 
@@ -38,14 +38,14 @@ window.addEventListener("keydown", (e) => {
 		} else followInterval = setInterval(follow, 500);
 	}
 
-	if (!game.round) return;
+	if (!context.game.round) return;
 
-	if (knownRound !== game.round) {
+	if (knownRound !== context.game.round) {
 		keyboard = {};
 		lastRender = 0;
 	}
 
-	knownRound = game.round;
+	knownRound = context.game.round;
 
 	const key = e.key;
 	if (key.startsWith("Arrow") && !keyboard[e.key]) {
@@ -56,7 +56,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 window.addEventListener("keyup", (e) => {
-	if (!game.round || !keyboard) return;
+	if (!context.game.round || !keyboard) return;
 
 	const key = e.key;
 	if (key.startsWith("Arrow")) keyboard[key] = false;
