@@ -1,33 +1,14 @@
 import { Network, activeHost } from "./network.js";
 import { Game } from "./Game.js";
 import { document, window } from "./util/globals.js";
-import { patchInState } from "./players/Player.js";
-import "./players/camera.js";
-import "./ui/index.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const network = ((globalThis as any).network = new Network());
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const game = ((globalThis as any).game = new Game(network));
+(globalThis as any).game = new Game(network);
 
 Object.assign(document.getElementById("arena")!, { x: 0, y: 0, scale: 1 });
-
-// We receive this upon connecting; the only state we get is the number of connections
-game.addNetworkListener(
-	"init",
-	({ connections, state: { players: inputPlayers, arena } }) => {
-		if (connections === 0) game.receivedState = "init";
-
-		game.setArena(arena);
-
-		patchInState(game, inputPlayers);
-	},
-);
-
-game.addNetworkListener("update", (e) => {
-	game.update(e);
-});
 
 window.addEventListener("contextmenu", (e: Event) => {
 	e.preventDefault();

@@ -4,12 +4,12 @@ import { TILE_NAMES } from "./constants.js";
 import { panTo } from "./players/camera.js";
 import { emitter, Emitter } from "./emitter.js";
 import { document } from "./util/globals.js";
-import { Player } from "./players/Player.js";
+import { Player, patchInState } from "./players/Player.js";
 import { Arena } from "./arenas/types.js";
 import { alea } from "./lib/alea.js";
 import { Settings } from "./types.js";
 import { emptyElement } from "./util/html.js";
-import { Network } from "./Network.js";
+import { Network, NetworkEvents } from "./Network.js";
 import { UI } from "./ui/index.js";
 import { initObstructionPlacement } from "./sprites/obstructionPlacement.js";
 import { initPlayerLogic } from "./players/playerLogic.js";
@@ -68,6 +68,8 @@ class Game {
 			this.network,
 		);
 		this.connect = this.network.connect.bind(this.network);
+		this.addNetworkListener("init", (e) => this.onInit(e));
+		this.addNetworkListener("update", (e) => this.update(e));
 
 		this.ui = new UI(this);
 		initObstructionPlacement(this);
@@ -89,6 +91,17 @@ class Game {
 	get isHost(): boolean {
 		return this.network.isHost;
 	}
+
+	private onInit: NetworkEvents["init"] = ({
+		connections,
+		state: { players: inputPlayers, arena },
+	}) => {
+		if (connections === 0) this.receivedState = "init";
+
+		this.setArena(arena);
+
+		patchInState(this, inputPlayers);
+	};
 
 	setArena(arenaIndex: number) {
 		if (this.settings.arenaIndex === arenaIndex) return;

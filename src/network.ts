@@ -107,6 +107,8 @@ const networkEvents = {
 };
 /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
 
+export type NetworkEvents = typeof networkEvents;
+
 class Network {
 	private connection?: WebSocket;
 	private localPlayerId?: number;
@@ -165,7 +167,7 @@ class Network {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface Network extends Emitter<typeof networkEvents> {}
+interface Network extends Emitter<NetworkEvents> {}
 
 export { Network };
 

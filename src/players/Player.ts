@@ -87,7 +87,10 @@ export const patchInState = (game: Game, playersState: PlayerState[]): void => {
 			game.players.find((p) => p.id === id) ||
 			new Player({ ...playerData, id, game });
 
-		if (color && (!player.color || player.color.index !== color)) {
+		if (
+			color !== undefined &&
+			(!player.color || player.color.index !== color)
+		) {
 			if (player.color) releaseColor(player.color);
 			player.color = takeColor(color);
 		}
