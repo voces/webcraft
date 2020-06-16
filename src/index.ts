@@ -2,7 +2,6 @@ import { Network, activeHost } from "./network.js";
 import { Game } from "./Game.js";
 import { document, window } from "./util/globals.js";
 import { patchInState } from "./players/Player.js";
-import "./sprites/spriteLogic.js";
 import "./players/camera.js";
 import "./ui/index.js";
 

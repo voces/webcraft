@@ -8,6 +8,7 @@ import { initChatListeners } from "./chat.js";
 import { initSplashListeners } from "./waitingSplash.js";
 import { initEssenceListeners } from "./essence.js";
 import { initClockListeners } from "./clock.js";
+import { initLogin } from "./login.js";
 
 enum MouseButton {
 	LEFT = 0,
@@ -101,6 +102,7 @@ class UI {
 		initSplashListeners(game);
 		initEssenceListeners(game);
 		initClockListeners(game);
+		initLogin(game);
 	}
 }
 

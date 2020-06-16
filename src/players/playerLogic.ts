@@ -2,7 +2,6 @@ import { Player, patchInState } from "./Player.js";
 import { next as nextColor, release as releaseColor } from "./colors.js";
 import { updateDisplay } from "./elo.js";
 import { alea } from "../lib/alea.js";
-import "./login.js";
 import { Game } from "../Game.js";
 
 export const initPlayerLogic = (game: Game): void => {

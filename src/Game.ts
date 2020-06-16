@@ -13,6 +13,7 @@ import { Network } from "./Network.js";
 import { UI } from "./ui/index.js";
 import { initObstructionPlacement } from "./sprites/obstructionPlacement.js";
 import { initPlayerLogic } from "./players/playerLogic.js";
+import { initSpriteLogicListeners } from "./sprites/spriteLogic.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -71,6 +72,7 @@ class Game {
 		this.ui = new UI(this);
 		initObstructionPlacement(this);
 		initPlayerLogic(this);
+		initSpriteLogicListeners(this);
 
 		this.setArena(Math.floor(this.random() * arenas.length));
 	}
