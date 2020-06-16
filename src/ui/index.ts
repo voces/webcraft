@@ -1,15 +1,23 @@
-import "./clock.js";
-import "./essence.js";
 import "./hotkeys.js";
-import "./listeners.js";
-import "./waitingSplash.js";
-import "./chat.js";
 import { window } from "../util/globals.js";
 import { Game } from "../Game.js";
 import { emitter, Emitter } from "../emitter.js";
 import { initCameraListeners } from "../players/camera.js";
+import { initListeners } from "./listeners.js";
+import { initChatListeners } from "./chat.js";
+import { initSplashListeners } from "./waitingSplash.js";
+import { initEssenceListeners } from "./essence.js";
+import { initClockListeners } from "./clock.js";
 
-type UIEvents = {
+enum MouseButton {
+	LEFT = 0,
+	WHEEL,
+	RIGHT,
+	BACK,
+	FORWARD,
+}
+
+export type UIEvents = {
 	keyDown: (data: { key: string; ctrlDown: boolean; game: Game }) => void;
 	keyUp: (data: { key: string; ctrlDown: boolean; game: Game }) => void;
 	mouseMove: (data: {
@@ -18,6 +26,14 @@ type UIEvents = {
 		y: number;
 	}) => void;
 	mouseOut: (data: { relatedTarget: EventTarget | null }) => void;
+	mouseDown: (data: {
+		button: MouseButton;
+		ctrlDown: boolean;
+		game: Game;
+		target: EventTarget | null;
+		x: number;
+		y: number;
+	}) => void;
 	wheel: (data: { deltaY: number }) => void;
 };
 
@@ -51,14 +67,25 @@ class UI {
 		window.addEventListener("mousemove", (e) => {
 			this.dispatchEvent("mouseMove", {
 				target: e.target,
-				x: e.pageX,
-				y: e.pageY,
+				x: e.clientX,
+				y: e.clientY,
 			});
 		});
 
 		window.addEventListener("mouseout", (e) => {
 			this.dispatchEvent("mouseOut", {
 				relatedTarget: e.relatedTarget,
+			});
+		});
+
+		window.addEventListener("mousedown", (e) => {
+			this.dispatchEvent("mouseDown", {
+				button: e.button,
+				ctrlDown: e.ctrlKey,
+				game,
+				target: e.target,
+				x: e.clientX,
+				y: e.clientY,
 			});
 		});
 
@@ -69,6 +96,11 @@ class UI {
 		});
 
 		initCameraListeners(this);
+		initListeners(this);
+		initChatListeners(game, this);
+		initSplashListeners(game);
+		initEssenceListeners(game);
+		initClockListeners(game);
 	}
 }
 

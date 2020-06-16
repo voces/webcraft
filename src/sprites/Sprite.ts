@@ -6,7 +6,7 @@ import { Player } from "../players/Player.js";
 import { Round } from "../Round.js";
 import { clone } from "../util/clone.js";
 import { Action } from "./spriteLogic.js";
-import { context } from "../superContext.js";
+import { Game } from "../Game.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
@@ -28,6 +28,7 @@ export type SpriteProps = {
 	maxHealth?: number;
 	owner?: Player;
 	facing?: number;
+	game: Game;
 };
 
 export type Effect = {
@@ -53,6 +54,7 @@ export type SpriteEvents = {
 };
 
 class Sprite implements Emitter<SpriteEvents> {
+	game: Game;
 	radius: number;
 	id: number;
 	requiresPathing: number;
@@ -101,13 +103,14 @@ class Sprite implements Emitter<SpriteEvents> {
 		health = maxHealth,
 		facing = 270,
 		owner,
+		game,
 	}: SpriteProps) {
 		emitter<Sprite, SpriteEvents>(this);
 
-		const round = context.game.round;
-		if (!round)
+		if (!game.round)
 			throw new Error("trying to create a sprite outside a round");
-		this.round = round;
+		this.game = game;
+		this.round = game.round;
 
 		// For display, but we want to set this early since setters reference
 		// it
@@ -119,7 +122,7 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.requiresPathing = requiresPathing;
 		this.blocksPathing = blocksPathing;
 
-		this.id = id === undefined ? round.spriteId++ : id;
+		this.id = id === undefined ? this.round.spriteId++ : id;
 		this.x = x;
 		this.y = y;
 		this.maxHealth = maxHealth;
@@ -192,11 +195,8 @@ class Sprite implements Emitter<SpriteEvents> {
 
 		this._x = newX;
 		this._y = newY;
-		if (
-			context.game.round &&
-			context.game.round.pathingMap.entities.has(this)
-		)
-			context.game.round.pathingMap.updateEntity(this);
+		if (this.round.pathingMap.entities.has(this))
+			this.round.pathingMap.updateEntity(this);
 		this.facing = Math.atan2(this.y - yBefore, this.x - xBefore);
 	}
 
@@ -287,11 +287,9 @@ class Sprite implements Emitter<SpriteEvents> {
 			if (index >= 0) this.owner.sprites.splice(index, 1);
 		}
 
-		if (context.game.round) {
-			context.game.round.pathingMap.removeEntity(this);
-			const index = context.game.round.sprites.indexOf(this);
-			if (index >= 0) context.game.round.sprites.splice(index, 1);
-		}
+		this.round.pathingMap.removeEntity(this);
+		const index = this.round.sprites.indexOf(this);
+		if (index >= 0) this.round.sprites.splice(index, 1);
 
 		this.dispatchEvent("death");
 
@@ -305,8 +303,7 @@ class Sprite implements Emitter<SpriteEvents> {
 
 	remove() {
 		this.removeEventListeners();
-		if (context.game.round)
-			context.game.round.pathingMap.removeEntity(this);
+		this.round.pathingMap.removeEntity(this);
 
 		if (arenaElement.contains(this.elem))
 			arenaElement.removeChild(this.elem);

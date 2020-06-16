@@ -3,7 +3,6 @@ import { swallow } from "../util/swallow.js";
 import { emitter } from "../emitter.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
 import DragSelectClass from "../lib/DragSelect.js";
-import { context } from "../superContext.js";
 
 let allSelectables: SpriteElement[] | undefined;
 
@@ -60,12 +59,17 @@ if (typeof window !== "undefined")
 			onDragMove: () => {
 				if (allSelectables) return;
 				allSelectables = [...internalDragSelect.getSelectables()];
-				const localPlayer = context.game.localPlayer;
-				internalDragSelect.setSelectables(
-					allSelectables.filter(
-						(s) => s.sprite.owner === localPlayer,
-					),
-				);
+				const firstSelectable = allSelectables[0];
+				if (firstSelectable) {
+					const localPlayer = firstSelectable.sprite.game.localPlayer;
+					internalDragSelect.setSelectables(
+						allSelectables.filter(
+							(s) => s.sprite.owner === localPlayer,
+						),
+					);
+				} else {
+					internalDragSelect.setSelectables([]);
+				}
 			},
 			callback: (selection: SpriteElement[]) => {
 				if (allSelectables)

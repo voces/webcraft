@@ -1,8 +1,9 @@
-import { document, window } from "../util/globals.js";
+import { document } from "../util/globals.js";
 import { marked } from "../lib/marked.js";
 import { toggleDebugging } from "../pathing/PathingMap.js";
 import { emptyElement } from "../util/html.js";
-import { context } from "../superContext.js";
+import { Game } from "../Game.js";
+import { UI } from "./index.js";
 
 type Command = {
 	name: string;
@@ -17,6 +18,8 @@ type Command = {
 
 marked.setOptions({ breaks: true });
 
+const maxLength = 256;
+
 const chatLog = document.getElementById("chat-log")!;
 const chatInputContainer = document.getElementById("chat-input-container")!;
 const chatInput = <HTMLInputElement>document.getElementById("chat-input");
@@ -27,6 +30,7 @@ const commands: Command[] = [];
 
 class Chat {
 	active = false;
+	game!: Game;
 
 	activate() {
 		chatInputContainer.style.visibility = "visible";
@@ -37,7 +41,7 @@ class Chat {
 		chatInputContainer.style.visibility = "hidden";
 		const message = chatInput.value;
 		if (message.length) {
-			context.game.transmit({
+			this.game.transmit({
 				type: "chat",
 				message: chatInput.value,
 			});
@@ -53,11 +57,25 @@ class Chat {
 	}
 }
 
-export const chat = new Chat();
+const chat = new Chat();
 
-window.addEventListener("keydown", (e) => {
-	if (!chat.active && e.key === "Enter") chat.activate();
-});
+export const initChatListeners = (game: Game, ui: UI): void => {
+	ui.addEventListener("keyDown", ({ key }) => {
+		if (!chat.active && key === "Enter") chat.activate();
+	});
+
+	game.addNetworkListener("chat", ({ connection, message }) => {
+		message = message.slice(0, maxLength);
+
+		const player = game.players.find((p) => p.id === connection);
+		if (!player) return;
+
+		const playerTag = `<span style="color: ${player.color?.hex}">${player.username}</span>`;
+		appendMessage(`${playerTag}: ${message}`);
+	});
+
+	chat.game = game;
+};
 
 chatInput.addEventListener("keydown", (e) => {
 	e.stopPropagation();
@@ -111,19 +129,6 @@ export const appendErrorMessage = (markdown: string): void => {
 
 	_appendMessage(div);
 };
-
-const maxLength = 256;
-setTimeout(() => {
-	context.game.addNetworkListener("chat", ({ connection, message }) => {
-		message = message.slice(0, maxLength);
-
-		const player = context.game.players.find((p) => p.id === connection);
-		if (!player) return;
-
-		const playerTag = `<span style="color: ${player.color?.hex}">${player.username}</span>`;
-		appendMessage(`${playerTag}: ${message}`);
-	});
-});
 
 const onCommandInput = (text: string) => {
 	const words = text.trim().split(" ");

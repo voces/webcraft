@@ -1,7 +1,7 @@
 import { document } from "../util/globals.js";
 import { Player } from "./Player.js";
 import { emptyElement } from "../util/html.js";
-import { context } from "../superContext.js";
+import { Game } from "../Game.js";
 
 // Formula taken from
 // https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/
@@ -35,11 +35,13 @@ export const elo = ({
 	crossers,
 	defenders,
 	scores,
+	game,
 }: {
 	mode: keyof Player["score"];
 	crossers: Player[];
 	defenders: Player[];
 	scores: number;
+	game: Game;
 }): void => {
 	const newRatings = calculateNewRatings(
 		crossers.map((p) => p.score[mode]),
@@ -54,14 +56,14 @@ export const elo = ({
 		(score, index) => (defenders[index].score[mode] = score),
 	);
 
-	updateDisplay();
+	updateDisplay(game);
 };
 
 const container = document.getElementById("scores")!;
-export const updateDisplay = (): void => {
+export const updateDisplay = (game: Game): void => {
 	emptyElement(container);
 
-	context.game.players.forEach((player) => {
+	game.players.forEach((player) => {
 		const playerName = document.createElement("span");
 		playerName.textContent = player.username;
 		if (player.color?.hex) playerName.style.color = player.color?.hex;
@@ -74,7 +76,7 @@ export const updateDisplay = (): void => {
 		container.appendChild(plays);
 
 		const score = document.createElement("span");
-		score.textContent = player.score[context.game.settings.mode].toFixed(0);
+		score.textContent = player.score[game.settings.mode].toFixed(0);
 		score.classList.add("score");
 		container.appendChild(score);
 	});

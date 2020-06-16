@@ -1,5 +1,5 @@
 import { document } from "../util/globals.js";
-import { context } from "../superContext.js";
+import { Game } from "../Game.js";
 
 const element = document.getElementById("clock")!;
 
@@ -15,9 +15,9 @@ const formatSeconds = (time: number) => {
 	return minutes.padStart(2, "0") + ":" + seconds.padStart(2, "0");
 };
 
-setTimeout(() => {
-	context.game.addEventListener("update", (time) => {
-		if (!context.game.round) return;
-		element.textContent = formatSeconds(context.game.round.expireAt - time);
+export const initClockListeners = (game: Game): void => {
+	game.addEventListener("update", (time) => {
+		if (!game.round) return;
+		element.textContent = formatSeconds(game.round.expireAt - time);
 	});
-});
+};

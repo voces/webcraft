@@ -5,7 +5,7 @@ import { Point } from "../../pathing/PathingMap.js";
 import { Player } from "../../players/Player.js";
 import { Unit } from "../Unit.js";
 
-type ProjectileProps = Omit<SpriteProps, "x" | "y"> & {
+type ProjectileProps = Omit<SpriteProps, "x" | "y" | "game"> & {
 	producer: Unit;
 	target: Point;
 	speed?: number;
@@ -55,9 +55,10 @@ export class Projectile extends Sprite {
 	}: ProjectileProps) {
 		super({
 			...Projectile.clonedDefaults,
+			game: props.owner.game,
+			x: producer.x,
+			y: producer.y,
 			...props,
-			x: props.x ?? producer.x,
-			y: props.y ?? producer.y,
 		});
 
 		this.producer = producer;

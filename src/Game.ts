@@ -9,9 +9,10 @@ import { Arena } from "./arenas/types.js";
 import { alea } from "./lib/alea.js";
 import { Settings } from "./types.js";
 import { emptyElement } from "./util/html.js";
-import { Context } from "./Context.js";
 import { Network } from "./Network.js";
 import { UI } from "./ui/index.js";
+import { initObstructionPlacement } from "./sprites/obstructionPlacement.js";
+import { initPlayerLogic } from "./players/playerLogic.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -68,6 +69,8 @@ class Game {
 		this.connect = this.network.connect.bind(this.network);
 
 		this.ui = new UI(this);
+		initObstructionPlacement(this);
+		initPlayerLogic(this);
 
 		this.setArena(Math.floor(this.random() * arenas.length));
 	}
@@ -262,7 +265,5 @@ type GameEvents = {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Game extends Emitter<GameEvents> {}
-
-export const gameContext = new Context<Game>();
 
 export { Game };

@@ -58,7 +58,7 @@ const setScale = (scale: number) => {
 
 export const initCameraListeners = (ui: UI): void => {
 	ui.addEventListener("keyDown", ({ key, ctrlDown, game }) => {
-		if (key === "f" && ctrlDown) {
+		if ((key === "f" || key === "h") && ctrlDown) {
 			if (followInterval) {
 				clearInterval(followInterval);
 				followInterval = undefined;

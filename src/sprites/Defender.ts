@@ -4,22 +4,20 @@ import { Sprite } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { dragSelect } from "./dragSelect.js";
 import { Action } from "./spriteLogic.js";
-import { context } from "../superContext.js";
 
-const mirror = {
+const mirror: Action = {
 	name: "Mirror Image",
 	hotkey: "r" as const,
 	type: "custom" as const,
-	handler: (): void => {
-		const game = context.game;
+	handler: ({ player }): void => {
 		const ownUnits = dragSelect.selection.filter(
-			(u) => u.owner === game.localPlayer && Unit.isUnit(u),
+			(u) => u.owner === player && Unit.isUnit(u),
 		);
 		const realDefenders = ownUnits.filter(
 			(u) => Unit.isUnit(u) && !u.isIllusion,
 		);
 		if (realDefenders.length)
-			game.transmit({
+			player.game.transmit({
 				type: "mirror",
 				sprites: realDefenders.map((u) => u.id),
 			});
@@ -27,19 +25,16 @@ const mirror = {
 };
 
 const getMirroringPosition = (pos: Point, entity: Sprite, layer?: number) => {
-	if (!context.game.round)
-		throw new Error("called getMirroringPosition outsied a round");
-
-	const nearest = context.game.round.pathingMap.nearestSpiralPathing(
+	const nearest = entity.round.pathingMap.nearestSpiralPathing(
 		pos.x,
 		pos.y,
 		entity,
 	);
 
-	if (context.game.round.pathingMap.layer(nearest.x, nearest.y) === layer)
+	if (entity.round.pathingMap.layer(nearest.x, nearest.y) === layer)
 		return nearest;
 
-	return context.game.round.pathingMap.nearestSpiralPathing(
+	return entity.round.pathingMap.nearestSpiralPathing(
 		nearest.x,
 		nearest.y,
 		entity,
@@ -96,7 +91,7 @@ export class Defender extends Unit {
 			y: this.y + Math.sin(angle2) * MIRROR_SEPARATION,
 		};
 
-		if (context.game.random() < 0.5) {
+		if (this.game.random() < 0.5) {
 			const temp = pos1;
 			pos1 = pos2;
 			pos2 = temp;

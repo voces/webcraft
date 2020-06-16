@@ -1,6 +1,8 @@
 import { fetch as rawFetch } from "../Network.js";
 import { document } from "../util/globals.js";
-import { context } from "../superContext.js";
+import { Game } from "../Game.js";
+
+let game: Game;
 
 const login = <HTMLFormElement>document.getElementById("login");
 const username = <HTMLInputElement>document.getElementById("login-name");
@@ -39,7 +41,7 @@ const markInputInvalid = (input: HTMLInputElement, message: string) => {
 };
 
 const connect = (token: string) => {
-	context.game.connect(token);
+	game.connect(token);
 	login.style.visibility = "hidden";
 };
 
@@ -87,7 +89,7 @@ password.addEventListener("keydown", async (e: KeyboardEvent) => {
 		});
 
 		if (result.token) {
-			context.game.connect(result.token);
+			game.connect(result.token);
 			login.style.visibility = "hidden";
 			return;
 		}
@@ -120,3 +122,7 @@ verifyPassword.addEventListener("keydown", async (e: KeyboardEvent) => {
 		markInputInvalid(username, result.message);
 	}
 });
+
+export const initLogin = (_game: Game): void => {
+	game = _game;
+};

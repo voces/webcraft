@@ -5,7 +5,6 @@ import { defined } from "../types.js";
 import { Unit } from "../sprites/Unit.js";
 import { emptyElement } from "../util/html.js";
 import { panTo } from "../players/camera.js";
-import { context } from "../superContext.js";
 
 const container = document.getElementById("hotkeys")!;
 
@@ -54,18 +53,13 @@ const genNode = (action: Action) => {
 
 export const activeHotkeys: Action[] = [];
 
-const center = {
+const center: Action = {
 	name: "Center",
 	hotkey: " " as const,
 	type: "custom" as const,
-	handler: (): void => {
-		if (
-			dragSelect.selection.length === 0 &&
-			context.game.localPlayer.sprites.length
-		)
-			return dragSelect.setSelection([
-				context.game.localPlayer.sprites[0],
-			]);
+	handler: ({ player }): void => {
+		if (dragSelect.selection.length === 0 && player.sprites.length)
+			return dragSelect.setSelection([player.sprites[0]]);
 
 		const { xSum, ySum } = dragSelect.selection.reduce(
 			({ xSum, ySum }, { x, y }) => ({ xSum: xSum + x, ySum: ySum + y }),

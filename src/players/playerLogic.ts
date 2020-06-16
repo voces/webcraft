@@ -3,12 +3,11 @@ import { next as nextColor, release as releaseColor } from "./colors.js";
 import { updateDisplay } from "./elo.js";
 import { alea } from "../lib/alea.js";
 import "./login.js";
-import { context } from "../superContext.js";
+import { Game } from "../Game.js";
 
-setTimeout(() => {
+export const initPlayerLogic = (game: Game): void => {
 	// Received when someone (including us) joins
-	context.game.addNetworkListener("connection", (data) => {
-		const { game } = context;
+	game.addNetworkListener("connection", (data) => {
 		game.random = alea(data.time.toString());
 
 		game.update(data);
@@ -28,44 +27,42 @@ setTimeout(() => {
 			game.localPlayer = player;
 		else game.newPlayers = true;
 
-		updateDisplay();
+		updateDisplay(game);
 	});
 
 	// Received when someone leaves
-	context.game.addNetworkListener("disconnection", ({ time, connection }) => {
-		context.game.update({ time });
+	game.addNetworkListener("disconnection", ({ time, connection }) => {
+		game.update({ time });
 
-		const playerIndex = context.game.players.findIndex(
-			(p) => p.id === connection,
-		);
+		const playerIndex = game.players.findIndex((p) => p.id === connection);
 		if (playerIndex === -1) return;
-		const player = context.game.players[playerIndex];
+		const player = game.players[playerIndex];
 
 		player.isHere = false;
 
-		if (context.game.round) context.game.round.onPlayerLeave();
+		if (game.round) game.round.onPlayerLeave();
 
-		context.game.players.splice(playerIndex, 1);
+		game.players.splice(playerIndex, 1);
 
 		if (player.color) releaseColor(player.color);
 
-		updateDisplay();
+		updateDisplay(game);
 	});
 
 	// Received by the the upon someone connecting after the round ends
-	context.game.addNetworkListener(
+	game.addNetworkListener(
 		"state",
 		({ time, state: { arena, players: inputPlayers } }) => {
-			context.game.update({ time });
+			game.update({ time });
 
-			patchInState(inputPlayers);
+			patchInState(game, inputPlayers);
 
-			context.game.setArena(arena);
-			context.game.receivedState = "state";
-			context.game.lastRoundEnd = time / 1000;
-			// context.game.random = new Random( time );
+			game.setArena(arena);
+			game.receivedState = "state";
+			game.lastRoundEnd = time / 1000;
+			// game.random = new Random( time );
 
-			updateDisplay();
+			updateDisplay(game);
 		},
 	);
-});
+};

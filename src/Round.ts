@@ -15,7 +15,6 @@ import { Settings, teamKeys, resourceKeys } from "./types.js";
 import { Arena } from "./arenas/types.js";
 import { Unit } from "./sprites/Unit.js";
 import { Sprite } from "./sprites/Sprite.js";
-import { context } from "./superContext.js";
 import { Game } from "./Game.js";
 
 let placeholderPlayer: Player;
@@ -107,7 +106,7 @@ class Round {
 			const low = remaining.filter((p) => p.crosserPlays === lowPlays);
 
 			const player = low.splice(
-				Math.floor(context.game.random() * low.length),
+				Math.floor(this.game.random() * low.length),
 				1,
 			)[0];
 			remaining.splice(remaining.indexOf(player), 1);
@@ -117,7 +116,7 @@ class Round {
 			} else this.defenders.push(player);
 		}
 
-		updateDisplay();
+		updateDisplay(this.game);
 	}
 
 	grantResources(): void {
@@ -147,8 +146,8 @@ class Round {
 		// Place it
 		let maxTries = 8192;
 		while (--maxTries) {
-			const xRand = context.game.random() * this.pathingMap.widthWorld;
-			const yRand = context.game.random() * this.pathingMap.heightWorld;
+			const xRand = this.game.random() * this.pathingMap.widthWorld;
+			const yRand = this.game.random() * this.pathingMap.heightWorld;
 
 			if (
 				this.arena.tiles[Math.floor(yRand)][Math.floor(xRand)] !==
@@ -173,7 +172,7 @@ class Round {
 		if (!maxTries) console.error("Exhausted placement attempts");
 
 		// Select + pan to it
-		if (player === context.game.localPlayer) {
+		if (player === this.game.localPlayer) {
 			dragSelect.setSelection([unit]);
 			panTo(unit);
 		}
@@ -203,28 +202,27 @@ class Round {
 
 	end(): void {
 		elo({
-			mode: context.game.settings.mode,
+			mode: this.game.settings.mode,
 			crossers: this.crossers,
 			defenders: this.defenders,
 			scores: this.scores,
+			game: this.game,
 		});
 
-		const placeholderIndex = context.game.players.indexOf(
-			placeholderPlayer,
-		);
+		const placeholderIndex = this.game.players.indexOf(placeholderPlayer);
 		if (placeholderIndex >= 0)
-			context.game.players.splice(placeholderIndex, 1);
+			this.game.players.splice(placeholderIndex, 1);
 
-		if (context.game.newPlayers) {
-			context.game.newPlayers = false;
-			context.game.receivedState = false;
+		if (this.game.newPlayers) {
+			this.game.newPlayers = false;
+			this.game.receivedState = false;
 
 			if (this.game.isHost)
 				this.game.transmit({
 					type: "state",
-					state: context.game,
+					state: this.game,
 				});
-		} else context.game.lastRoundEnd = context.game.lastUpdate;
+		} else this.game.lastRoundEnd = this.game.lastUpdate;
 
 		this.setTimeout(() => {
 			[...this.sprites].forEach((sprite) => sprite.kill());
@@ -233,7 +231,7 @@ class Round {
 
 			this.setTimeout(() => {
 				this.removeEventListeners();
-				context.game.round = undefined;
+				this.game.round = undefined;
 			}, 0.25);
 		}, 1);
 	}
@@ -277,7 +275,7 @@ class Round {
 	onPlayerLeave(/* player: Player */) {
 		if (this.players.some((player) => player.isHere)) return;
 
-		context.game.round = undefined;
+		this.game.round = undefined;
 	}
 
 	updateSprites(delta: number) {

@@ -10,26 +10,24 @@ import { Player } from "../../players/Player.js";
 import { Unit, UnitProps } from "../Unit.js";
 import { Action } from "../spriteLogic.js";
 import { dragSelect } from "../dragSelect.js";
-import { context } from "../../superContext.js";
 
-const destroySelf = {
+const destroySelf: Action = {
 	name: "Destroy box",
 	description: "Destroys selected boxes",
 	hotkey: "x" as const,
 	type: "custom" as const,
-	handler: (): void => {
+	handler: ({ player }): void => {
 		// Get currently selected boxes
-		const game = context.game;
 		const obstructions = dragSelect.selection.filter(
-			(s) => s.owner === game.localPlayer && Obstruction.isObstruction,
+			(s) => s.owner === player && Obstruction.isObstruction,
 		);
 
 		// Select the main unit
-		const playerCrosser = game.localPlayer.unit;
+		const playerCrosser = player.unit;
 		if (playerCrosser) dragSelect.setSelection([playerCrosser]);
 
 		// Kill selected obstructions
-		game.transmit({
+		player.game.transmit({
 			type: "kill",
 			sprites: obstructions.map((u) => u.id),
 		});

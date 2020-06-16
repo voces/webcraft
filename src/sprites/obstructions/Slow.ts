@@ -63,11 +63,11 @@ export class Slow extends Obstruction {
 				if (!Slow.isSlow(attacker)) return;
 
 				new Projectile({
-					target,
-					producer: attacker,
-					owner: attacker.owner,
 					damage: attacker.weapon.damage,
 					onDamage: attacker.weapon.onDamage,
+					owner: attacker.owner,
+					producer: attacker,
+					target,
 				});
 			},
 		},

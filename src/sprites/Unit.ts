@@ -12,41 +12,37 @@ import {
 	active as activeObstructionPlacement,
 	stop as hideObstructionPlacement,
 } from "./obstructionPlacement.js";
-import { context } from "../superContext.js";
 
-const holdPosition = {
+const holdPosition: Action = {
 	name: "Hold Position",
 	hotkey: "h" as const,
 	type: "custom" as const,
-	handler: (): void => {
-		const game = context.game;
-		if (!game.round) return;
+	handler: ({ player }): void => {
+		if (!player.game.round) return;
 
 		const ownedUnits = dragSelect.selection.filter(
-			(u) =>
-				u.owner === game.localPlayer && Unit.isUnit(u) && u.speed > 0,
+			(u) => u.owner === player && Unit.isUnit(u) && u.speed > 0,
 		);
 
-		game.transmit({
+		player.game.transmit({
 			type: "holdPosition",
 			sprites: ownedUnits.map((u) => u.id),
 		});
 	},
 };
 
-const stop = {
+const stop: Action = {
 	name: "Stop",
 	hotkey: "s" as const,
 	type: "custom" as const,
-	handler: (): void => {
-		const game = context.game;
-		if (!game.round) return;
+	handler: ({ player }): void => {
+		if (!player.game.round) return;
 
 		const ownedUnits = dragSelect.selection.filter(
-			(u) => u.owner === game.localPlayer && Unit.isUnit(u),
+			(u) => u.owner === player && Unit.isUnit(u),
 		);
 
-		game.transmit({
+		player.game.transmit({
 			type: "stop",
 			sprites: ownedUnits.map((u) => u.id),
 		});
@@ -58,7 +54,6 @@ const cancel = {
 	hotkey: "Escape" as const,
 	type: "custom" as const,
 	handler: (): void => {
-		console.log("cancel?", activeObstructionPlacement());
 		if (activeObstructionPlacement()) hideObstructionPlacement();
 	},
 };
@@ -75,7 +70,7 @@ export type Weapon = {
 	onDamage?: (target: Sprite, damage: number, attacker: Sprite) => void;
 };
 
-export type UnitProps = SpriteProps & {
+export type UnitProps = Omit<SpriteProps, "game"> & {
 	isIllusion?: boolean;
 	owner: Player;
 	speed?: number;
@@ -113,7 +108,11 @@ class Unit extends Sprite {
 		builds = [],
 		...props
 	}: UnitProps) {
-		super(props);
+		const game = props.owner.game;
+		super({
+			game,
+			...props,
+		});
 
 		this.isIllusion = isIllusion;
 		this.name = name ?? this.constructor.name;
@@ -123,9 +122,9 @@ class Unit extends Sprite {
 
 		if (
 			this.isIllusion &&
-			context.game.localPlayer &&
-			context.game.localPlayer.unit &&
-			this.round.defenders.includes(context.game.localPlayer)
+			game.localPlayer &&
+			game.localPlayer.unit &&
+			this.round.defenders.includes(game.localPlayer)
 		)
 			this.elem.style.backgroundImage =
 				"radial-gradient(rgba(0, 0, 255, 0.75), rgba(0, 0, 255, 0.75))";

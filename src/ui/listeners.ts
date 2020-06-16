@@ -1,19 +1,20 @@
-import { document, localStorage, window } from "../util/globals.js";
+import { document, localStorage } from "../util/globals.js";
 import { registerCommand } from "./chat.js";
+import { UI } from "./index.js";
 
 const hotkeys = document.getElementById("hotkeys")!;
 
-window.addEventListener("keydown", (e) => {
-	if (e.key === "h" && e.ctrlKey) {
-		e.preventDefault();
+export const initListeners = (ui: UI): void => {
+	ui.addEventListener("keyDown", ({ key, ctrlDown }) => {
+		if (key !== "h" || !ctrlDown) return;
 
 		const showHotkeysUI = hotkeys.style.visibility === "hidden";
 
 		hotkeys.style.visibility = showHotkeysUI ? "visible" : "hidden";
 		// todo: wrap localStorage with types!
 		localStorage.setItem("showHotkeysUI", showHotkeysUI.toString());
-	}
-});
+	});
+};
 
 registerCommand({
 	name: "hideHotkeys",

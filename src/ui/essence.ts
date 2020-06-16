@@ -1,13 +1,13 @@
 import { document } from "../util/globals.js";
-import { context } from "../superContext.js";
+import { Game } from "../Game.js";
 
 const element = document.getElementById("essence")!;
 
-setTimeout(() => {
-	context.game.addEventListener("update", () => {
-		if (!context.game.round || !context.game.localPlayer) return;
+export const initEssenceListeners = (game: Game): void => {
+	game.addEventListener("update", () => {
+		if (!game.round || !game.localPlayer) return;
 		element.textContent = Math.floor(
-			context.game.localPlayer.resources.essence,
+			game.localPlayer.resources.essence,
 		).toString();
 	});
-});
+};

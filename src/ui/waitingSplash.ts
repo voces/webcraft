@@ -1,14 +1,14 @@
 import { document } from "../util/globals.js";
-import { context } from "../superContext.js";
+import { Game } from "../Game.js";
 
 const elem = document.getElementById("waiting-splash")!;
 
-setTimeout(() => {
-	context.game.addNetworkListener("init", ({ connections }) => {
+export const initSplashListeners = (game: Game): void => {
+	game.addNetworkListener("init", ({ connections }) => {
 		if (connections !== 0) elem.style.visibility = "visible";
 	});
 
-	context.game.addNetworkListener("state", () => {
+	game.addNetworkListener("state", () => {
 		elem.style.visibility = "hidden";
 	});
-});
+};
