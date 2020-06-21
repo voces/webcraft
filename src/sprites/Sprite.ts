@@ -195,8 +195,7 @@ class Sprite implements Emitter<SpriteEvents> {
 
 		this._x = newX;
 		this._y = newY;
-		if (this.round.pathingMap.entities.has(this))
-			this.round.pathingMap.updateEntity(this);
+		this.round.pathingMap.updateEntity(this);
 		this.facing = Math.atan2(this.y - yBefore, this.x - xBefore);
 	}
 

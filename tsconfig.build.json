@@ -20,8 +20,8 @@
 		// 	"../node_modules/*/index",
 		// 	"../node_modules/*/dist/index"
 		// ] },
-		"declaration": true,
-		"sourceMap": true
+		// "declaration": true,
+		// "sourceMap": true
 	},
 	"include": ["src"],
 	"exclude": [

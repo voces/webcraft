@@ -12,7 +12,8 @@
 		"strictNullChecks": true,
 		"esModuleInterop": true,
 		"types": [
-			"@types/jest"
+			"@types/jest",
+			"@types/node"
 		],
 		"noEmit": true
 	},

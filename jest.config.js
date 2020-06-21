@@ -1,5 +1,4 @@
 export default {
-	globals: { "ts-jest": { tsConfig: "tsconfig.test.json" } },
 	moduleDirectories: ["node_modules", "src"],
 	moduleFileExtensions: ["ts", "js"],
 	moduleNameMapper: {
