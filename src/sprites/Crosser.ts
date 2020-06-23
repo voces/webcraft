@@ -77,6 +77,8 @@ export class Crosser extends Unit {
 	}
 
 	buildAt(target: Point, ObstructionClass: ObstructionSubclass): void {
+		let updateProgress = 0;
+		let updateTicks = 0;
 		let renderProgress = 0;
 		let path = tweenPoints(this.round.pathingMap.path(this, target));
 		const blueprint =
@@ -90,15 +92,17 @@ export class Crosser extends Unit {
 
 		this.activity = {
 			update: (delta) => {
-				const updateProgress = delta * this.speed;
+				updateTicks++;
+
+				updateProgress += delta * this.speed;
 				const { x, y } = path(updateProgress);
 				if (isNaN(x) || isNaN(y))
 					throw new Error(`Returning NaN location x=${x} y=${y}`);
 
-				const actualDistance = Math.sqrt(
+				const distanceRemaining = Math.sqrt(
 					(x - target.x) ** 2 + (y - target.y) ** 2,
 				);
-				if (actualDistance < BUILD_DISTANCE) {
+				if (distanceRemaining < BUILD_DISTANCE) {
 					this.activity = undefined;
 
 					if (ObstructionClass.defaults.cost) {
@@ -144,18 +148,32 @@ export class Crosser extends Unit {
 					});
 
 					// We're never going to get there
-				} else if (path.distance < updateProgress) {
+				} else if (
+					path.distance < updateProgress &&
+					updateProgress < BUILD_DISTANCE
+				) {
 					this.activity = undefined;
 					this.setPosition(x, y);
 				} else {
 					// Update self
 					this._setPosition(x, y);
 
-					// Start new build path
-					path = tweenPoints(
-						this.round.pathingMap.path(this, target),
-					);
-					renderProgress = 0;
+					// Recheck path, start a new one periodically or if check
+					// fails
+					if (
+						updateTicks % 5 === 0 ||
+						!this.round.pathingMap.recheck(
+							path.points,
+							this,
+							delta * this.speed * 6,
+						)
+					) {
+						path = tweenPoints(
+							this.round.pathingMap.path(this, target),
+						);
+						updateProgress = 0;
+						renderProgress = 0;
+					}
 				}
 			},
 			render: (delta) => {
@@ -173,6 +191,7 @@ export class Crosser extends Unit {
 				obstruction: Obstruction.name,
 				target,
 				path,
+				ticks: updateTicks,
 			}),
 		};
 	}

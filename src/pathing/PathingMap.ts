@@ -17,6 +17,7 @@ export const toggleDebugging = (): void => {
 const DEFAULT_RESOLUTION = 1;
 
 const MAX_TRIES = 8192;
+const EPSILON = Number.EPSILON * 100;
 
 type Pathing = number;
 
@@ -555,7 +556,7 @@ export class PathingMap {
 		radius = 0,
 		{ type = PATHING_TYPES.WALKABLE, includeOutOfBounds = false } = {},
 	): Footprint {
-		radius -= Number.EPSILON * radius * this.widthWorld;
+		radius -= EPSILON * radius * this.widthWorld;
 
 		const xTile = this.xWorldToTile(xWorld);
 		const yTile = this.yWorldToTile(yWorld);
@@ -652,7 +653,7 @@ export class PathingMap {
 			{ type: pathing },
 		);
 
-		const nudge = Number.EPSILON * entity.radius * this.widthWorld;
+		const nudge = EPSILON * entity.radius * this.widthWorld;
 		const offset = entity.radius % (1 / this.resolution);
 		// We can assume start is pathable
 		const startReal = {
@@ -1081,57 +1082,134 @@ export class PathingMap {
 						);
 		}
 
-		const path = [];
+		const pathTiles = [];
 		let startCurrent: Tile | null | undefined = startBest;
 		while (startCurrent) {
-			path.unshift(startCurrent);
+			pathTiles.unshift(startCurrent);
 			startCurrent = startCurrent.__startParent;
 		}
 
 		if (startBest === endBest) {
 			let endCurrent = startBest.__endParent;
 			while (endCurrent) {
-				path.push(endCurrent);
+				pathTiles.push(endCurrent);
 				endCurrent = endCurrent.__endParent;
 			}
 		}
 
-		this._smooth(entity, path, cache);
+		this._smooth(entity, pathTiles, cache);
 
 		if (removed) this.addEntity(entity);
 
-		const pathWorld = path.map((tile) => ({
+		const pathWorld = pathTiles.map((tile) => ({
 			x: this.xTileToWorld(tile.x) + offset,
 			y: this.yTileToWorld(tile.y) + offset,
 		}));
 
-		// We didn't reach the end; pick closest node
-		const last = path[path.length - 1];
-		if (last !== targetTile)
-			return [
-				...(pathWorld[0].x !== entity.x || pathWorld[0].y !== entity.y
-					? [{ x: entity.x, y: entity.y }]
-					: [pathWorld[0]]),
-				...pathWorld.slice(1),
-			];
+		const last = pathTiles[pathTiles.length - 1];
 
-		// We reached the end
-		return [
-			...(pathWorld[0].x !== entity.x || pathWorld[0].y !== entity.y
-				? [{ x: entity.x, y: entity.y }]
-				: [pathWorld[0]]),
-			...pathWorld.slice(1),
-			...(pathWorld[pathWorld.length - 1].x !==
-				endReal.x / this.resolution ||
-			pathWorld[pathWorld.length - 1].y !== endReal.y / this.resolution
+		const path =
+			// We didn't reach the end; pick closest node
+			last !== targetTile
 				? [
-						{
-							x: endReal.x / this.resolution,
-							y: endReal.y / this.resolution,
-						},
+						...(pathWorld[0].x !== entity.x ||
+						pathWorld[0].y !== entity.y
+							? [{ x: entity.x, y: entity.y }]
+							: [pathWorld[0]]),
+						...pathWorld.slice(1),
 				  ]
-				: []),
-		];
+				: // We reached the end
+				  [
+						...(pathWorld[0].x !== entity.x ||
+						pathWorld[0].y !== entity.y
+							? [{ x: entity.x, y: entity.y }]
+							: [pathWorld[0]]),
+						...pathWorld.slice(1),
+						...(pathWorld[pathWorld.length - 1].x !==
+							endReal.x / this.resolution ||
+						pathWorld[pathWorld.length - 1].y !==
+							endReal.y / this.resolution
+							? [
+									{
+										x: endReal.x / this.resolution,
+										y: endReal.y / this.resolution,
+									},
+							  ]
+							: []),
+				  ];
+
+		return path;
+	}
+
+	/**
+	 * Rechecks a path to make sure it's still pathable. Can return false even
+	 * if the path is still pathable.
+	 * @param path The array of points that make up the path to be checked.
+	 * @param entity The object of the path to be checked. Includes clearance
+	 * (radius) and pathing type.
+	 * @param amount How far along the path we should check at a minimum. We'll
+	 * likely overcheck, since we just verify segments of the path.
+	 * @param offset How far along that path we start checking at maximum.
+	 */
+	recheck(
+		path: Point[],
+		entity: Entity,
+		amount = Infinity,
+		offset = 0,
+	): boolean {
+		const removed = this.entities.has(entity);
+		if (removed) this.removeEntity(entity);
+
+		// debugger;
+		let cur = 0;
+		let distanceSquared = 0;
+		const offsetSquared = offset ** 2;
+		const amountSqaured = offsetSquared + amount ** 2;
+		let segmentLength =
+			(path[1].x - path[0].x) ** 2 + (path[1].y - path[0].y) ** 2;
+
+		// Skip parts of the path we aren't rechecking.
+		while (
+			distanceSquared + segmentLength < offsetSquared &&
+			cur < path.length - 2
+		) {
+			distanceSquared += segmentLength;
+			cur++;
+			segmentLength =
+				(path[cur + 1].x - path[cur].x) ** 2 +
+				(path[cur + 1].y - path[cur].y) ** 2;
+		}
+
+		if (cur === path.length - 1) {
+			return this.pathable(entity, path[cur].x, path[cur].y);
+		}
+
+		while (cur < path.length - 1 && distanceSquared < amountSqaured) {
+			if (
+				!this._linearPathable(
+					entity,
+					{
+						x: this.xWorldToTile(path[cur].x),
+						y: this.yWorldToTile(path[cur].y),
+					},
+					{
+						x: this.xWorldToTile(path[cur + 1].x),
+						y: this.yWorldToTile(path[cur + 1].y),
+					},
+				)
+			) {
+				if (removed) this.addEntity(entity);
+				return false;
+			}
+
+			distanceSquared +=
+				(path[cur + 1].x - path[cur].x) ** 2 +
+				(path[cur + 1].y - path[cur].y) ** 2;
+			cur++;
+		}
+
+		if (removed) this.addEntity(entity);
+		return true;
 	}
 
 	_smooth(entity: Entity, path: Tile[], cache: Cache = this): void {
@@ -1156,7 +1234,7 @@ export class PathingMap {
 			throw new Error("Can only path find radial entities");
 		const radius =
 			entity.radius * this.resolution -
-			Number.EPSILON * entity.radius * this.widthWorld * this.resolution;
+			EPSILON * entity.radius * this.widthWorld * this.resolution;
 		const pathing =
 			entity.requiresPathing !== undefined
 				? entity.requiresPathing
@@ -1176,6 +1254,19 @@ export class PathingMap {
 			x: startTile.x + entityOffset,
 			y: startTile.y + entityOffset,
 		};
+
+		if (startTile === endTile) {
+			const map =
+				entity.requiresTilemap ||
+				this.pointToTilemap(startPoint.x, startPoint.y, entity.radius, {
+					type: pathing,
+				});
+
+			return this.withoutEntity(entity, () =>
+				this._pathable(map, startTile.x, startTile.y),
+			);
+		}
+
 		/** Exact point where the entity ends. */
 		const endPoint = {
 			x: endTile.x + entityOffset,
@@ -1331,10 +1422,10 @@ export class PathingMap {
 
 			const xEnd = Math.min(xStartMax, xEndMax, xEndTest, maxX);
 
-			for (let x = xStart; x <= xEnd; x++) {
+			for (let x = xStart; x <= xEnd; x++)
 				if (!this.grid[yStart + y * yStep]?.[x]?.pathable(pathing))
 					return false;
-			}
+
 			xStartRaw += isFinite(absTan) ? absTan : 0;
 		}
 

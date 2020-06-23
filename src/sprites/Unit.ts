@@ -137,12 +137,16 @@ class Unit extends Sprite {
 	}
 
 	walkTo(target: Point): void {
+		let updateProgress = 0;
+		let updateTicks = 0;
 		let renderProgress = 0;
 		let path = tweenPoints(this.round.pathingMap.path(this, target));
 
 		this.activity = {
 			update: (delta: number) => {
-				const updateProgress = delta * this.speed;
+				updateTicks++;
+
+				updateProgress += delta * this.speed;
 				const { x, y } = path(updateProgress);
 				if (isNaN(x) || isNaN(y))
 					throw new Error(`Returning NaN location x=${x} y=${y}`);
@@ -154,11 +158,21 @@ class Unit extends Sprite {
 					// Update self
 					this._setPosition(x, y);
 
-					// Start new walk path
-					path = tweenPoints(
-						this.round.pathingMap.path(this, target),
-					);
-					renderProgress = 0;
+					if (
+						updateTicks % 5 === 0 ||
+						!this.round.pathingMap.recheck(
+							path.points,
+							this,
+							delta * this.speed * 6,
+						)
+					) {
+						// Start new walk path
+						path = tweenPoints(
+							this.round.pathingMap.path(this, target),
+						);
+						updateProgress = 0;
+						renderProgress = 0;
+					}
 				}
 			},
 			render: (delta: number) => {
@@ -173,6 +187,7 @@ class Unit extends Sprite {
 				name: "walkTo",
 				path,
 				target,
+				ticks: updateTicks,
 			}),
 		};
 	}

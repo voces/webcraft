@@ -1,9 +1,17 @@
 import { Point } from "../pathing/PathingMap";
 
-const distanceBetweenPoints = (
+export const distanceBetweenPoints = (
 	{ x: x1, y: y1 }: Point,
 	{ x: x2, y: y2 }: Point,
-) => Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+): number => Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+
+export const pathDistance = (points: Point[]): number => {
+	let sum = 0;
+	for (let i = 0; i < points.length - 2; i++)
+		sum += distanceBetweenPoints(points[i], points[i + 1]);
+
+	return sum;
+};
 
 // const elems = [];
 const elems: HTMLDivElement[] | false = false as HTMLDivElement[] | false;
@@ -23,6 +31,7 @@ export type PathTweener = {
 	distance: number;
 	radialStepBack: (distance: number) => Point;
 	target: Point;
+	readonly points: Point[];
 };
 
 export const tweenPoints = (points: Point[]): PathTweener => {
@@ -195,6 +204,7 @@ export const tweenPoints = (points: Point[]): PathTweener => {
 					(points[index].y - points[index + 1].y) * progress,
 			};
 		},
+		points,
 		toJSON: () => ({ points }),
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any);

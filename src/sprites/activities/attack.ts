@@ -21,21 +21,10 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 
 	const pathingMap = attacker.round.pathingMap;
 	let path: PathTweener;
+	let updateProgress = 0;
+	let updateTicks = 0;
 	let renderProgress = 0;
-	let renderedPosition: Point;
-
-	const recalcPath = ({ x, y }: Point) => {
-		// Update self
-		attacker.setPosition(x, y);
-
-		// Start new attack path
-		path = tweenPoints(
-			pathingMap.withoutEntity(target, () =>
-				pathingMap.path(attacker, target),
-			),
-		);
-		renderProgress = 0;
-	};
+	let renderedPosition: Point | undefined;
 
 	// Attacker can't move and target is not in range; do nothing
 	if (!attacker.speed && !isInRange(attacker, target)) return;
@@ -44,6 +33,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 		toJSON: () => ({
 			name: "attack",
 			target: target.id,
+			ticks: updateTicks,
 		}),
 	};
 
@@ -99,21 +89,21 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 			return;
 		}
 
+		if (target.health <= 0) {
+			attacker.activity = undefined;
+			return;
+		}
+
+		updateTicks++;
+
 		let x = attacker.x;
 		let y = attacker.y;
-		const updateProgress = delta * (attacker.speed || 0);
+		updateProgress += delta * attacker.speed;
 
 		if (attacker.speed) {
 			const newPoint = path(updateProgress);
 			x = newPoint.x;
 			y = newPoint.y;
-		}
-
-		if (target.health <= 0) {
-			// Target dead, update position and complete
-			if (attacker.speed) attacker.setPosition(x, y);
-			attacker.activity = undefined;
-			return;
 		}
 
 		// Within range to attack
@@ -153,6 +143,31 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 		} else if (path && path.distance === 0) {
 			attacker.activity = undefined;
 			attacker.setPosition(x, y);
-		} else if (attacker.speed) recalcPath({ x, y });
+
+			renderedPosition = undefined;
+		} else if (attacker.speed) {
+			// Update self
+			attacker.setPosition(x, y);
+
+			// Recheck path, start a new one periodically or if check
+			// fails
+			if (
+				updateTicks % 5 === 0 ||
+				!pathingMap.recheck(
+					path.points,
+					attacker,
+					delta * attacker.speed * 6,
+				)
+			) {
+				path = tweenPoints(
+					pathingMap.withoutEntity(target, () =>
+						pathingMap.path(attacker, target),
+					),
+				);
+				updateProgress = 0;
+				renderProgress = 0;
+				renderedPosition = undefined;
+			}
+		}
 	};
 };

@@ -42,8 +42,7 @@ type Activity = {
 	cleanup?: () => void;
 	update?: (delta: number) => void;
 	render?: (delta: number) => void;
-	// TODO: type this
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// TODO: type this, maybe with https://stackoverflow.com/a/55138283/1567335
 	toJSON: () => {
 		name: string;
 	};

@@ -1,7 +1,9 @@
 import { PathingMap } from "./PathingMap.js";
 import { PATHING_TYPES } from "../constants.js";
 import { array2 } from "../../test/array2.js";
+import { pathDistance } from "../util/tweenPoints.js";
 
+// todo: this should be isolated to describes
 const pathing = [
 	[0, 1],
 	[2, 3],
@@ -938,202 +940,6 @@ describe("PathingMap#nearestSpiralPathing", () => {
 	});
 });
 
-describe("PathingMap#_linearPathable", () => {
-	describe("radius=0.5", () => {
-		describe("open", () => {
-			const pathing = [
-				[0, 0, 0],
-				[0, 0, 0],
-				[0, 0, 0],
-			];
-			for (let x1 = 0; x1 < 3; x1++)
-				for (let x2 = 0; x2 < 3; x2++)
-					for (let y1 = 0; y1 < 3; y1++)
-						for (let y2 = 0; y2 < 3; y2++) {
-							const dx = Math.abs(x2 - x1);
-							const dy = Math.abs(y2 - y1);
-
-							if (dx === 0 && dy === 0) continue;
-
-							const pathingMap = new PathingMap({ pathing });
-							const entity = {
-								radius: 0.5,
-								pathing: 1,
-								x: 0,
-								y: 0,
-							};
-							const start = { x: x1, y: y1 };
-							const end = { x: x2, y: y2 };
-
-							it(`start=${JSON.stringify(
-								start,
-							)}, end=${JSON.stringify(end)}`, () => {
-								expect(
-									pathingMap._linearPathable(
-										entity,
-										start,
-										end,
-									),
-								).toBeTruthy();
-							});
-						}
-		});
-
-		describe("blocked", () => {
-			const pathing = [
-				[0, 0, 0],
-				[0, 3, 0],
-				[0, 0, 0],
-			];
-			for (let x1 = 0; x1 < 3; x1++)
-				for (let x2 = 0; x2 < 3; x2++)
-					for (let y1 = 0; y1 < 3; y1++)
-						for (let y2 = 0; y2 < 3; y2++) {
-							const dx = Math.abs(x2 - x1);
-							const dy = Math.abs(y2 - y1);
-
-							if (dx === 0 && dy === 0) continue;
-
-							const pathingMap = new PathingMap({ pathing });
-							const entity = {
-								radius: 0.5,
-								pathing: 1,
-								x: 0,
-								y: 0,
-							};
-							const start = { x: x1, y: y1 };
-							const end = { x: x2, y: y2 };
-
-							it(`start=${JSON.stringify(
-								start,
-							)}, end=${JSON.stringify(end)}`, () => {
-								expect(
-									pathingMap._linearPathable(
-										entity,
-										start,
-										end,
-									),
-								).toEqual(
-									(dx !== 0 && dy !== 0) ||
-										(dx && y1 === 1) ||
-										(dy && x1 === 1)
-										? false
-										: true,
-								);
-							});
-						}
-		});
-	});
-
-	describe("radius=1", () => {
-		describe("open", () => {
-			const pathing = [
-				[0, 0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0, 0],
-			];
-			for (let x1 = 1; x1 < 6; x1++)
-				for (let x2 = 1; x2 < 6; x2++)
-					for (let y1 = 1; y1 < 6; y1++)
-						for (let y2 = 1; y2 < 6; y2++) {
-							const dx = Math.abs(x2 - x1);
-							const dy = Math.abs(y2 - y1);
-
-							if (dx === 0 && dy === 0) continue;
-
-							const pathingMap = new PathingMap({ pathing });
-							const entity = {
-								radius: 1,
-								pathing: 1,
-								x: 0,
-								y: 0,
-							};
-							const start = { x: x1, y: y1 };
-							const end = { x: x2, y: y2 };
-
-							it(`start=${JSON.stringify(
-								start,
-							)}, end=${JSON.stringify(end)}`, () => {
-								expect(
-									pathingMap._linearPathable(
-										entity,
-										start,
-										end,
-									),
-								).toBeTruthy();
-							});
-						}
-		});
-
-		describe("blocked", () => {
-			const pathing = [
-				[0, 0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0, 0],
-				[0, 0, 3, 3, 0, 0],
-				[0, 0, 3, 3, 0, 0],
-				[0, 0, 0, 0, 0, 0],
-				[0, 0, 0, 0, 0, 0],
-			];
-			for (let x1 = 0; x1 < 5; x1++)
-				for (let x2 = 0; x2 < 5; x2++)
-					for (let y1 = 0; y1 < 5; y1++)
-						for (let y2 = 0; y2 < 5; y2++) {
-							const dx = Math.abs(x2 - x1);
-							const dy = Math.abs(y2 - y1);
-
-							if (dx === 0 && dy === 0) continue;
-
-							const pathingMap = new PathingMap({ pathing });
-							const entity = {
-								radius: 1,
-								pathing: 1,
-								x: 0,
-								y: 0,
-							};
-							const start = { x: x1, y: y1 };
-							const end = { x: x2, y: y2 };
-
-							it(`start=${JSON.stringify(
-								start,
-							)}, end=${JSON.stringify(end)}`, () => {
-								const expected =
-									// Start or end in invalid places
-									x1 === 0 ||
-									x2 === 0 ||
-									y1 === 0 ||
-									y2 === 0 ||
-									(x1 > 1 && x1 < 5 && y1 > 2 && y1 < 5) ||
-									(x2 > 1 && x2 < 5 && y2 > 2 && y2 < 5) ||
-									// Diagonal movements not possible
-									(dx > 0 && dy > 0) ||
-									// Doing a monodirectional cross through the middle
-									(!dy &&
-										dx &&
-										((y1 > 1 && y1 < 5) ||
-											(y2 > 1 && y2 < 5))) ||
-									(!dx &&
-										dy &&
-										((x1 > 1 && x1 < 5) ||
-											(x2 > 1 && x2 < 5)))
-										? false
-										: true;
-
-								expect(
-									pathingMap._linearPathable(
-										entity,
-										start,
-										end,
-									),
-								).toEqual(expected);
-							});
-						}
-		});
-	});
-});
-
 describe("PathingMap#path", () => {
 	describe("radius=0.5", () => {
 		const defaultPathing = [
@@ -1517,5 +1323,65 @@ describe("PathingMap#path", () => {
 				{ x: 2.5, y: 2.5 },
 			]);
 		});
+	});
+});
+
+describe("PathingMap#recheck", () => {
+	it("smoke", () => {
+		const pathingMap = new PathingMap({
+			resolution: 2,
+			pathing: [
+				[0, 0, 0, 0],
+				[0, 3, 0, 0],
+				[0, 0, 0, 3],
+				[3, 0, 0, 0],
+				[0, 0, 3, 0],
+			],
+		});
+		const entity = {
+			radius: 0.5,
+			x: 0.5,
+			y: 0.5,
+			pathing: PATHING_TYPES.WALKABLE,
+		};
+		pathingMap.addEntity(entity);
+		const path = pathingMap.path(entity, { x: 3.5, y: 4.5 });
+
+		expect(path).toEqual([
+			{ x: 0.5, y: 0.5 },
+			{ x: 0.5, y: 2.5 },
+			{ x: 1.5, y: 2.5 },
+			{ x: 2.5, y: 3.5 },
+			{ x: 3.5, y: 3.5 },
+			{ x: 3.5, y: 4.5 },
+		]);
+		expect(pathDistance(path)).toEqual(5.414213562373095);
+		expect(pathingMap.recheck(path, entity, 100)).toBeTruthy();
+
+		pathingMap.addEntity({
+			radius: 0.5,
+			x: 1.5,
+			y: 2.5,
+			pathing: PATHING_TYPES.WALKABLE + PATHING_TYPES.BUILDABLE,
+		});
+
+		expectGrid(pathingMap, [
+			[1, 1, 0, 0, 0, 0, 0, 0],
+			[1, 1, 0, 0, 0, 0, 0, 0],
+			[0, 0, 3, 3, 0, 0, 0, 0],
+			[0, 0, 3, 3, 0, 0, 0, 0],
+			[0, 0, 3, 3, 0, 0, 3, 3],
+			[0, 0, 3, 3, 0, 0, 3, 3],
+			[3, 3, 0, 0, 0, 0, 0, 0],
+			[3, 3, 0, 0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 3, 3, 0, 0],
+			[0, 0, 0, 0, 3, 3, 0, 0],
+		]);
+
+		expect(pathingMap.recheck(path, entity, 2)).toBeTruthy();
+		expect(pathingMap.recheck(path, entity, 2.25)).toBeFalsy();
+		expect(pathingMap.recheck(path, entity, 1, 2.5)).toBeFalsy();
+		expect(pathingMap.recheck(path, entity, 1, 2.75)).toBeTruthy();
+		expect(pathingMap.recheck(path, entity, 1, 100)).toBeTruthy();
 	});
 });
