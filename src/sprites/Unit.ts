@@ -1,6 +1,6 @@
 import { dragSelect } from "./dragSelect.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
-import { tweenPoints } from "../util/tweenPoints.js";
+import { tweenPoints, distanceBetweenPoints } from "../util/tweenPoints.js";
 import { Sprite, SpriteProps, SpriteEvents } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
@@ -146,7 +146,8 @@ class Unit extends Sprite {
 			update: (delta: number) => {
 				updateTicks++;
 
-				updateProgress += delta * this.speed;
+				const stepProgress = delta * this.speed;
+				updateProgress += stepProgress;
 				const { x, y } = path(updateProgress);
 				if (isNaN(x) || isNaN(y))
 					throw new Error(`Returning NaN location x=${x} y=${y}`);
@@ -156,7 +157,22 @@ class Unit extends Sprite {
 					this.activity = undefined;
 				} else {
 					// Update self
-					this._setPosition(x, y);
+					const {
+						x: newX,
+						y: newY,
+					} = this.round.pathingMap.withoutEntity(this, () =>
+						this.round.pathingMap.nearestPathing(x, y, this),
+					);
+
+					if (
+						distanceBetweenPoints({ x, y }, { x: newX, y: newY }) <=
+						stepProgress * 1.05
+					) {
+						this._setPosition(x, y);
+					} else {
+						updateProgress -= stepProgress;
+						renderProgress -= stepProgress;
+					}
 
 					if (
 						updateTicks % 5 === 0 ||

@@ -1,5 +1,5 @@
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
-import { tweenPoints } from "../util/tweenPoints.js";
+import { tweenPoints, distanceBetweenPoints } from "../util/tweenPoints.js";
 import { Unit, UnitProps } from "./Unit.js";
 import { dragSelect } from "./dragSelect.js";
 import {
@@ -94,7 +94,8 @@ export class Crosser extends Unit {
 			update: (delta) => {
 				updateTicks++;
 
-				updateProgress += delta * this.speed;
+				const stepProgress = delta * this.speed;
+				updateProgress += stepProgress;
 				const { x, y } = path(updateProgress);
 				if (isNaN(x) || isNaN(y))
 					throw new Error(`Returning NaN location x=${x} y=${y}`);
@@ -156,7 +157,22 @@ export class Crosser extends Unit {
 					this.setPosition(x, y);
 				} else {
 					// Update self
-					this._setPosition(x, y);
+					const {
+						x: newX,
+						y: newY,
+					} = this.round.pathingMap.withoutEntity(this, () =>
+						this.round.pathingMap.nearestPathing(x, y, this),
+					);
+
+					if (
+						distanceBetweenPoints({ x, y }, { x: newX, y: newY }) <=
+						stepProgress * 1.05
+					) {
+						this._setPosition(x, y);
+					} else {
+						updateProgress -= stepProgress;
+						renderProgress -= stepProgress;
+					}
 
 					// Recheck path, start a new one periodically or if check
 					// fails

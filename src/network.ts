@@ -3,6 +3,7 @@ import { newPingMessage } from "./ui/ping.js";
 import { location } from "./util/globals.js";
 import { obstructionMap } from "./sprites/obstructions/index.js";
 import { Game } from "./Game.js";
+import { ValueOf } from "./types.js";
 
 export const activeHost = location.port
 	? `${location.hostname}:${8080}`
@@ -23,8 +24,13 @@ type StateEvent = Event & {
 	state: ReturnType<typeof Game.prototype.toJSON>;
 };
 
+type UpdateEvent = Event & {
+	type: "update";
+};
+
 type PlayerEvent = Event & {
 	connection: number;
+	sent?: number;
 };
 
 type BuildEvent = PlayerEvent & {
@@ -93,7 +99,7 @@ type ConnectionEvent = PlayerEvent & {
 const networkEvents = {
 	init: (data: InitEvent) => {},
 	state: (data: StateEvent) => {},
-	update: (data: { time: number }) => {},
+	update: (data: UpdateEvent) => {},
 	build: (data: BuildEvent) => {},
 	move: (data: MoveEvent) => {},
 	attack: (data: AttackEvent) => {},
@@ -104,10 +110,18 @@ const networkEvents = {
 	chat: (data: ChatEvent) => {},
 	disconnection: (data: DisconnectionEvent) => {},
 	connection: (data: ConnectionEvent) => {},
-};
+} as const;
 /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
 
-export type NetworkEvents = typeof networkEvents;
+export type NetworkEventCallback = typeof networkEvents;
+type NetworkEvent = Parameters<ValueOf<NetworkEventCallback>>[0];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isNetworkEvent = (json: any): json is NetworkEvent =>
+	typeof json === "object" &&
+	typeof json.type === "string" &&
+	json.type.length &&
+	json.type in networkEvents;
 
 class Network {
 	private connection?: WebSocket;
@@ -140,20 +154,26 @@ class Network {
 	onMessage(message: MessageEvent) {
 		const json = JSON.parse(message.data);
 
-		if (this.localPlayerId === json.connection)
-			newPingMessage({
-				type: json.type,
-				ping: performance.now() - json.sent,
-			});
+		if (isNetworkEvent(json)) {
+			// TypeScript doesn't allow refinements on guarded types
+			const event: NetworkEvent = json;
+			if (event.type === "connection") this.onConnection(event);
 
-		if (typeof json.type === "string" && json.type.length) {
-			if (!(json.type in networkEvents))
-				console.warn("untyped event", json);
+			if (
+				"connection" in event &&
+				"sent" in event &&
+				this.localPlayerId === event.connection &&
+				typeof event.sent === "number"
+			)
+				newPingMessage({
+					type: event.type,
+					ping: performance.now() - event.sent,
+				});
 
-			if (json.type === "connection") this.onConnection(json);
-
-			this.dispatchEvent(json.type, json);
-		}
+			// Not sure why TypeScript can't hold the type info here...
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			this.dispatchEvent(event.type, event as any);
+		} else console.warn("untyped event", json);
 	}
 
 	private onConnection(message: ConnectionEvent) {
@@ -167,7 +187,7 @@ class Network {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface Network extends Emitter<NetworkEvents> {}
+interface Network extends Emitter<NetworkEventCallback> {}
 
 export { Network };
 

@@ -1,5 +1,9 @@
 import { WORLD_TO_GRAPHICS_RATIO } from "../../constants.js";
-import { tweenPoints, PathTweener } from "../../util/tweenPoints.js";
+import {
+	tweenPoints,
+	PathTweener,
+	distanceBetweenPoints,
+} from "../../util/tweenPoints.js";
 import { Unit } from "../Unit.js";
 import { Sprite } from "../Sprite.js";
 import { Point } from "../../pathing/PathingMap.js";
@@ -98,7 +102,8 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 
 		let x = attacker.x;
 		let y = attacker.y;
-		updateProgress += delta * attacker.speed;
+		const stepProgress = delta * attacker.speed;
+		updateProgress += stepProgress;
 
 		if (attacker.speed) {
 			const newPoint = path(updateProgress);
@@ -126,7 +131,6 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 						);
 
 					if (target.health <= 0) {
-						if (attacker.speed) attacker.setPosition(x, y);
 						attacker.activity = undefined;
 					}
 				} else attacker.weapon.projectile(target, attacker);
@@ -147,7 +151,20 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 			renderedPosition = undefined;
 		} else if (attacker.speed) {
 			// Update self
-			attacker.setPosition(x, y);
+			const { x: newX, y: newY } = pathingMap.withoutEntity(
+				attacker,
+				() => pathingMap.nearestPathing(x, y, attacker),
+			);
+
+			if (
+				distanceBetweenPoints({ x, y }, { x: newX, y: newY }) <=
+				stepProgress * 1.05
+			) {
+				attacker.setPosition(x, y);
+			} else {
+				updateProgress -= stepProgress;
+				renderProgress -= stepProgress;
+			}
 
 			// Recheck path, start a new one periodically or if check
 			// fails

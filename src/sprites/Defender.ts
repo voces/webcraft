@@ -60,7 +60,7 @@ export class Defender extends Unit {
 			cooldown: 1.5,
 			// todo: add backswing (time before damage) and recovery (time after damage where the unit can't do anything)
 			last: 0,
-			range: 0.5,
+			range: 0.65,
 			projectile: "instant" as const,
 		},
 		autoAttack: true,

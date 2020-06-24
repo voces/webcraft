@@ -9,7 +9,7 @@ import { Arena } from "./arenas/types.js";
 import { alea } from "./lib/alea.js";
 import { Settings } from "./types.js";
 import { emptyElement } from "./util/html.js";
-import { Network, NetworkEvents } from "./Network.js";
+import { Network, NetworkEventCallback } from "./Network.js";
 import { UI } from "./ui/index.js";
 import { initObstructionPlacement } from "./sprites/obstructionPlacement.js";
 import { initPlayerLogic } from "./players/playerLogic.js";
@@ -92,7 +92,7 @@ class Game {
 		return this.network.isHost;
 	}
 
-	private onInit: NetworkEvents["init"] = ({
+	private onInit: NetworkEventCallback["init"] = ({
 		connections,
 		state: { players: inputPlayers, arena },
 	}) => {
