@@ -35,6 +35,7 @@ export const trueMinX = (
 	if (Math.abs(point.y - y) - 0.5 <= 1) return offValue;
 
 	if (y > point.y) {
+		// Using the equation of the circle, but solving for the x coefficient
 		const squared =
 			-(point.y ** 2) + 2 * point.y * y + radius ** 2 - y ** 2;
 
@@ -75,3 +76,11 @@ export const trueMaxX = (
 
 	return Math.floor(point.x + core);
 };
+
+export const offset = (
+	point: { x: number; y: number },
+	offset: number,
+): { x: number; y: number } => ({
+	x: point.x + offset,
+	y: point.y + offset,
+});

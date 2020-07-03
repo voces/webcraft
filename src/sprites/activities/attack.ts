@@ -1,9 +1,5 @@
 import { WORLD_TO_GRAPHICS_RATIO } from "../../constants.js";
-import {
-	tweenPoints,
-	PathTweener,
-	distanceBetweenPoints,
-} from "../../util/tweenPoints.js";
+import { tweenPoints, PathTweener } from "../../util/tweenPoints.js";
 import { Unit } from "../Unit.js";
 import { Sprite } from "../Sprite.js";
 import { Point } from "../../pathing/PathingMap.js";
@@ -87,7 +83,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 		};
 	}
 
-	attacker.activity.update = (delta) => {
+	const update = (delta: number, retry = true) => {
 		if (!attacker.weapon) {
 			attacker.activity = undefined;
 			return;
@@ -151,29 +147,19 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 			renderedPosition = undefined;
 		} else if (attacker.speed) {
 			// Update self
-			const { x: newX, y: newY } = pathingMap.withoutEntity(
-				attacker,
-				() => pathingMap.nearestPathing(x, y, attacker),
-			);
+			const pathable = pathingMap.pathable(attacker, x, y);
+			if (pathable) attacker.setPosition(x, y);
 
+			// Recheck path, start a new one periodically or if check fails
 			if (
-				distanceBetweenPoints({ x, y }, { x: newX, y: newY }) <=
-				stepProgress * 1.05
-			) {
-				attacker.setPosition(x, y);
-			} else {
-				updateProgress -= stepProgress;
-				renderProgress -= stepProgress;
-			}
-
-			// Recheck path, start a new one periodically or if check
-			// fails
-			if (
+				!pathable ||
 				updateTicks % 5 === 0 ||
-				!pathingMap.recheck(
-					path.points,
-					attacker,
-					delta * attacker.speed * 6,
+				!pathingMap.withoutEntity(target, () =>
+					pathingMap.recheck(
+						path.points,
+						attacker,
+						delta * attacker.speed * 6,
+					),
 				)
 			) {
 				path = tweenPoints(
@@ -181,10 +167,15 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 						pathingMap.path(attacker, target),
 					),
 				);
+
 				updateProgress = 0;
 				renderProgress = 0;
 				renderedPosition = undefined;
+
+				if (!pathable && retry) update(delta, false);
 			}
 		}
 	};
+
+	attacker.activity.update = update;
 };

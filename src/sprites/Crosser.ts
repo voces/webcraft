@@ -1,5 +1,5 @@
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
-import { tweenPoints, distanceBetweenPoints } from "../util/tweenPoints.js";
+import { tweenPoints } from "../util/tweenPoints.js";
 import { Unit, UnitProps } from "./Unit.js";
 import { dragSelect } from "./dragSelect.js";
 import {
@@ -90,108 +90,97 @@ export class Crosser extends Unit {
 				  })
 				: undefined;
 
-		this.activity = {
-			update: (delta) => {
-				updateTicks++;
+		const update = (delta: number, retry = true) => {
+			updateTicks++;
 
-				const stepProgress = delta * this.speed;
-				updateProgress += stepProgress;
-				const { x, y } = path(updateProgress);
-				if (isNaN(x) || isNaN(y))
-					throw new Error(`Returning NaN location x=${x} y=${y}`);
+			const stepProgress = delta * this.speed;
+			updateProgress += stepProgress;
+			const { x, y } = path(updateProgress);
+			if (isNaN(x) || isNaN(y)) {
+				this.activity = undefined;
+				throw new Error(`Returning NaN location x=${x} y=${y}`);
+			}
 
-				const distanceRemaining = Math.sqrt(
-					(x - target.x) ** 2 + (y - target.y) ** 2,
-				);
-				if (distanceRemaining < BUILD_DISTANCE) {
-					this.activity = undefined;
+			const distanceRemaining = Math.sqrt(
+				(x - target.x) ** 2 + (y - target.y) ** 2,
+			);
+			if (distanceRemaining < BUILD_DISTANCE) {
+				this.activity = undefined;
 
-					if (ObstructionClass.defaults.cost) {
-						const check = this.owner.checkResources(
-							ObstructionClass.defaults.cost,
-						);
-						if (check?.length) {
-							appendErrorMessage(`Not enough ${check.join(" ")}`);
-							return;
-						}
-
-						this.owner.subtractResources(
-							ObstructionClass.defaults.cost,
-						);
-					}
-
-					const obstruction = new ObstructionClass({
-						x: target.x,
-						y: target.y,
-						owner: this.owner,
-					});
-
-					this.round.pathingMap.withoutEntity(this, () => {
-						if (
-							this.round.pathingMap.pathable(
-								obstruction,
-								target.x,
-								target.y,
-							)
-						) {
-							this.round.pathingMap.addEntity(obstruction);
-							this.obstructions.push(obstruction);
-						} else obstruction.kill({ removeImmediately: true });
-
-						const { x, y } = path.radialStepBack(BUILD_DISTANCE);
-						this.setPosition(
-							this.round.pathingMap.nearestSpiralPathing(
-								x,
-								y,
-								this,
-							),
-						);
-					});
-
-					// We're never going to get there
-				} else if (
-					path.distance < updateProgress &&
-					updateProgress < BUILD_DISTANCE
-				) {
-					this.activity = undefined;
-					this.setPosition(x, y);
-				} else {
-					// Update self
-					const {
-						x: newX,
-						y: newY,
-					} = this.round.pathingMap.withoutEntity(this, () =>
-						this.round.pathingMap.nearestPathing(x, y, this),
+				if (ObstructionClass.defaults.cost) {
+					const check = this.owner.checkResources(
+						ObstructionClass.defaults.cost,
 					);
-
-					if (
-						distanceBetweenPoints({ x, y }, { x: newX, y: newY }) <=
-						stepProgress * 1.05
-					) {
-						this._setPosition(x, y);
-					} else {
-						updateProgress -= stepProgress;
-						renderProgress -= stepProgress;
+					if (check?.length) {
+						appendErrorMessage(`Not enough ${check.join(" ")}`);
+						return;
 					}
 
-					// Recheck path, start a new one periodically or if check
-					// fails
+					this.owner.subtractResources(
+						ObstructionClass.defaults.cost,
+					);
+				}
+
+				const obstruction = new ObstructionClass({
+					x: target.x,
+					y: target.y,
+					owner: this.owner,
+				});
+
+				this.round.pathingMap.withoutEntity(this, () => {
 					if (
-						updateTicks % 5 === 0 ||
-						!this.round.pathingMap.recheck(
-							path.points,
-							this,
-							delta * this.speed * 6,
+						this.round.pathingMap.pathable(
+							obstruction,
+							target.x,
+							target.y,
 						)
 					) {
-						path = tweenPoints(
-							this.round.pathingMap.path(this, target),
-						);
-						updateProgress = 0;
-						renderProgress = 0;
-					}
+						this.round.pathingMap.addEntity(obstruction);
+						this.obstructions.push(obstruction);
+					} else obstruction.kill({ removeImmediately: true });
+
+					const { x, y } = path.radialStepBack(BUILD_DISTANCE);
+					this.setPosition(
+						this.round.pathingMap.nearestSpiralPathing(x, y, this),
+					);
+				});
+
+				// We're never going to get there
+			} else if (
+				path.distance < updateProgress &&
+				updateProgress < BUILD_DISTANCE
+			) {
+				this.activity = undefined;
+				this.setPosition(x, y);
+			} else {
+				// Update self
+				const pathable = this.round.pathingMap.pathable(this, x, y);
+				if (pathable) this.setPosition(x, y);
+
+				// Recheck path, start a new one periodically or if check
+				// fails
+				if (
+					!pathable ||
+					updateTicks % 5 === 0 ||
+					!this.round.pathingMap.recheck(
+						path.points,
+						this,
+						delta * this.speed * 6,
+					)
+				) {
+					path = tweenPoints(
+						this.round.pathingMap.path(this, target),
+					);
+					updateProgress = 0;
+					renderProgress = 0;
+
+					if (!pathable && retry) update(delta, false);
 				}
-			},
+			}
+		};
+
+		this.activity = {
+			update,
 			render: (delta) => {
 				renderProgress += delta * this.speed;
 				const { x, y } = path(renderProgress);

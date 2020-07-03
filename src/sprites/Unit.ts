@@ -1,6 +1,6 @@
 import { dragSelect } from "./dragSelect.js";
 import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
-import { tweenPoints, distanceBetweenPoints } from "../util/tweenPoints.js";
+import { tweenPoints } from "../util/tweenPoints.js";
 import { Sprite, SpriteProps, SpriteEvents } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
@@ -142,55 +142,48 @@ class Unit extends Sprite {
 		let renderProgress = 0;
 		let path = tweenPoints(this.round.pathingMap.path(this, target));
 
-		this.activity = {
-			update: (delta: number) => {
-				updateTicks++;
+		const update = (delta: number, retry = true) => {
+			updateTicks++;
 
-				const stepProgress = delta * this.speed;
-				updateProgress += stepProgress;
-				const { x, y } = path(updateProgress);
-				if (isNaN(x) || isNaN(y))
-					throw new Error(`Returning NaN location x=${x} y=${y}`);
+			const stepProgress = delta * this.speed;
+			updateProgress += stepProgress;
+			const { x, y } = path(updateProgress);
+			if (isNaN(x) || isNaN(y)) {
+				this.activity = undefined;
+				throw new Error(`Returning NaN location x=${x} y=${y}`);
+			}
 
-				if (path.distance < updateProgress) {
-					this.setPosition(x, y);
-					this.activity = undefined;
-				} else {
-					// Update self
-					const {
-						x: newX,
-						y: newY,
-					} = this.round.pathingMap.withoutEntity(this, () =>
-						this.round.pathingMap.nearestPathing(x, y, this),
+			if (path.distance < updateProgress) {
+				this.setPosition(x, y);
+				this.activity = undefined;
+			} else {
+				// Update self
+				const pathable = this.round.pathingMap.pathable(this, x, y);
+				if (pathable) this.setPosition(x, y);
+
+				if (
+					!pathable ||
+					updateTicks % 5 === 0 ||
+					!this.round.pathingMap.recheck(
+						path.points,
+						this,
+						delta * this.speed * 6,
+					)
+				) {
+					// Start new walk path
+					path = tweenPoints(
+						this.round.pathingMap.path(this, target),
 					);
+					updateProgress = 0;
+					renderProgress = 0;
 
-					if (
-						distanceBetweenPoints({ x, y }, { x: newX, y: newY }) <=
-						stepProgress * 1.05
-					) {
-						this._setPosition(x, y);
-					} else {
-						updateProgress -= stepProgress;
-						renderProgress -= stepProgress;
-					}
-
-					if (
-						updateTicks % 5 === 0 ||
-						!this.round.pathingMap.recheck(
-							path.points,
-							this,
-							delta * this.speed * 6,
-						)
-					) {
-						// Start new walk path
-						path = tweenPoints(
-							this.round.pathingMap.path(this, target),
-						);
-						updateProgress = 0;
-						renderProgress = 0;
-					}
+					if (!pathable && retry) update(delta, false);
 				}
-			},
+			}
+		};
+
+		this.activity = {
+			update,
 			render: (delta: number) => {
 				renderProgress += delta * this.speed;
 				const { x, y } = path(renderProgress);

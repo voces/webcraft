@@ -1,7 +1,7 @@
 import { PathingMap } from "./PathingMap.js";
 import { PATHING_TYPES } from "../constants.js";
 import { array2 } from "../../test/array2.js";
-import { pathDistance } from "../util/tweenPoints.js";
+import { tweenPoints, pathDistance } from "../util/tweenPoints.js";
 
 // todo: this should be isolated to describes
 const pathing = [
@@ -156,172 +156,107 @@ describe("PathingMap#yTileToWorld", () => {
 });
 
 describe("PathingMap#pointToTilemap", () => {
-	const pathingMap = new PathingMap({ pathing, resolution: 4 });
+	describe("radius=4", () => {
+		const pathingMap = new PathingMap({ pathing, resolution: 4 });
 
-	it("top-left corner (0.25)", () => {
-		expect(pathingMap.pointToTilemap(0.25, 0.25, 0.25)).toEqual({
-			map: Array(4).fill(PATHING_TYPES.WALKABLE),
-			top: -1,
-			left: -1,
-			width: 2,
-			height: 2,
+		it("top-left corner (0.25)", () => {
+			expect(pathingMap.pointToTilemap(0.25, 0.25, 0.25)).toEqual({
+				map: Array(4).fill(PATHING_TYPES.WALKABLE),
+				top: -1,
+				left: -1,
+				width: 2,
+				height: 2,
+			});
+		});
+
+		it("top-left corner (0.5)", () => {
+			expect(pathingMap.pointToTilemap(0.5, 0.5, 0.5)).toEqual({
+				map: Array(16).fill(PATHING_TYPES.WALKABLE),
+				top: -2,
+				left: -2,
+				width: 4,
+				height: 4,
+			});
+		});
+
+		it("top-left corner (1)", () => {
+			expect(pathingMap.pointToTilemap(1, 1, 1)).toEqual({
+				map: [
+					[0, 1, 1, 1, 1, 1, 1, 0],
+					[1, 1, 1, 1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1, 1, 1, 1],
+					[0, 1, 1, 1, 1, 1, 1, 0],
+				].flat(),
+				top: -4,
+				left: -4,
+				width: 8,
+				height: 8,
+			});
+		});
+
+		it("offset (right-down)", () => {
+			expect(pathingMap.pointToTilemap(1.01, 1.01, 0.5)).toEqual({
+				map: [
+					[1, 1, 1, 1, 0],
+					[1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 0],
+					[0, 1, 1, 0, 0],
+				].flat(),
+				top: -2,
+				left: -2,
+				width: 5,
+				height: 5,
+			});
+		});
+
+		it("offset (left-up)", () => {
+			expect(pathingMap.pointToTilemap(0.99, 0.99, 0.5)).toEqual({
+				map: [
+					[0, 0, 1, 1, 0],
+					[0, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1],
+					[0, 1, 1, 1, 1],
+				].flat(),
+				top: -2,
+				left: -2,
+				width: 5,
+				height: 5,
+			});
 		});
 	});
 
-	it("top-left corner (0.5)", () => {
-		expect(pathingMap.pointToTilemap(0.5, 0.5, 0.5)).toEqual({
-			map: Array(16).fill(PATHING_TYPES.WALKABLE),
-			top: -2,
-			left: -2,
-			width: 4,
-			height: 4,
-		});
-	});
-
-	it("top-left corner (1)", () => {
-		expect(pathingMap.pointToTilemap(1, 1, 1)).toEqual({
+	it("super resolution", () => {
+		const pathingMap = new PathingMap({ pathing, resolution: 16 });
+		expect(pathingMap.pointToTilemap(0.5283, 0.5198, 0.5)).toEqual({
 			map: [
-				0,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				0,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				0,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				0,
-			],
-			top: -4,
-			left: -4,
-			width: 8,
-			height: 8,
-		});
-	});
-
-	it("offset (right-down)", () => {
-		expect(pathingMap.pointToTilemap(1.01, 1.01, 0.5)).toEqual({
-			map: [
-				1,
-				1,
-				1,
-				1,
-				0,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				0,
-				0,
-				1,
-				1,
-				0,
-				0,
-			],
-			top: -2,
-			left: -2,
-			width: 5,
-			height: 5,
-		});
-	});
-
-	it("offset (left-up)", () => {
-		expect(pathingMap.pointToTilemap(0.99, 0.99, 0.5)).toEqual({
-			map: [
-				0,
-				0,
-				1,
-				1,
-				0,
-				0,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				1,
-				0,
-				1,
-				1,
-				1,
-				1,
-			],
-			top: -2,
-			left: -2,
-			width: 5,
-			height: 5,
+				[0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+				[0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+				[0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+				[0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+				[0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+				[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+				[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+				[0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+				[0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+				[0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+				[0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+				[0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+			].flat(),
+			top: -8,
+			left: -8,
+			width: 17,
+			height: 17,
 		});
 	});
 });
@@ -1383,5 +1318,92 @@ describe("PathingMap#recheck", () => {
 		expect(pathingMap.recheck(path, entity, 1, 2.5)).toBeFalsy();
 		expect(pathingMap.recheck(path, entity, 1, 2.75)).toBeTruthy();
 		expect(pathingMap.recheck(path, entity, 1, 100)).toBeTruthy();
+	});
+
+	it("sample1", () => {
+		const pathingMap = new PathingMap({
+			resolution: 16,
+			pathing: [
+				[0, 0, 0, 0],
+				[0, 3, 0, 0],
+				[0, 0, 0, 3],
+				[3, 0, 0, 0],
+				[0, 0, 3, 0],
+			],
+		});
+		const entity = {
+			radius: 0.5,
+			x: 0.5,
+			y: 0.5,
+			pathing: PATHING_TYPES.WALKABLE,
+		};
+
+		expect(
+			pathingMap.recheck(
+				[
+					{ x: 1.0340957773640571, y: 2.5 },
+					{ x: 1.375, y: 2.5625 },
+				],
+				entity,
+			),
+		).toBeFalsy();
+	});
+
+	it("fresh paths are always valid", () => {
+		const pathingMap = new PathingMap({
+			resolution: 16,
+			pathing: [
+				[0, 0, 0, 0],
+				[0, 3, 0, 0],
+				[0, 0, 0, 3],
+				[3, 0, 0, 0],
+				[0, 0, 3, 0],
+			],
+		});
+		const entity = {
+			radius: 0.5,
+			x: 0.5,
+			y: 0.5,
+			pathing: PATHING_TYPES.WALKABLE,
+		};
+		pathingMap.addEntity(entity);
+		let path = tweenPoints(pathingMap.path(entity, { x: 3.5, y: 4.5 }));
+		const length = path.distance;
+		const step = 0.0123;
+		const maxSteps = Math.ceil(length / step);
+		let check = 1;
+		while (entity.x !== 3.5 && entity.y !== 4.5) {
+			const point = path(step);
+			try {
+				expect(
+					pathingMap.recheck(path.points, entity, 0.123),
+				).toBeTruthy();
+			} catch (err) {
+				err.message += ` (check ${check}) x=${entity.x} y=${entity.y}`;
+				throw err;
+			}
+			try {
+				expect(
+					pathingMap.pathable(entity, point.x, point.y),
+				).toBeTruthy();
+			} catch (err) {
+				err.message += ` (check ${check}) x=${entity.x} y=${entity.y}`;
+				throw err;
+			}
+			entity.x = point.x;
+			entity.y = point.y;
+			path = tweenPoints(pathingMap.path(entity, { x: 3.5, y: 4.5 }));
+			check++;
+
+			// throw new Error(JSON.stringify({ x: entity.x, y: entity.y }));
+
+			if (check === 197) {
+				// debugger;
+			}
+
+			if (check > maxSteps) {
+				throw new Error("Path took more steps than expected");
+			}
+		}
 	});
 });
