@@ -123,11 +123,10 @@ class Round {
 		for (const team of teamKeys)
 			if (team in this.settings.resources)
 				this[team].forEach((player) => {
-					for (const resource of resourceKeys) {
+					for (const resource of resourceKeys)
 						player.resources[resource] = this.settings.resources[
 							team
 						][resource].starting;
-					}
 				});
 	}
 
@@ -403,12 +402,11 @@ class Round {
 		for (const team of teamKeys)
 			if (team in this.settings.resources)
 				this[team].forEach((player) => {
-					for (const resource of resourceKeys) {
+					for (const resource of resourceKeys)
 						player.resources[resource] +=
 							this.settings.resources[team][resource].rate *
 							delta *
 							factor;
-					}
 				});
 	}
 

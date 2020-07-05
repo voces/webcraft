@@ -1175,9 +1175,8 @@ export class PathingMap {
 				(path[cur + 1].y - path[cur].y) ** 2;
 		}
 
-		if (cur === path.length - 1) {
+		if (cur === path.length - 1)
 			return this.pathable(entity, path[cur].x, path[cur].y);
-		}
 
 		while (cur < path.length - 1 && distanceSquared < amountSqaured) {
 			if (!this.linearPathable(entity, path[cur], path[cur + 1])) {

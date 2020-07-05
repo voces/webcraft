@@ -1,8 +1,9 @@
 const sharedRules = {
-	"no-undef": 0,
-	"no-unused-vars": 0,
-	"no-dupe-class-members": 0,
-	"padding-line-between-statements": 0,
+	"no-undef": "off",
+	"no-unused-vars": "off",
+	"no-dupe-class-members": "off",
+	"padding-line-between-statements": "off",
+	curly: ["error", "multi"],
 };
 
 const typeScript = {
@@ -20,9 +21,9 @@ const typeScript = {
 		"plugin:prettier/recommended",
 	],
 	rules: {
-		"@typescript-eslint/camelcase": 0,
-		"@typescript-eslint/no-unused-vars": 2,
-		"@typescript-eslint/no-non-null-assertion": 0,
+		"@typescript-eslint/camelcase": "off",
+		"@typescript-eslint/no-unused-vars": "error",
+		"@typescript-eslint/no-non-null-assertion": "off",
 		...sharedRules,
 	},
 };

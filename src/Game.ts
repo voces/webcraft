@@ -14,6 +14,7 @@ import { UI } from "./ui/index.js";
 import { initObstructionPlacement } from "./sprites/obstructionPlacement.js";
 import { initPlayerLogic } from "./players/playerLogic.js";
 import { initSpriteLogicListeners } from "./sprites/spriteLogic.js";
+import { App } from "./core/App.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -26,7 +27,7 @@ const gradient = (
 		(10 - first) * 0.1
 	}), rgba(0,128,0,${(10 - second) * 0.1}))`;
 
-class Game {
+class Game extends App {
 	private network: Network;
 	addNetworkListener: Network["addEventListener"];
 	connect: Network["connect"];
@@ -61,6 +62,7 @@ class Game {
 	};
 
 	constructor(network: Network) {
+		super();
 		emitter(this);
 
 		this.network = network;
@@ -245,6 +247,8 @@ class Game {
 	}
 
 	update(e: { time: number }) {
+		super.update(e);
+
 		const time = e.time / 1000;
 		this.lastUpdate = time;
 
@@ -279,6 +283,6 @@ type GameEvents = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface Game extends Emitter<GameEvents> {}
+interface Game extends Emitter<GameEvents>, App {}
 
 export { Game };

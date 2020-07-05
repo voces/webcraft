@@ -32,48 +32,52 @@ export const emitter = <T, Events extends EventMap>(
 
 	const modifiedHost = host as T & Emitter<Events>;
 
-	modifiedHost.addEventListener = <Event extends keyof Events>(
-		name: Event,
-		callback: Events[Event],
-	) => {
-		const callbacks: Events[Event][] = events[name] ?? [];
+	if (!modifiedHost.addEventListener)
+		modifiedHost.addEventListener = <Event extends keyof Events>(
+			name: Event,
+			callback: Events[Event],
+		) => {
+			const callbacks: Events[Event][] = events[name] ?? [];
 
-		if (!events[name]) events[name] = callbacks;
+			if (!events[name]) events[name] = callbacks;
 
-		callbacks.push(callback);
-	};
+			callbacks.push(callback);
+		};
 
-	modifiedHost.removeEventListener = <Event extends keyof Events>(
-		name: Event,
-		callback: Events[Event],
-	) => {
-		const callbacks: Events[Event][] | undefined =
-			events[name] ?? undefined;
-		if (!callbacks) return;
+	if (!modifiedHost.removeEventListener)
+		modifiedHost.removeEventListener = <Event extends keyof Events>(
+			name: Event,
+			callback: Events[Event],
+		) => {
+			const callbacks: Events[Event][] | undefined =
+				events[name] ?? undefined;
+			if (!callbacks) return;
 
-		const index = callbacks.indexOf(callback);
-		if (index >= 0) callbacks.splice(index, 1);
-	};
+			const index = callbacks.indexOf(callback);
+			if (index >= 0) callbacks.splice(index, 1);
+		};
 
-	modifiedHost.removeEventListeners = (name) => {
-		if (!name) {
-			events = {};
-			return;
-		}
+	if (!modifiedHost.removeEventListeners)
+		modifiedHost.removeEventListeners = (name) => {
+			if (!name) {
+				events = {};
+				return;
+			}
 
-		events[name] = [];
-	};
+			events[name] = [];
+		};
 
-	modifiedHost.dispatchEvent = <Event extends keyof Events>(
-		name: Event,
-		...args: Parameters<Events[Event]>
-	) => {
-		const callbacks: Events[Event][] | undefined =
-			events[name] ?? undefined;
-		if (!callbacks) return;
+	if (!modifiedHost.dispatchEvent)
+		modifiedHost.dispatchEvent = <Event extends keyof Events>(
+			name: Event,
+			...args: Parameters<Events[Event]>
+		) => {
+			const callbacks: Events[Event][] | undefined =
+				events[name] ?? undefined;
+			if (!callbacks) return;
 
-		callbacks.forEach((callback) => callback.apply(host, args));
-	};
+			callbacks.forEach((callback) => callback.apply(host, args));
+		};
 
 	return modifiedHost;
 };
