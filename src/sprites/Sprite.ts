@@ -85,7 +85,7 @@ class Sprite implements Emitter<SpriteEvents> {
 		radius: 1,
 	};
 
-	// TODO:  figure out how to type this...
+	// TODO: figure out how to type this...
 	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	static get clonedDefaults() {
 		return clone(this.defaults);

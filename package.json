@@ -9,7 +9,7 @@
     "@types/node": "^14.0.13",
     "@typescript-eslint/eslint-plugin": "^3.5.0",
     "eslint": "^7.4.0",
-    "eslint-config-verit": "^2.0.2",
+    "eslint-config-verit": "^2.1.0",
     "eslint-plugin-prettier": "^3.1.4",
     "jest": "^26.1.0",
     "jest-ts-webcompat-resolver": "^1.0.0",

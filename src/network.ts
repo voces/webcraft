@@ -132,9 +132,7 @@ class Network {
 	}
 
 	send<T extends Record<string, unknown>>(data: T): void {
-		if (!this.connection) {
-			throw new Error("Network has not been connected");
-		}
+		if (!this.connection) throw new Error("Network has not been connected");
 
 		this.connection.send(
 			JSON.stringify(Object.assign(data, { sent: performance.now() })),
@@ -151,7 +149,7 @@ class Network {
 		);
 	}
 
-	onMessage(message: MessageEvent) {
+	onMessage(message: MessageEvent): void {
 		const json = JSON.parse(message.data);
 
 		if (isNetworkEvent(json)) {
@@ -199,7 +197,8 @@ const wrappedFetch = <T>(
 		body?: string;
 		method?: "POST";
 	} = {},
-) => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> => {
 	if (!url.match(/^\w+:\/\//))
 		url = `http://${activeHost}/${url.replace(/^\//, "")}`;
 

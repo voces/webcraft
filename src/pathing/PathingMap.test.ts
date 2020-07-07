@@ -1401,9 +1401,8 @@ describe("PathingMap#recheck", () => {
 				// debugger;
 			}
 
-			if (check > maxSteps) {
+			if (check > maxSteps)
 				throw new Error("Path took more steps than expected");
-			}
 		}
 	});
 });

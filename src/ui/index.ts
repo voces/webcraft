@@ -46,9 +46,7 @@ class UI {
 		this.game = game;
 
 		window.addEventListener("keydown", (e) => {
-			if (e.key === "f" && e.ctrlKey) {
-				e.preventDefault();
-			}
+			if (e.key === "f" && e.ctrlKey) e.preventDefault();
 
 			this.dispatchEvent("keyDown", {
 				ctrlDown: e.ctrlKey,

@@ -58,12 +58,13 @@ const setScale = (scale: number) => {
 
 export const initCameraListeners = (ui: UI): void => {
 	ui.addEventListener("keyDown", ({ key, ctrlDown, game }) => {
-		if ((key === "f" || key === "h") && ctrlDown) {
+		if (key === "f" && ctrlDown)
 			if (followInterval) {
 				clearInterval(followInterval);
 				followInterval = undefined;
-			} else followInterval = setInterval(follow, 500);
-		}
+			}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			else followInterval = <any>setInterval(follow, 500);
 
 		if (!game.round) return;
 
