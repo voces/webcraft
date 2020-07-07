@@ -12,6 +12,8 @@ export class Dense extends Obstruction {
 	constructor(props: ObstructionProps) {
 		super({ ...Dense.clonedDefaults, ...props });
 
-		this.elem.style.boxShadow = "inset 0 0 16px rgba(0,0,0,0.75)";
+		if (this.html?.htmlElement)
+			this.html.htmlElement.style.boxShadow =
+				"inset 0 0 16px rgba(0,0,0,0.75)";
 	}
 }

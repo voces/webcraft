@@ -183,11 +183,14 @@ export class Crosser extends Unit {
 			update,
 			render: (delta) => {
 				renderProgress += delta * this.speed;
-				const { x, y } = path(renderProgress);
-				this.elem.style.left =
-					(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-				this.elem.style.top =
-					(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+				if (this.html?.htmlElement) {
+					const { x, y } = path(renderProgress);
+
+					this.html.htmlElement.style.left =
+						(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+					this.html.htmlElement.style.top =
+						(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+				}
 			},
 			cleanup: () =>
 				blueprint && blueprint.kill({ removeImmediately: true }),
@@ -221,7 +224,8 @@ export class Crosser extends Unit {
 		// Cancel any active placements
 		if (activePlacement()) stopPlacement();
 
-		this.elem.classList.add("ascend");
+		if (this.html?.htmlElement)
+			this.html.htmlElement.classList.add("ascend");
 
 		this.round.setTimeout(() => this.remove(), 1);
 	}

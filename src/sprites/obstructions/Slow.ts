@@ -10,7 +10,9 @@ const slowTimeout = (target: Sprite) =>
 		const effect = target.effects[effectIndex];
 
 		if (Unit.isUnit(target)) target.speed = effect.oldSpeed;
-		target.elem.style.backgroundImage = effect.oldBackgroundImage;
+		if (target.html?.htmlElement && effect.oldBackgroundImage)
+			target.html.htmlElement.style.backgroundImage =
+				effect.oldBackgroundImage;
 		target.effects.splice(effectIndex, 1);
 	}, 5);
 
@@ -49,13 +51,15 @@ export class Slow extends Obstruction {
 				const effect: Effect = {
 					type: "slow",
 					oldSpeed: target.speed,
-					oldBackgroundImage: target.elem.style.backgroundImage,
+					oldBackgroundImage:
+						target.html?.htmlElement?.style.backgroundImage,
 					timeout: slowTimeout(target),
 				};
 
 				target.speed = target.speed * 0.6;
-				target.elem.style.backgroundImage +=
-					" radial-gradient(rgba(0, 0, 255, 0.25), rgba(0, 0, 255, 0.25))";
+				if (target.html?.htmlElement)
+					target.html.htmlElement.style.backgroundImage +=
+						" radial-gradient(rgba(0, 0, 255, 0.25), rgba(0, 0, 255, 0.25))";
 
 				target.effects.push(effect);
 			},

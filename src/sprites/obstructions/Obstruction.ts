@@ -91,7 +91,8 @@ export abstract class Obstruction extends Unit {
 		let renderedHealth = lastHealth;
 		let lastRenderedHealth = lastHealth;
 
-		this.elem.style.borderRadius = "";
+		if (this.html?.htmlElement)
+			this.html.htmlElement.style.borderRadius = "";
 
 		this.activity = {
 			update: (delta) => {
@@ -119,9 +120,10 @@ export abstract class Obstruction extends Unit {
 				renderedHealth += deltaHealth;
 				lastRenderedHealth += deltaHealth;
 
-				this.elem.style.opacity = (
-					renderedHealth / this.maxHealth
-				).toString();
+				if (this.html?.htmlElement)
+					this.html.htmlElement.style.opacity = (
+						renderedHealth / this.maxHealth
+					).toString();
 			},
 			toJSON: () => ({
 				name: "construct",

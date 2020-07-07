@@ -15,6 +15,7 @@ import { initObstructionPlacement } from "./sprites/obstructionPlacement.js";
 import { initPlayerLogic } from "./players/playerLogic.js";
 import { initSpriteLogicListeners } from "./sprites/spriteLogic.js";
 import { App } from "./core/App.js";
+import { HTMLGraphics } from "./systems/HTMLGraphics.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -64,6 +65,7 @@ class Game extends App {
 	constructor(network: Network) {
 		super();
 		emitter(this);
+		this.addSystem(new HTMLGraphics());
 
 		this.network = network;
 		this.addNetworkListener = this.network.addEventListener.bind(
@@ -82,7 +84,7 @@ class Game extends App {
 	}
 
 	/* This should only be used by servers that need to rewrite bits. */
-	public get __UNSAFE_network() {
+	public get __UNSAFE_network(): Network {
 		return this.network;
 	}
 
@@ -105,7 +107,7 @@ class Game extends App {
 		patchInState(this, inputPlayers);
 	};
 
-	setArena(arenaIndex: number) {
+	setArena(arenaIndex: number): void {
 		if (this.settings.arenaIndex === arenaIndex) return;
 
 		this.settings.arenaIndex = arenaIndex;
@@ -207,18 +209,18 @@ class Game extends App {
 		});
 	}
 
-	nextArena() {
+	nextArena(): void {
 		this.settings.arenaIndex =
 			(this.settings.arenaIndex + 1) % arenas.length;
 	}
 
-	previousArena() {
+	previousArena(): void {
 		this.settings.arenaIndex = this.settings.arenaIndex
 			? this.settings.arenaIndex - 1
 			: arenas.length - 1;
 	}
 
-	start({ time }: { time: number }) {
+	start({ time }: { time: number }): void {
 		if (this.round) throw new Error("A round is already in progress");
 
 		const plays = this.players[0].crosserPlays;
@@ -246,7 +248,7 @@ class Game extends App {
 		});
 	}
 
-	update(e: { time: number }) {
+	update(e: { time: number }): void {
 		super.update(e);
 
 		const time = e.time / 1000;

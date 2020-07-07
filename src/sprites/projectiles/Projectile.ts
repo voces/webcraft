@@ -67,10 +67,12 @@ export class Projectile extends Sprite {
 		this.onDamage = onDamage;
 
 		this.speed = speed;
-		this.elem.style.borderRadius = "50%";
-		this.elem.style.backgroundColor = "transparent";
-		this.elem.style.backgroundImage =
-			"radial-gradient(rgba(0, 0, 255, 0.25), transparent)";
+		if (this.html?.htmlElement) {
+			this.html.htmlElement.style.borderRadius = "50%";
+			this.html.htmlElement.style.backgroundColor = "transparent";
+			this.html.htmlElement.style.backgroundImage =
+				"radial-gradient(rgba(0, 0, 255, 0.25), transparent)";
+		}
 
 		const { x, y } = target;
 
@@ -85,11 +87,14 @@ export class Projectile extends Sprite {
 
 		this.activity = {
 			render: (delta) => {
-				const { x, y } = renderPath.step(delta * (this.speed || 0));
-				this.elem.style.left =
-					(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-				this.elem.style.top =
-					(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+				if (this.html?.htmlElement) {
+					const { x, y } = renderPath.step(delta * (this.speed || 0));
+
+					this.html.htmlElement.style.left =
+						(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+					this.html.htmlElement.style.top =
+						(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+				}
 			},
 			update: (delta) => {
 				const point = path.step(delta * (this.speed || 0));

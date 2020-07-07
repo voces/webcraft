@@ -1,23 +1,32 @@
-import { Entity } from "./types.js";
+import { Sprite } from "../sprites/Sprite";
 
 type SystemEvents = {
-	add: (entity: Entity) => void;
-	remove: (entity: Entity) => void;
+	add: (entity: Sprite) => void;
+	remove: (entity: Sprite) => void;
 };
 
-class System extends Array {
+class System<T extends Sprite> {
+	private set: Set<T> = new Set();
+
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	test(entity: Entity): boolean {
+	test(entity: Sprite | T): entity is T {
 		return true;
 	}
 
-	add(...entites: Entity[]): void {
-		for (let i = 0; i < entites.length; i++)
-			if (this.test(entites[i])) this.push(entites[i]);
+	add(...entites: Sprite[]): void {
+		for (const entity of entites)
+			if (this.test(entity) && !this.set.has(entity)) {
+				this.set.add(entity);
+				this.onAddEntity?.(entity);
+			}
 	}
 
-	remove(...entites: Entity[]) {
-		for (let i = 0; i < entites.length; i++) this.push(entites[i]);
+	remove(...entites: Sprite[]): void {
+		for (const entity of entites)
+			if (this.test(entity) && this.set.has(entity)) {
+				this.set.delete(entity);
+				this.onRemoveEntity?.(entity);
+			}
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -43,12 +52,21 @@ class System extends Array {
 	dispose(): void {
 		/* do nothing */
 	}
+
+	[Symbol.iterator](): IterableIterator<T> {
+		return this.set[Symbol.iterator]();
+	}
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface System {
-	update?: (entity: Entity, delta: number) => void;
-	render?: (entity: Entity, delta: number) => void;
+interface System<T> {
+	update?(entity: T, delta: number): void;
+	render?(entity: T, delta: number): void;
+	onAddEntity?(entity: T): void;
+	onRemoveEntity?(entity: T): void;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnySystem = System<Sprite>;
 
 export { System };

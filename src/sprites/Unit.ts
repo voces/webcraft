@@ -120,16 +120,18 @@ class Unit extends Sprite {
 		this.weapon = weapon;
 		this.builds = builds;
 
-		if (
-			this.isIllusion &&
-			game.localPlayer &&
-			game.localPlayer.unit &&
-			this.round.defenders.includes(game.localPlayer)
-		)
-			this.elem.style.backgroundImage =
-				"radial-gradient(rgba(0, 0, 255, 0.75), rgba(0, 0, 255, 0.75))";
-		this.elem.style.borderRadius =
-			this.radius * WORLD_TO_GRAPHICS_RATIO + "px";
+		if (this.html?.htmlElement) {
+			if (
+				this.isIllusion &&
+				game.localPlayer &&
+				game.localPlayer.unit &&
+				this.round.defenders.includes(game.localPlayer)
+			)
+				this.html.htmlElement.style.backgroundImage =
+					"radial-gradient(rgba(0, 0, 255, 0.75), rgba(0, 0, 255, 0.75))";
+			this.html.htmlElement.style.borderRadius =
+				this.radius * WORLD_TO_GRAPHICS_RATIO + "px";
+		}
 	}
 
 	attack(target: Sprite): void {
@@ -186,11 +188,14 @@ class Unit extends Sprite {
 			update,
 			render: (delta: number) => {
 				renderProgress += delta * this.speed;
-				const { x, y } = path(renderProgress);
-				this.elem.style.left =
-					(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-				this.elem.style.top =
-					(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+				if (this.html?.htmlElement) {
+					const { x, y } = path(renderProgress);
+
+					this.html.htmlElement.style.left =
+						(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+					this.html.htmlElement.style.top =
+						(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+				}
 			},
 			toJSON: () => ({
 				name: "walkTo",
@@ -209,22 +214,18 @@ class Unit extends Sprite {
 		this.activity = undefined;
 	}
 
-	get actions() {
+	get actions(): Action[] {
 		const buildList = this.builds.map((klass) => klass.buildAction);
-		if (buildList.length > 0) {
-			buildList.push(cancel);
-		}
+		if (buildList.length > 0) buildList.push(cancel);
 
 		const actions: Action[] = buildList;
 
-		if (this.speed > 0) {
-			actions.push(holdPosition, stop);
-		}
+		if (this.speed > 0) actions.push(holdPosition, stop);
 
 		return actions;
 	}
 
-	toJSON() {
+	toJSON(): ReturnType<typeof Sprite.prototype.toJSON> {
 		return {
 			...super.toJSON(),
 		};

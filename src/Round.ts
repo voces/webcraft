@@ -33,6 +33,9 @@ type Timeout = {
 	id: number;
 };
 
+type IntervalId = number;
+type TimeoutId = number;
+
 // A round starts upon construction
 class Round {
 	game: Game;
@@ -235,7 +238,11 @@ class Round {
 		}, 1);
 	}
 
-	setInterval(fn: () => void, interval = 0.05, oncePerUpdate = true) {
+	setInterval(
+		fn: () => void,
+		interval = 0.05,
+		oncePerUpdate = true,
+	): IntervalId {
 		const id = this.nextIntervalId;
 
 		this.intervals.push({
@@ -251,12 +258,12 @@ class Round {
 		return id;
 	}
 
-	clearInterval(id: number) {
+	clearInterval(id: number): void {
 		const index = this.intervals.findIndex((i) => i.id === id);
 		if (index >= 0) this.intervals.splice(index, 1);
 	}
 
-	setTimeout(fn: () => void, timeout = 0.05) {
+	setTimeout(fn: () => void, timeout = 0.05): TimeoutId {
 		const id = this.nextTimeoutId;
 
 		this.timeouts.push({ fn, next: this.lastUpdate + timeout, id });
@@ -266,18 +273,18 @@ class Round {
 		return id;
 	}
 
-	clearTimeout(id: number) {
+	clearTimeout(id: number): void {
 		const index = this.timeouts.findIndex((i) => i.id === id);
 		if (index >= 0) this.timeouts.splice(index, 1);
 	}
 
-	onPlayerLeave(/* player: Player */) {
+	onPlayerLeave(/* player: Player */): void {
 		if (this.players.some((player) => player.isHere)) return;
 
 		this.game.round = undefined;
 	}
 
-	updateSprites(delta: number) {
+	updateSprites(delta: number): void {
 		this.sprites.forEach((sprite) => {
 			if (sprite.activity)
 				sprite.activity.update && sprite.activity.update(delta);
@@ -357,7 +364,7 @@ class Round {
 		});
 	}
 
-	updateIntervals(time: number) {
+	updateIntervals(time: number): void {
 		this.intervals.sort((a, b) => a.next - b.next);
 		const intervals = [...this.intervals];
 		let intervalIndex = 0;
@@ -374,7 +381,7 @@ class Round {
 		}
 	}
 
-	updateTimeouts(time: number) {
+	updateTimeouts(time: number): void {
 		this.timeouts.sort((a, b) => a.next - b.next);
 		const timeouts = [...this.timeouts];
 		let timeoutIndex = 0;
@@ -387,7 +394,7 @@ class Round {
 		}
 	}
 
-	updateResources(delta: number) {
+	updateResources(delta: number): void {
 		const factor =
 			this.crossers.reduce(
 				(sum, p) =>
@@ -410,7 +417,7 @@ class Round {
 				});
 	}
 
-	update(time: number) {
+	update(time: number): void {
 		// meta info
 		const delta = time - this.lastUpdate;
 		if (isNaN(delta)) throw new Error(`delta=${delta}`);
@@ -426,7 +433,7 @@ class Round {
 		this.updateResources(delta);
 	}
 
-	render() {
+	render(): void {
 		this.requestedAnimationFrame = requestAnimationFrame(() =>
 			this.render(),
 		);
@@ -442,13 +449,19 @@ class Round {
 		);
 	}
 
-	startRendering() {
+	startRendering(): void {
 		this.requestedAnimationFrame = requestAnimationFrame(() =>
 			this.render(),
 		);
 	}
 
-	toJSON() {
+	toJSON(): {
+		crossers: number[];
+		defenders: number[];
+		expireAt: number;
+		lastUpdate: number;
+		sprites: ReturnType<typeof Sprite.prototype.toJSON>[];
+	} {
 		return {
 			crossers: this.crossers.map((c) => c.id),
 			defenders: this.defenders.map((d) => d.id),

@@ -15,6 +15,8 @@ export class Stack extends Obstruction {
 	constructor(props: ObstructionProps) {
 		super({ ...Stack.clonedDefaults, ...props });
 
-		this.elem.style.transform = "rotate(45deg) scale(0.7071067811865475)";
+		if (this.html?.htmlElement)
+			this.html.htmlElement.style.transform =
+				"rotate(45deg) scale(0.7071067811865475)";
 	}
 }

@@ -76,10 +76,12 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 			}
 
 			renderedPosition = { x, y };
-			attacker.elem.style.left =
-				(x - attacker.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-			attacker.elem.style.top =
-				(y - attacker.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+			if (attacker.html?.htmlElement) {
+				attacker.html.htmlElement.style.left =
+					(x - attacker.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+				attacker.html.htmlElement.style.top =
+					(y - attacker.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+			}
 		};
 	}
 
@@ -126,16 +128,14 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 							attacker,
 						);
 
-					if (target.health <= 0) {
-						attacker.activity = undefined;
-					}
+					if (target.health <= 0) attacker.activity = undefined;
 				} else attacker.weapon.projectile(target, attacker);
 
-				attacker.elem.classList.add("attack");
+				if (attacker.html?.htmlElement)
+					attacker.html.htmlElement.classList.add("attack");
 				attacker.round.setTimeout(
 					() =>
-						attacker.elem &&
-						attacker.elem.classList.remove("attack"),
+						attacker.html?.htmlElement?.classList.remove("attack"),
 					0.25,
 				);
 				attacker.weapon.last = attacker.round.lastUpdate;

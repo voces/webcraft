@@ -7,6 +7,7 @@ import { Round } from "../Round.js";
 import { clone } from "../util/clone.js";
 import { Action } from "./spriteLogic.js";
 import { Game } from "../Game.js";
+import { HTMLComponent } from "../systems/HTMLGraphics.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
@@ -34,7 +35,7 @@ export type SpriteProps = {
 export type Effect = {
 	type: "slow";
 	oldSpeed: number;
-	oldBackgroundImage: string;
+	oldBackgroundImage?: string;
 	timeout: number;
 };
 
@@ -63,13 +64,16 @@ class Sprite implements Emitter<SpriteEvents> {
 	isAlive: boolean;
 	priority: number;
 	effects: Effect[] = [];
-	elem: SpriteElement;
 	owner?: Player;
 	round: Round;
 	facing: number;
 	maxHealth: number;
 	_selected = false;
 	_health!: number;
+	color?: string;
+
+	// components
+	html?: HTMLComponent;
 
 	// todo: move these to unit
 	buildProgress?: number;
@@ -81,6 +85,8 @@ class Sprite implements Emitter<SpriteEvents> {
 		radius: 1,
 	};
 
+	// TODO:  figure out how to type this...
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	static get clonedDefaults() {
 		return clone(this.defaults);
 	}
@@ -111,12 +117,6 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.game = game;
 		this.round = game.round;
 
-		// For display, but we want to set this early since setters reference
-		// it
-		this.elem = Object.assign(document.createElement("div"), {
-			sprite: this,
-		});
-
 		this.radius = radius;
 		this.requiresPathing = requiresPathing;
 		this.blocksPathing = blocksPathing;
@@ -131,26 +131,12 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.priority = priority;
 		this.owner = owner;
 		this.facing = facing;
+		this.color = color;
+		// todo:
+		Object.assign(this, { html: {} });
 
-		// Display
-		this.elem.classList.add(this.constructor.name.toLowerCase(), "sprite");
-		this.elem.style.left =
-			(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-		this.elem.style.top =
-			(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-		this.elem.style.width =
-			this.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
-		this.elem.style.height =
-			this.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
-		arenaElement.appendChild(this.elem);
 		if (selectable) dragSelect.addSelectables([this]);
-		else this.elem.classList.add("doodad");
-
-		if (owner) {
-			if (!color && owner.color)
-				this.elem.style.backgroundColor = owner.color.hex;
-			this.elem.setAttribute("owner", owner.id.toString());
-		} else this.elem.style.backgroundColor = color || "white";
+		else this.html?.htmlElement?.classList.add("doodad");
 
 		// Lists
 		if (this.owner) this.owner.sprites.push(this);
@@ -165,26 +151,28 @@ class Sprite implements Emitter<SpriteEvents> {
 			},
 			get: () => activity,
 		});
+
+		this.game.add(this);
 	}
 
 	setPosition(x: number, y: number): void;
 	setPosition(pos: { x: number; y: number }): void;
-	setPosition(pos: number | { x: number; y: number }, yArg?: number) {
+	setPosition(pos: number | { x: number; y: number }, yArg?: number): void {
 		const x = typeof pos === "object" ? pos.x : pos;
 		// ?? 0 shouldn't happen, but TS doesn't know that
 		const y = typeof pos === "object" ? pos.y : yArg ?? 0;
 
 		this._setPosition(x, y);
 
-		if (this.elem) {
-			this.elem.style.left =
+		if (this.html?.htmlElement) {
+			this.html.htmlElement.style.left =
 				(this._x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-			this.elem.style.top =
+			this.html.htmlElement.style.top =
 				(this._y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
 		}
 	}
 
-	_setPosition(x: number, y: number) {
+	_setPosition(x: number, y: number): void {
 		const { x: xBefore, y: yBefore } = this;
 
 		const { x: newX, y: newY } = this.round.pathingMap.withoutEntity(
@@ -198,44 +186,46 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.facing = Math.atan2(this.y - yBefore, this.x - xBefore);
 	}
 
-	set x(x) {
+	set x(x: number) {
 		if (isNaN(x)) throw new Error("Cannot set Sprite#x to NaN");
 
 		this._x = x;
-		if (this.elem)
-			this.elem.style.left =
+		if (this.html?.htmlElement)
+			this.html.htmlElement.style.left =
 				(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
 	}
 
-	get x() {
+	get x(): number {
 		return this._x;
 	}
 
-	set y(y) {
+	set y(y: number) {
 		if (isNaN(y)) throw new Error("Cannot set Sprite#y to NaN");
 
 		this._y = y;
-		if (this.elem)
-			this.elem.style.top =
+		if (this.html?.htmlElement)
+			this.html.htmlElement.style.top =
 				(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
 	}
 
-	get y() {
+	get y(): number {
 		return this._y;
 	}
 
-	set selected(value) {
+	set selected(value: boolean) {
 		this._selected = value;
 
-		if (this.elem && value) this.elem.classList.add("selected");
-		else this.elem.classList.remove("selected");
+		if (!this.html?.htmlElement) return;
+
+		if (value) this.html.htmlElement.classList.add("selected");
+		else this.html.htmlElement.classList.remove("selected");
 	}
 
-	get selected() {
+	get selected(): boolean {
 		return this._selected;
 	}
 
-	damage(amount: number) {
+	damage(amount: number): number {
 		const ignoreArmor =
 			this.buildProgress === undefined || this.buildProgress < 1;
 		const effectiveArmor = ignoreArmor ? this.armor : 0;
@@ -247,16 +237,16 @@ class Sprite implements Emitter<SpriteEvents> {
 		return actualDamage;
 	}
 
-	kill({ removeImmediately = false } = {}) {
+	kill({ removeImmediately = false } = {}): void {
 		if (removeImmediately) this._death({ removeImmediately: true });
 		else this.health = 0;
 	}
 
-	set health(value) {
+	set health(value: number) {
 		this._health = Math.min(Math.max(value, 0), this.maxHealth);
 
-		if (this._health)
-			this.elem.style.opacity = Math.max(
+		if (this._health && this.html?.htmlElement)
+			this.html.htmlElement.style.opacity = Math.max(
 				this._health / this.maxHealth,
 				0.1,
 			).toString();
@@ -267,11 +257,11 @@ class Sprite implements Emitter<SpriteEvents> {
 		} else this.isAlive = true;
 	}
 
-	get health() {
+	get health(): number {
 		return this._health;
 	}
 
-	_death({ removeImmediately = false } = {}) {
+	_death({ removeImmediately = false } = {}): void {
 		if (removeImmediately) this._health = 0;
 
 		this.activity = undefined;
@@ -294,24 +284,35 @@ class Sprite implements Emitter<SpriteEvents> {
 		// Death antimation
 		if (removeImmediately) this.remove();
 		else {
-			this.elem.classList.add("death");
+			if (this.html?.htmlElement)
+				this.html.htmlElement.classList.add("death");
 			this.round.setTimeout(() => this.remove(), 0.125);
 		}
 	}
 
-	remove() {
+	remove(): void {
 		this.removeEventListeners();
 		this.round.pathingMap.removeEntity(this);
 
-		if (arenaElement.contains(this.elem))
-			arenaElement.removeChild(this.elem);
+		if (
+			this.html?.htmlElement &&
+			arenaElement.contains(this.html.htmlElement)
+		)
+			arenaElement.removeChild(this.html.htmlElement);
 	}
 
 	get actions(): Action[] {
 		return [];
 	}
 
-	toJSON() {
+	toJSON(): {
+		activity?: Activity;
+		constructor: string;
+		health: number;
+		owner?: number;
+		x: number;
+		y: number;
+	} {
 		return {
 			activity: this.activity,
 			constructor: this.constructor.name,

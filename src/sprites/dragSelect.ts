@@ -3,6 +3,7 @@ import { swallow } from "../util/swallow.js";
 import { emitter } from "../emitter.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
 import DragSelectClass from "../lib/DragSelect.js";
+import { defined } from "../types.js";
 
 let allSelectables: SpriteElement[] | undefined;
 
@@ -67,9 +68,7 @@ if (typeof window !== "undefined")
 							(s) => s.sprite.owner === localPlayer,
 						),
 					);
-				} else {
-					internalDragSelect.setSelectables([]);
-				}
+				} else internalDragSelect.setSelectables([]);
 			},
 			callback: (selection: SpriteElement[]) => {
 				if (allSelectables)
@@ -97,9 +96,7 @@ if (typeof window !== "undefined")
 				.map((e: SpriteElement) => e.sprite)
 				.filter(Boolean);
 		dragSelect.setSelection = (v: Sprite[]) => {
-			const elements = v
-				.map((v) => (v.elem ? v.elem : undefined))
-				.filter(notEmpty);
+			const elements = v.map((v) => v.html?.htmlElement).filter(notEmpty);
 			const selection = Object.freeze(
 				elements.map((e) => e?.sprite).filter(notEmpty),
 			);
@@ -110,7 +107,11 @@ if (typeof window !== "undefined")
 		};
 
 		dragSelect.addSelectables = (v: Sprite[]) =>
-			internalDragSelect.addSelectables(v.map((v) => v.elem));
+			internalDragSelect.addSelectables(
+				v.map((v) => v.html?.htmlElement).filter(defined),
+			);
 		dragSelect.removeSelectables = (v: Sprite[]) =>
-			internalDragSelect.removeSelectables(v.map((v) => v.elem));
+			internalDragSelect.removeSelectables(
+				v.map((v) => v.html?.htmlElement).filter(defined),
+			);
 	})();
