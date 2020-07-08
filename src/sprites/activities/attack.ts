@@ -8,7 +8,8 @@ const isInRange = (attacker: Unit, target: Sprite) => {
 	if (!attacker.weapon) return false;
 
 	const distanceToTarget = Math.sqrt(
-		(target.x - attacker.x) ** 2 + (target.y - attacker.y) ** 2,
+		(target.position.x - attacker.position.x) ** 2 +
+			(target.position.y - attacker.position.y) ** 2,
 	);
 	return (
 		distanceToTarget <
@@ -40,7 +41,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 	if (attacker.speed) {
 		path = tweenPoints(
 			pathingMap.withoutEntity(target, () =>
-				pathingMap.path(attacker, target),
+				pathingMap.path(attacker, target.position),
 			),
 		);
 
@@ -51,15 +52,17 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 			const range =
 				attacker.weapon.range + attacker.radius + target.radius;
 			const realDistanceToTarget = Math.sqrt(
-				(target.x - attacker.x) ** 2 + (target.y - attacker.y) ** 2,
+				(target.position.x - attacker.position.x) ** 2 +
+					(target.position.y - attacker.position.y) ** 2,
 			);
 			// If we're attacking, we don't need to animate movement
 			if (realDistanceToTarget < range) return;
 
 			// If we're rendered as near enough, no need to animate movement
-			const pos = renderedPosition || attacker;
+			const pos = renderedPosition || attacker.position;
 			const renderedDistanceToTarget = Math.sqrt(
-				(target.x - pos.x) ** 2 + (target.y - pos.y) ** 2,
+				(target.position.x - pos.x) ** 2 +
+					(target.position.y - pos.y) ** 2,
 			);
 			if (renderedDistanceToTarget < range) return;
 
@@ -67,7 +70,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 			let { x, y } = path(renderProgress);
 
 			const distanceToTarget = Math.sqrt(
-				(target.x - x) ** 2 + (target.y - y) ** 2,
+				(target.position.x - x) ** 2 + (target.position.y - y) ** 2,
 			);
 			if (distanceToTarget < range) {
 				const newPoint = path.radialStepBack(range);
@@ -98,8 +101,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 
 		updateTicks++;
 
-		let x = attacker.x;
-		let y = attacker.y;
+		let { x, y } = attacker.position;
 		const stepProgress = delta * attacker.speed;
 		updateProgress += stepProgress;
 
@@ -142,13 +144,13 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 			}
 		} else if (path && path.distance === 0) {
 			attacker.activity = undefined;
-			attacker.setPosition(x, y);
+			attacker.position.setXY(x, y);
 
 			renderedPosition = undefined;
 		} else if (attacker.speed) {
 			// Update self
 			const pathable = pathingMap.pathable(attacker, x, y);
-			if (pathable) attacker.setPosition(x, y);
+			if (pathable) attacker.position.setXY(x, y);
 
 			// Recheck path, start a new one periodically or if check fails
 			if (
@@ -164,7 +166,7 @@ export const attack = (attacker: Unit, target: Sprite): void => {
 			) {
 				path = tweenPoints(
 					pathingMap.withoutEntity(target, () =>
-						pathingMap.path(attacker, target),
+						pathingMap.path(attacker, target.position),
 					),
 				);
 

@@ -83,12 +83,12 @@ export class Defender extends Unit {
 		const angle1 = this.facing + Math.PI / 2;
 		const angle2 = this.facing - Math.PI / 2;
 		let pos1 = {
-			x: this.x + Math.cos(angle1) * MIRROR_SEPARATION,
-			y: this.y + Math.sin(angle1) * MIRROR_SEPARATION,
+			x: this.position.x + Math.cos(angle1) * MIRROR_SEPARATION,
+			y: this.position.y + Math.sin(angle1) * MIRROR_SEPARATION,
 		};
 		let pos2 = {
-			x: this.x + Math.cos(angle2) * MIRROR_SEPARATION,
-			y: this.y + Math.sin(angle2) * MIRROR_SEPARATION,
+			x: this.position.x + Math.cos(angle2) * MIRROR_SEPARATION,
+			y: this.position.y + Math.sin(angle2) * MIRROR_SEPARATION,
 		};
 
 		if (this.game.random() < 0.5) {
@@ -99,21 +99,25 @@ export class Defender extends Unit {
 
 		this.activity = undefined;
 
-		const layer = this.round.pathingMap.layer(this.x, this.y);
-
-		this.round.pathingMap.withoutEntity(this, () =>
-			this.setPosition(getMirroringPosition(pos1, this, layer)),
+		const layer = this.round.pathingMap.layer(
+			this.position.x,
+			this.position.y,
 		);
-		this.facing = oldFacing;
+
+		const realPosition = this.round.pathingMap.withoutEntity(this, () =>
+			getMirroringPosition(pos1, this, layer),
+		);
+		this.position.setXY(realPosition.x, realPosition.y),
+			(this.facing = oldFacing);
 
 		const mirror = new Defender({
-			x: this.x,
-			y: this.y,
+			x: this.position.x,
+			y: this.position.y,
 			owner: this.owner,
 			isIllusion: true,
 		});
 		const mirrorPos = getMirroringPosition(pos2, mirror, layer);
-		mirror.setPosition(mirrorPos);
+		mirror.position.setXY(mirrorPos.x, mirrorPos.y);
 		mirror.facing = oldFacing;
 		this.round.pathingMap.addEntity(mirror);
 		this.mirrors = [mirror];

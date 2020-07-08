@@ -269,7 +269,13 @@ class Game extends App {
 			this.start({ time });
 	}
 
-	toJSON() {
+	toJSON(): {
+		arena: number;
+		lastRoundEnd: number | undefined;
+		lastUpdate: number;
+		players: ReturnType<typeof Player.prototype.toJSON>[];
+		round: ReturnType<typeof Round.prototype.toJSON> | undefined;
+	} {
 		return {
 			arena: this.settings.arenaIndex,
 			lastRoundEnd: this.lastRoundEnd,

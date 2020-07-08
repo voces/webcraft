@@ -56,8 +56,8 @@ export class Projectile extends Sprite {
 		super({
 			...Projectile.clonedDefaults,
 			game: props.owner.game,
-			x: producer.x,
-			y: producer.y,
+			x: producer.position.x,
+			y: producer.position.y,
 			...props,
 		});
 
@@ -77,11 +77,11 @@ export class Projectile extends Sprite {
 		const { x, y } = target;
 
 		const path = tweenPoints([
-			{ x: this.x, y: this.y },
+			{ x: this.position.x, y: this.position.y },
 			{ x, y },
 		]);
 		const renderPath = tweenPoints([
-			{ x: this.x, y: this.y },
+			{ x: this.position.x, y: this.position.y },
 			{ x, y },
 		]);
 
@@ -98,8 +98,8 @@ export class Projectile extends Sprite {
 			},
 			update: (delta) => {
 				const point = path.step(delta * (this.speed || 0));
-				this.x = point.x;
-				this.y = point.y;
+				this.position.x = point.x;
+				this.position.y = point.y;
 				if (path.remaining === 0) {
 					this.activity = undefined;
 
@@ -108,7 +108,8 @@ export class Projectile extends Sprite {
 						.filter((s) => Number.isFinite(s.health))
 						.forEach((target) => {
 							const distance = Math.sqrt(
-								(target.x - x) ** 2 + (target.y - y) ** 2,
+								(target.position.x - x) ** 2 +
+									(target.position.y - y) ** 2,
 							);
 							if (distance > this.splash) return;
 

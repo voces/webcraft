@@ -156,12 +156,12 @@ class Unit extends Sprite {
 			}
 
 			if (path.distance < updateProgress) {
-				this.setPosition(x, y);
+				this.position.setXY(x, y);
 				this.activity = undefined;
 			} else {
 				// Update self
 				const pathable = this.round.pathingMap.pathable(this, x, y);
-				if (pathable) this.setPosition(x, y);
+				if (pathable) this.position.setXY(x, y);
 
 				if (
 					!pathable ||

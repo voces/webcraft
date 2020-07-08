@@ -164,7 +164,7 @@ class Round {
 			);
 
 			if (this.arena.tiles[Math.floor(y)][Math.floor(x)] === targetTile) {
-				unit.setPosition(x, y);
+				unit.position.setXY(x, y);
 				this.pathingMap.addEntity(unit);
 
 				break;
@@ -176,7 +176,7 @@ class Round {
 		// Select + pan to it
 		if (player === this.game.localPlayer) {
 			dragSelect.setSelection([unit]);
-			panTo(unit);
+			panTo(unit.position);
 		}
 
 		// Add event listeners
@@ -293,7 +293,10 @@ class Round {
 				sprite.autoAttack &&
 				sprite.weapon
 			) {
-				const { x, y, weapon } = sprite;
+				const {
+					position: { x, y },
+					weapon,
+				} = sprite;
 
 				const pool = sprite.owner
 					.getEnemySprites()
@@ -304,9 +307,9 @@ class Round {
 							return b.priority - a.priority;
 
 						return (
-							(a.x - x) ** 2 +
-							(a.y - y) ** 2 -
-							((b.x - x) ** 2 + (b.y - y) ** 2)
+							(a.position.x - x) ** 2 +
+							(a.position.y - y) ** 2 -
+							((b.position.x - x) ** 2 + (b.position.y - y) ** 2)
 						);
 					});
 
@@ -314,7 +317,8 @@ class Round {
 					pool.find((u) => {
 						// If unit in range, that's it
 						const distanceToTarget = Math.sqrt(
-							(u.x - sprite.x) ** 2 + (u.y - sprite.y) ** 2,
+							(u.position.x - sprite.position.x) ** 2 +
+								(u.position.y - sprite.position.y) ** 2,
 						);
 						if (
 							distanceToTarget <
@@ -326,14 +330,14 @@ class Round {
 						if (sprite.speed) {
 							const endPoint = this.pathingMap
 								.withoutEntity(u, () =>
-									this.pathingMap.path(sprite, u),
+									this.pathingMap.path(sprite, u.position),
 								)
 								.pop();
 							if (!endPoint) return false;
 
 							const distance = Math.sqrt(
-								(endPoint.x - u.x) ** 2 +
-									(endPoint.y - u.y) ** 2,
+								(endPoint.x - u.position.x) ** 2 +
+									(endPoint.y - u.position.y) ** 2,
 							);
 
 							if (
@@ -351,8 +355,8 @@ class Round {
 
 			if (sprite instanceof Crosser)
 				if (
-					this.arena.tiles[Math.floor(sprite.y)][
-						Math.floor(sprite.x)
+					this.arena.tiles[Math.floor(sprite.position.y)][
+						Math.floor(sprite.position.x)
 					] === TILE_TYPES.END
 				) {
 					sprite.ascend();

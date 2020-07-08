@@ -202,7 +202,10 @@ const follow = () => {
 	if (dragSelect.selection.length === 0) return;
 
 	const { xSum, ySum } = dragSelect.selection.reduce(
-		({ xSum, ySum }, { x, y }) => ({ xSum: xSum + x, ySum: ySum + y }),
+		({ xSum, ySum }, { position: { x, y } }) => ({
+			xSum: xSum + x,
+			ySum: ySum + y,
+		}),
 		{ xSum: 0, ySum: 0 },
 	);
 

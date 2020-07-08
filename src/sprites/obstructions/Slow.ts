@@ -71,7 +71,7 @@ export class Slow extends Obstruction {
 					onDamage: attacker.weapon.onDamage,
 					owner: attacker.owner,
 					producer: attacker,
-					target,
+					target: target.position,
 				});
 			},
 		},

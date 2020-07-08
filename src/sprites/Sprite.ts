@@ -1,4 +1,4 @@
-import { PATHING_TYPES, WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
+import { PATHING_TYPES } from "../constants.js";
 import { dragSelect } from "./dragSelect.js";
 import { emitter, Emitter } from "../emitter.js";
 import { document } from "../util/globals.js";
@@ -8,6 +8,7 @@ import { clone } from "../util/clone.js";
 import { Action } from "./spriteLogic.js";
 import { Game } from "../Game.js";
 import { HTMLComponent } from "../systems/HTMLGraphics.js";
+import { Position } from "../components/Position.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
@@ -74,6 +75,7 @@ class Sprite implements Emitter<SpriteEvents> {
 
 	// components
 	html?: HTMLComponent;
+	position: Position;
 
 	// todo: move these to unit
 	buildProgress?: number;
@@ -122,8 +124,8 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.blocksPathing = blocksPathing;
 
 		this.id = id === undefined ? this.round.spriteId++ : id;
-		this.x = x;
-		this.y = y;
+		// this.x = x;
+		// this.y = y;
 		this.maxHealth = maxHealth;
 		this.health = health;
 		this.isAlive = this.health > 0;
@@ -134,6 +136,7 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.color = color;
 		// todo:
 		Object.assign(this, { html: {} });
+		this.position = new Position(x, y);
 
 		if (selectable) dragSelect.addSelectables([this]);
 		else this.html?.htmlElement?.classList.add("doodad");
@@ -153,63 +156,6 @@ class Sprite implements Emitter<SpriteEvents> {
 		});
 
 		this.game.add(this);
-	}
-
-	setPosition(x: number, y: number): void;
-	setPosition(pos: { x: number; y: number }): void;
-	setPosition(pos: number | { x: number; y: number }, yArg?: number): void {
-		const x = typeof pos === "object" ? pos.x : pos;
-		// ?? 0 shouldn't happen, but TS doesn't know that
-		const y = typeof pos === "object" ? pos.y : yArg ?? 0;
-
-		this._setPosition(x, y);
-
-		if (this.html?.htmlElement) {
-			this.html.htmlElement.style.left =
-				(this._x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-			this.html.htmlElement.style.top =
-				(this._y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-		}
-	}
-
-	_setPosition(x: number, y: number): void {
-		const { x: xBefore, y: yBefore } = this;
-
-		const { x: newX, y: newY } = this.round.pathingMap.withoutEntity(
-			this,
-			() => this.round.pathingMap.nearestPathing(x, y, this),
-		);
-
-		this._x = newX;
-		this._y = newY;
-		this.round.pathingMap.updateEntity(this);
-		this.facing = Math.atan2(this.y - yBefore, this.x - xBefore);
-	}
-
-	set x(x: number) {
-		if (isNaN(x)) throw new Error("Cannot set Sprite#x to NaN");
-
-		this._x = x;
-		if (this.html?.htmlElement)
-			this.html.htmlElement.style.left =
-				(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-	}
-
-	get x(): number {
-		return this._x;
-	}
-
-	set y(y: number) {
-		if (isNaN(y)) throw new Error("Cannot set Sprite#y to NaN");
-
-		this._y = y;
-		if (this.html?.htmlElement)
-			this.html.htmlElement.style.top =
-				(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-	}
-
-	get y(): number {
-		return this._y;
 	}
 
 	set selected(value: boolean) {
@@ -310,16 +256,14 @@ class Sprite implements Emitter<SpriteEvents> {
 		constructor: string;
 		health: number;
 		owner?: number;
-		x: number;
-		y: number;
+		position: Position;
 	} {
 		return {
 			activity: this.activity,
 			constructor: this.constructor.name,
 			health: this.health,
 			owner: this.owner && this.owner.id,
-			x: this.x,
-			y: this.y,
+			position: this.position,
 		};
 	}
 }

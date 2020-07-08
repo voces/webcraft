@@ -24,6 +24,9 @@ type HTMLEntity = Sprite & {
 export type EntityElement = HTMLDivElement & { sprite: HTMLEntity };
 
 class HTMLGraphics extends System<HTMLEntity> {
+	dirty: Set<HTMLEntity> = new Set();
+	entityData: Map<HTMLEntity, () => void> = new Map();
+
 	test(entity: Sprite): entity is HTMLEntity {
 		return !!entity.html;
 	}
@@ -42,9 +45,11 @@ class HTMLGraphics extends System<HTMLEntity> {
 
 		elem.classList.add(this.constructor.name.toLowerCase(), "sprite");
 		elem.style.left =
-			(entity.x - entity.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+			(entity.position.x - entity.radius) * WORLD_TO_GRAPHICS_RATIO +
+			"px";
 		elem.style.top =
-			(entity.y - entity.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
+			(entity.position.y - entity.radius) * WORLD_TO_GRAPHICS_RATIO +
+			"px";
 		elem.style.width = entity.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
 		elem.style.height = entity.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
 
@@ -55,6 +60,35 @@ class HTMLGraphics extends System<HTMLEntity> {
 		} else elem.style.backgroundColor = entity.color ?? "white";
 
 		arenaElement.appendChild(elem);
+
+		const listener = () => this.dirty.add(entity);
+		entity.position.addEventListener("change", listener);
+		this.entityData.set(entity, listener);
+	}
+
+	onRemoveEntity(entity: HTMLEntity): void {
+		if (!entity.html.htmlElement) return;
+
+		arenaElement.removeChild(entity.html.htmlElement);
+		const listener = this.entityData.get(entity);
+		if (listener) {
+			entity.position.removeEventListener("change", listener);
+			this.entityData.delete(entity);
+		}
+	}
+
+	postRender(): void {
+		for (const entity of this.dirty) {
+			const elem = entity.html.htmlElement;
+
+			if (!elem) return;
+			elem.style.left =
+				(entity.position.x - entity.radius) * WORLD_TO_GRAPHICS_RATIO +
+				"px";
+			elem.style.top =
+				(entity.position.y - entity.radius) * WORLD_TO_GRAPHICS_RATIO +
+				"px";
+		}
 	}
 }
 

@@ -140,9 +140,12 @@ export class Crosser extends Unit {
 					} else obstruction.kill({ removeImmediately: true });
 
 					const { x, y } = path.radialStepBack(BUILD_DISTANCE);
-					this.setPosition(
-						this.round.pathingMap.nearestSpiralPathing(x, y, this),
+					const newPos = this.round.pathingMap.nearestSpiralPathing(
+						x,
+						y,
+						this,
 					);
+					this.position.setXY(newPos.x, newPos.y);
 				});
 
 				// We're never going to get there
@@ -151,11 +154,11 @@ export class Crosser extends Unit {
 				updateProgress < BUILD_DISTANCE
 			) {
 				this.activity = undefined;
-				this.setPosition(x, y);
+				this.position.setXY(x, y);
 			} else {
 				// Update self
 				const pathable = this.round.pathingMap.pathable(this, x, y);
-				if (pathable) this.setPosition(x, y);
+				if (pathable) this.position.setXY(x, y);
 
 				// Recheck path, start a new one periodically or if check
 				// fails

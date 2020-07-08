@@ -62,7 +62,10 @@ const center: Action = {
 			return dragSelect.setSelection([player.sprites[0]]);
 
 		const { xSum, ySum } = dragSelect.selection.reduce(
-			({ xSum, ySum }, { x, y }) => ({ xSum: xSum + x, ySum: ySum + y }),
+			({ xSum, ySum }, { position: { x, y } }) => ({
+				xSum: xSum + x,
+				ySum: ySum + y,
+			}),
 			{ xSum: 0, ySum: 0 },
 		);
 		const x = xSum / dragSelect.selection.length;
