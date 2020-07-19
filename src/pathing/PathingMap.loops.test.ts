@@ -1,5 +1,8 @@
 import { PathingMap } from "./PathingMap.js";
 
+const str = (tile: typeof PathingMap.prototype.grid[number][number]) =>
+	`x=${tile.x} y=${tile.y}`;
+
 describe("PathingMap#_linearPathable", () => {
 	describe("radius=0.5", () => {
 		describe("open", () => {
@@ -24,12 +27,10 @@ describe("PathingMap#_linearPathable", () => {
 								x: 0,
 								y: 0,
 							};
-							const start = { x: x1, y: y1 };
-							const end = { x: x2, y: y2 };
+							const start = pathingMap.grid[y1][x1];
+							const end = pathingMap.grid[y2][x2];
 
-							it(`start=${JSON.stringify(
-								start,
-							)}, end=${JSON.stringify(end)}`, () => {
+							it(`start=${str(start)}, end=${str(end)}`, () => {
 								expect(
 									pathingMap._linearPathable(
 										entity,
@@ -63,12 +64,10 @@ describe("PathingMap#_linearPathable", () => {
 								x: 0,
 								y: 0,
 							};
-							const start = { x: x1, y: y1 };
-							const end = { x: x2, y: y2 };
+							const start = pathingMap.grid[y1][x1];
+							const end = pathingMap.grid[y2][x2];
 
-							it(`start=${JSON.stringify(
-								start,
-							)}, end=${JSON.stringify(end)}`, () => {
+							it(`start=${str(start)}, end=${str(end)}`, () => {
 								expect(
 									pathingMap._linearPathable(
 										entity,
@@ -113,12 +112,10 @@ describe("PathingMap#_linearPathable", () => {
 								x: 0,
 								y: 0,
 							};
-							const start = { x: x1, y: y1 };
-							const end = { x: x2, y: y2 };
+							const start = pathingMap.grid[y1][x1];
+							const end = pathingMap.grid[y2][x2];
 
-							it(`start=${JSON.stringify(
-								start,
-							)}, end=${JSON.stringify(end)}`, () => {
+							it(`start=${str(start)}, end=${str(end)}`, () => {
 								expect(
 									pathingMap._linearPathable(
 										entity,
@@ -155,12 +152,10 @@ describe("PathingMap#_linearPathable", () => {
 								x: 0,
 								y: 0,
 							};
-							const start = { x: x1, y: y1 };
-							const end = { x: x2, y: y2 };
+							const start = pathingMap.grid[y1][x1];
+							const end = pathingMap.grid[y2][x2];
 
-							it(`start=${JSON.stringify(
-								start,
-							)}, end=${JSON.stringify(end)}`, () => {
+							it(`start=${str(start)}, end=${str(end)}`, () => {
 								const expected =
 									// Start or end in invalid places
 									x1 === 0 ||

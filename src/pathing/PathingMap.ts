@@ -28,17 +28,21 @@ const EPSILON = Number.EPSILON * 100;
 
 type Pathing = number;
 
-interface Entity {
-	position: { x: number; y: number };
-	requiresPathing?: Pathing;
-	pathing?: Pathing;
+interface BaseEntity {
 	radius: number;
-	requiresTilemap?: Footprint;
-	blocksTilemap?: Footprint;
 	blocksPathing?: Pathing;
+	blocksTilemap?: Footprint;
+	pathing?: Pathing;
+	requiresPathing?: Pathing;
+	requiresTilemap?: Footprint;
 	// todo: this seems unused?
 	structure?: boolean;
 }
+
+type SimpleEntity = BaseEntity & { x: number; y: number };
+type ComplexEntity = BaseEntity & { position: { x: number; y: number } };
+
+type Entity = SimpleEntity | ComplexEntity;
 
 export interface Footprint {
 	top: number;
@@ -47,6 +51,14 @@ export interface Footprint {
 	width: number;
 	map: number[];
 }
+
+const isComplexEntity = (entity: Entity): entity is ComplexEntity =>
+	"position" in entity;
+
+const pos = (entity: Entity) => {
+	if (isComplexEntity(entity)) return entity.position;
+	return entity;
+};
 
 class Tile {
 	x: number;
@@ -267,8 +279,9 @@ export class PathingMap {
 	}
 
 	pathable(entity: Entity, xWorld?: number, yWorld?: number): boolean {
-		if (xWorld === undefined) xWorld = entity.position.x;
-		if (yWorld === undefined) yWorld = entity.position.y;
+		const position = pos(entity);
+		if (xWorld === undefined) xWorld = position.x;
+		if (yWorld === undefined) yWorld = position.y;
 
 		const xTile = this.xWorldToTile(xWorld);
 		const yTile = this.yWorldToTile(yWorld);
@@ -654,9 +667,10 @@ export class PathingMap {
 
 		const offset = entity.radius % (1 / this.resolution);
 		// We can assume start is pathable
+		const position = pos(entity);
 		const startReal = {
-			x: entity.position.x * this.resolution,
-			y: entity.position.y * this.resolution,
+			x: position.x * this.resolution,
+			y: position.y * this.resolution,
 		};
 
 		const startTile = this.entityToTile(entity);
@@ -687,7 +701,7 @@ export class PathingMap {
 		if (startTile === endTile && this.pathable(entity)) {
 			if (removed) this.addEntity(entity);
 			return [
-				{ x: entity.position.x, y: entity.position.y },
+				{ x: position.x, y: position.y },
 				{
 					x: endReal.x / this.resolution,
 					y: endReal.y / this.resolution,
@@ -1104,14 +1118,10 @@ export class PathingMap {
 
 		const beginning =
 			pathWorld.length > 1 &&
-			(pathWorld[0].x !== entity.position.x ||
-				pathWorld[0].y !== entity.position.y)
-				? this.linearPathable(entity, entity.position, pathWorld[1])
-					? [{ x: entity.position.x, y: entity.position.y }]
-					: [
-							{ x: entity.position.x, y: entity.position.y },
-							pathWorld[0],
-					  ]
+			(pathWorld[0].x !== position.x || pathWorld[0].y !== position.y)
+				? this.linearPathable(entity, position, pathWorld[1])
+					? [{ x: position.x, y: position.y }]
+					: [{ x: position.x, y: position.y }, pathWorld[0]]
 				: [pathWorld[0]];
 
 		if (removed) this.addEntity(entity);
@@ -1224,7 +1234,7 @@ export class PathingMap {
 
 	entityToTileCoordsBounded(
 		entity: Entity,
-		position: Point = entity.position,
+		position: Point = pos(entity),
 	): { x: number; y: number } {
 		const nudge = EPSILON * entity.radius * this.widthWorld;
 		return {
@@ -1238,7 +1248,7 @@ export class PathingMap {
 	}
 
 	// BAD?
-	entityToTile(entity: Entity, position: Point = entity.position): Tile {
+	entityToTile(entity: Entity, position: Point = pos(entity)): Tile {
 		const { x, y } = this.entityToTileCoordsBounded(entity, position);
 		return this.grid[y][x];
 	}
@@ -1465,21 +1475,17 @@ export class PathingMap {
 
 	addEntity(entity: Entity): void {
 		const tiles = [];
+		const position = pos(entity);
 		const { map, top, left, width, height } =
 			entity.blocksTilemap ||
-			this.pointToTilemap(
-				entity.position.x,
-				entity.position.y,
-				entity.radius,
-				{
-					type:
-						entity.blocksPathing === undefined
-							? entity.pathing
-							: entity.blocksPathing,
-				},
-			);
-		const tileX = this.xWorldToTile(entity.position.x);
-		const tileY = this.yWorldToTile(entity.position.y);
+			this.pointToTilemap(position.x, position.y, entity.radius, {
+				type:
+					entity.blocksPathing === undefined
+						? entity.pathing
+						: entity.blocksPathing,
+			});
+		const tileX = this.xWorldToTile(position.x);
+		const tileY = this.yWorldToTile(position.y);
 		for (let y = top; y < top + height; y++)
 			for (let x = left; x < left + width; x++) {
 				tiles.push(this.grid[tileY + y][tileX + x]);
@@ -1496,21 +1502,17 @@ export class PathingMap {
 		if (!this.entities.has(entity)) return;
 		const oldTiles: Tile[] = this.entities.get(entity) || [];
 		const newTiles: Tile[] = [];
+		const position = pos(entity);
 		const { map, top, left, width, height } =
 			entity.blocksTilemap ||
-			this.pointToTilemap(
-				entity.position.x,
-				entity.position.y,
-				entity.radius,
-				{
-					type:
-						entity.blocksPathing === undefined
-							? entity.pathing
-							: entity.blocksPathing,
-				},
-			);
-		const tileX = this.xWorldToTile(entity.position.x);
-		const tileY = this.yWorldToTile(entity.position.y);
+			this.pointToTilemap(position.x, position.y, entity.radius, {
+				type:
+					entity.blocksPathing === undefined
+						? entity.pathing
+						: entity.blocksPathing,
+			});
+		const tileX = this.xWorldToTile(position.x);
+		const tileY = this.yWorldToTile(position.y);
 		for (let y = top; y < top + height; y++)
 			for (let x = left; x < left + width; x++)
 				newTiles.push(this.grid[tileY + y][tileX + x]);
