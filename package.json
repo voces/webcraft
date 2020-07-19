@@ -28,5 +28,6 @@
   },
   "author": "verit",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "private": true
 }

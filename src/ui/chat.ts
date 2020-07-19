@@ -64,15 +64,18 @@ export const initChatListeners = (game: Game, ui: UI): void => {
 		if (!chat.active && key === "Enter") chat.activate();
 	});
 
-	game.addNetworkListener("chat", ({ connection, message }) => {
-		message = message.slice(0, maxLength);
+	game.addNetworkListener(
+		"chat",
+		({ connection, message }: { connection: number; message: string }) => {
+			message = message.slice(0, maxLength);
 
-		const player = game.players.find((p) => p.id === connection);
-		if (!player) return;
+			const player = game.players.find((p) => p.id === connection);
+			if (!player) return;
 
-		const playerTag = `<span style="color: ${player.color?.hex}">${player.username}</span>`;
-		appendMessage(`${playerTag}: ${message}`);
-	});
+			const playerTag = `<span style="color: ${player.color?.hex}">${player.username}</span>`;
+			appendMessage(`${playerTag}: ${message}`);
+		},
+	);
 
 	chat.game = game;
 };
