@@ -1,4 +1,67 @@
-import { tweenPoints } from "./tweenPoints.js";
+import { tweenPoints, shortenPath } from "./tweenPoints.js";
+
+describe("shortenPath", () => {
+	it("simple", () => {
+		expect(
+			shortenPath(
+				[
+					{ x: 0, y: 0 },
+					{ x: 10, y: 0 },
+				],
+				2.5,
+			),
+		).toEqual([
+			{ x: 0, y: 0 },
+			{ x: 7.5, y: 0 },
+		]);
+	});
+
+	it("multiple steps", () => {
+		expect(
+			shortenPath(
+				[
+					{ x: 0, y: 0 },
+					{ x: 8, y: 0 },
+					{ x: 10, y: 0 },
+				],
+				2.5,
+			),
+		).toEqual([
+			{ x: 0, y: 0 },
+			{ x: 7.5, y: 0 },
+		]);
+	});
+
+	it("multiple complex steps", () => {
+		expect(
+			shortenPath(
+				[
+					{ x: 0, y: 0 },
+					{ x: 5, y: 0 },
+					{ x: 5, y: 5 },
+					{ x: 0, y: 5 },
+				],
+				6,
+			),
+		).toEqual([
+			{ x: 0, y: 0 },
+			{ x: 5, y: 0 },
+			{ x: 5, y: 1.6833752096445997 },
+		]);
+	});
+
+	it("project only to the origin point", () => {
+		expect(
+			shortenPath(
+				[
+					{ x: 0, y: 0 },
+					{ x: 1, y: 0 },
+				],
+				2,
+			),
+		).toEqual([{ x: 0, y: 0 }]);
+	});
+});
 
 describe("tweenPoints", () => {
 	it("works", () => {

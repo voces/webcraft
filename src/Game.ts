@@ -16,6 +16,11 @@ import { initPlayerLogic } from "./players/playerLogic.js";
 import { initSpriteLogicListeners } from "./sprites/spriteLogic.js";
 import { App } from "./core/App.js";
 import { HTMLGraphics } from "./systems/HTMLGraphics.js";
+import { MoveSystem } from "./systems/MoveSystem.js";
+import { AttackSystem } from "./systems/AttackSystem.js";
+import { BlueprintSystem } from "./systems/BlueprintSystem.js";
+import { ProjectileSystem } from "./systems/ProjectileSystem.js";
+import { GerminateSystem } from "./systems/GerminateSystem.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -66,6 +71,11 @@ class Game extends App {
 		super();
 		emitter(this);
 		this.addSystem(new HTMLGraphics());
+		this.addSystem(new MoveSystem());
+		this.addSystem(new AttackSystem());
+		this.addSystem(new BlueprintSystem());
+		this.addSystem(new ProjectileSystem());
+		this.addSystem(new GerminateSystem());
 
 		this.network = network;
 		this.addNetworkListener = this.network.addEventListener.bind(

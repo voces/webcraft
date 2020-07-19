@@ -1,9 +1,8 @@
 import { Sprite, SpriteProps } from "../Sprite.js";
-import { tweenPoints } from "../../util/tweenPoints.js";
-import { WORLD_TO_GRAPHICS_RATIO } from "../../constants.js";
 import { Point } from "../../pathing/PathingMap.js";
 import { Player } from "../../players/Player.js";
 import { Unit } from "../Unit.js";
+import { MoveTargetManager, MoveTarget } from "../../components/MoveTarget.js";
 
 type ProjectileProps = Omit<SpriteProps, "x" | "y" | "game"> & {
 	producer: Unit;
@@ -30,6 +29,8 @@ export class Projectile extends Sprite {
 		splash: 2.5,
 		maxHealth: Infinity,
 		selectable: false,
+		blocksPathing: 0,
+		requiresPathing: 0,
 	};
 
 	speed: number;
@@ -42,7 +43,7 @@ export class Projectile extends Sprite {
 		attacker: Unit,
 		projectile: Projectile,
 	) => void;
-	producer?: Unit;
+	producer: Unit;
 
 	constructor({
 		producer,
@@ -65,70 +66,15 @@ export class Projectile extends Sprite {
 		this.splash = splash;
 		this.damageAmount = damage;
 		this.onDamage = onDamage;
-
 		this.speed = speed;
+
+		MoveTargetManager.set(this, new MoveTarget({ entity: this, target }));
+
 		if (this.html?.htmlElement) {
 			this.html.htmlElement.style.borderRadius = "50%";
 			this.html.htmlElement.style.backgroundColor = "transparent";
 			this.html.htmlElement.style.backgroundImage =
 				"radial-gradient(rgba(0, 0, 255, 0.25), transparent)";
 		}
-
-		const { x, y } = target;
-
-		const path = tweenPoints([
-			{ x: this.position.x, y: this.position.y },
-			{ x, y },
-		]);
-		const renderPath = tweenPoints([
-			{ x: this.position.x, y: this.position.y },
-			{ x, y },
-		]);
-
-		this.activity = {
-			render: (delta) => {
-				if (this.html?.htmlElement) {
-					const { x, y } = renderPath.step(delta * (this.speed || 0));
-
-					this.html.htmlElement.style.left =
-						(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-					this.html.htmlElement.style.top =
-						(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-				}
-			},
-			update: (delta) => {
-				const point = path.step(delta * (this.speed || 0));
-				this.position.x = point.x;
-				this.position.y = point.y;
-				if (path.remaining === 0) {
-					this.activity = undefined;
-
-					this.owner
-						.getEnemySprites()
-						.filter((s) => Number.isFinite(s.health))
-						.forEach((target) => {
-							const distance = Math.sqrt(
-								(target.position.x - x) ** 2 +
-									(target.position.y - y) ** 2,
-							);
-							if (distance > this.splash) return;
-
-							const actualDamage = target.damage(
-								this.damageAmount,
-							);
-							if (this.onDamage)
-								this.onDamage(
-									target,
-									actualDamage,
-									producer,
-									this,
-								);
-						});
-
-					this.remove();
-				}
-			},
-			toJSON: () => ({ name: "soar" }),
-		};
 	}
 }

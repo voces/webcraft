@@ -3,13 +3,16 @@ import {
 	INITIAL_OBSTRUCTION_PROGRESS,
 	PATHING_TYPES,
 } from "../../constants.js";
-import { tweenValues } from "../../util/tweenValues.js";
 import { toFootprint } from "./toFootprint.js";
 import { ResourceMap } from "../../types.js";
 import { Player } from "../../players/Player.js";
 import { Unit, UnitProps } from "../Unit.js";
 import { Action } from "../spriteLogic.js";
 import { dragSelect } from "../dragSelect.js";
+import {
+	GerminateComponentManager,
+	GerminateComponent,
+} from "../../components/GerminateComponent.js";
 
 const destroySelf: Action = {
 	name: "Destroy box",
@@ -55,7 +58,6 @@ export abstract class Obstruction extends Unit {
 
 	requiresTilemap = toFootprint(this.radius, this.requiresPathing);
 	blocksTilemap = toFootprint(this.radius, this.blocksPathing);
-	buildProgress: number;
 	buildTime: number;
 	owner!: Player;
 
@@ -78,59 +80,14 @@ export abstract class Obstruction extends Unit {
 		super({ ...Obstruction.clonedDefaults, ...props });
 
 		this.health = Math.round(
-			Math.max(this.maxHealth * INITIAL_OBSTRUCTION_PROGRESS, 1),
+			Math.min(this.maxHealth * INITIAL_OBSTRUCTION_PROGRESS, 1),
 		);
-		this.buildProgress = INITIAL_OBSTRUCTION_PROGRESS;
 		this.buildTime = buildTime;
 
-		const start = this.round.lastUpdate;
-		let lastHealth = this.health;
-		const tween = tweenValues(this.health, this.maxHealth);
-
-		let renderProgress = INITIAL_OBSTRUCTION_PROGRESS;
-		let renderedHealth = lastHealth;
-		let lastRenderedHealth = lastHealth;
+		GerminateComponentManager.set(this, new GerminateComponent(this));
 
 		if (this.html?.htmlElement)
 			this.html.htmlElement.style.borderRadius = "";
-
-		this.activity = {
-			update: (delta) => {
-				renderProgress = this.buildProgress = Math.min(
-					this.buildProgress + delta / this.buildTime,
-					1,
-				);
-				const newHealth = tween(this.buildProgress);
-				const deltaHealth = Math.round(newHealth - lastHealth);
-				this.health += deltaHealth;
-				renderedHealth = this.health;
-				lastHealth += deltaHealth;
-				lastRenderedHealth = lastHealth;
-
-				if (this.round.lastUpdate >= start + this.buildTime)
-					this.activity = undefined;
-			},
-			render: (delta) => {
-				renderProgress = Math.min(
-					renderProgress + delta / this.buildTime,
-					1,
-				);
-				const newHealth = tween(renderProgress);
-				const deltaHealth = Math.round(newHealth - lastRenderedHealth);
-				renderedHealth += deltaHealth;
-				lastRenderedHealth += deltaHealth;
-
-				if (this.html?.htmlElement)
-					this.html.htmlElement.style.opacity = (
-						renderedHealth / this.maxHealth
-					).toString();
-			},
-			toJSON: () => ({
-				name: "construct",
-				buildProgress: this.buildProgress,
-				lastHealth,
-			}),
-		};
 	}
 
 	get actions(): Action[] {

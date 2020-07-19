@@ -1368,11 +1368,6 @@ export class PathingMap {
 			? absTan + guideDistance
 			: guideDistance;
 
-		if (debugging) {
-			elems.forEach((elem) => arena.removeChild(elem));
-			elems.splice(0);
-		}
-
 		let xStartRaw = guide - totalShift;
 		for (let y = 0; y <= ySteps; y++) {
 			const xEndRaw =
@@ -1459,10 +1454,8 @@ export class PathingMap {
 			const xEnd = Math.min(xStartMax, xEndMax, xEndTest, maxX);
 
 			for (let x = xStart; x <= xEnd; x++)
-				if (!this.grid[yStart + y * yStep]?.[x]?.pathable(pathing)) {
-					if (debugging) placeTile(x, yStart + y * yStep, 1);
+				if (!this.grid[yStart + y * yStep]?.[x]?.pathable(pathing))
 					return false;
-				} else if (debugging) placeTile(x, yStart + y * yStep, 0);
 
 			xStartRaw += isFinite(absTan) ? absTan : 0;
 		}

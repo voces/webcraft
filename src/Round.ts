@@ -9,13 +9,13 @@ import { emitter, Emitter } from "./emitter.js";
 import { panTo } from "./players/camera.js";
 import { Player } from "./players/Player.js";
 import { colors } from "./players/colors.js";
-import { requestAnimationFrame, cancelAnimationFrame } from "./util/globals.js";
 import { Resource } from "./sprites/obstructions/index.js";
 import { Settings, teamKeys, resourceKeys } from "./types.js";
 import { Arena } from "./arenas/types.js";
 import { Unit } from "./sprites/Unit.js";
 import { Sprite } from "./sprites/Sprite.js";
 import { Game } from "./Game.js";
+import { isInAttackRange } from "./sprites/UnitApi.js";
 
 let placeholderPlayer: Player;
 
@@ -52,7 +52,6 @@ class Round {
 	nextTimeoutId = 0;
 
 	lastUpdate: number;
-	lastRender: number;
 	settings: Settings;
 	arena: Arena;
 	pathingMap: PathingMap;
@@ -75,7 +74,6 @@ class Round {
 		// We set this for downstream constructor logic
 		this.game.round = this;
 		this.lastUpdate = time;
-		this.lastRender = Date.now() / 1000;
 		this.settings = settings;
 		this.players = [...players];
 		this.arena = arenas[settings.arenaIndex];
@@ -97,7 +95,6 @@ class Round {
 		this.pickTeams();
 		this.grantResources();
 		this.spawnUnits();
-		this.startRendering();
 	}
 
 	pickTeams(): void {
@@ -228,8 +225,6 @@ class Round {
 
 		this.setTimeout(() => {
 			[...this.sprites].forEach((sprite) => sprite.kill());
-			if (this.requestedAnimationFrame)
-				cancelAnimationFrame(this.requestedAnimationFrame);
 
 			this.setTimeout(() => {
 				this.removeEventListeners();
@@ -284,14 +279,13 @@ class Round {
 		this.game.round = undefined;
 	}
 
-	updateSprites(delta: number): void {
+	updateSprites(): void {
 		this.sprites.forEach((sprite) => {
-			if (sprite.activity)
-				sprite.activity.update && sprite.activity.update(delta);
-			else if (
+			if (
 				Unit.isUnit(sprite) &&
 				sprite.autoAttack &&
-				sprite.weapon
+				sprite.weapon &&
+				sprite.idle
 			) {
 				const {
 					position: { x, y },
@@ -300,7 +294,11 @@ class Round {
 
 				const pool = sprite.owner
 					.getEnemySprites()
-					.filter((s) => Number.isFinite(s.health))
+					.filter(
+						(s) =>
+							Number.isFinite(s.health) &&
+							(sprite.speed > 0 || isInAttackRange(sprite, s)),
+					)
 					.sort((a, b) => {
 						// Prefer priority
 						if (a.priority !== b.priority)
@@ -431,32 +429,10 @@ class Round {
 		if (time > this.expireAt)
 			this.crossers.forEach((c) => c.unit && c.unit.kill());
 
-		this.updateSprites(delta);
+		this.updateSprites();
 		this.updateIntervals(time);
 		this.updateTimeouts(time);
 		this.updateResources(delta);
-	}
-
-	render(): void {
-		this.requestedAnimationFrame = requestAnimationFrame(() =>
-			this.render(),
-		);
-		const newRender = Date.now();
-		const delta = (newRender - this.lastRender) / 1000;
-		this.lastRender = newRender;
-
-		this.sprites.forEach(
-			(sprite) =>
-				sprite.activity &&
-				sprite.activity.render &&
-				sprite.activity.render(delta),
-		);
-	}
-
-	startRendering(): void {
-		this.requestedAnimationFrame = requestAnimationFrame(() =>
-			this.render(),
-		);
 	}
 
 	toJSON(): {

@@ -1,17 +1,26 @@
 import { dragSelect } from "./dragSelect.js";
-import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
-import { tweenPoints } from "../util/tweenPoints.js";
+import { WORLD_TO_GRAPHICS_RATIO, BUILD_DISTANCE } from "../constants.js";
 import { Sprite, SpriteProps, SpriteEvents } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
-import { attack } from "./activities/attack.js";
 import { Emitter } from "../emitter.js";
 import { Action } from "./spriteLogic.js";
-import { Obstruction } from "./obstructions/index.js";
+import { Obstruction, ObstructionSubclass } from "./obstructions/index.js";
 import {
 	active as activeObstructionPlacement,
 	stop as hideObstructionPlacement,
 } from "./obstructionPlacement.js";
+import { MoveTargetManager, MoveTarget } from "../components/MoveTarget.js";
+import {
+	AttackTargetManager,
+	AttackTarget,
+} from "../components/AttackTarget.js";
+import { isInAttackRange } from "./UnitApi.js";
+import {
+	HoldPositionManager,
+	HoldPositionComponent,
+} from "../components/HoldPositionComponent.js";
+import { BuildTargetManager, BuildTarget } from "../components/BuildTarget.js";
 
 const holdPosition: Action = {
 	name: "Hold Position",
@@ -70,6 +79,13 @@ export type Weapon = {
 	onDamage?: (target: Sprite, damage: number, attacker: Sprite) => void;
 };
 
+class NoWeaponError extends Error {
+	message = "No weapon";
+}
+class TargetTooFarError extends Error {
+	message = "Target too far";
+}
+
 export type UnitProps = Omit<SpriteProps, "game"> & {
 	isIllusion?: boolean;
 	owner: Player;
@@ -99,6 +115,7 @@ class Unit extends Sprite {
 	weapon?: Weapon;
 	name: string;
 	builds: typeof Obstruction[];
+	obstructions: Obstruction[] = [];
 
 	constructor({
 		isIllusion = Unit.defaults.isIllusion,
@@ -108,11 +125,12 @@ class Unit extends Sprite {
 		builds = [],
 		...props
 	}: UnitProps) {
-		const game = props.owner.game;
 		super({
-			game,
+			game: props.owner.game,
 			...props,
 		});
+
+		const game = props.owner.game;
 
 		this.isIllusion = isIllusion;
 		this.name = name ?? this.constructor.name;
@@ -135,83 +153,62 @@ class Unit extends Sprite {
 	}
 
 	attack(target: Sprite): void {
-		if (this.weapon?.enabled) attack(this, target);
+		BuildTargetManager.delete(this);
+		HoldPositionManager.delete(this);
+
+		// We can't attack without a weapon
+		if (!this.weapon) throw new NoWeaponError();
+
+		// Attacker can't move and target is not in range; do nothing
+		if (!this.speed && !isInAttackRange(this, target))
+			throw new TargetTooFarError();
+
+		AttackTargetManager.set(this, new AttackTarget(this, target));
+		MoveTargetManager.set(
+			this,
+			new MoveTarget({
+				entity: this,
+				target,
+				distance:
+					this.radius + this.weapon.range + target.radius - 1e-7,
+			}),
+		);
 	}
 
 	walkTo(target: Point): void {
-		let updateProgress = 0;
-		let updateTicks = 0;
-		let renderProgress = 0;
-		let path = tweenPoints(this.round.pathingMap.path(this, target));
-
-		const update = (delta: number, retry = true) => {
-			updateTicks++;
-
-			const stepProgress = delta * this.speed;
-			updateProgress += stepProgress;
-			const { x, y } = path(updateProgress);
-			if (isNaN(x) || isNaN(y)) {
-				this.activity = undefined;
-				throw new Error(`Returning NaN location x=${x} y=${y}`);
-			}
-
-			if (path.distance < updateProgress) {
-				this.position.setXY(x, y);
-				this.activity = undefined;
-			} else {
-				// Update self
-				const pathable = this.round.pathingMap.pathable(this, x, y);
-				if (pathable) this.position.setXY(x, y);
-
-				if (
-					!pathable ||
-					updateTicks % 5 === 0 ||
-					!this.round.pathingMap.recheck(
-						path.points,
-						this,
-						delta * this.speed * 6,
-					)
-				) {
-					// Start new walk path
-					path = tweenPoints(
-						this.round.pathingMap.path(this, target),
-					);
-					updateProgress = 0;
-					renderProgress = 0;
-
-					if (!pathable && retry) update(delta, false);
-				}
-			}
-		};
-
-		this.activity = {
-			update,
-			render: (delta: number) => {
-				renderProgress += delta * this.speed;
-				if (this.html?.htmlElement) {
-					const { x, y } = path(renderProgress);
-
-					this.html.htmlElement.style.left =
-						(x - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-					this.html.htmlElement.style.top =
-						(y - this.radius) * WORLD_TO_GRAPHICS_RATIO + "px";
-				}
-			},
-			toJSON: () => ({
-				name: "walkTo",
-				path,
-				target,
-				ticks: updateTicks,
-			}),
-		};
+		AttackTargetManager.delete(this);
+		BuildTargetManager.delete(this);
+		HoldPositionManager.delete(this);
+		MoveTargetManager.set(this, new MoveTarget({ entity: this, target }));
 	}
 
 	holdPosition(): void {
-		this.activity = { toJSON: () => ({ name: "hold" }) };
+		MoveTargetManager.delete(this);
+		AttackTargetManager.delete(this);
+		BuildTargetManager.delete(this);
+		HoldPositionManager.delete(this);
+		HoldPositionManager.set(this, new HoldPositionComponent(this));
 	}
 
 	stop(): void {
-		this.activity = undefined;
+		MoveTargetManager.delete(this);
+		AttackTargetManager.delete(this);
+		BuildTargetManager.delete(this);
+		HoldPositionManager.delete(this);
+	}
+
+	buildAt(target: Point, ObstructionClass: ObstructionSubclass): void {
+		const moveTarget = new MoveTarget({
+			entity: this,
+			target,
+			distance: BUILD_DISTANCE - 1e-7,
+		});
+
+		MoveTargetManager.set(this, moveTarget);
+		BuildTargetManager.set(
+			this,
+			new BuildTarget(this, ObstructionClass, target),
+		);
 	}
 
 	get actions(): Action[] {

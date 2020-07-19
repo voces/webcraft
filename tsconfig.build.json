@@ -4,6 +4,9 @@
 		"outDir": "public/js",
 		"baseUrl": "src",
 		"types": [],
+		"noEmit": false,
+		"declaration": true,
+		"sourceMap": true
 	},
 	"include": ["src"],
 	"exclude": [

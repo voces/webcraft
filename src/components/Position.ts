@@ -1,4 +1,4 @@
-import { emitter, Emitter } from "../emitter";
+import { emitter, Emitter } from "../emitter.js";
 
 type PositionEvents = {
 	change: <T extends keyof Position>(prop: T, oldValue: Position[T]) => void;
@@ -7,6 +7,7 @@ type PositionEvents = {
 class Position {
 	private _x!: number;
 	private _y!: number;
+	renderTween?: (delta: number) => { x: number; y: number };
 
 	constructor(x: number, y: number) {
 		emitter(this);

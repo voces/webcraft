@@ -9,6 +9,10 @@ import { Action } from "./spriteLogic.js";
 import { Game } from "../Game.js";
 import { HTMLComponent } from "../systems/HTMLGraphics.js";
 import { Position } from "../components/Position.js";
+import { MoveTargetManager } from "../components/MoveTarget.js";
+import { AttackTargetManager } from "../components/AttackTarget.js";
+import { HoldPositionManager } from "../components/HoldPositionComponent.js";
+import { GerminateComponentManager } from "../components/GerminateComponent.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
@@ -40,28 +44,23 @@ export type Effect = {
 	timeout: number;
 };
 
-type Activity = {
-	cleanup?: () => void;
-	update?: (delta: number) => void;
-	render?: (delta: number) => void;
-	// TODO: type this, maybe with https://stackoverflow.com/a/55138283/1567335
-	toJSON: () => {
-		name: string;
-	};
-};
-
 export type SpriteEvents = {
+	change: <T extends keyof Sprite>(prop: T, oldValue: Sprite[T]) => void;
 	death: () => void;
+	remove: () => void;
 };
 
 class Sprite implements Emitter<SpriteEvents> {
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	static isSprite = (object: Object): object is Sprite =>
+		object instanceof Sprite;
+
 	game: Game;
 	radius: number;
 	id: number;
 	requiresPathing: number;
 	blocksPathing: number;
 	armor: number;
-	activity: Activity | undefined;
 	isAlive: boolean;
 	priority: number;
 	effects: Effect[] = [];
@@ -72,6 +71,7 @@ class Sprite implements Emitter<SpriteEvents> {
 	_selected = false;
 	_health!: number;
 	color?: string;
+	selectable: boolean;
 
 	// components
 	html?: HTMLComponent;
@@ -134,26 +134,16 @@ class Sprite implements Emitter<SpriteEvents> {
 		this.owner = owner;
 		this.facing = facing;
 		this.color = color;
+		this.selectable = selectable;
 		// todo:
 		Object.assign(this, { html: {} });
 		this.position = new Position(x, y);
 
-		if (selectable) dragSelect.addSelectables([this]);
-		else this.html?.htmlElement?.classList.add("doodad");
+		if (!selectable) this.html?.htmlElement?.classList.add("doodad");
 
 		// Lists
 		if (this.owner) this.owner.sprites.push(this);
 		this.round.sprites.push(this);
-
-		// TODO: move this into getters and setters
-		let activity: Activity | undefined;
-		Object.defineProperty(this, "activity", {
-			set: (value) => {
-				if (activity?.cleanup) activity.cleanup();
-				activity = value;
-			},
-			get: () => activity,
-		});
 
 		this.game.add(this);
 	}
@@ -190,12 +180,7 @@ class Sprite implements Emitter<SpriteEvents> {
 
 	set health(value: number) {
 		this._health = Math.min(Math.max(value, 0), this.maxHealth);
-
-		if (this._health && this.html?.htmlElement)
-			this.html.htmlElement.style.opacity = Math.max(
-				this._health / this.maxHealth,
-				0.1,
-			).toString();
+		this.dispatchEvent("change", "health", this._health);
 
 		if (value <= 0 && this.isAlive) {
 			this.isAlive = false;
@@ -210,7 +195,6 @@ class Sprite implements Emitter<SpriteEvents> {
 	_death({ removeImmediately = false } = {}): void {
 		if (removeImmediately) this._health = 0;
 
-		this.activity = undefined;
 		dragSelect.removeSelectables([this]);
 		if (this._selected)
 			dragSelect.setSelection(
@@ -229,14 +213,11 @@ class Sprite implements Emitter<SpriteEvents> {
 
 		// Death antimation
 		if (removeImmediately) this.remove();
-		else {
-			if (this.html?.htmlElement)
-				this.html.htmlElement.classList.add("death");
-			this.round.setTimeout(() => this.remove(), 0.125);
-		}
+		else this.round.setTimeout(() => this.remove(), 0.125);
 	}
 
 	remove(): void {
+		this.dispatchEvent("remove");
 		this.removeEventListeners();
 		this.round.pathingMap.removeEntity(this);
 
@@ -251,15 +232,23 @@ class Sprite implements Emitter<SpriteEvents> {
 		return [];
 	}
 
+	get idle(): boolean {
+		return (
+			!MoveTargetManager.has(this) &&
+			!AttackTargetManager.has(this) &&
+			!HoldPositionManager.has(this) &&
+			!GerminateComponentManager.has(this) &&
+			this.isAlive
+		);
+	}
+
 	toJSON(): {
-		activity?: Activity;
 		constructor: string;
 		health: number;
 		owner?: number;
 		position: Position;
 	} {
 		return {
-			activity: this.activity,
 			constructor: this.constructor.name,
 			health: this.health,
 			owner: this.owner && this.owner.id,

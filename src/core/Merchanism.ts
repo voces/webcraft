@@ -4,12 +4,12 @@
  */
 export class Mechanism {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	update(delta: number): void {
+	update(delta: number, time: number): void {
 		/* do nothing */
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	render(delta: number): void {
+	render(delta: number, time: number): void {
 		/* do nothing */
 	}
 

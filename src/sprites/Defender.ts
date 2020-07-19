@@ -97,8 +97,6 @@ export class Defender extends Unit {
 			pos2 = temp;
 		}
 
-		this.activity = undefined;
-
 		const layer = this.round.pathingMap.layer(
 			this.position.x,
 			this.position.y,

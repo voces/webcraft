@@ -1,4 +1,5 @@
-import { Point } from "../pathing/PathingMap";
+import { Point } from "../pathing/PathingMap.js";
+import { Sprite } from "../sprites/Sprite.js";
 
 export const distanceBetweenPoints = (
 	{ x: x1, y: y1 }: Point,
@@ -32,6 +33,62 @@ export type PathTweener = {
 	radialStepBack: (distance: number) => Point;
 	target: Point;
 	readonly points: Point[];
+};
+
+export const shortenPath = (points: Point[], amount: number): Point[] => {
+	// Not shortening, return the original apth
+	if (amount <= 0) return points;
+
+	// Path has a single note, return it
+	if (points.length === 1) return points;
+
+	let index = points.length - 2;
+	const origin = points[index + 1];
+
+	let distance = Math.sqrt(
+		(origin.x - points[index].x) ** 2 + (origin.y - points[index].y) ** 2,
+	);
+	while (distance < amount && index >= 0) {
+		index--;
+		if (index < 0) break;
+		distance = Math.sqrt(
+			(origin.x - points[index].x) ** 2 +
+				(origin.y - points[index].y) ** 2,
+		);
+	}
+
+	// Stepping back past the first point, return it
+	if (index < 0) return [points[0]];
+
+	// Tween between the last two points
+	// https://math.stackexchange.com/questions/275529/check-if-line-intersects-with-circles-perimeter
+	// https://www.geogebra.org/geometry/dm7vez7p
+	const u = {
+		x: points[index].x - origin.x,
+		y: points[index].y - origin.y,
+	};
+	const v = {
+		x: points[index + 1].x - origin.x,
+		y: points[index + 1].y - origin.y,
+	};
+
+	const a = (u.x - v.x) ** 2 + (u.y - v.y) ** 2;
+	const b = 2 * (v.x * (u.x - v.x) + v.y * (u.y - v.y));
+	const c = v.x ** 2 + v.y ** 2 - amount ** 2;
+	const disc = b ** 2 - 4 * a * c;
+	const progress = (-b + Math.sqrt(disc)) / (2 * a);
+
+	const path = points.slice(0, index + 1);
+	path.push({
+		x:
+			points[index + 1].x +
+			(points[index].x - points[index + 1].x) * progress,
+		y:
+			points[index + 1].y +
+			(points[index].y - points[index + 1].y) * progress,
+	});
+
+	return path;
 };
 
 export const tweenPoints = (points: Point[]): PathTweener => {
@@ -208,4 +265,33 @@ export const tweenPoints = (points: Point[]): PathTweener => {
 		toJSON: () => ({ points }),
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any);
+};
+
+export const calcAndTweenShortenedPath = (
+	entity: Sprite,
+	target: Point | Sprite,
+	distanceToShorten: number,
+): PathTweener => {
+	// Normalize the target
+	const targetPoint = Sprite.isSprite(target) ? target.position : target;
+
+	// Calculate the path, which may not get to the target
+	const path = Sprite.isSprite(target)
+		? entity.round.pathingMap.withoutEntity(target, () =>
+				entity.round.pathingMap.path(entity, targetPoint),
+		  )
+		: entity.round.pathingMap.path(entity, targetPoint);
+
+	// Check how far we are away from the target and get remaining distance
+	// E.g., if we don't make it to the target, we don't need to shorten (as
+	// much).
+	const end = path[path.length - 1];
+	const distanceFromPathEndToTarget = distanceBetweenPoints(end, targetPoint);
+	const remainingDistance = distanceToShorten - distanceFromPathEndToTarget;
+
+	// We are a far distance from the target; don't shorten at all
+	if (remainingDistance <= 0) return tweenPoints(path);
+
+	// We're close, so shorten
+	return tweenPoints(shortenPath(path, remainingDistance));
 };
