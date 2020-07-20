@@ -1,9 +1,8 @@
 import { dragSelect } from "./dragSelect.js";
 import { WORLD_TO_GRAPHICS_RATIO, BUILD_DISTANCE } from "../constants.js";
-import { Sprite, SpriteProps, SpriteEvents } from "./Sprite.js";
+import { Sprite, SpriteProps } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
-import { Emitter } from "../emitter.js";
 import { Action } from "./spriteLogic.js";
 import { Obstruction, ObstructionSubclass } from "./obstructions/index.js";
 import {
@@ -21,6 +20,11 @@ import {
 	HoldPositionComponent,
 } from "../components/HoldPositionComponent.js";
 import { BuildTargetManager, BuildTarget } from "../components/BuildTarget.js";
+import {
+	DamageComponentManager,
+	Weapon,
+	DamageComponent,
+} from "../components/DamageComponent.js";
 
 const holdPosition: Action = {
 	name: "Hold Position",
@@ -67,18 +71,6 @@ const cancel = {
 	},
 };
 
-export type Weapon = {
-	damage: number;
-	cooldown: number;
-	range: number;
-	projectile:
-		| "instant"
-		| (<T extends Sprite>(target: Sprite, attacker: T) => void);
-	last: number;
-	enabled: boolean;
-	onDamage?: (target: Sprite, damage: number, attacker: Sprite) => void;
-};
-
 class NoWeaponError extends Error {
 	message = "No weapon";
 }
@@ -91,6 +83,7 @@ export type UnitProps = Omit<SpriteProps, "game"> & {
 	owner: Player;
 	speed?: number;
 	weapon?: Weapon;
+	autoAttack?: boolean;
 	name?: string;
 	builds?: typeof Obstruction[];
 };
@@ -105,24 +98,24 @@ class Unit extends Sprite {
 		isIllusion: false,
 		// 380 in WC3
 		speed: 5.938,
+		autoAttack: false,
 	};
 
-	autoAttack?: boolean;
 	isIllusion: boolean;
 	mirrors?: Unit[];
 	owner!: Player;
 	speed: number;
-	weapon?: Weapon;
 	name: string;
 	builds: typeof Obstruction[];
 	obstructions: Obstruction[] = [];
 
 	constructor({
+		autoAttack = Unit.defaults.autoAttack,
+		builds = [],
 		isIllusion = Unit.defaults.isIllusion,
 		name,
 		speed = Unit.defaults.speed,
 		weapon,
-		builds = [],
 		...props
 	}: UnitProps) {
 		super({
@@ -135,8 +128,13 @@ class Unit extends Sprite {
 		this.isIllusion = isIllusion;
 		this.name = name ?? this.constructor.name;
 		this.speed = speed;
-		this.weapon = weapon;
 		this.builds = builds;
+
+		if (weapon)
+			DamageComponentManager.set(
+				this,
+				new DamageComponent(this, [weapon], autoAttack),
+			);
 
 		if (this.html?.htmlElement) {
 			if (
@@ -156,8 +154,10 @@ class Unit extends Sprite {
 		BuildTargetManager.delete(this);
 		HoldPositionManager.delete(this);
 
+		const damageComponent = DamageComponentManager.get(this);
+
 		// We can't attack without a weapon
-		if (!this.weapon) throw new NoWeaponError();
+		if (!damageComponent) throw new NoWeaponError();
 
 		// Attacker can't move and target is not in range; do nothing
 		if (!this.speed && !isInAttackRange(this, target))
@@ -170,7 +170,10 @@ class Unit extends Sprite {
 				entity: this,
 				target,
 				distance:
-					this.radius + this.weapon.range + target.radius - 1e-7,
+					this.radius +
+					damageComponent.weapons[0].range +
+					target.radius -
+					1e-7,
 			}),
 		);
 	}
@@ -228,11 +231,5 @@ class Unit extends Sprite {
 		};
 	}
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-type UnitEvents = SpriteEvents;
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface Unit extends Emitter<UnitEvents> {}
 
 export { Unit };

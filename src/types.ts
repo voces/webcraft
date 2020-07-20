@@ -28,3 +28,5 @@ export interface Settings {
 export type ValueOf<T> = T[keyof T];
 
 export const defined = <T>(value: T | undefined): value is T => !!value;
+
+export type NonEmptyArray<T> = [T, ...T[]];

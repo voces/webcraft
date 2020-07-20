@@ -45,12 +45,12 @@ export type Effect = {
 };
 
 export type SpriteEvents = {
-	change: <T extends keyof Sprite>(prop: T, oldValue: Sprite[T]) => void;
+	change: <K extends keyof Sprite>(prop: K, oldValue: Sprite[K]) => void;
 	death: () => void;
 	remove: () => void;
 };
 
-class Sprite implements Emitter<SpriteEvents> {
+class Sprite {
 	// eslint-disable-next-line @typescript-eslint/ban-types
 	static isSprite = (object: Object): object is Sprite =>
 		object instanceof Sprite;

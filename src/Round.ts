@@ -15,7 +15,6 @@ import { Arena } from "./arenas/types.js";
 import { Unit } from "./sprites/Unit.js";
 import { Sprite } from "./sprites/Sprite.js";
 import { Game } from "./Game.js";
-import { isInAttackRange } from "./sprites/UnitApi.js";
 
 let placeholderPlayer: Player;
 
@@ -281,76 +280,6 @@ class Round {
 
 	updateSprites(): void {
 		this.sprites.forEach((sprite) => {
-			if (
-				Unit.isUnit(sprite) &&
-				sprite.autoAttack &&
-				sprite.weapon &&
-				sprite.idle
-			) {
-				const {
-					position: { x, y },
-					weapon,
-				} = sprite;
-
-				const pool = sprite.owner
-					.getEnemySprites()
-					.filter(
-						(s) =>
-							Number.isFinite(s.health) &&
-							(sprite.speed > 0 || isInAttackRange(sprite, s)),
-					)
-					.sort((a, b) => {
-						// Prefer priority
-						if (a.priority !== b.priority)
-							return b.priority - a.priority;
-
-						return (
-							(a.position.x - x) ** 2 +
-							(a.position.y - y) ** 2 -
-							((b.position.x - x) ** 2 + (b.position.y - y) ** 2)
-						);
-					});
-
-				const nearest =
-					pool.find((u) => {
-						// If unit in range, that's it
-						const distanceToTarget = Math.sqrt(
-							(u.position.x - sprite.position.x) ** 2 +
-								(u.position.y - sprite.position.y) ** 2,
-						);
-						if (
-							distanceToTarget <
-							weapon.range + sprite.radius + u.radius
-						)
-							return true;
-
-						// Otherwise, make sure we can get to it
-						if (sprite.speed) {
-							const endPoint = this.pathingMap
-								.withoutEntity(u, () =>
-									this.pathingMap.path(sprite, u.position),
-								)
-								.pop();
-							if (!endPoint) return false;
-
-							const distance = Math.sqrt(
-								(endPoint.x - u.position.x) ** 2 +
-									(endPoint.y - u.position.y) ** 2,
-							);
-
-							if (
-								distance <
-								weapon.range + sprite.radius + u.radius
-							)
-								return true;
-						}
-
-						return false;
-					}) || pool[0];
-
-				if (nearest) sprite.attack(nearest);
-			}
-
 			if (sprite instanceof Crosser)
 				if (
 					this.arena.tiles[Math.floor(sprite.position.y)][
