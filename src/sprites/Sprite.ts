@@ -68,8 +68,9 @@ class Sprite {
 	round: Round;
 	facing: number;
 	maxHealth: number;
+	private _health!: number;
+	invulnerable = false;
 	_selected = false;
-	_health!: number;
 	color?: string;
 	selectable: boolean;
 
@@ -162,6 +163,8 @@ class Sprite {
 	}
 
 	damage(amount: number): number {
+		if (this.invulnerable) return 0;
+
 		const ignoreArmor =
 			this.buildProgress === undefined || this.buildProgress < 1;
 		const effectiveArmor = ignoreArmor ? this.armor : 0;

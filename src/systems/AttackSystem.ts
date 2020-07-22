@@ -28,8 +28,12 @@ export class AttackSystem extends System<Unit> {
 
 		if (!attackTarget) return this.remove(entity);
 
-		// Target dead
-		if (attackTarget.target.health <= 0) {
+		// Target dead or invul
+		if (
+			attackTarget.target.health <= 0 ||
+			attackTarget.target.invulnerable
+		) {
+			MoveTargetManager.delete(entity);
 			AttackTargetManager.delete(entity);
 			return;
 		}
@@ -55,8 +59,13 @@ export class AttackSystem extends System<Unit> {
 			if (weapon.onDamage)
 				weapon.onDamage(attackTarget.target, actualDamage, entity);
 
-			if (attackTarget.target.health <= 0)
+			if (
+				attackTarget.target.health <= 0 ||
+				attackTarget.target.invulnerable
+			) {
+				MoveTargetManager.delete(entity);
 				AttackTargetManager.delete(entity);
+			}
 		} else weapon.projectile(attackTarget.target, entity);
 
 		if (entity.html?.htmlElement)

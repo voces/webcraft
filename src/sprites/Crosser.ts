@@ -17,6 +17,10 @@ import {
 	Tiny,
 } from "./obstructions/index.js";
 import { Action } from "./spriteLogic.js";
+import { MoveTargetManager } from "../components/MoveTarget.js";
+import { AttackTargetManager } from "../components/AttackTarget.js";
+import { BuildTargetManager } from "../components/BuildTarget.js";
+import { HoldPositionManager } from "../components/HoldPositionComponent.js";
 
 const destroyLastBox: Action = {
 	name: "Destroy box",
@@ -68,7 +72,7 @@ export class Crosser extends Unit {
 	}
 
 	ascend(): void {
-		this._health = 0;
+		this.invulnerable = true;
 		dragSelect.removeSelectables([this]);
 		if (this._selected)
 			dragSelect.setSelection(
@@ -78,6 +82,11 @@ export class Crosser extends Unit {
 			const index = this.owner.sprites.indexOf(this);
 			if (index >= 0) this.owner.sprites.splice(index, 1);
 		}
+
+		MoveTargetManager.delete(this);
+		AttackTargetManager.delete(this);
+		BuildTargetManager.delete(this);
+		HoldPositionManager.delete(this);
 
 		this.round.pathingMap.removeEntity(this);
 		const index = this.round.sprites.indexOf(this);

@@ -1,18 +1,27 @@
 import { Sprite } from "../sprites/Sprite.js";
 import { ComponentConstructor } from "./Component.js";
+import { Unit } from "../sprites/Unit.js";
 
 type SystemEvents = {
 	add: (entity: Sprite) => void;
 	remove: (entity: Sprite) => void;
 };
 
-abstract class System<T extends Sprite = Sprite> {
+abstract class System<T extends Sprite> {
 	private set: Set<T> = new Set();
 	protected dirty?: Set<T>;
-	private _callbacks: Map<Sprite, { removeListener: () => void }> = new Map();
+	private _callbacks: Map<
+		Sprite,
+		{
+			removeListener: () => void;
+			changeListener: ((prop: keyof Unit) => void) | undefined;
+		}
+	> = new Map();
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	static components: ComponentConstructor<any>[] = [];
+
+	static props = new Array<keyof Unit>();
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	test(entity: Sprite | T): entity is T {
@@ -23,10 +32,18 @@ abstract class System<T extends Sprite = Sprite> {
 		this.set.add(entity);
 		this.dirty?.add(entity);
 		const removeListener = () => this.remove(entity);
+		const props = (this.constructor as typeof System).props;
+		const changeListener = props.length
+			? (prop: keyof Unit) => {
+					if (props.includes(prop)) this.check(entity);
+			  }
+			: undefined;
 		this._callbacks.set(entity, {
 			removeListener,
+			changeListener,
 		});
 		entity.addEventListener("remove", removeListener);
+		if (changeListener) entity.addEventListener("change", changeListener);
 		this.onAddEntity?.(entity);
 	}
 
@@ -38,6 +55,12 @@ abstract class System<T extends Sprite = Sprite> {
 	private _remove(entity: Sprite): void {
 		this.set.delete(entity as T);
 		this.dirty?.delete(entity as T);
+		const callbacks = this._callbacks.get(entity);
+		if (callbacks) {
+			entity.removeEventListener("remove", callbacks.removeListener);
+			if (callbacks.changeListener)
+				entity.removeEventListener("change", callbacks.changeListener);
+		}
 		this._callbacks.delete(entity);
 		this.onRemoveEntity?.(entity);
 	}
@@ -78,7 +101,7 @@ abstract class System<T extends Sprite = Sprite> {
 	}
 
 	dispose(): void {
-		/* do nothing */
+		for (const entity of this.set) this._remove(entity);
 	}
 
 	[Symbol.iterator](): IterableIterator<T> {

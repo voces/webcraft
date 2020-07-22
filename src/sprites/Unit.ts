@@ -189,7 +189,6 @@ class Unit extends Sprite {
 		MoveTargetManager.delete(this);
 		AttackTargetManager.delete(this);
 		BuildTargetManager.delete(this);
-		HoldPositionManager.delete(this);
 		HoldPositionManager.set(this, new HoldPositionComponent(this));
 	}
 

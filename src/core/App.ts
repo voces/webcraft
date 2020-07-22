@@ -42,6 +42,15 @@ class App {
 		return this;
 	}
 
+	removeSystem(system: AnySystem): App {
+		const index = this.systems.indexOf(system);
+		if (index >= 0) this.systems.splice(index, 1);
+
+		system.dispose();
+
+		return this;
+	}
+
 	addMechanism(mechanism: Mechanism): App {
 		this.mechanisms.push(mechanism);
 

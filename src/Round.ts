@@ -15,6 +15,7 @@ import { Arena } from "./arenas/types.js";
 import { Unit } from "./sprites/Unit.js";
 import { Sprite } from "./sprites/Sprite.js";
 import { Game } from "./Game.js";
+import { TileSystem } from "./systems/TileSystem.js";
 
 let placeholderPlayer: Player;
 
@@ -57,6 +58,8 @@ class Round {
 	expireAt: number;
 	requestedAnimationFrame?: number;
 
+	private tileSystem: TileSystem;
+
 	constructor({
 		time,
 		settings,
@@ -82,6 +85,8 @@ class Round {
 			resolution: 2,
 		});
 		this.expireAt = time + settings.duration;
+		this.tileSystem = new TileSystem();
+		this.game.addSystem(this.tileSystem);
 
 		if (!placeholderPlayer)
 			placeholderPlayer = new Player({
@@ -226,6 +231,7 @@ class Round {
 			[...this.sprites].forEach((sprite) => sprite.kill());
 
 			this.setTimeout(() => {
+				this.game.removeSystem(this.tileSystem);
 				this.removeEventListeners();
 				this.game.round = undefined;
 			}, 0.25);
@@ -276,23 +282,6 @@ class Round {
 		if (this.players.some((player) => player.isHere)) return;
 
 		this.game.round = undefined;
-	}
-
-	updateSprites(): void {
-		this.sprites.forEach((sprite) => {
-			if (sprite instanceof Crosser)
-				if (
-					this.arena.tiles[Math.floor(sprite.position.y)][
-						Math.floor(sprite.position.x)
-					] === TILE_TYPES.END
-				) {
-					sprite.ascend();
-					this.scores++;
-					sprite.owner.unit = undefined;
-
-					this.onCrosserRemoval();
-				}
-		});
 	}
 
 	updateIntervals(time: number): void {
@@ -358,7 +347,6 @@ class Round {
 		if (time > this.expireAt)
 			this.crossers.forEach((c) => c.unit && c.unit.kill());
 
-		this.updateSprites();
 		this.updateIntervals(time);
 		this.updateTimeouts(time);
 		this.updateResources(delta);
