@@ -4,6 +4,8 @@ import { emitter } from "../emitter.js";
 import { Sprite, SpriteElement } from "./Sprite.js";
 import DragSelectClass from "../lib/DragSelect.js";
 import { defined } from "../types.js";
+import { GraphicComponentManager } from "../components/graphics/GraphicComponent.js";
+import { Selected } from "../components/Selected.js";
 
 let allSelectables: SpriteElement[] | undefined;
 
@@ -82,11 +84,10 @@ if (typeof window !== "undefined")
 			},
 			onElementSelect: (element: SpriteElement) => {
 				const sprite = element.sprite;
-				sprite.selected = true;
+				if (!Selected.has(sprite)) new Selected(sprite);
 			},
 			onElementUnselect: (element: SpriteElement) => {
-				const sprite = element.sprite;
-				sprite.selected = false;
+				Selected.clear(element.sprite);
 			},
 		}) as DragSelectClass<SpriteElement>;
 
@@ -96,7 +97,9 @@ if (typeof window !== "undefined")
 				.map((e: SpriteElement) => e.sprite)
 				.filter(Boolean);
 		dragSelect.setSelection = (v: Sprite[]) => {
-			const elements = v.map((v) => v.html?.htmlElement).filter(notEmpty);
+			const elements = v
+				.map((v) => GraphicComponentManager.get(v)?.entityElement)
+				.filter(notEmpty);
 			const selection = Object.freeze(
 				elements.map((e) => e?.sprite).filter(notEmpty),
 			);
@@ -108,10 +111,14 @@ if (typeof window !== "undefined")
 
 		dragSelect.addSelectables = (v: Sprite[]) =>
 			internalDragSelect.addSelectables(
-				v.map((v) => v.html?.htmlElement).filter(defined),
+				v
+					.map((v) => GraphicComponentManager.get(v)?.entityElement)
+					.filter(defined),
 			);
 		dragSelect.removeSelectables = (v: Sprite[]) =>
 			internalDragSelect.removeSelectables(
-				v.map((v) => v.html?.htmlElement).filter(defined),
+				v
+					.map((v) => GraphicComponentManager.get(v)?.entityElement)
+					.filter(defined),
 			);
 	})();

@@ -8,6 +8,10 @@ export class Blueprint extends Sprite {
 		selectable: false,
 		id: -1,
 		color: "rgba( 70, 145, 246, 0.5 )",
+		graphic: {
+			...Sprite.defaults.graphic,
+			shape: "square" as "square" | "circle",
+		},
 	};
 
 	constructor(props: SpriteProps) {

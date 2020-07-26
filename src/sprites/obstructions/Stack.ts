@@ -10,13 +10,14 @@ export class Stack extends Obstruction {
 		cost: { essence: 15 },
 		buildHotkey: "a" as const,
 		buildDescription: "Can be built anywhere",
+		facing: 315,
+		graphic: {
+			...Obstruction.defaults.graphic,
+			scale: Math.SQRT1_2,
+		},
 	};
 
 	constructor(props: ObstructionProps) {
 		super({ ...Stack.clonedDefaults, ...props });
-
-		if (this.html?.htmlElement)
-			this.html.htmlElement.style.transform =
-				"rotate(45deg) scale(0.7071067811865475)";
 	}
 }

@@ -5,26 +5,15 @@ import { Sprite } from "../sprites/Sprite.js";
 import { MoveTargetManager } from "../components/MoveTarget.js";
 import { Unit } from "../sprites/Unit.js";
 import { dragSelect } from "../sprites/dragSelect.js";
+import {
+	GraphicComponentManager,
+	GraphicComponent,
+} from "../components/graphics/GraphicComponent.js";
 
 // TODO: abstract dom into a class
 const arenaElement = document.getElementById("arena")!;
 
-export type HTMLComponent = {
-	htmlElement?: EntityElement;
-} & (
-	| {
-			generator: () => EntityElement;
-	  }
-	| {
-			shape: "square" | "circle";
-	  }
-);
-
-type HTMLEntity = Sprite & {
-	html: HTMLComponent;
-};
-
-export type EntityElement = HTMLDivElement & { sprite: HTMLEntity };
+export type EntityElement = HTMLDivElement & { sprite: Sprite };
 
 type EntityData = {
 	onChangePositionListener: () => void;
@@ -33,43 +22,69 @@ type EntityData = {
 	updateHealth: boolean;
 };
 
-class HTMLGraphics extends System<HTMLEntity> {
-	entityData: Map<HTMLEntity, EntityData> = new Map();
-	protected dirty = new Set<HTMLEntity>();
+class HTMLGraphics extends System<Sprite> {
+	private entityData: Map<Sprite, EntityData> = new Map();
+	protected dirty = new Set<Sprite>();
+	static components = [GraphicComponent];
 
-	test(entity: Sprite): entity is HTMLEntity {
-		return !!entity.html;
+	test(entity: Sprite): entity is Sprite {
+		return GraphicComponentManager.has(entity);
 	}
 
-	onAddEntity(entity: HTMLEntity): void {
+	onAddEntity(entity: Sprite): void {
+		const oldData = this.entityData.get(entity);
+		if (oldData) return;
+
+		const graphicComponent = GraphicComponentManager.get(entity);
+		if (!graphicComponent) return this.remove(entity);
+
 		// Create a div if no htmlElement (only do this once!)
-		if (!entity.html.htmlElement) {
-			const div = Object.assign(document.createElement("div"), {
-				sprite: entity,
-			});
-			entity.html.htmlElement = div;
-		}
+		const div = Object.assign(document.createElement("div"), {
+			sprite: entity,
+		});
 
-		// We should have one, now!
-		const elem = entity.html.htmlElement!;
+		div.classList.add(this.constructor.name.toLowerCase(), "sprite");
 
-		elem.classList.add(this.constructor.name.toLowerCase(), "sprite");
-		elem.style.left =
+		// Position & sizing
+		div.style.left =
 			(entity.position.x - entity.radius) * WORLD_TO_GRAPHICS_RATIO +
 			"px";
-		elem.style.top =
+		div.style.top =
 			(entity.position.y - entity.radius) * WORLD_TO_GRAPHICS_RATIO +
 			"px";
-		elem.style.width = entity.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
-		elem.style.height = entity.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
+		div.style.width = entity.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
+		div.style.height = entity.radius * WORLD_TO_GRAPHICS_RATIO * 2 + "px";
 
-		if (entity.owner) {
-			if (!entity.color && entity.owner.color)
-				elem.style.backgroundColor = entity.owner.color.hex;
-			elem.setAttribute("owner", entity.owner.id.toString());
-		} else elem.style.backgroundColor = entity.color ?? "white";
+		// Color
+		const color =
+			graphicComponent.color ??
+			entity.color ??
+			entity.owner?.color?.hex ??
+			"white";
 
-		arenaElement.appendChild(elem);
+		if (entity.owner) div.setAttribute("owner", entity.owner.id.toString());
+		div.style.backgroundColor = color;
+		if (graphicComponent.texture)
+			div.style.backgroundImage = graphicComponent.texture;
+
+		// Shape
+		if (graphicComponent.shape === "circle") div.style.borderRadius = "50%";
+
+		// Transforms
+		const transforms = [];
+		if (graphicComponent.scale !== 1)
+			transforms.push(`scale(${graphicComponent.scale})`);
+		if (entity.facing !== 270)
+			transforms.push(`rotate(${entity.facing - 270})`);
+		if (transforms.length > 0) div.style.transform = transforms.join(" ");
+
+		// Shadows
+		if (graphicComponent.shadow)
+			div.style.boxShadow = graphicComponent.shadow;
+
+		arenaElement.appendChild(div);
+
+		graphicComponent.entityElement = div;
 
 		const data = {
 			onChangePositionListener: () => {
@@ -95,10 +110,14 @@ class HTMLGraphics extends System<HTMLEntity> {
 		if (entity.selectable) dragSelect.addSelectables([entity]);
 	}
 
-	onRemoveEntity(entity: HTMLEntity): void {
-		if (!entity.html.htmlElement) return;
+	onRemoveEntity(entity: Sprite): void {
+		const graphicComponent = GraphicComponentManager.get(entity);
+		if (graphicComponent) {
+			const div = graphicComponent?.entityElement;
+			if (div) arenaElement.removeChild(div);
+			graphicComponent.entityElement = undefined;
+		}
 
-		arenaElement.removeChild(entity.html.htmlElement);
 		const data = this.entityData.get(entity);
 		if (data) {
 			entity.position.removeEventListener(
@@ -106,13 +125,14 @@ class HTMLGraphics extends System<HTMLEntity> {
 				data.onChangePositionListener,
 			);
 			entity.removeEventListener("change", data.onHealthChangeListener);
-			this.entityData.delete(entity);
 		}
+
+		this.entityData.delete(entity);
 	}
 
 	private updatePosition(
 		elem: EntityElement,
-		entity: HTMLEntity,
+		entity: Sprite,
 		delta: number,
 		time: number,
 		data: EntityData,
@@ -153,7 +173,7 @@ class HTMLGraphics extends System<HTMLEntity> {
 
 	private updateHealth(
 		elem: EntityElement,
-		entity: HTMLEntity,
+		entity: Sprite,
 		data: EntityData,
 	): boolean {
 		if (entity.health <= 0) elem.classList.add("death");
@@ -167,15 +187,16 @@ class HTMLGraphics extends System<HTMLEntity> {
 		return false;
 	}
 
-	render(entity: HTMLEntity, delta: number, time: number): void {
-		const elem = entity.html.htmlElement;
+	render(entity: Sprite, delta: number, time: number): void {
+		const graphicComponent = GraphicComponentManager.get(entity);
+		const div = graphicComponent?.entityElement;
 		const data = this.entityData.get(entity);
-		if (!elem || !data) return;
+		if (!data || !div) return;
 
 		const stillDirty = [
 			data.updatePosition &&
-				this.updatePosition(elem, entity, delta, time, data),
-			data.updateHealth && this.updateHealth(elem, entity, data),
+				this.updatePosition(div, entity, delta, time, data),
+			data.updateHealth && this.updateHealth(div, entity, data),
 		].some((v) => v);
 
 		if (!stillDirty) this.dirty.delete(entity);

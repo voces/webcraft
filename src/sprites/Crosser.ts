@@ -21,6 +21,12 @@ import { MoveTargetManager } from "../components/MoveTarget.js";
 import { AttackTargetManager } from "../components/AttackTarget.js";
 import { BuildTargetManager } from "../components/BuildTarget.js";
 import { HoldPositionManager } from "../components/HoldPositionComponent.js";
+import { GraphicComponentManager } from "../components/graphics/GraphicComponent.js";
+import {
+	Animation,
+	AnimationManager,
+} from "../components/graphics/Animation.js";
+import { Selected } from "../components/Selected.js";
 
 const destroyLastBox: Action = {
 	name: "Destroy box",
@@ -74,7 +80,7 @@ export class Crosser extends Unit {
 	ascend(): void {
 		this.invulnerable = true;
 		dragSelect.removeSelectables([this]);
-		if (this._selected)
+		if (Selected.has(this))
 			dragSelect.setSelection(
 				dragSelect.selection.filter((u) => u !== this),
 			);
@@ -95,8 +101,9 @@ export class Crosser extends Unit {
 		// Cancel any active placements
 		if (activePlacement()) stopPlacement();
 
-		if (this.html?.htmlElement)
-			this.html.htmlElement.classList.add("ascend");
+		const graphicComponent = GraphicComponentManager.get(this);
+		if (graphicComponent)
+			AnimationManager.set(this, new Animation(this, "ascend", 1));
 
 		this.round.setTimeout(() => this.remove(), 1);
 	}

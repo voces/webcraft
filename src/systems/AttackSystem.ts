@@ -8,6 +8,11 @@ import { Sprite } from "../sprites/Sprite.js";
 import { isInAttackRange } from "../sprites/UnitApi.js";
 import { MoveTargetManager } from "../components/MoveTarget.js";
 import { DamageComponentManager } from "../components/DamageComponent.js";
+import { GraphicComponentManager } from "../components/graphics/GraphicComponent.js";
+import {
+	AnimationManager,
+	Animation,
+} from "../components/graphics/Animation.js";
 
 export class AttackSystem extends System<Unit> {
 	static components = [AttackTarget];
@@ -68,12 +73,10 @@ export class AttackSystem extends System<Unit> {
 			}
 		} else weapon.projectile(attackTarget.target, entity);
 
-		if (entity.html?.htmlElement)
-			entity.html.htmlElement.classList.add("attack");
-		entity.round.setTimeout(
-			() => entity.html?.htmlElement?.classList.remove("attack"),
-			0.25,
-		);
+		const graphicComponent = GraphicComponentManager.get(entity);
+		if (graphicComponent)
+			AnimationManager.set(entity, new Animation(entity, "attack", 0.25));
+
 		weapon.last = entity.round.lastUpdate;
 	}
 }

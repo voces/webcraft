@@ -1,21 +1,21 @@
 import { PATHING_TYPES } from "../constants.js";
 import { dragSelect } from "./dragSelect.js";
 import { emitter, Emitter } from "../emitter.js";
-import { document } from "../util/globals.js";
 import { Player } from "../players/Player.js";
 import { Round } from "../Round.js";
 import { clone } from "../util/clone.js";
 import { Action } from "./spriteLogic.js";
 import { Game } from "../Game.js";
-import { HTMLComponent } from "../systems/HTMLGraphics.js";
+import {
+	GraphicComponent,
+	GraphicComponentManager,
+} from "../components/graphics/GraphicComponent.js";
 import { Position } from "../components/Position.js";
 import { MoveTargetManager } from "../components/MoveTarget.js";
 import { AttackTargetManager } from "../components/AttackTarget.js";
 import { HoldPositionManager } from "../components/HoldPositionComponent.js";
 import { GerminateComponentManager } from "../components/GerminateComponent.js";
-
-// TODO: abstract dom into a class
-const arenaElement = document.getElementById("arena")!;
+import { Selected } from "../components/Selected.js";
 
 export type SpriteElement = HTMLDivElement & { sprite: Sprite };
 
@@ -35,12 +35,17 @@ export type SpriteProps = {
 	owner?: Player;
 	facing?: number;
 	game: Game;
+	graphic?: {
+		shape: "square" | "circle";
+		color?: string;
+		texture?: string;
+	};
 };
 
 export type Effect = {
 	type: "slow";
 	oldSpeed: number;
-	oldBackgroundImage?: string;
+	oldBackgroundImage: string;
 	timeout: number;
 };
 
@@ -70,12 +75,10 @@ class Sprite {
 	maxHealth: number;
 	private _health!: number;
 	invulnerable = false;
-	_selected = false;
 	color?: string;
 	selectable: boolean;
 
 	// components
-	html?: HTMLComponent;
 	position: Position;
 
 	// todo: move these to unit
@@ -86,6 +89,7 @@ class Sprite {
 
 	static defaults = {
 		radius: 1,
+		graphic: { shape: "circle" as "square" | "circle" },
 	};
 
 	// TODO: figure out how to type this...
@@ -112,6 +116,7 @@ class Sprite {
 		facing = 270,
 		owner,
 		game,
+		graphic = clone(Sprite.defaults.graphic),
 	}: SpriteProps) {
 		emitter<Sprite, SpriteEvents>(this);
 
@@ -140,26 +145,19 @@ class Sprite {
 		Object.assign(this, { html: {} });
 		this.position = new Position(x, y);
 
-		if (!selectable) this.html?.htmlElement?.classList.add("doodad");
+		GraphicComponentManager.set(
+			this,
+			new GraphicComponent(this, {
+				...graphic,
+				targetable: selectable,
+			}),
+		);
 
 		// Lists
 		if (this.owner) this.owner.sprites.push(this);
 		this.round.sprites.push(this);
 
 		this.game.add(this);
-	}
-
-	set selected(value: boolean) {
-		this._selected = value;
-
-		if (!this.html?.htmlElement) return;
-
-		if (value) this.html.htmlElement.classList.add("selected");
-		else this.html.htmlElement.classList.remove("selected");
-	}
-
-	get selected(): boolean {
-		return this._selected;
 	}
 
 	damage(amount: number): number {
@@ -199,7 +197,7 @@ class Sprite {
 		if (removeImmediately) this._health = 0;
 
 		dragSelect.removeSelectables([this]);
-		if (this._selected)
+		if (Selected.has(this))
 			dragSelect.setSelection(
 				dragSelect.selection.filter((u: Sprite) => u !== this),
 			);
@@ -223,12 +221,6 @@ class Sprite {
 		this.dispatchEvent("remove");
 		this.removeEventListeners();
 		this.round.pathingMap.removeEntity(this);
-
-		if (
-			this.html?.htmlElement &&
-			arenaElement.contains(this.html.htmlElement)
-		)
-			arenaElement.removeChild(this.html.htmlElement);
 	}
 
 	get actions(): Action[] {

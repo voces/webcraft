@@ -51,6 +51,10 @@ export abstract class Obstruction extends Unit {
 		cost: { essence: 1 },
 		requiresPathing: PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE,
 		speed: 0,
+		graphic: {
+			...Unit.defaults.graphic,
+			shape: "square" as "square" | "circle",
+		},
 	};
 
 	static isObstruction = (sprite: Sprite): sprite is Obstruction =>
@@ -85,9 +89,6 @@ export abstract class Obstruction extends Unit {
 		this.buildTime = buildTime;
 
 		GerminateComponentManager.set(this, new GerminateComponent(this));
-
-		if (this.html?.htmlElement)
-			this.html.htmlElement.style.borderRadius = "";
 	}
 
 	get actions(): Action[] {

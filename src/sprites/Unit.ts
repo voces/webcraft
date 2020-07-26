@@ -1,5 +1,5 @@
 import { dragSelect } from "./dragSelect.js";
-import { WORLD_TO_GRAPHICS_RATIO, BUILD_DISTANCE } from "../constants.js";
+import { BUILD_DISTANCE } from "../constants.js";
 import { Sprite, SpriteProps } from "./Sprite.js";
 import { Point } from "../pathing/PathingMap.js";
 import { Player } from "../players/Player.js";
@@ -88,13 +88,16 @@ export type UnitProps = Omit<SpriteProps, "game"> & {
 	builds?: typeof Obstruction[];
 };
 
+const revealIllusion = (owner: Player) =>
+	!owner.enemies.includes(owner.game.localPlayer);
+
 // `Seeing Class extends value undefined is not a constructor or null`? Import
 // Player before Sprite.
 class Unit extends Sprite {
 	static isUnit = (sprite: Sprite): sprite is Unit => sprite instanceof Unit;
 
 	static defaults = {
-		...Sprite.defaults,
+		...Sprite.clonedDefaults,
 		isIllusion: false,
 		// 380 in WC3
 		speed: 5.938,
@@ -116,14 +119,25 @@ class Unit extends Sprite {
 		name,
 		speed = Unit.defaults.speed,
 		weapon,
+		graphic,
 		...props
 	}: UnitProps) {
 		super({
 			game: props.owner.game,
 			...props,
+			graphic: {
+				...Unit.defaults.graphic,
+				...graphic,
+				...(!graphic?.texture &&
+				isIllusion &&
+				revealIllusion(props.owner)
+					? {
+							texture:
+								"radial-gradient(rgba(0, 0, 255, 0.75), rgba(0, 0, 255, 0.75))",
+					  }
+					: undefined),
+			},
 		});
-
-		const game = props.owner.game;
 
 		this.isIllusion = isIllusion;
 		this.name = name ?? this.constructor.name;
@@ -135,19 +149,6 @@ class Unit extends Sprite {
 				this,
 				new DamageComponent(this, [weapon], autoAttack),
 			);
-
-		if (this.html?.htmlElement) {
-			if (
-				this.isIllusion &&
-				game.localPlayer &&
-				game.localPlayer.unit &&
-				this.round.defenders.includes(game.localPlayer)
-			)
-				this.html.htmlElement.style.backgroundImage =
-					"radial-gradient(rgba(0, 0, 255, 0.75), rgba(0, 0, 255, 0.75))";
-			this.html.htmlElement.style.borderRadius =
-				this.radius * WORLD_TO_GRAPHICS_RATIO + "px";
-		}
 	}
 
 	attack(target: Sprite): void {

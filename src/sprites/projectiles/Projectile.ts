@@ -31,6 +31,11 @@ export class Projectile extends Sprite {
 		selectable: false,
 		blocksPathing: 0,
 		requiresPathing: 0,
+		graphic: {
+			...Sprite.defaults.graphic,
+			color: "transparent",
+			texture: "radial-gradient(rgba(0, 0, 255, 0.25), transparent)",
+		},
 	};
 
 	speed: number;
@@ -69,12 +74,5 @@ export class Projectile extends Sprite {
 		this.speed = speed;
 
 		MoveTargetManager.set(this, new MoveTarget({ entity: this, target }));
-
-		if (this.html?.htmlElement) {
-			this.html.htmlElement.style.borderRadius = "50%";
-			this.html.htmlElement.style.backgroundColor = "transparent";
-			this.html.htmlElement.style.backgroundImage =
-				"radial-gradient(rgba(0, 0, 255, 0.25), transparent)";
-		}
 	}
 }

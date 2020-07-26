@@ -7,7 +7,7 @@ type SystemEvents = {
 	remove: (entity: Sprite) => void;
 };
 
-abstract class System<T extends Sprite> {
+abstract class System<T extends Sprite = Sprite> {
 	private set: Set<T> = new Set();
 	protected dirty?: Set<T>;
 	private _callbacks: Map<
@@ -19,14 +19,12 @@ abstract class System<T extends Sprite> {
 	> = new Map();
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	static components: ComponentConstructor<any>[] = [];
+	static readonly components: ReadonlyArray<ComponentConstructor<any>> = [];
 
 	static props = new Array<keyof Unit>();
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	test(entity: Sprite | T): entity is T {
-		return true;
-	}
+	abstract test(entity: Sprite | T): entity is T;
 
 	private _add(entity: T): void {
 		this.set.add(entity);

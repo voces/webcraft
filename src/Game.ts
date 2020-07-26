@@ -22,6 +22,8 @@ import { BlueprintSystem } from "./systems/BlueprintSystem.js";
 import { ProjectileSystem } from "./systems/ProjectileSystem.js";
 import { GerminateSystem } from "./systems/GerminateSystem.js";
 import { AutoAttackSystem } from "./systems/AutoAttackSystem.js";
+import { AnimationSystem } from "./systems/AnimationSystem.js";
+import { SelectedSystem } from "./systems/SelectedSystem.js";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
@@ -78,6 +80,8 @@ class Game extends App {
 		this.addSystem(new ProjectileSystem());
 		this.addSystem(new GerminateSystem());
 		this.addSystem(new AutoAttackSystem());
+		this.addSystem(new AnimationSystem());
+		this.addSystem(new SelectedSystem());
 
 		this.network = network;
 		this.addNetworkListener = this.network.addEventListener.bind(
