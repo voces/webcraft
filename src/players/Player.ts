@@ -3,11 +3,11 @@ import {
 	release as releaseColor,
 	take as takeColor,
 	Color,
-} from "./colors.js";
-import { ResourceMap, resourceKeys, Resource } from "../types.js";
-import { Unit } from "../sprites/Unit.js";
-import { Sprite } from "../sprites/Sprite.js";
-import { Game } from "../Game.js";
+} from "./colors";
+import { ResourceMap, resourceKeys, Resource } from "../types";
+import { Unit } from "../entities/sprites/Unit";
+import { Sprite } from "../entities/sprites/Sprite";
+import { Game } from "../Game";
 
 export interface PlayerState {
 	color: number | undefined;
@@ -64,6 +64,13 @@ export class Player {
 		if (!this.game.round) return [];
 		const isCrosser = this.game.round.crossers.includes(this);
 		return isCrosser ? this.game.round.defenders : this.game.round.crossers;
+	}
+
+	isEnemy(player: Player): boolean {
+		if (!this.game.round) throw new Error("round not active!");
+		const selfIsCrosser = this.game.round.crossers.includes(this);
+		const otherIsCrosser = this.game.round.crossers.includes(player);
+		return selfIsCrosser !== otherIsCrosser;
 	}
 
 	getEnemySprites(): Sprite[] {

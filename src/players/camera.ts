@@ -1,15 +1,16 @@
-import { WORLD_TO_GRAPHICS_RATIO } from "../constants.js";
-import { tweenPoints, PathTweener } from "../util/tweenPoints.js";
-import { document, requestAnimationFrame, window } from "../util/globals.js";
-import { dragSelect } from "../sprites/dragSelect.js";
-import { registerCommand } from "../ui/chat.js";
-import { Round } from "../Round.js";
-import { Point } from "../pathing/PathingMap.js";
-import { UI } from "../ui/index.js";
+import { WORLD_TO_GRAPHICS_RATIO } from "../constants";
+import { tweenPoints, PathTweener } from "../util/tweenPoints";
+import { document, requestAnimationFrame, window } from "../util/globals";
+import { registerCommand } from "../ui/chat";
+import { Round } from "../Round";
+import { Point } from "../pathing/PathingMap";
+import { UI } from "../ui/index";
+import { Game } from "../Game";
+import { Sprite } from "../entities/sprites/Sprite";
 
 type Direction = "right" | "left" | "down" | "up";
 
-const CAMERA_SPEED = 800;
+const CAMERA_SPEED = 25;
 const ZOOM_SPEED = 1 / 500;
 
 const arena = document.getElementById("arena") as HTMLElement &
@@ -42,18 +43,9 @@ const setMouseAndRender = (direction: Direction) => {
 	renderCamera();
 };
 
-const setScale = (scale: number) => {
-	const oldHeight = arena.clientHeight * arena.scale;
-	const oldWidth = arena.clientWidth * arena.scale;
-	arena.scale = Math.max(scale, 0.1);
-	arena.style.transform = `scale(${arena.scale})`;
-
-	// We should find where the camera is and scale as if that is the origin
-	// This just treats the center of the arena as the origin
-	arena.style.top =
-		(arena.y += (oldHeight - arena.clientHeight * arena.scale) / 2) + "px";
-	arena.style.left =
-		(arena.x += (oldWidth - arena.clientWidth * arena.scale) / 2) + "px";
+const setZoom = (zoom: number) => {
+	const camera = Game.manager.context?.graphics.camera;
+	if (camera) camera.position.z = zoom;
 };
 
 export const initCameraListeners = (ui: UI): void => {
@@ -109,15 +101,18 @@ export const initCameraListeners = (ui: UI): void => {
 		emptyMouse(mouse);
 	});
 
-	ui.addEventListener("wheel", ({ deltaY }) =>
-		setScale(arena.scale + deltaY * ZOOM_SPEED),
-	);
+	ui.addEventListener("wheel", ({ deltaY }) => {
+		const camera = Game.manager.context?.graphics.camera;
+		if (camera) setZoom(camera.position.z + deltaY * ZOOM_SPEED);
+	});
 };
 
 let lastRender: number | undefined = 0;
 const renderCamera = (time?: number) => {
 	const delta = (lastRender && time ? time - lastRender : 17) / 1000;
 	lastRender = time;
+
+	const graphics = Game.manager.context?.graphics;
 
 	if (pan) {
 		const { x, y } = pan.step((delta * pan.distance) / pan.duration);
@@ -129,27 +124,27 @@ const renderCamera = (time?: number) => {
 			requestedAnimationFrame = requestAnimationFrame(renderCamera);
 		else requestedAnimationFrame = undefined;
 	} else {
-		if (keyboard.ArrowDown)
-			arena.style.top = (arena.y = arena.y - delta * CAMERA_SPEED) + "px";
-		if (keyboard.ArrowUp)
-			arena.style.top = (arena.y = arena.y + delta * CAMERA_SPEED) + "px";
-		if (keyboard.ArrowRight)
-			arena.style.left =
-				(arena.x = arena.x - delta * CAMERA_SPEED) + "px";
-		if (keyboard.ArrowLeft)
-			arena.style.left =
-				(arena.x = arena.x + delta * CAMERA_SPEED) + "px";
+		if (graphics) {
+			let y = 0;
+			let x = 0;
+			if (keyboard.ArrowDown) y -= delta * CAMERA_SPEED;
+			if (keyboard.ArrowUp) y += delta * CAMERA_SPEED;
+			if (keyboard.ArrowRight) x += delta * CAMERA_SPEED;
+			if (keyboard.ArrowLeft) x -= delta * CAMERA_SPEED;
 
-		if (mouse.up)
-			arena.style.top = (arena.y = arena.y + delta * CAMERA_SPEED) + "px";
-		if (mouse.down)
-			arena.style.top = (arena.y = arena.y - delta * CAMERA_SPEED) + "px";
-		if (mouse.left)
-			arena.style.left =
-				(arena.x = arena.x + delta * CAMERA_SPEED) + "px";
-		if (mouse.right)
-			arena.style.left =
-				(arena.x = arena.x - delta * CAMERA_SPEED) + "px";
+			if (mouse.up) y += delta * CAMERA_SPEED;
+			if (mouse.down) y -= delta * CAMERA_SPEED;
+			if (mouse.left) x -= delta * CAMERA_SPEED;
+			if (mouse.right) x += delta * CAMERA_SPEED;
+
+			graphics.panTo(
+				{
+					x: graphics.camera.position.x + x,
+					y: graphics.camera.position.y + 7 + y,
+				},
+				0,
+			);
+		}
 
 		if (mouse.up)
 			if (mouse.left) document.body.style.cursor = "nw-resize";
@@ -199,9 +194,10 @@ export const panTo = ({
 };
 
 const follow = () => {
-	if (dragSelect.selection.length === 0) return;
+	const selection = Game.manager.context?.selectionSystem.selection;
+	if (!selection?.length) return;
 
-	const { xSum, ySum } = dragSelect.selection.reduce(
+	const { xSum, ySum } = selection.filter(Sprite.isSprite).reduce(
 		({ xSum, ySum }, { position: { x, y } }) => ({
 			xSum: xSum + x,
 			ySum: ySum + y,
@@ -209,16 +205,16 @@ const follow = () => {
 		{ xSum: 0, ySum: 0 },
 	);
 
-	const x = xSum / dragSelect.selection.length;
-	const y = ySum / dragSelect.selection.length;
+	const x = xSum / selection.length;
+	const y = ySum / selection.length;
 	panTo({ x, y, duration: 10 });
 };
 
 registerCommand({
 	name: "zoom",
-	comment: "Zooms in or out. Initial 1650",
+	comment: "Zooms in or out. Initial 10",
 	args: [{ required: true, name: "level" }],
-	handler: (_, zoom) => setScale(1650 / parseFloat(zoom)),
+	handler: (_, zoom) => setZoom(parseFloat(zoom)),
 });
 
 export const clientToWorld = ({ x, y }: Point): Point => ({

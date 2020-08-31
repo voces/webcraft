@@ -1,5 +1,5 @@
-import { Point } from "../pathing/PathingMap.js";
-import { Sprite } from "../sprites/Sprite.js";
+import { Point } from "../pathing/PathingMap";
+import { Sprite } from "../entities/sprites/Sprite";
 
 export const distanceBetweenPoints = (
 	{ x: x1, y: y1 }: Point,

@@ -1,8 +1,8 @@
-import { BinaryHeap } from "./BinaryHeap.js";
-import { memoize } from "./memoize.js";
-import { DIRECTION, PATHING_TYPES } from "../constants.js";
-import { document } from "../util/globals.js";
-import { emptyElement } from "../util/html.js";
+import { BinaryHeap } from "./BinaryHeap";
+import { memoize } from "./memoize";
+import { DIRECTION, PATHING_TYPES } from "../constants";
+import { document } from "../util/globals";
+import { emptyElement } from "../util/html";
 import {
 	polarProject,
 	behind,
@@ -10,7 +10,7 @@ import {
 	trueMinX,
 	trueMaxX,
 	offset,
-} from "./math.js";
+} from "./math";
 
 let debugging = false;
 const elems: HTMLElement[] = [];

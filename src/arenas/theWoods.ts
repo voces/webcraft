@@ -1,5 +1,5 @@
-import { stringMap } from "./util.js";
-import { InternalArena } from "./types.js";
+import { stringMap } from "./util";
+import { InternalArena } from "./types";
 
 export const theWoods: InternalArena = {
 	name: "The Woods",

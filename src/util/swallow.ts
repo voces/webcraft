@@ -1,3 +1,5 @@
+import { RecursivePartial } from "../types";
+
 /**
  * Swallow returns a recrusive empty object, allowing you to do
  * `swallow().a.b.c['c'].f().g` without error. This is used for server clients
@@ -5,9 +7,9 @@
  * @param obj
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const swallow = <T>(obj?: T): T => {
+const swallow = <T>(obj: RecursivePartial<T> = {}): T => {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const memory: T = {} as any;
+	const memory: T = obj as any;
 	return (new Proxy(
 		Object.assign(
 			() => {
@@ -16,10 +18,13 @@ const swallow = <T>(obj?: T): T => {
 			{ valueOf: () => 0 },
 		),
 		{
-			get: (_, prop: keyof T) => {
+			get: <P extends keyof T>(_: unknown, prop: P) => {
 				if (prop in memory) return memory[prop];
-				if (prop === Symbol.toPrimitive) return () => 1;
-				return swallow();
+				memory[prop] =
+					prop === Symbol.toPrimitive
+						? (((() => 1) as unknown) as T[P])
+						: swallow<T[P]>();
+				return memory[prop];
 			},
 			set: (_, prop: keyof T, value) => {
 				memory[prop] = value;

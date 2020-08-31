@@ -1,10 +1,7 @@
-import { System } from "../core/System.js";
-import { Sprite } from "../sprites/Sprite.js";
-import {
-	Animation,
-	AnimationManager,
-} from "../components/graphics/Animation.js";
-import { GraphicComponentManager } from "../components/graphics/GraphicComponent.js";
+import { System } from "../core/System";
+import { Sprite } from "../entities/sprites/Sprite";
+import { Animation, AnimationManager } from "../components/graphics/Animation";
+import { MeshBuilderComponentManager } from "../components/graphics/MeshBuilderComponent";
 
 export class AnimationSystem extends System<Sprite> {
 	static components = [Animation];
@@ -12,18 +9,14 @@ export class AnimationSystem extends System<Sprite> {
 
 	test(entity: Sprite): entity is Sprite {
 		return (
-			AnimationManager.has(entity) && GraphicComponentManager.has(entity)
+			AnimationManager.has(entity) &&
+			MeshBuilderComponentManager.has(entity)
 		);
 	}
 
 	onAddEntity(entity: Sprite): void {
-		const div = GraphicComponentManager.get(entity)?.entityElement;
-		if (!div) return this.remove(entity);
-
 		const animation = AnimationManager.get(entity);
 		if (!animation) return this.remove(entity);
-
-		div.classList.add(animation.animation);
 
 		this.entityData.set(entity, { animation });
 	}
@@ -31,10 +24,5 @@ export class AnimationSystem extends System<Sprite> {
 	onRemoveEntity(entity: Sprite): void {
 		const data = this.entityData.get(entity);
 		if (!data) return;
-
-		const div = GraphicComponentManager.get(entity)?.entityElement;
-		if (!div) return this.remove(entity);
-
-		div.classList.remove(data.animation.animation);
 	}
 }

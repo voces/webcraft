@@ -1,8 +1,8 @@
-import { System } from "../core/System.js";
-import { Sprite } from "../sprites/Sprite.js";
-import { MoveTargetManager } from "../components/MoveTarget.js";
-import { distanceBetweenPoints } from "../util/tweenPoints.js";
-import { Projectile } from "../sprites/projectiles/Projectile.js";
+import { System } from "../core/System";
+import { Sprite } from "../entities/sprites/Sprite";
+import { MoveTargetManager } from "../components/MoveTarget";
+import { distanceBetweenPoints } from "../util/tweenPoints";
+import { Projectile } from "../entities/sprites/projectiles/Projectile";
 
 export class ProjectileSystem extends System<Projectile> {
 	test(entity: Sprite): entity is Projectile {

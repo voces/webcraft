@@ -1,7 +1,7 @@
-import { Sprite } from "../sprites/Sprite.js";
-import { Component } from "../core/Component.js";
-import { ComponentManager } from "../core/ComponentManager.js";
-import { NonEmptyArray } from "../types.js";
+import { Sprite } from "../entities/sprites/Sprite";
+import { DeprecatedComponent } from "../core/Component";
+import { DeprecatedComponentManager } from "../core/DeprecatedComponentManager";
+import { NonEmptyArray } from "../types";
 
 export type Weapon = {
 	damage: number;
@@ -15,7 +15,7 @@ export type Weapon = {
 	onDamage?: (target: Sprite, damage: number, attacker: Sprite) => void;
 };
 
-export class DamageComponent extends Component {
+export class DamageComponent extends DeprecatedComponent {
 	weapons: NonEmptyArray<Weapon>;
 	autoAttack: boolean;
 
@@ -30,6 +30,6 @@ export class DamageComponent extends Component {
 	}
 }
 
-export const DamageComponentManager = new ComponentManager<DamageComponent>(
-	DamageComponent,
-);
+export const DamageComponentManager = new DeprecatedComponentManager<
+	DamageComponent
+>(DamageComponent);

@@ -1,9 +1,20 @@
-import { EComponent } from "../core/Component.js";
-import { Sprite } from "../sprites/Sprite.js";
+import { Entity } from "../core/Entity";
+import { Circle } from "./Circle";
 
-export class Selected extends EComponent {
-	protected static map = new WeakMap<Sprite, Selected>();
-	static get(entity: Sprite): Selected | undefined {
+type Props = {
+	radius: number;
+	color: string;
+};
+
+export class Selected extends Circle {
+	protected static map = new WeakMap<Entity, Selected>();
+
+	static get(entity: Entity): Selected | undefined {
 		return this.map.get(entity);
+	}
+
+	constructor(entity: Entity, props: Partial<Props> = {}) {
+		if (!props.color) props.color = "#00FF00";
+		super(entity, props);
 	}
 }

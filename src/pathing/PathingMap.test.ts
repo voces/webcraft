@@ -1,7 +1,7 @@
-import { PathingMap } from "./PathingMap.js";
-import { PATHING_TYPES } from "../constants.js";
-import { array2 } from "../../test/array2.js";
-import { tweenPoints, pathDistance } from "../util/tweenPoints.js";
+import { PathingMap } from "./PathingMap";
+import { PATHING_TYPES } from "../constants";
+import { array2 } from "../../test/array2";
+import { tweenPoints, pathDistance } from "../util/tweenPoints";
 
 // todo: this should be isolated to describes
 const pathing = [

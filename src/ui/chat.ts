@@ -1,9 +1,9 @@
-import { document } from "../util/globals.js";
-import { marked } from "../lib/marked.js";
-import { toggleDebugging } from "../pathing/PathingMap.js";
-import { emptyElement } from "../util/html.js";
-import { Game } from "../Game.js";
-import { UI } from "./index.js";
+import { document } from "../util/globals";
+import { marked } from "../lib/marked";
+import { toggleDebugging } from "../pathing/PathingMap";
+import { emptyElement } from "../util/html";
+import { Game } from "../Game";
+import { UI } from "./index";
 
 type Command = {
 	name: string;

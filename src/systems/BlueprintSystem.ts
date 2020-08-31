@@ -1,11 +1,11 @@
-import { System } from "../core/System.js";
-import { BuildTargetManager, BuildTarget } from "../components/BuildTarget.js";
-import { Sprite } from "../sprites/Sprite.js";
-import { Unit } from "../sprites/Unit.js";
-import { MoveTarget, MoveTargetManager } from "../components/MoveTarget.js";
-import { distanceBetweenPoints } from "../util/tweenPoints.js";
-import { BUILD_DISTANCE } from "../constants.js";
-import { appendErrorMessage } from "../ui/chat.js";
+import { System } from "../core/System";
+import { BuildTargetManager, BuildTarget } from "../components/BuildTarget";
+import { Sprite } from "../entities/sprites/Sprite";
+import { Unit } from "../entities/sprites/Unit";
+import { MoveTarget, MoveTargetManager } from "../components/MoveTarget";
+import { distanceBetweenPoints } from "../util/tweenPoints";
+import { BUILD_DISTANCE } from "../constants";
+import { appendErrorMessage } from "../ui/chat";
 
 export class BlueprintSystem extends System<Unit> {
 	static components = [BuildTarget, MoveTarget];

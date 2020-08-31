@@ -1,9 +1,9 @@
-import { emitter, Emitter } from "./emitter.js";
-import { newPingMessage } from "./ui/ping.js";
-import { location } from "./util/globals.js";
-import { obstructionMap } from "./sprites/obstructions/index.js";
-import { Game } from "./Game.js";
-import { ValueOf } from "./types.js";
+import { emitter, Emitter } from "./emitter";
+import { newPingMessage } from "./ui/ping";
+import { location } from "./util/globals";
+import { obstructionMap } from "./entities/sprites/obstructions/index";
+import { Game } from "./Game";
+import { ValueOf } from "./types";
 
 export const activeHost = location.port
 	? `${location.hostname}:${8080}`

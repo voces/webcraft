@@ -1,6 +1,6 @@
-import { document, localStorage } from "../util/globals.js";
-import { registerCommand } from "./chat.js";
-import { UI } from "./index.js";
+import { document, localStorage } from "../util/globals";
+import { registerCommand } from "./chat";
+import { UI } from "./index";
 
 const hotkeys = document.getElementById("hotkeys")!;
 

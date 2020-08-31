@@ -1,5 +1,5 @@
-import { stringMap } from "./util.js";
-import { InternalArena } from "./types.js";
+import { stringMap } from "./util";
+import { InternalArena } from "./types";
 
 export const theTinyRectangle: InternalArena = {
 	name: "The Tiny Rectangle",

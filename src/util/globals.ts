@@ -1,11 +1,24 @@
-import { swallow } from "./swallow.js";
+import { swallow } from "./swallow";
 
 const cAF =
 	typeof cancelAnimationFrame === "undefined"
 		? swallow<typeof cancelAnimationFrame>()
 		: cancelAnimationFrame;
 
-const doc = typeof document === "undefined" ? swallow<Document>() : document;
+const doc =
+	typeof document === "undefined"
+		? swallow<Document>({
+				createElement: () =>
+					swallow({
+						getContext: () =>
+							swallow({
+								getParameter: () =>
+									"WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+							}),
+					}),
+		  })
+		: document;
+
 const loc = typeof location === "undefined" ? swallow<Location>() : location;
 
 const rAF =

@@ -1,9 +1,8 @@
-import { Sprite } from "../sprites/Sprite";
+import { Entity } from "./Entity";
+import { hasAppProp } from "./util";
+import { App } from "./App";
 
-export abstract class Component<
-	T extends Sprite = Sprite,
-	A extends unknown[] = []
-> {
+export abstract class DeprecatedComponent<T extends Entity = Entity> {
 	readonly entity: T;
 
 	constructor(entity: T) {
@@ -15,30 +14,53 @@ export abstract class Component<
 	}
 }
 
-export class EComponent<
+export type DeprecatedComponentConstructor<
+	T extends DeprecatedComponent
+> = new (
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	...args: any[]
+) => T;
+
+export abstract class Component<
 	InitializationParameters extends unknown[] = []
-> extends Component<Sprite, InitializationParameters> {
-	protected static map = new WeakMap<Sprite, EComponent>();
-	static get(entity: Sprite): EComponent | undefined {
+> extends DeprecatedComponent<Entity> {
+	static isComponentClass = (
+		klass: typeof DeprecatedComponent | typeof Component,
+	): klass is typeof Component => klass.prototype instanceof Component;
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	protected static map = new WeakMap<Entity, Component<any>>();
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	static get(entity: Entity): Component<any> | undefined {
 		return this.map.get(entity);
 	}
-	static has(entity: Sprite): boolean {
+
+	static has(entity: Entity): boolean {
 		return this.map.has(entity);
 	}
-	static clear(entity: Sprite): boolean {
+
+	static clear(entity: Entity): boolean {
 		const cleared = this.map.delete(entity);
-		if (cleared)
-			entity.game.entityComponentUpdated(
-				entity,
-				<ComponentConstructor<EComponent>>this,
-			);
+
+		if (cleared) {
+			const app = App.manager.context;
+			if (app)
+				app.entityComponentUpdated(
+					entity,
+					(this as unknown) as DeprecatedComponentConstructor<
+						Component
+					>,
+				);
+		}
+
 		return cleared;
 	}
 
-	constructor(entity: Sprite, ...rest: InitializationParameters) {
+	constructor(entity: Entity, ...rest: InitializationParameters) {
 		super(entity);
 
-		const constructor = <typeof EComponent>this.constructor;
+		const constructor = <typeof Component>this.constructor;
 		if (constructor.has(entity))
 			throw new Error(
 				`Adding duplicate component ${constructor.name} to Entity ${entity.constructor.name}`,
@@ -47,15 +69,16 @@ export class EComponent<
 		constructor.map.set(entity, this);
 
 		if (this.initialize) this.initialize(...rest);
-		this.entity.game.entityComponentUpdated(
-			entity,
-			<ComponentConstructor<EComponent>>this.constructor,
-		);
+		if (hasAppProp(this.entity))
+			this.entity.app.entityComponentUpdated(
+				entity,
+				<DeprecatedComponentConstructor<Component>>this.constructor,
+			);
 	}
 
 	// This method is invoked by the constructor before notifying the App of a
 	// change
-	initialize?: (...rest: InitializationParameters) => void;
+	protected initialize?(...rest: InitializationParameters): void;
 }
 
 export type ComponentConstructor<T extends Component> = new (

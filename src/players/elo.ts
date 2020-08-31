@@ -1,7 +1,7 @@
-import { document } from "../util/globals.js";
-import { Player } from "./Player.js";
-import { emptyElement } from "../util/html.js";
-import { Game } from "../Game.js";
+import { document } from "../util/globals";
+import { Player } from "./Player";
+import { emptyElement } from "../util/html";
+import { Game } from "../Game";
 
 // Formula taken from
 // https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/

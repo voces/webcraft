@@ -1,8 +1,8 @@
-import { Component } from "../../core/Component.js";
-import { Sprite } from "../../sprites/Sprite.js";
-import { ComponentManager } from "../../core/ComponentManager.js";
+import { DeprecatedComponent } from "../../core/Component";
+import { Sprite } from "../../entities/sprites/Sprite";
+import { DeprecatedComponentManager } from "../../core/DeprecatedComponentManager";
 
-export class Animation extends Component {
+export class Animation extends DeprecatedComponent {
 	readonly animation: string;
 
 	/**
@@ -19,4 +19,6 @@ export class Animation extends Component {
 	}
 }
 
-export const AnimationManager = new ComponentManager<Animation>(Animation);
+export const AnimationManager = new DeprecatedComponentManager<Animation>(
+	Animation,
+);

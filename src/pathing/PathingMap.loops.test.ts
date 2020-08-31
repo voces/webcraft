@@ -1,4 +1,4 @@
-import { PathingMap } from "./PathingMap.js";
+import { PathingMap } from "./PathingMap";
 
 const str = (tile: typeof PathingMap.prototype.grid[number][number]) =>
 	`x=${tile.x} y=${tile.y}`;

@@ -6,7 +6,7 @@
     --blueshadow: rgba(var(--blue), 0.9);
     --red: 255, 0, 0;
     --redcolor: rgb(var(--red));
-  }
+}
 
 body {
     margin: 0;
@@ -19,6 +19,14 @@ body {
     font-weight: bold;
     color: white;
     user-select: none;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 #arena {

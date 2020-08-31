@@ -1,6 +1,6 @@
-import { fetch as rawFetch } from "../Network.js";
-import { document } from "../util/globals.js";
-import { Game } from "../Game.js";
+import { fetch as rawFetch } from "../Network";
+import { document } from "../util/globals";
+import { Game } from "../Game";
 
 let game: Game;
 

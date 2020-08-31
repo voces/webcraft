@@ -1,7 +1,7 @@
-import { System } from "../core/System.js";
-import { Sprite } from "../sprites/Sprite.js";
-import { Crosser } from "../sprites/Crosser.js";
-import { TILE_TYPES } from "../constants.js";
+import { System } from "../core/System";
+import { Sprite } from "../entities/sprites/Sprite";
+import { Crosser } from "../entities/sprites/Crosser";
+import { TILE_TYPES } from "../constants";
 
 export class TileSystem extends System<Crosser> {
 	static components = [];

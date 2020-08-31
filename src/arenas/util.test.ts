@@ -1,4 +1,4 @@
-import { stringMap } from "./util.js";
+import { stringMap } from "./util";
 
 describe("stringMap", () => {
 	it("works", () => {

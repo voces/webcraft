@@ -1,4 +1,4 @@
-import { tweenPoints, shortenPath } from "./tweenPoints.js";
+import { tweenPoints, shortenPath } from "./tweenPoints";
 
 describe("shortenPath", () => {
 	it("simple", () => {

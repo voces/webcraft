@@ -1,4 +1,4 @@
-import { clone } from "./clone.js";
+import { clone } from "./clone";
 
 describe("clone", () => {
 	it("smoke", () => {

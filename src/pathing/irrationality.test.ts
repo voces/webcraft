@@ -1,4 +1,4 @@
-import { approx } from "./irrationality.js";
+import { approx } from "./irrationality";
 
 describe("approx", () => {
 	describe("epsilon=0", () => {

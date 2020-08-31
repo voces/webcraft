@@ -1,15 +1,15 @@
-import { System } from "../core/System.js";
-import { Sprite } from "../sprites/Sprite.js";
-import { GerminateComponent } from "../components/GerminateComponent.js";
-import { Unit } from "../sprites/Unit.js";
-import { MoveTarget } from "../components/MoveTarget.js";
-import { AttackTarget } from "../components/AttackTarget.js";
-import { HoldPositionComponent } from "../components/HoldPositionComponent.js";
-import { isInAttackRange } from "../sprites/UnitApi.js";
+import { System } from "../core/System";
+import { Sprite } from "../entities/sprites/Sprite";
+import { GerminateComponent } from "../components/GerminateComponent";
+import { Unit } from "../entities/sprites/Unit";
+import { MoveTarget } from "../components/MoveTarget";
+import { AttackTarget } from "../components/AttackTarget";
+import { HoldPositionComponent } from "../components/HoldPositionComponent";
+import { isInAttackRange } from "../entities/sprites/UnitApi";
 import {
 	DamageComponentManager,
 	DamageComponent,
-} from "../components/DamageComponent.js";
+} from "../components/DamageComponent";
 
 export class AutoAttackSystem extends System<Unit> {
 	static components = [

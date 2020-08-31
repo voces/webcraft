@@ -1,42 +1,41 @@
-import { arenas } from "./arenas/index.js";
-import { Round } from "./Round.js";
-import { TILE_NAMES } from "./constants.js";
-import { panTo } from "./players/camera.js";
-import { emitter, Emitter } from "./emitter.js";
-import { document } from "./util/globals.js";
-import { Player, patchInState } from "./players/Player.js";
-import { Arena } from "./arenas/types.js";
-import { alea } from "./lib/alea.js";
-import { Settings } from "./types.js";
-import { emptyElement } from "./util/html.js";
-import { Network, NetworkEventCallback } from "./Network.js";
-import { UI } from "./ui/index.js";
-import { initObstructionPlacement } from "./sprites/obstructionPlacement.js";
-import { initPlayerLogic } from "./players/playerLogic.js";
-import { initSpriteLogicListeners } from "./sprites/spriteLogic.js";
-import { App } from "./core/App.js";
-import { HTMLGraphics } from "./systems/HTMLGraphics.js";
-import { MoveSystem } from "./systems/MoveSystem.js";
-import { AttackSystem } from "./systems/AttackSystem.js";
-import { BlueprintSystem } from "./systems/BlueprintSystem.js";
-import { ProjectileSystem } from "./systems/ProjectileSystem.js";
-import { GerminateSystem } from "./systems/GerminateSystem.js";
-import { AutoAttackSystem } from "./systems/AutoAttackSystem.js";
-import { AnimationSystem } from "./systems/AnimationSystem.js";
-import { SelectedSystem } from "./systems/SelectedSystem.js";
+import { arenas } from "./arenas/index";
+import { Round } from "./Round";
+import { emitter, Emitter } from "./emitter";
+import { document } from "./util/globals";
+import { Player, patchInState } from "./players/Player";
+import { Arena } from "./arenas/types";
+import { alea } from "./lib/alea";
+import { Settings } from "./types";
+import { emptyElement } from "./util/html";
+import { Network, NetworkEventCallback } from "./Network";
+import { UI } from "./ui/index";
+// import { initObstructionPlacement } from "./entities/sprites/obstructionPlacement";
+import { initPlayerLogic } from "./players/playerLogic";
+import { initSpriteLogicListeners } from "./entities/sprites/spriteLogic";
+import { App } from "./core/App";
+import { MoveSystem } from "./systems/MoveSystem";
+import { AttackSystem } from "./systems/AttackSystem";
+import { BlueprintSystem } from "./systems/BlueprintSystem";
+import { ProjectileSystem } from "./systems/ProjectileSystem";
+import { GerminateSystem } from "./systems/GerminateSystem";
+import { AutoAttackSystem } from "./systems/AutoAttackSystem";
+import { AnimationSystem } from "./systems/AnimationSystem";
+import { SelectedSystem } from "./systems/SelectedSystem";
+import { MeshBuilder } from "./systems/MeshBuilder";
+import { Terrain } from "./entities/Terrain";
+import { ThreeGraphics } from "./systems/ThreeGraphics";
+import { ObstructionPlacement } from "./mechanisms/ObstructionPlacement";
+import { Context } from "./core/Context";
+import { circleSystems } from "./systems/MovingCircles";
+import { Entity } from "./core/Entity";
+import { Hotkeys } from "./ui/hotkeys";
+import { Mouse } from "./systems/Mouse";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
-const gradient = (
-	direction: "top" | "bottom" | "left" | "right",
-	first: number,
-	second: number,
-) =>
-	`linear-gradient(to ${direction}, rgba(0,128,0,${
-		(10 - first) * 0.1
-	}), rgba(0,128,0,${(10 - second) * 0.1}))`;
-
 class Game extends App {
+	static manager = new Context<Game | undefined>(undefined);
+
 	private network: Network;
 	addNetworkListener: Network["addEventListener"];
 	connect: Network["connect"];
@@ -53,6 +52,10 @@ class Game extends App {
 	round?: Round;
 	lastUpdate = 0;
 	lastRoundEnd?: number;
+	terrain?: Terrain;
+
+	mouse: Mouse;
+	actions: Hotkeys;
 
 	settings: Settings = {
 		arenaIndex: -1,
@@ -60,12 +63,7 @@ class Game extends App {
 		duration: 120,
 		mode: "bulldog",
 		resources: {
-			crossers: {
-				essence: {
-					starting: 100,
-					rate: 1,
-				},
-			},
+			crossers: { essence: { starting: 100, rate: 1 } },
 			defenders: { essence: { starting: 0, rate: 0 } },
 		},
 	};
@@ -73,7 +71,8 @@ class Game extends App {
 	constructor(network: Network) {
 		super();
 		emitter(this);
-		this.addSystem(new HTMLGraphics());
+		Game.manager._setContext(this);
+		// this.addSystem(new HTMLGraphics());
 		this.addSystem(new MoveSystem());
 		this.addSystem(new AttackSystem());
 		this.addSystem(new BlueprintSystem());
@@ -81,7 +80,13 @@ class Game extends App {
 		this.addSystem(new GerminateSystem());
 		this.addSystem(new AutoAttackSystem());
 		this.addSystem(new AnimationSystem());
-		this.addSystem(new SelectedSystem());
+		this.addSystem(new MeshBuilder());
+		this.addSystem(new ThreeGraphics(this));
+		circleSystems.forEach((CircleSystem) =>
+			this.addSystem(new CircleSystem()),
+		);
+		this.actions = new Hotkeys();
+		this.addMechanism(this.actions);
 
 		this.network = network;
 		this.addNetworkListener = this.network.addEventListener.bind(
@@ -92,7 +97,10 @@ class Game extends App {
 		this.addNetworkListener("update", (e) => this.update(e));
 
 		this.ui = new UI(this);
-		initObstructionPlacement(this);
+		this.mouse = new Mouse(this.graphics, this.ui);
+		this.addSystem(this.mouse);
+		this.addMechanism(new ObstructionPlacement(this));
+		this.addSystem(new SelectedSystem());
 		initPlayerLogic(this);
 		initSpriteLogicListeners(this);
 
@@ -130,99 +138,17 @@ class Game extends App {
 		this.arena = arenas[arenaIndex];
 
 		emptyElement(tilesElemnt);
-		for (let y = 0; y < this.arena.tiles.length; y++) {
-			const row = document.createElement("div");
-			row.classList.add("row");
-			for (let x = 0; x < this.arena.tiles[y].length; x++) {
-				const tile = document.createElement("div");
-				tile.classList.add(
-					"tile",
-					`layer-${this.arena.layers[y][x]}`,
-					TILE_NAMES[this.arena.tiles[y][x]] || "void",
-				);
+		if (this.terrain) this.remove(this.terrain);
+		this.terrain = new Terrain(this.arena);
+		this.add(this.terrain);
 
-				tile.style.height = "32px";
-				tile.style.width = "32px";
-
-				if (
-					y !== 0 &&
-					this.arena.layers[y][x] < this.arena.layers[y - 1][x]
-				)
-					if (
-						this.arena.layers[y - 1][x] -
-							this.arena.layers[y][x] ===
-						1
-					) {
-						tile.style.backgroundColor = "transparent";
-						tile.style.backgroundImage = gradient(
-							"top",
-							this.arena.layers[y][x],
-							this.arena.layers[y - 1][x],
-						);
-					}
-
-				if (
-					y < this.arena.tiles.length - 1 &&
-					this.arena.layers[y][x] < this.arena.layers[y + 1][x]
-				)
-					if (
-						this.arena.layers[y + 1][x] -
-							this.arena.layers[y][x] ===
-						1
-					) {
-						tile.style.backgroundColor = "transparent";
-						tile.style.backgroundImage = gradient(
-							"bottom",
-							this.arena.layers[y][x],
-							this.arena.layers[y + 1][x],
-						);
-					}
-
-				if (
-					x !== 0 &&
-					this.arena.layers[y][x] < this.arena.layers[y][x - 1]
-				)
-					if (
-						this.arena.layers[y][x - 1] -
-							this.arena.layers[y][x] ===
-						1
-					) {
-						tile.style.backgroundColor = "transparent";
-						tile.style.backgroundImage = gradient(
-							"left",
-							this.arena.layers[y][x],
-							this.arena.layers[y][x - 1],
-						);
-					}
-
-				if (
-					x < this.arena.tiles[y].length - 1 &&
-					this.arena.layers[y][x] < this.arena.layers[y][x + 1]
-				)
-					if (
-						this.arena.layers[y][x + 1] -
-							this.arena.layers[y][x] ===
-						1
-					) {
-						tile.style.backgroundColor = "transparent";
-						tile.style.backgroundImage = gradient(
-							"right",
-							this.arena.layers[y][x],
-							this.arena.layers[y][x + 1],
-						);
-					}
-
-				row.appendChild(tile);
-			}
-
-			tilesElemnt.appendChild(row);
-		}
-
-		panTo({
-			x: this.arena.tiles[0].length / 2,
-			y: this.arena.tiles.length / 2,
-			duration: 0,
-		});
+		this.graphics.panTo(
+			{
+				x: this.arena.tiles[0].length / 2,
+				y: this.arena.tiles.length / 2,
+			},
+			0,
+		);
 	}
 
 	nextArena(): void {
@@ -234,6 +160,28 @@ class Game extends App {
 		this.settings.arenaIndex = this.settings.arenaIndex
 			? this.settings.arenaIndex - 1
 			: arenas.length - 1;
+	}
+
+	get graphics(): ThreeGraphics {
+		const sys = this.systems.find((s) => ThreeGraphics.isThreeGraphics(s));
+		if (!sys) throw new Error("expected a ThreeGraphics");
+		return sys as ThreeGraphics;
+	}
+
+	get obstructionPlacement(): ObstructionPlacement {
+		const mech = this.mechanisms.find((m) =>
+			ObstructionPlacement.isObstructionPlacement(m),
+		);
+		if (!mech) throw new Error("expected a ObstructionPlacement");
+		return mech as ObstructionPlacement;
+	}
+
+	get selectionSystem(): SelectedSystem {
+		const sys = this.systems.find((s) =>
+			SelectedSystem.isSelectedSystem(s),
+		);
+		if (!sys) throw new Error("expected a SelectedSystem");
+		return sys as SelectedSystem;
 	}
 
 	start({ time }: { time: number }): void {
@@ -304,6 +252,7 @@ class Game extends App {
 
 type GameEvents = {
 	update: (time: number) => void;
+	selection: (selection: Entity[]) => void;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

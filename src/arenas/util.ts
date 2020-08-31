@@ -16,6 +16,10 @@ export const stringMap = (map: string): number[][] => {
 			.trimRight()
 			.slice(minLeftTrim)
 			.split("")
-			.map((v) => parseInt(v)),
+			.map((v) => {
+				const num = parseInt(v);
+				if (isNaN(num)) return 0;
+				return num;
+			}),
 	);
 };

@@ -1,12 +1,7 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"outDir": "public/js",
-		"baseUrl": "src",
-		"types": [],
-		"noEmit": false,
-		"declaration": true,
-		"sourceMap": true
+		"types": []
 	},
 	"include": ["src"],
 	"exclude": [

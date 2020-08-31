@@ -9,7 +9,7 @@ export const polarProject = (
 	y: point.y + Math.sin(angle) * distance,
 });
 
-const orientation = (p1: Point, p2: Point, p: Point) =>
+export const orientation = (p1: Point, p2: Point, p: Point): number =>
 	(p.x - p1.x) * (p2.y - p1.y) - (p.y - p1.y) * (p2.x - p1.x);
 
 export const behind = (

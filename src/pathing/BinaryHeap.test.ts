@@ -1,4 +1,4 @@
-import { BinaryHeap } from "./BinaryHeap.js";
+import { BinaryHeap } from "./BinaryHeap";
 
 describe("BinaryHeap#constructor", () => {
 	it("sets params", () => {

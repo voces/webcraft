@@ -1,18 +1,18 @@
-import { Sprite } from "../sprites/Sprite.js";
-import { Component } from "../core/Component.js";
-import { ComponentManager } from "../core/ComponentManager.js";
-import { ObstructionSubclass } from "../sprites/obstructions/index.js";
-import { Blueprint } from "../sprites/obstructions/Blueprint.js";
-import { Point } from "../pathing/PathingMap.js";
+import { Sprite } from "../entities/sprites/Sprite";
+import { DeprecatedComponent } from "../core/Component";
+import { DeprecatedComponentManager } from "../core/DeprecatedComponentManager";
+import { Obstruction } from "../entities/sprites/obstructions/index";
+import { Blueprint } from "../entities/sprites/obstructions/Blueprint";
+import { Point } from "../pathing/PathingMap";
 
-export class BuildTarget extends Component {
-	obstructionClass: ObstructionSubclass;
+export class BuildTarget extends DeprecatedComponent {
+	obstructionClass: typeof Obstruction;
 	target: Point;
 	blueprint?: Blueprint;
 
 	constructor(
 		entity: Sprite,
-		obstructionClass: ObstructionSubclass,
+		obstructionClass: typeof Obstruction,
 		target: Point,
 	) {
 		super(entity);
@@ -25,7 +25,7 @@ export class BuildTarget extends Component {
 				? new Blueprint({
 						...target,
 						game: entity.game,
-						radius: obstructionClass.defaults.radius,
+						obstruction: obstructionClass,
 				  })
 				: undefined;
 	}
@@ -35,6 +35,6 @@ export class BuildTarget extends Component {
 	}
 }
 
-export const BuildTargetManager = new ComponentManager<BuildTarget>(
+export const BuildTargetManager = new DeprecatedComponentManager<BuildTarget>(
 	BuildTarget,
 );

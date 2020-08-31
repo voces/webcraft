@@ -1,19 +1,22 @@
-import { AnySystem, System } from "./System.js";
-import { Mechanism } from "./Merchanism.js";
-import { Sprite } from "../sprites/Sprite.js";
-import { requestAnimationFrame } from "../util/globals.js";
-import { ComponentConstructor } from "./Component.js";
+import { System } from "./System";
+import { Mechanism } from "./Merchanism";
+import { requestAnimationFrame } from "../util/globals";
+import { DeprecatedComponentConstructor } from "./Component";
+import { Entity } from "./Entity";
+import { Context } from "./Context";
 
-class App {
-	private systems: AnySystem[] = [];
-	private mechanisms: Mechanism[] = [];
+export class App {
+	static manager = new Context<App | undefined>(undefined);
+
+	protected systems: System[] = [];
+	protected mechanisms: Mechanism[] = [];
 	private lastRender = 0;
 	private requestedAnimationFrame?: number;
 	private _time = 0;
 	private componentUpdateMap = new Map<
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		ComponentConstructor<any>,
-		AnySystem[]
+		DeprecatedComponentConstructor<any>,
+		System[]
 	>();
 	// TODO: make this private!
 	lastUpdate = 0;
@@ -24,7 +27,7 @@ class App {
 		);
 	}
 
-	addSystem(system: AnySystem): App {
+	addSystem(system: System): App {
 		this.systems.push(system);
 
 		for (const component of (system.constructor as typeof System)
@@ -42,7 +45,7 @@ class App {
 		return this;
 	}
 
-	removeSystem(system: AnySystem): App {
+	removeSystem(system: System): App {
 		const index = this.systems.indexOf(system);
 		if (index >= 0) this.systems.splice(index, 1);
 
@@ -62,13 +65,13 @@ class App {
 		for (const system of this.systems) system.dispose();
 	}
 
-	add(...entities: Sprite[]): App {
+	add(...entities: Entity[]): App {
 		for (const system of this.systems) system.add(...entities);
 
 		return this;
 	}
 
-	remove(...entities: Sprite[]): App {
+	remove(...entities: Entity[]): App {
 		for (const system of this.systems) system.remove(...entities);
 
 		return this;
@@ -79,9 +82,9 @@ class App {
 	 * the checking of systems that care about the component.
 	 */
 	entityComponentUpdated(
-		entity: Sprite,
+		entity: Entity,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		component: ComponentConstructor<any>,
+		component: DeprecatedComponentConstructor<any>,
 	): void {
 		const arr = this.componentUpdateMap.get(component);
 		if (!arr) return;
@@ -139,5 +142,3 @@ class App {
 		return this._time;
 	}
 }
-
-export { App };

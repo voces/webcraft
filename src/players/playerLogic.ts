@@ -1,8 +1,8 @@
-import { Player, patchInState } from "./Player.js";
-import { next as nextColor, release as releaseColor } from "./colors.js";
-import { updateDisplay } from "./elo.js";
-import { alea } from "../lib/alea.js";
-import { Game } from "../Game.js";
+import { Player, patchInState } from "./Player";
+import { next as nextColor, release as releaseColor } from "./colors";
+import { updateDisplay } from "./elo";
+import { alea } from "../lib/alea";
+import { Game } from "../Game";
 
 export const initPlayerLogic = (game: Game): void => {
 	// Received when someone (including us) joins

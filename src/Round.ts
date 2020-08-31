@@ -1,21 +1,20 @@
-import { arenas } from "./arenas/index.js";
-import { PathingMap } from "./pathing/PathingMap.js";
-import { TILE_TYPES, TileType } from "./constants.js";
-import { Crosser } from "./sprites/Crosser.js";
-import { Defender } from "./sprites/Defender.js";
-import { dragSelect } from "./sprites/dragSelect.js";
-import { elo, updateDisplay } from "./players/elo.js";
-import { emitter, Emitter } from "./emitter.js";
-import { panTo } from "./players/camera.js";
-import { Player } from "./players/Player.js";
-import { colors } from "./players/colors.js";
-import { Resource } from "./sprites/obstructions/index.js";
-import { Settings, teamKeys, resourceKeys } from "./types.js";
-import { Arena } from "./arenas/types.js";
-import { Unit } from "./sprites/Unit.js";
-import { Sprite } from "./sprites/Sprite.js";
-import { Game } from "./Game.js";
-import { TileSystem } from "./systems/TileSystem.js";
+import { arenas } from "./arenas/index";
+import { PathingMap } from "./pathing/PathingMap";
+import { TILE_TYPES, TileType } from "./constants";
+import { Crosser } from "./entities/sprites/Crosser";
+import { Defender } from "./entities/sprites/Defender";
+import { elo, updateDisplay } from "./players/elo";
+import { emitter, Emitter } from "./emitter";
+import { Player } from "./players/Player";
+import { colors } from "./players/colors";
+import { Resource } from "./entities/sprites/obstructions/index";
+import { Settings, teamKeys, resourceKeys } from "./types";
+import { Arena } from "./arenas/types";
+import { Unit } from "./entities/sprites/Unit";
+import { Sprite } from "./entities/sprites/Sprite";
+import { Game } from "./Game";
+import { TileSystem } from "./systems/TileSystem";
+import { SceneObjectComponent } from "./components/graphics/SceneObjectComponent";
 
 let placeholderPlayer: Player;
 
@@ -56,7 +55,6 @@ class Round {
 	arena: Arena;
 	pathingMap: PathingMap;
 	expireAt: number;
-	requestedAnimationFrame?: number;
 
 	private tileSystem: TileSystem;
 
@@ -80,8 +78,8 @@ class Round {
 		this.players = [...players];
 		this.arena = arenas[settings.arenaIndex];
 		this.pathingMap = new PathingMap({
-			pathing: this.arena.pathing,
-			layers: this.arena.layers,
+			pathing: this.arena.pathing.slice().reverse(),
+			layers: this.arena.layers.slice().reverse(),
 			resolution: 2,
 		});
 		this.expireAt = time + settings.duration;
@@ -176,8 +174,8 @@ class Round {
 
 		// Select + pan to it
 		if (player === this.game.localPlayer) {
-			dragSelect.setSelection([unit]);
-			panTo(unit.position);
+			this.game.selectionSystem.select(unit);
+			this.game.graphics.panTo(unit.position, 0);
 		}
 
 		// Add event listeners
@@ -188,13 +186,40 @@ class Round {
 			});
 	}
 
+	ball(x: number, y: number): Sprite {
+		const radius = 0.25;
+		const sprite = new Sprite({
+			graphic: { shape: "circle" },
+			x,
+			y,
+			game: this.game,
+			radius,
+		});
+		const mesh = SceneObjectComponent.get(sprite)!.object;
+		mesh.position.z = this.game.terrain!.groundHeight(x, y);
+		return sprite;
+	}
+
 	spawnUnits(): void {
 		this.players.forEach((player) => {
 			const isCrosser = this.crossers.includes(player);
 			const targetTile = isCrosser ? TILE_TYPES.START : TILE_TYPES.SPAWN;
 			const Unit = isCrosser ? Crosser : Defender;
 			this._spawnUnit(player, Unit, targetTile);
+			// if (isCrosser)
+			// 	for (let i = 0; i < 30; i++)
+			// 		this._spawnUnit(player, Unit, targetTile);
+			// else this._spawnUnit(player, Unit, targetTile);
 		});
+		[
+			{ x: 0, y: 0 },
+			{ x: 0, y: this.game.arena.layers.length },
+			{ x: this.game.arena.layers[0].length, y: 0 },
+			{
+				x: this.game.arena.layers[0].length,
+				y: this.game.arena.layers.length,
+			},
+		].forEach(({ x, y }) => this.ball(x, y));
 	}
 
 	onCrosserRemoval(): void {

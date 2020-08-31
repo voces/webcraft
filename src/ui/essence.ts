@@ -1,5 +1,5 @@
-import { document } from "../util/globals.js";
-import { Game } from "../Game.js";
+import { document } from "../util/globals";
+import { Game } from "../Game";
 
 const element = document.getElementById("essence")!;
 

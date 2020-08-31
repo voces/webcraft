@@ -1,7 +1,7 @@
-import { System } from "../core/System.js";
-import { MoveTargetManager, MoveTarget } from "../components/MoveTarget.js";
-import { Sprite } from "../sprites/Sprite.js";
-import { PathingMap, Point } from "../pathing/PathingMap.js";
+import { System } from "../core/System";
+import { MoveTargetManager, MoveTarget } from "../components/MoveTarget";
+import { Sprite } from "../entities/sprites/Sprite";
+import { PathingMap, Point } from "../pathing/PathingMap";
 
 const withoutTarget = <A>(
 	pathingMap: PathingMap,

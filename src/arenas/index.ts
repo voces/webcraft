@@ -1,14 +1,14 @@
-import { theDump } from "./theDump.js";
-import { theFarm } from "./theFarm.js";
-import { theGap } from "./theGap.js";
-import { theRock } from "./theRock.js";
-import { theTamedWoods } from "./theTamedWoods.js";
-import { theTarget } from "./theTarget.js";
-import { theTinyRectangle } from "./theTinyRectangle.js";
-import { theWoods } from "./theWoods.js";
+import { theDump } from "./theDump";
+import { theFarm } from "./theFarm";
+import { theGap } from "./theGap";
+import { theRock } from "./theRock";
+import { theTamedWoods } from "./theTamedWoods";
+import { theTarget } from "./theTarget";
+import { theTinyRectangle } from "./theTinyRectangle";
+import { theWoods } from "./theWoods";
 
-import { PATHING_TYPES } from "../pathing/constants.js";
-import { Arena, InternalArena } from "./types.js";
+import { PATHING_TYPES } from "../pathing/constants";
+import { Arena, InternalArena } from "./types";
 
 const getHeight = (arena: InternalArena) => arena.layers.length;
 const getWidth = (arena: InternalArena) =>

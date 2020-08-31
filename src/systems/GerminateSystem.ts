@@ -1,9 +1,9 @@
-import { System } from "../core/System.js";
-import { Sprite } from "../sprites/Sprite.js";
+import { System } from "../core/System";
+import { Sprite } from "../entities/sprites/Sprite";
 import {
 	GerminateComponent,
 	GerminateComponentManager,
-} from "../components/GerminateComponent.js";
+} from "../components/GerminateComponent";
 
 type GerminatingEntity = Sprite & {
 	buildTime: number;

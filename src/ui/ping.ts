@@ -1,4 +1,4 @@
-import { document } from "../util/globals.js";
+import { document } from "../util/globals";
 
 const pings: { type: string; ping: number }[] = [];
 const elem = document.getElementById("ping")!;

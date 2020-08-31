@@ -1,10 +1,12 @@
-import { Action } from "../sprites/spriteLogic.js";
-import { document } from "../util/globals.js";
-import { dragSelect } from "../sprites/dragSelect.js";
-import { defined } from "../types.js";
-import { Unit } from "../sprites/Unit.js";
-import { emptyElement } from "../util/html.js";
-import { panTo } from "../players/camera.js";
+import { Action } from "../entities/sprites/spriteLogic";
+import { document } from "../util/globals";
+import { defined } from "../types";
+import { Unit } from "../entities/sprites/Unit";
+import { emptyElement } from "../util/html";
+import { Sprite } from "../entities/sprites/Sprite";
+import { Entity } from "../core/Entity";
+import { Mechanism } from "../core/Merchanism";
+import { Game } from "../Game";
 
 const container = document.getElementById("hotkeys")!;
 
@@ -51,61 +53,78 @@ const genNode = (action: Action) => {
 	return elem;
 };
 
-export const activeHotkeys: Action[] = [];
-
 const center: Action = {
 	name: "Center",
 	hotkey: " " as const,
 	type: "custom" as const,
 	handler: ({ player }): void => {
-		if (dragSelect.selection.length === 0 && player.sprites.length)
-			return dragSelect.setSelection([player.sprites[0]]);
+		const selectionSystem = player.game.selectionSystem;
+		const selection = selectionSystem.selection;
 
-		const { xSum, ySum } = dragSelect.selection.reduce(
-			({ xSum, ySum }, { position: { x, y } }) => ({
-				xSum: xSum + x,
-				ySum: ySum + y,
-			}),
-			{ xSum: 0, ySum: 0 },
-		);
-		const x = xSum / dragSelect.selection.length;
-		const y = ySum / dragSelect.selection.length;
-		panTo({ x, y });
+		if (selection.length === 0 && player.sprites.length)
+			return selectionSystem.setSelection([player.sprites[0]]);
+
+		const { xSum, ySum } = selection
+			.filter((e): e is Sprite => Sprite.isSprite(e))
+			.reduce(
+				({ xSum, ySum }, { position: { x, y } }) => ({
+					xSum: xSum + x,
+					ySum: ySum + y,
+				}),
+				{ xSum: 0, ySum: 0 },
+			);
+		const x = xSum / selection.length;
+		const y = ySum / selection.length;
+		player.game.graphics.panTo({ x, y });
 	},
 };
 
 const aCharCode = "a".charCodeAt(0);
 const zCharCode = "z".charCodeAt(0);
 
-dragSelect.addEventListener("selection", (sprites) => {
-	// Clear hotkeys
-	emptyElement(container);
-	activeHotkeys.splice(0);
-	activeHotkeys.push(center);
+export class Hotkeys extends Mechanism {
+	activeActions: Action[] = [];
 
-	// Get actions
-	const units = sprites.filter(Unit.isUnit);
-	if (!units.length) return;
+	constructor() {
+		super();
+		Game.manager.context?.addEventListener(
+			"selection",
+			(entities: ReadonlyArray<Entity>) => this.onSelection(entities),
+		);
+	}
 
-	let activeUnit = units[0];
-	for (let i = 1; i < units.length; i++)
-		if (units[i].priority > activeUnit.priority) activeUnit = units[i];
-	const actions = activeUnit.actions;
-	const sortedActions = qwertySort
-		.map((k) => actions.find((b) => b.hotkey === k))
-		.filter(defined);
-	activeHotkeys.push(...sortedActions);
+	private onSelection(entities: ReadonlyArray<Entity>) {
+		// Clear actions
+		emptyElement(container);
+		this.activeActions.splice(0);
+		this.activeActions.push(center);
 
-	activeHotkeys.forEach((action) => {
-		const charCode = action.hotkey.charCodeAt(0);
-		if (
-			charCode < aCharCode ||
-			charCode > zCharCode ||
-			action.hotkey.length > 1
-		)
-			return;
+		// Get actions
+		const units = entities
+			.filter(Unit.isUnit)
+			.filter((u) => u.owner === Game.manager.context?.localPlayer);
+		if (!units.length) return;
 
-		const elem = action.elem ?? genNode(action);
-		container.appendChild(elem);
-	});
-});
+		let activeUnit = units[0];
+		for (let i = 1; i < units.length; i++)
+			if (units[i].priority > activeUnit.priority) activeUnit = units[i];
+		const actions = activeUnit.actions;
+		const sortedActions = qwertySort
+			.map((k) => actions.find((b) => b.hotkey === k))
+			.filter(defined);
+		this.activeActions.push(...sortedActions);
+
+		this.activeActions.forEach((action) => {
+			const charCode = action.hotkey.charCodeAt(0);
+			if (
+				charCode < aCharCode ||
+				charCode > zCharCode ||
+				action.hotkey.length > 1
+			)
+				return;
+
+			const elem = action.elem ?? genNode(action);
+			container.appendChild(elem);
+		});
+	}
+}

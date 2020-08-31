@@ -1,4 +1,4 @@
-import { ValueOf } from "./types.js";
+import { ValueOf } from "./types";
 
 // A map
 export const TILE_NAMES = ["open", "start", "end", "spawn"];
@@ -13,7 +13,7 @@ export type TileType = ValueOf<typeof TILE_TYPES>;
 export const WORLD_TO_GRAPHICS_RATIO = 32;
 
 // A mask
-export * from "./pathing/constants.js";
+export * from "./pathing/constants";
 
 export const INITIAL_OBSTRUCTION_PROGRESS = 0.1;
 

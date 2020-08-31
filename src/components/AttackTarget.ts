@@ -1,8 +1,8 @@
-import { Sprite } from "../sprites/Sprite.js";
-import { Component } from "../core/Component.js";
-import { ComponentManager } from "../core/ComponentManager.js";
+import { Sprite } from "../entities/sprites/Sprite";
+import { DeprecatedComponent } from "../core/Component";
+import { DeprecatedComponentManager } from "../core/DeprecatedComponentManager";
 
-export class AttackTarget extends Component {
+export class AttackTarget extends DeprecatedComponent {
 	target: Sprite;
 
 	constructor(entity: Sprite, target: Sprite) {
@@ -11,6 +11,6 @@ export class AttackTarget extends Component {
 	}
 }
 
-export const AttackTargetManager = new ComponentManager<AttackTarget>(
+export const AttackTargetManager = new DeprecatedComponentManager<AttackTarget>(
 	AttackTarget,
 );

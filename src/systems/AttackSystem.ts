@@ -1,18 +1,12 @@
-import {
-	AttackTarget,
-	AttackTargetManager,
-} from "../components/AttackTarget.js";
-import { System } from "../core/System.js";
-import { Unit } from "../sprites/Unit.js";
-import { Sprite } from "../sprites/Sprite.js";
-import { isInAttackRange } from "../sprites/UnitApi.js";
-import { MoveTargetManager } from "../components/MoveTarget.js";
-import { DamageComponentManager } from "../components/DamageComponent.js";
-import { GraphicComponentManager } from "../components/graphics/GraphicComponent.js";
-import {
-	AnimationManager,
-	Animation,
-} from "../components/graphics/Animation.js";
+import { AttackTarget, AttackTargetManager } from "../components/AttackTarget";
+import { System } from "../core/System";
+import { Unit } from "../entities/sprites/Unit";
+import { Sprite } from "../entities/sprites/Sprite";
+import { isInAttackRange } from "../entities/sprites/UnitApi";
+import { MoveTargetManager } from "../components/MoveTarget";
+import { DamageComponentManager } from "../components/DamageComponent";
+import { MeshBuilderComponentManager } from "../components/graphics/MeshBuilderComponent";
+import { AnimationManager, Animation } from "../components/graphics/Animation";
 
 export class AttackSystem extends System<Unit> {
 	static components = [AttackTarget];
@@ -73,8 +67,8 @@ export class AttackSystem extends System<Unit> {
 			}
 		} else weapon.projectile(attackTarget.target, entity);
 
-		const graphicComponent = GraphicComponentManager.get(entity);
-		if (graphicComponent)
+		const MeshBuilderComponent = MeshBuilderComponentManager.get(entity);
+		if (MeshBuilderComponent)
 			AnimationManager.set(entity, new Animation(entity, "attack", 0.25));
 
 		weapon.last = entity.round.lastUpdate;
