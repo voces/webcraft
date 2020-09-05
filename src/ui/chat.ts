@@ -1,5 +1,5 @@
+import marked from "marked";
 import { document } from "../util/globals";
-import { marked } from "../lib/marked";
 import { toggleDebugging } from "../pathing/PathingMap";
 import { emptyElement } from "../util/html";
 import { Game } from "../Game";
@@ -17,6 +17,12 @@ type Command = {
 };
 
 marked.setOptions({ breaks: true });
+
+const scratch = document.createElement("span");
+const sanitize = (text: string): string => {
+	scratch.textContent = text;
+	return scratch.innerHTML;
+};
 
 const maxLength = 256;
 
@@ -73,7 +79,7 @@ export const initChatListeners = (game: Game, ui: UI): void => {
 			if (!player) return;
 
 			const playerTag = `<span style="color: ${player.color?.hex}">${player.username}</span>`;
-			appendMessage(`${playerTag}: ${message}`);
+			appendMessage(`${playerTag}: ${sanitize(message)}`);
 		},
 	);
 
