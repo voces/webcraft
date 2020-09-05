@@ -19,7 +19,7 @@ export class SelectedSystem extends System {
 	constructor() {
 		super();
 
-		const game = Game.manager.context;
+		const game = Game.current;
 
 		game?.mouse.addEventListener(
 			"mouseDown",
@@ -42,13 +42,13 @@ export class SelectedSystem extends System {
 		const selected = Selected.get(entity);
 		if (!selected) throw new Error("expected Selected component");
 		this.data.set(entity, selected);
-		Game.manager.context?.dispatchEvent("selection", Array.from(this));
+		Game.current.dispatchEvent("selection", Array.from(this));
 	}
 
 	onRemoveEntity(entity: Entity): void {
 		const selected = this.data.get(entity);
 		if (!selected) return;
-		Game.manager.context?.dispatchEvent("selection", Array.from(this));
+		Game.current.dispatchEvent("selection", Array.from(this));
 	}
 
 	get selection(): ReadonlyArray<Entity> {
@@ -57,7 +57,7 @@ export class SelectedSystem extends System {
 
 	select(entity: Entity): boolean {
 		if (this.test(entity)) return false;
-		const game = Game.manager.context;
+		const game = Game.current;
 
 		new Selected(entity, {
 			color:
@@ -79,7 +79,7 @@ export class SelectedSystem extends System {
 
 		for (const curSelected of this) Selected.clear(curSelected);
 
-		const game = Game.manager.context;
+		const game = Game.current;
 		for (const newSelected of entities)
 			new Selected(newSelected, {
 				color:

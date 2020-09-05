@@ -40,60 +40,77 @@ export type UIEvents = {
 };
 
 class UI {
-	private game: Game;
-
-	constructor(game: Game) {
+	constructor() {
 		emitter(this);
-		this.game = game;
 
-		window.addEventListener("keydown", (e) => {
-			if (e.key === "f" && e.ctrlKey) e.preventDefault();
+		const game = Game.current;
 
-			this.dispatchEvent("keyDown", {
-				ctrlDown: e.ctrlKey,
-				game,
-				key: e.key,
-			});
-		});
+		window.addEventListener(
+			"keydown",
+			Game.wrap(game, (e) => {
+				if (e.key === "f" && e.ctrlKey) e.preventDefault();
 
-		window.addEventListener("keyup", (e) => {
-			this.dispatchEvent("keyUp", {
-				ctrlDown: e.ctrlKey,
-				game,
-				key: e.key,
-			});
-		});
+				this.dispatchEvent("keyDown", {
+					ctrlDown: e.ctrlKey,
+					game,
+					key: e.key,
+				});
+			}),
+		);
 
-		window.addEventListener("mousemove", (e) => {
-			this.dispatchEvent("mouseMove", {
-				target: e.target,
-				x: e.clientX,
-				y: e.clientY,
-			});
-		});
+		window.addEventListener(
+			"keyup",
+			Game.wrap(game, (e) => {
+				this.dispatchEvent("keyUp", {
+					ctrlDown: e.ctrlKey,
+					game,
+					key: e.key,
+				});
+			}),
+		);
 
-		window.addEventListener("mouseout", (e) => {
-			this.dispatchEvent("mouseOut", {
-				relatedTarget: e.relatedTarget,
-			});
-		});
+		window.addEventListener(
+			"mousemove",
+			Game.wrap(game, (e) => {
+				this.dispatchEvent("mouseMove", {
+					target: e.target,
+					x: e.clientX,
+					y: e.clientY,
+				});
+			}),
+		);
 
-		window.addEventListener("mousedown", (e) => {
-			this.dispatchEvent("mouseDown", {
-				button: e.button,
-				ctrlDown: e.ctrlKey,
-				game,
-				target: e.target,
-				x: e.clientX,
-				y: e.clientY,
-			});
-		});
+		window.addEventListener(
+			"mouseout",
+			Game.wrap(game, (e) => {
+				this.dispatchEvent("mouseOut", {
+					relatedTarget: e.relatedTarget,
+				});
+			}),
+		);
 
-		window.addEventListener("wheel", (e) => {
-			this.dispatchEvent("wheel", {
-				deltaY: e.deltaY,
-			});
-		});
+		window.addEventListener(
+			"mousedown",
+			Game.wrap(game, (e) => {
+				this.dispatchEvent("mouseDown", {
+					button: e.button,
+					ctrlDown: e.ctrlKey,
+					game,
+					target: e.target,
+					x: e.clientX,
+					y: e.clientY,
+				});
+			}),
+		);
+
+		window.addEventListener(
+			"wheel",
+			Game.wrap(game, (e) => {
+				this.dispatchEvent("wheel", {
+					deltaY: e.deltaY,
+				});
+			}),
+		);
 
 		initCameraListeners(this);
 		initListeners(this);

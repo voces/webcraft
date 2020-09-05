@@ -54,7 +54,7 @@ export type Action = {
 
 const rightClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 	const { x, y } = mouse.ground;
-	const game = Game.manager.context!;
+	const game = Game.current;
 
 	const ownedSprites = game.selectionSystem.selection.filter(
 		(s) => Sprite.isSprite(s) && s.owner === game.localPlayer,
@@ -93,7 +93,7 @@ const rightClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 };
 
 const leftClick: MouseEvents["mouseDown"] = ({ mouse }) => {
-	const game = Game.manager.context!;
+	const game = Game.current;
 
 	const obstructionPlacement = game.obstructionPlacement;
 	if (!obstructionPlacement) return;

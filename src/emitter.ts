@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-
 export type EventMap = {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	[name: string]: (...args: any[]) => void;

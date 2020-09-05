@@ -87,7 +87,7 @@ export class Hotkeys extends Mechanism {
 
 	constructor() {
 		super();
-		Game.manager.context?.addEventListener(
+		Game.current.addEventListener(
 			"selection",
 			(entities: ReadonlyArray<Entity>) => this.onSelection(entities),
 		);
@@ -102,7 +102,7 @@ export class Hotkeys extends Mechanism {
 		// Get actions
 		const units = entities
 			.filter(Unit.isUnit)
-			.filter((u) => u.owner === Game.manager.context?.localPlayer);
+			.filter((u) => u.owner === Game.current.localPlayer);
 		if (!units.length) return;
 
 		let activeUnit = units[0];

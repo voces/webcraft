@@ -34,13 +34,30 @@ import { Mouse } from "./systems/Mouse";
 const tilesElemnt = document.getElementById("tiles")!;
 
 class Game extends App {
-	static manager = new Context<Game | undefined>(undefined);
+	static context = new Context<Game | undefined>(undefined);
 
-	private network: Network;
-	addNetworkListener: Network["addEventListener"];
-	connect: Network["connect"];
+	static get current(): Game {
+		const game = Game.context.current;
+		if (!game) throw new Error("Expected a Game context");
+		return game;
+	}
 
-	ui: UI;
+	static with<T>(game: Game, fn: (game: Game) => T): T {
+		return App.context.with(game, () => Game.context.with(game, fn));
+	}
+
+	static wrap<Args extends unknown[], Return extends unknown>(
+		game: Game,
+		fn: (...args: Args) => Return,
+	): (...args: Args) => Return {
+		return App.context.wrap(game, Game.context.wrap(game, fn));
+	}
+
+	private network!: Network;
+	addNetworkListener!: Network["addEventListener"];
+	connect!: Network["connect"];
+
+	ui!: UI;
 
 	localPlayer!: Player;
 	host?: Player;
@@ -54,8 +71,8 @@ class Game extends App {
 	lastRoundEnd?: number;
 	terrain?: Terrain;
 
-	mouse: Mouse;
-	actions: Hotkeys;
+	mouse!: Mouse;
+	actions!: Hotkeys;
 
 	settings: Settings = {
 		arenaIndex: -1,
@@ -71,40 +88,42 @@ class Game extends App {
 	constructor(network: Network) {
 		super();
 		emitter(this);
-		Game.manager._setContext(this);
-		// this.addSystem(new HTMLGraphics());
-		this.addSystem(new MoveSystem());
-		this.addSystem(new AttackSystem());
-		this.addSystem(new BlueprintSystem());
-		this.addSystem(new ProjectileSystem());
-		this.addSystem(new GerminateSystem());
-		this.addSystem(new AutoAttackSystem());
-		this.addSystem(new AnimationSystem());
-		this.addSystem(new MeshBuilder());
-		this.addSystem(new ThreeGraphics(this));
-		circleSystems.forEach((CircleSystem) =>
-			this.addSystem(new CircleSystem()),
-		);
-		this.actions = new Hotkeys();
-		this.addMechanism(this.actions);
 
-		this.network = network;
-		this.addNetworkListener = this.network.addEventListener.bind(
-			this.network,
-		);
-		this.connect = this.network.connect.bind(this.network);
-		this.addNetworkListener("init", (e) => this.onInit(e));
-		this.addNetworkListener("update", (e) => this.update(e));
+		Game.with(this, () => {
+			this.addSystem(new MoveSystem());
+			this.addSystem(new AttackSystem());
+			this.addSystem(new BlueprintSystem());
+			this.addSystem(new ProjectileSystem());
+			this.addSystem(new GerminateSystem());
+			this.addSystem(new AutoAttackSystem());
+			this.addSystem(new AnimationSystem());
+			this.addSystem(new MeshBuilder());
+			this.addSystem(new ThreeGraphics(this));
+			circleSystems.forEach((CircleSystem) =>
+				this.addSystem(new CircleSystem()),
+			);
+			this.actions = new Hotkeys();
+			this.addMechanism(this.actions);
 
-		this.ui = new UI(this);
-		this.mouse = new Mouse(this.graphics, this.ui);
-		this.addSystem(this.mouse);
-		this.addMechanism(new ObstructionPlacement(this));
-		this.addSystem(new SelectedSystem());
-		initPlayerLogic(this);
-		initSpriteLogicListeners(this);
+			this.network = network;
+			this.addNetworkListener = Game.wrap(
+				this,
+				this.network.addEventListener.bind(this.network),
+			);
+			this.connect = this.network.connect.bind(this.network);
+			this.addNetworkListener("init", (e) => this.onInit(e));
+			this.addNetworkListener("update", (e) => this.update(e));
 
-		this.setArena(Math.floor(this.random() * arenas.length));
+			this.ui = new UI();
+			this.mouse = new Mouse(this.graphics, this.ui);
+			this.addSystem(this.mouse);
+			this.addMechanism(new ObstructionPlacement(this));
+			this.addSystem(new SelectedSystem());
+			initPlayerLogic(this);
+			initSpriteLogicListeners(this);
+
+			this.setArena(Math.floor(this.random() * arenas.length));
+		});
 	}
 
 	/* This should only be used by servers that need to rewrite bits. */
@@ -212,8 +231,12 @@ class Game extends App {
 		});
 	}
 
-	update(e: { time: number }): void {
-		super.update(e);
+	render(): void {
+		Game.with(this, () => this._render());
+	}
+
+	protected _update(e: { time: number }): void {
+		super._update(e);
 
 		const time = e.time / 1000;
 		this.lastUpdate = time;
@@ -231,6 +254,10 @@ class Game extends App {
 			(!this.lastRoundEnd || time > this.lastRoundEnd + 2)
 		)
 			this.start({ time });
+	}
+
+	update(e: { time: number }): void {
+		Game.with(this, () => this._update(e));
 	}
 
 	toJSON(): {
@@ -255,7 +282,6 @@ type GameEvents = {
 	selection: (selection: Entity[]) => void;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Game extends Emitter<GameEvents>, App {}
 
 export { Game };

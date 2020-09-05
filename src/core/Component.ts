@@ -44,7 +44,7 @@ export abstract class Component<
 		const cleared = this.map.delete(entity);
 
 		if (cleared) {
-			const app = App.manager.context;
+			const app = App.current;
 			if (app)
 				app.entityComponentUpdated(
 					entity,

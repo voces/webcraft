@@ -6,8 +6,7 @@ interface TeamMap<T> {
 	crossers: T;
 	defenders: T;
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Team = keyof TeamMap<any>;
+type Team = keyof TeamMap<unknown>;
 export const teamKeys: Team[] = ["crossers", "defenders"];
 
 // Resource

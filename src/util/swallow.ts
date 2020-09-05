@@ -6,7 +6,6 @@ import { RecursivePartial } from "../types";
  * that do not implement the DOM.
  * @param obj
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const swallow = <T>(obj: RecursivePartial<T> = {}): T => {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const memory: T = obj as any;

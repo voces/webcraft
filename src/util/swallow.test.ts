@@ -27,10 +27,11 @@ describe("swallow", () => {
 	});
 
 	it("deep memory works", () => {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const val = swallow<{ a: () => { b: () => number; c: any } }>({
-			a: () => swallow({ b: () => 5 }),
-		});
+		const val = swallow<{ a: () => { b: () => number; c: () => unknown } }>(
+			{
+				a: () => swallow({ b: () => 5 }),
+			},
+		);
 		expect(val.a().b()).toEqual(5);
 		val.a().c();
 	});

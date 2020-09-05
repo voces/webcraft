@@ -6,7 +6,11 @@ import { Entity } from "./Entity";
 import { Context } from "./Context";
 
 export class App {
-	static manager = new Context<App | undefined>(undefined);
+	static context = new Context<App | undefined>(undefined);
+
+	static get current(): App | undefined {
+		return App.context.current;
+	}
 
 	protected systems: System[] = [];
 	protected mechanisms: Mechanism[] = [];
@@ -91,7 +95,7 @@ export class App {
 		for (const system of arr) system.check(entity);
 	}
 
-	render(): void {
+	protected _render(): void {
 		this.requestedAnimationFrame = requestAnimationFrame(() =>
 			this.render(),
 		);
@@ -115,10 +119,11 @@ export class App {
 		this.lastRender = thisRender;
 	}
 
-	/**
-	 * The logical loop.
-	 */
-	update(e: { time: number }): void {
+	render(): void {
+		App.context.with(this, () => this._render());
+	}
+
+	protected _update(e: { time: number }): void {
 		this._time = e.time / 1000;
 		const delta = this._time - this.lastUpdate;
 
@@ -136,6 +141,13 @@ export class App {
 		}
 
 		this.lastUpdate = this._time;
+	}
+
+	/**
+	 * The logical loop.
+	 */
+	update(e: { time: number }): void {
+		App.context.with(this, () => this._update(e));
 	}
 
 	get time(): number {

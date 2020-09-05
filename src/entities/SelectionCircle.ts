@@ -27,6 +27,6 @@ export class SelectionCircle {
 		new SceneObjectComponent(this, mesh);
 		new Position(this, x, y);
 
-		App.manager.context?.add(this);
+		App.current?.add(this);
 	}
 }

@@ -25,7 +25,7 @@ export abstract class Circle extends Component<[InternalProps]> {
 
 		super.clear(entity);
 
-		App.manager.context?.remove(selected.circle);
+		App.current?.remove(selected.circle);
 
 		return true;
 	}

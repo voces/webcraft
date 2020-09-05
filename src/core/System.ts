@@ -21,7 +21,6 @@ abstract class System<T extends Entity = Entity> {
 
 	static props = new Array<keyof Unit>();
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	abstract test(entity: Entity | T): entity is T;
 
 	private _add(entity: T): void {
@@ -117,7 +116,6 @@ abstract class System<T extends Entity = Entity> {
 	}
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface System<T> {
 	update?(entity: T, delta: number, time: number): void;
 	render?(entity: T, delta: number, time: number): void;

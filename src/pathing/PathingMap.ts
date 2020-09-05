@@ -173,7 +173,6 @@ const placeTile = (x: number, y: number, v: number) => {
 	elems.push(div);
 };
 
-// eslint-disable-next-line no-unused-vars
 export class PathingMap {
 	resolution: number;
 	private layers?: number[][];

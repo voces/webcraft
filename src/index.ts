@@ -1,15 +1,12 @@
 import { Network, activeHost } from "./network";
 import { Game } from "./Game";
 import { document, window } from "./util/globals";
-import { App } from "./core/App";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const network = ((globalThis as any).network = new Network());
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const game = ((globalThis as any).game = new Game(network));
-Game.manager._setContext(game);
-App.manager._setContext(game);
+(globalThis as any).game = new Game(network);
 
 Object.assign(document.getElementById("arena")!, { x: 0, y: 0, scale: 1 });
 
