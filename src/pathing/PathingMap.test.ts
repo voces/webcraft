@@ -1395,12 +1395,6 @@ describe("PathingMap#recheck", () => {
 			path = tweenPoints(pathingMap.path(entity, { x: 3.5, y: 4.5 }));
 			check++;
 
-			// throw new Error(JSON.stringify({ x: entity.x, y: entity.y }));
-
-			if (check === 197) {
-				// debugger;
-			}
-
 			if (check > maxSteps)
 				throw new Error("Path took more steps than expected");
 		}

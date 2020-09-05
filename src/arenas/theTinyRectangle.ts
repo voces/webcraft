@@ -4,7 +4,7 @@ import { InternalArena } from "./types";
 export const theTinyRectangle: InternalArena = {
 	name: "The Tiny Rectangle",
 	// For jumping
-	layers: stringMap(`
+	cliffs: stringMap(`
 		 222222222222222222222222222222222222222
 		2222222222222222222222222222222222222222
 		222                                   22

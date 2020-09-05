@@ -4,7 +4,7 @@ import { InternalArena } from "./types";
 export const theDump: InternalArena = {
 	name: "The Dump",
 	// For jumping
-	layers: stringMap(`
+	cliffs: stringMap(`
 		2222222222222222
 		2222222222222222
 		2200000000000022

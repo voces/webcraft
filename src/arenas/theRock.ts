@@ -4,7 +4,7 @@ import { InternalArena } from "./types";
 export const theRock: InternalArena = {
 	name: "The Rock",
 	// For jumping
-	layers: stringMap(`
+	cliffs: stringMap(`
         2222222222222222222222222222222222222222222222222222222222
         2222222222222222222222222222222222222222222222222222222222
         2222                                    2222            22

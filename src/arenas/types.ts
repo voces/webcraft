@@ -1,10 +1,13 @@
 export interface InternalArena {
 	name: string;
-	layers: number[][];
+	cliffs: (number | "r")[][];
 	tiles: number[][];
 }
 
 export interface Arena extends InternalArena {
-	layers: number[][];
+	cliffs: (number | "r")[][];
 	pathing: number[][];
+	width: number;
+	height: number;
+	pathingCliffs: number[][];
 }

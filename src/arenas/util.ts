@@ -23,3 +23,25 @@ export const stringMap = (map: string): number[][] => {
 			}),
 	);
 };
+
+export const stringMapWithRamps = (
+	map: string,
+	floor = 0,
+): (number | "r")[][] => {
+	const rows = map.split("\n").filter((v) => v.trim());
+
+	const minLeftTrim = commonLeftTrim(rows);
+
+	return rows.map((row) =>
+		row
+			.trimRight()
+			.slice(minLeftTrim)
+			.split("")
+			.map((v) => {
+				if (v === "r") return "r";
+				const num = parseInt(v);
+				if (isNaN(num)) return floor;
+				return num;
+			}),
+	);
+};

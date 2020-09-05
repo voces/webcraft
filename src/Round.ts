@@ -79,7 +79,7 @@ class Round {
 		this.arena = arenas[settings.arenaIndex];
 		this.pathingMap = new PathingMap({
 			pathing: this.arena.pathing.slice().reverse(),
-			layers: this.arena.layers.slice().reverse(),
+			layers: this.arena.pathingCliffs.slice().reverse(),
 			resolution: 2,
 		});
 		this.expireAt = time + settings.duration;
@@ -213,11 +213,11 @@ class Round {
 		});
 		[
 			{ x: 0, y: 0 },
-			{ x: 0, y: this.game.arena.layers.length },
-			{ x: this.game.arena.layers[0].length, y: 0 },
+			{ x: 0, y: this.game.arena.height },
+			{ x: this.game.arena.width, y: 0 },
 			{
-				x: this.game.arena.layers[0].length,
-				y: this.game.arena.layers.length,
+				x: this.game.arena.width,
+				y: this.game.arena.height,
 			},
 		].forEach(({ x, y }) => this.ball(x, y));
 	}

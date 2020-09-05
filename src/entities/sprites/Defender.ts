@@ -55,7 +55,7 @@ export class Defender extends Unit {
 		speed: 6.5625,
 		weapon: {
 			enabled: true,
-			damage: 0.05,
+			damage: 50,
 			cooldown: 1.5,
 			// todo: add backswing (time before damage) and recovery (time after damage where the unit can't do anything)
 			last: 0,

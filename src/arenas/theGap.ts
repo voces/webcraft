@@ -4,7 +4,7 @@ import { InternalArena } from "./types";
 export const theGap: InternalArena = {
 	name: "The Gap",
 	// For jumping
-	layers: stringMap(`
+	cliffs: stringMap(`
         222222222222222222222222
         222222222222222222222222
         2222000000000000000000222222

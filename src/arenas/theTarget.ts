@@ -4,7 +4,7 @@ import { InternalArena } from "./types";
 const base = {
 	name: "The Target",
 	// For jumping
-	layers: stringMap(`
+	cliffs: stringMap(`
 		3333333333333333333333333333333333333333
 		3333333333333333333333333333333333333333
 		33        333333331111111133333333    33

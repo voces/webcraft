@@ -36,7 +36,7 @@
   "dependencies": {
     "@types/lodash-es": "^4.17.3",
     "lodash-es": "^4.17.15",
-    "notextures": "^3.1.2",
+    "notextures": "^3.2.0",
     "three": "^0.119.1"
   }
 }
