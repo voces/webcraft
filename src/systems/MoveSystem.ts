@@ -2,13 +2,14 @@ import { System } from "../core/System";
 import { MoveTargetManager, MoveTarget } from "../components/MoveTarget";
 import { Sprite } from "../entities/sprites/Sprite";
 import { PathingMap, Point } from "../pathing/PathingMap";
+import { isSprite } from "../typeguards";
 
 const withoutTarget = <A>(
 	pathingMap: PathingMap,
 	target: Point | Sprite,
 	fn: () => A,
 ): A => {
-	if (Sprite.isSprite(target)) return pathingMap.withoutEntity(target, fn);
+	if (isSprite(target)) return pathingMap.withoutEntity(target, fn);
 
 	return fn();
 };

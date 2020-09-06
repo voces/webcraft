@@ -11,6 +11,7 @@
 		"alwaysStrict": true,
 		"strictNullChecks": true,
 		"esModuleInterop": true,
+		"skipLibCheck": true,
 		"types": [
 			"@types/jest",
 			"@types/node"

@@ -61,7 +61,6 @@ export class Projectile extends Sprite {
 	}: ProjectileProps) {
 		super({
 			...Projectile.clonedDefaults,
-			game: props.owner.game,
 			x: producer.position.x,
 			y: producer.position.y,
 			...props,

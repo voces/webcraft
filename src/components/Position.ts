@@ -1,6 +1,5 @@
 import { Component } from "../core/Component";
 import { Entity } from "../core/Entity";
-import { Sprite } from "../entities/sprites/Sprite";
 import { Point } from "../pathing/PathingMap";
 
 export class Position extends Component<
@@ -40,11 +39,20 @@ export class Position extends Component<
 	}
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const hasPositionProp = (entity: any): entity is { position: Point } =>
+	entity &&
+	typeof entity === "object" &&
+	entity.position &&
+	typeof entity.position === "object" &&
+	typeof entity.position.x === "number" &&
+	typeof entity.position.y === "number";
+
 export const getEntityXY = (entity: Entity): Point | undefined => {
 	const position = Position.get(entity);
 	if (position) return { x: position.x, y: position.y };
 
-	if (Sprite.isSprite(entity))
+	if (hasPositionProp(entity))
 		return { x: entity.position.x, y: entity.position.y };
 
 	return;

@@ -29,98 +29,6 @@ canvas {
     bottom: 0;
 }
 
-#arena {
-	position: absolute;
-	top: 0px;
-    left: 0px;
-    transform-origin: top left;
-}
-
-#tiles {
-    font-size: 0;
-}
-
-.row {
-    white-space: nowrap;
-}
-
-.tile {
-    width: 32px;
-    height: 32px;
-    background-color: white;
-    display: inline-block;
-}
-
-.tile.open { background-color: green; }
-.tile.block { background-color: #555; }
-.tile.start { background-color: #569656; }
-.tile.end { background-color: #569656; }
-.tile.spawn { background-color: green; }
-.tile.void { opacity: 0; }
-
-.layer-0 { opacity: 1.0; }
-.layer-1 { opacity: 0.9; }
-.layer-2 { opacity: 0.8; }
-.layer-3 { opacity: 0.7; }
-.layer-4 { opacity: 0.6; }
-.layer-5 { opacity: 0.5; }
-.layer-6 { opacity: 0.4; }
-.layer-7 { opacity: 0.3; }
-.layer-8 { opacity: 0.2; }
-.layer-9 { opacity: 0.1; }
-
-.sprite {
-    filter: drop-shadow(0.125em 0.1875em 0.375em rgba(0,0,0,0.5));
-    position: absolute;
-}
-.sprite:hover:not(.doodad) {
-    filter: drop-shadow(0.125em 0.1875em 0.5em rgba(0,0,0,0.6));
-    cursor: pointer;
-}
-.sprite.selected {
-    filter: drop-shadow(0.125em 0.1875em 0.375em var(--bluecolor))
-        drop-shadow(0.125em 0.1875em 0.375em var(--bluecolor));
-}
-.sprite.selected:hover {
-    filter: drop-shadow(0.125em 0.1875em 0.5em var(--bluecolor))
-        drop-shadow(0.125em 0.1875em 0.5em var(--bluecolor))
-        drop-shadow(0.125em 0.1875em 0.5em var(--bluecolor));
-}
-
-.blueprint {
-	background-color: var(--bluebg);
-}
-
-@keyframes death {
-    0% { transform: scale(1); }
-    10% { transform: scale(0.75); }
-    20% { transform: scale(0.85); }
-    100% { transform: scale(0); }
-}
-.death {
-    animation: death 125ms forwards;
-}
-
-@keyframes ascend {
-    0% { transform: scale(1); opacity: 1; }
-    10% { transform: scale(3); opacity: 1; }
-    20% { transform: scale(2); opacity: 1; }
-    100% { transform: scale(10); opacity: 0; }
-}
-.ascend {
-    animation: ascend 1s forwards;
-}
-
-@keyframes attack {
-	0% { transform: scale(1); filter: hue-rotate(0deg); }
-	40% { transform: scale(0.8); filter: hue-rotate(-15deg); }
-	90% { transform: scale(1.2); filter: hue-rotate(35deg); }
-	0% { transform: scale(1); filter: hue-rotate(0deg); }
-}
-.attack {
-    animation: attack 250ms;
-}
-
 #top-right {
     position: absolute;
     top: 1em;
@@ -317,10 +225,3 @@ button:hover {
 #hotkeys .highlight { color: gold; }
 
 #hotkeys .description { font-size: 75% }
-
-@keyframes resource {
-	0% { transform: rotate(0deg); }
-	90% { transform: rotate(0deg); }
-	100% { transform: rotate(180deg); }
-}
-.sprite.resource { animation: resource 2s infinite; }

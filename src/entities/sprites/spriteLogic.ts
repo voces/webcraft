@@ -2,11 +2,12 @@ import { Unit } from "./Unit";
 import { Crosser } from "./Crosser";
 import { Obstruction } from "./obstructions/Obstruction";
 import { Defender } from "./Defender";
-import { Sprite } from "./Sprite";
 import { obstructionMap } from "./obstructions/index";
 import { Game } from "../../Game";
 import { Player } from "../../players/Player";
 import { MouseEvents } from "../../systems/Mouse";
+import { isSprite } from "../../typeguards";
+import { currentGame } from "../../gameContext";
 
 export type Action = {
 	description?: string;
@@ -54,10 +55,10 @@ export type Action = {
 
 const rightClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 	const { x, y } = mouse.ground;
-	const game = Game.current;
+	const game = currentGame();
 
 	const ownedSprites = game.selectionSystem.selection.filter(
-		(s) => Sprite.isSprite(s) && s.owner === game.localPlayer,
+		(s) => isSprite(s) && s.owner === game.localPlayer,
 	);
 
 	const units = ownedSprites.filter((u) => u instanceof Unit);
@@ -93,7 +94,7 @@ const rightClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 };
 
 const leftClick: MouseEvents["mouseDown"] = ({ mouse }) => {
-	const game = Game.current;
+	const game = currentGame();
 
 	const obstructionPlacement = game.obstructionPlacement;
 	if (!obstructionPlacement) return;
@@ -107,9 +108,7 @@ const leftClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 
 	const builder = game.selectionSystem.selection.find(
 		(s): s is Crosser =>
-			Sprite.isSprite(s) &&
-			s.owner === game.localPlayer &&
-			Crosser.isCrosser(s),
+			isSprite(s) && s.owner === game.localPlayer && Crosser.isCrosser(s),
 	);
 
 	if (!builder) return;
@@ -146,7 +145,7 @@ export const initSpriteLogicListeners = (game: Game): void => {
 		if (hotkey.type === "build") {
 			const ownerCrossers = game.selectionSystem.selection.filter(
 				(u): u is Crosser =>
-					Sprite.isSprite(u) &&
+					isSprite(u) &&
 					u.owner === game.localPlayer &&
 					u.constructor === Crosser,
 			);

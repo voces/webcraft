@@ -25,34 +25,15 @@ import { MeshBuilder } from "./systems/MeshBuilder";
 import { Terrain } from "./entities/Terrain";
 import { ThreeGraphics } from "./systems/ThreeGraphics";
 import { ObstructionPlacement } from "./mechanisms/ObstructionPlacement";
-import { Context } from "./core/Context";
 import { circleSystems } from "./systems/MovingCircles";
 import { Entity } from "./core/Entity";
 import { Hotkeys } from "./ui/hotkeys";
 import { Mouse } from "./systems/Mouse";
+import { withGame, wrapGame } from "./gameContext";
 
 const tilesElemnt = document.getElementById("tiles")!;
 
 class Game extends App {
-	static context = new Context<Game | undefined>(undefined);
-
-	static get current(): Game {
-		const game = Game.context.current;
-		if (!game) throw new Error("Expected a Game context");
-		return game;
-	}
-
-	static with<T>(game: Game, fn: (game: Game) => T): T {
-		return App.context.with(game, () => Game.context.with(game, fn));
-	}
-
-	static wrap<Args extends unknown[], Return extends unknown>(
-		game: Game,
-		fn: (...args: Args) => Return,
-	): (...args: Args) => Return {
-		return App.context.wrap(game, Game.context.wrap(game, fn));
-	}
-
 	private network!: Network;
 	addNetworkListener!: Network["addEventListener"];
 	connect!: Network["connect"];
@@ -87,9 +68,9 @@ class Game extends App {
 
 	constructor(network: Network) {
 		super();
-		emitter(this);
+		withGame(this, () => {
+			emitter(this);
 
-		Game.with(this, () => {
 			this.addSystem(new MoveSystem());
 			this.addSystem(new AttackSystem());
 			this.addSystem(new BlueprintSystem());
@@ -106,10 +87,13 @@ class Game extends App {
 			this.addMechanism(this.actions);
 
 			this.network = network;
-			this.addNetworkListener = Game.wrap(
-				this,
-				this.network.addEventListener.bind(this.network),
-			);
+			this.addNetworkListener = (event, callback) =>
+				this.network.addEventListener(
+					event,
+					// IDK why this is busted...
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					wrapGame(this, callback as any) as any,
+				);
 			this.connect = this.network.connect.bind(this.network);
 			this.addNetworkListener("init", (e) => this.onInit(e));
 			this.addNetworkListener("update", (e) => this.update(e));
@@ -227,12 +211,11 @@ class Game extends App {
 			time,
 			settings: this.settings,
 			players: this.players,
-			game: this,
 		});
 	}
 
 	render(): void {
-		Game.with(this, () => this._render());
+		withGame(this, () => this._render());
 	}
 
 	protected _update(e: { time: number }): void {
@@ -257,7 +240,7 @@ class Game extends App {
 	}
 
 	update(e: { time: number }): void {
-		Game.with(this, () => this._update(e));
+		withGame(this, () => this._update(e));
 	}
 
 	toJSON(): {

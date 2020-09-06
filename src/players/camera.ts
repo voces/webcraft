@@ -5,8 +5,8 @@ import { registerCommand } from "../ui/chat";
 import { Round } from "../Round";
 import { Point } from "../pathing/PathingMap";
 import { UI } from "../ui/index";
-import { Game } from "../Game";
-import { Sprite } from "../entities/sprites/Sprite";
+import { isSprite } from "../typeguards";
+import { currentGame, wrapGame } from "../gameContext";
 
 type Direction = "right" | "left" | "down" | "up";
 
@@ -44,7 +44,7 @@ const setMouseAndRender = (direction: Direction) => {
 };
 
 const setZoom = (zoom: number) => {
-	const camera = Game.current.graphics.camera;
+	const camera = currentGame().graphics.camera;
 	if (camera) camera.position.z = zoom;
 };
 
@@ -103,7 +103,7 @@ export const initCameraListeners = (ui: UI): void => {
 	});
 
 	ui.addEventListener("wheel", ({ deltaY }) => {
-		const camera = Game.current.graphics.camera;
+		const camera = currentGame().graphics.camera;
 		if (camera) setZoom(camera.position.z + deltaY * ZOOM_SPEED);
 	});
 };
@@ -113,7 +113,7 @@ const renderCamera = (time?: number) => {
 	const delta = (lastRender && time ? time - lastRender : 17) / 1000;
 	lastRender = time;
 
-	const game = Game.current;
+	const game = currentGame();
 	const graphics = game.graphics;
 
 	if (pan) {
@@ -124,7 +124,7 @@ const renderCamera = (time?: number) => {
 
 		if (x !== pan.target.x || y !== pan.target.y)
 			requestedAnimationFrame = requestAnimationFrame(
-				Game.wrap(game, renderCamera),
+				wrapGame(game, renderCamera),
 			);
 		else requestedAnimationFrame = undefined;
 	} else {
@@ -165,7 +165,7 @@ const renderCamera = (time?: number) => {
 			Object.values(mouse).some(Boolean)
 		)
 			requestedAnimationFrame = requestAnimationFrame(
-				Game.wrap(game, renderCamera),
+				wrapGame(game, renderCamera),
 			);
 		else requestedAnimationFrame = undefined;
 	}
@@ -198,10 +198,10 @@ export const panTo = ({
 };
 
 const follow = () => {
-	const selection = Game.current.selectionSystem.selection;
+	const selection = currentGame().selectionSystem.selection;
 	if (!selection?.length) return;
 
-	const { xSum, ySum } = selection.filter(Sprite.isSprite).reduce(
+	const { xSum, ySum } = selection.filter(isSprite).reduce(
 		({ xSum, ySum }, { position: { x, y } }) => ({
 			xSum: xSum + x,
 			ySum: ySum + y,

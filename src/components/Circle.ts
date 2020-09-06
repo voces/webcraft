@@ -1,9 +1,8 @@
 import { Component } from "../core/Component";
-import { Sprite } from "../entities/sprites/Sprite";
 import { SelectionCircle } from "../entities/SelectionCircle";
 import { getEntityXY } from "../components/Position";
 import { Entity } from "../core/Entity";
-import { App } from "../core/App";
+import { currentGame } from "../gameContext";
 
 type Props = {
 	radius: number;
@@ -11,6 +10,10 @@ type Props = {
 };
 
 type InternalProps = Props & { x: number; y: number };
+
+const hasRadius = (
+	object: Record<string, unknown>,
+): object is { radius: number } => typeof object.radius === "number";
 
 export abstract class Circle extends Component<[InternalProps]> {
 	protected static map = new WeakMap<Entity, Circle>();
@@ -25,7 +28,7 @@ export abstract class Circle extends Component<[InternalProps]> {
 
 		super.clear(entity);
 
-		App.current?.remove(selected.circle);
+		currentGame().remove(selected.circle);
 
 		return true;
 	}
@@ -36,8 +39,7 @@ export abstract class Circle extends Component<[InternalProps]> {
 		const xy = getEntityXY(entity);
 		super(entity, {
 			radius:
-				props.radius ??
-				(Sprite.isSprite(entity) ? entity.radius * 1.25 : 1),
+				props.radius ?? (hasRadius(entity) ? entity.radius * 1.25 : 1),
 			color: props.color ?? "#00FF00",
 			x: xy?.x ?? 0,
 			y: xy?.y ?? 0,

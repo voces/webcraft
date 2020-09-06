@@ -267,20 +267,24 @@ export const tweenPoints = (points: Point[]): PathTweener => {
 	} as any);
 };
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+const isPoint = (target: Object): target is Point =>
+	"x" in target && "y" in target;
+
 export const calcAndTweenShortenedPath = (
 	entity: Sprite,
 	target: Point | Sprite,
 	distanceToShorten: number,
 ): PathTweener => {
 	// Normalize the target
-	const targetPoint = Sprite.isSprite(target) ? target.position : target;
+	const targetPoint = isPoint(target) ? target : target.position;
 
 	// Calculate the path, which may not get to the target
-	const path = Sprite.isSprite(target)
-		? entity.round.pathingMap.withoutEntity(target, () =>
+	const path = isPoint(target)
+		? entity.round.pathingMap.path(entity, targetPoint)
+		: entity.round.pathingMap.withoutEntity(target, () =>
 				entity.round.pathingMap.path(entity, targetPoint),
-		  )
-		: entity.round.pathingMap.path(entity, targetPoint);
+		  );
 
 	// Check how far we are away from the target and get remaining distance
 	// E.g., if we don't make it to the target, we don't need to shorten (as

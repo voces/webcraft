@@ -55,7 +55,7 @@ export class MoveTarget extends DeprecatedComponent<Sprite> {
 			Math.abs(
 				distanceBetweenPoints(
 					path.target,
-					Sprite.isSprite(target) ? target.position : target,
+					"x" in target && "y" in target ? target : target.position,
 				) - distance,
 			) < 1e-7
 		)
@@ -65,7 +65,6 @@ export class MoveTarget extends DeprecatedComponent<Sprite> {
 	}
 
 	recalc(): void {
-		if (!Sprite.isSprite(this.entity)) return;
 		this.path = calcAndTweenShortenedPath(
 			this.entity,
 			this.target,

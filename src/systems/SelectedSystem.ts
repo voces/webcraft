@@ -2,9 +2,9 @@ import { isEqual } from "lodash-es";
 import { System } from "../core/System";
 import { Selected } from "../components/Selected";
 import { Entity } from "../core/Entity";
-import { Game } from "../Game";
 import { MouseButton } from "./Mouse";
 import { Unit } from "../entities/sprites/Unit";
+import { currentGame } from "../gameContext";
 
 type SelectedEntity = Entity & { __selected: true };
 
@@ -19,9 +19,9 @@ export class SelectedSystem extends System {
 	constructor() {
 		super();
 
-		const game = Game.current;
+		const game = currentGame();
 
-		game?.mouse.addEventListener(
+		game.mouse.addEventListener(
 			"mouseDown",
 			({ button, mouse: { entity } }) => {
 				if (
@@ -42,13 +42,13 @@ export class SelectedSystem extends System {
 		const selected = Selected.get(entity);
 		if (!selected) throw new Error("expected Selected component");
 		this.data.set(entity, selected);
-		Game.current.dispatchEvent("selection", Array.from(this));
+		currentGame().dispatchEvent("selection", Array.from(this));
 	}
 
 	onRemoveEntity(entity: Entity): void {
 		const selected = this.data.get(entity);
 		if (!selected) return;
-		Game.current.dispatchEvent("selection", Array.from(this));
+		currentGame().dispatchEvent("selection", Array.from(this));
 	}
 
 	get selection(): ReadonlyArray<Entity> {
@@ -57,7 +57,7 @@ export class SelectedSystem extends System {
 
 	select(entity: Entity): boolean {
 		if (this.test(entity)) return false;
-		const game = Game.current;
+		const game = currentGame();
 
 		new Selected(entity, {
 			color:
@@ -79,7 +79,7 @@ export class SelectedSystem extends System {
 
 		for (const curSelected of this) Selected.clear(curSelected);
 
-		const game = Game.current;
+		const game = currentGame();
 		for (const newSelected of entities)
 			new Selected(newSelected, {
 				color:

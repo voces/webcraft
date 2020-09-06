@@ -1,5 +1,4 @@
 import { System } from "../core/System";
-import { Sprite } from "../entities/sprites/Sprite";
 import { document, window } from "../util/globals";
 import { Unit } from "../entities/sprites/Unit";
 import { MoveTargetManager } from "../components/MoveTarget";
@@ -22,6 +21,7 @@ import { Position } from "../components/Position";
 import { Game } from "../Game";
 import { Selected } from "../components/Selected";
 import { Hover } from "../components/Hover";
+import { isSprite } from "../typeguards";
 
 const getCanvas = () => {
 	const canvas = document.createElement("canvas");
@@ -168,7 +168,7 @@ export class ThreeGraphics extends System {
 			updateHealth: true,
 			knownObject: object,
 		};
-		if (Sprite.isSprite(entity)) {
+		if (isSprite(entity)) {
 			data.onChangePositionListener = () => {
 				this.dirty.add(entity);
 				data.updatePosition = true;
@@ -191,7 +191,7 @@ export class ThreeGraphics extends System {
 		const object = this.entityData.get(entity)?.knownObject;
 		if (object) this.scene.remove(object);
 
-		if (Sprite.isSprite(entity)) {
+		if (isSprite(entity)) {
 			const data = this.entityData.get(entity);
 			if (data) {
 				if (data.onChangePositionListener)
@@ -232,7 +232,7 @@ export class ThreeGraphics extends System {
 
 		let stillDirty = false;
 
-		if (Sprite.isSprite(entity)) {
+		if (isSprite(entity)) {
 			const moveTarget = MoveTargetManager.get(entity);
 			if (moveTarget && Unit.isUnit(entity)) {
 				moveTarget.renderProgress += entity.speed * delta;

@@ -1,17 +1,11 @@
 import { System } from "./System";
 import { Mechanism } from "./Merchanism";
 import { requestAnimationFrame } from "../util/globals";
-import { DeprecatedComponentConstructor } from "./Component";
+import { DeprecatedComponentConstructor, Component } from "./Component";
 import { Entity } from "./Entity";
-import { Context } from "./Context";
+import { withApp } from "./appContext";
 
 export class App {
-	static context = new Context<App | undefined>(undefined);
-
-	static get current(): App | undefined {
-		return App.context.current;
-	}
-
 	protected systems: System[] = [];
 	protected mechanisms: Mechanism[] = [];
 	private lastRender = 0;
@@ -22,6 +16,7 @@ export class App {
 		DeprecatedComponentConstructor<any>,
 		System[]
 	>();
+	private components: typeof Component[] = [];
 	// TODO: make this private!
 	lastUpdate = 0;
 
@@ -78,6 +73,9 @@ export class App {
 	remove(...entities: Entity[]): App {
 		for (const system of this.systems) system.remove(...entities);
 
+		for (const entity of entities)
+			for (const component of this.components) component.clear(entity);
+
 		return this;
 	}
 
@@ -120,7 +118,7 @@ export class App {
 	}
 
 	render(): void {
-		App.context.with(this, () => this._render());
+		withApp(this, () => this._render());
 	}
 
 	protected _update(e: { time: number }): void {
@@ -147,7 +145,7 @@ export class App {
 	 * The logical loop.
 	 */
 	update(e: { time: number }): void {
-		App.context.with(this, () => this._update(e));
+		withApp(this, () => this._update(e));
 	}
 
 	get time(): number {

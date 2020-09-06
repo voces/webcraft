@@ -9,6 +9,7 @@ import { initSplashListeners } from "./waitingSplash";
 import { initEssenceListeners } from "./essence";
 import { initClockListeners } from "./clock";
 import { initLogin } from "./login";
+import { currentGame, wrapGame } from "../gameContext";
 
 enum MouseButton {
 	LEFT = 0,
@@ -43,11 +44,11 @@ class UI {
 	constructor() {
 		emitter(this);
 
-		const game = Game.current;
+		const game = currentGame();
 
 		window.addEventListener(
 			"keydown",
-			Game.wrap(game, (e) => {
+			wrapGame(game, (e) => {
 				if (e.key === "f" && e.ctrlKey) e.preventDefault();
 
 				this.dispatchEvent("keyDown", {
@@ -60,7 +61,7 @@ class UI {
 
 		window.addEventListener(
 			"keyup",
-			Game.wrap(game, (e) => {
+			wrapGame(game, (e) => {
 				this.dispatchEvent("keyUp", {
 					ctrlDown: e.ctrlKey,
 					game,
@@ -71,7 +72,7 @@ class UI {
 
 		window.addEventListener(
 			"mousemove",
-			Game.wrap(game, (e) => {
+			wrapGame(game, (e) => {
 				this.dispatchEvent("mouseMove", {
 					target: e.target,
 					x: e.clientX,
@@ -82,7 +83,7 @@ class UI {
 
 		window.addEventListener(
 			"mouseout",
-			Game.wrap(game, (e) => {
+			wrapGame(game, (e) => {
 				this.dispatchEvent("mouseOut", {
 					relatedTarget: e.relatedTarget,
 				});
@@ -91,7 +92,7 @@ class UI {
 
 		window.addEventListener(
 			"mousedown",
-			Game.wrap(game, (e) => {
+			wrapGame(game, (e) => {
 				this.dispatchEvent("mouseDown", {
 					button: e.button,
 					ctrlDown: e.ctrlKey,
@@ -105,7 +106,7 @@ class UI {
 
 		window.addEventListener(
 			"wheel",
-			Game.wrap(game, (e) => {
+			wrapGame(game, (e) => {
 				this.dispatchEvent("wheel", {
 					deltaY: e.deltaY,
 				});

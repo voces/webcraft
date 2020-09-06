@@ -123,7 +123,6 @@ class Unit extends Sprite {
 		...props
 	}: UnitProps) {
 		super({
-			game: props.owner.game,
 			...props,
 			graphic: {
 				...Unit.defaults.graphic,

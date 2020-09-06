@@ -15,6 +15,7 @@ import { Sprite } from "./entities/sprites/Sprite";
 import { Game } from "./Game";
 import { TileSystem } from "./systems/TileSystem";
 import { SceneObjectComponent } from "./components/graphics/SceneObjectComponent";
+import { currentGame } from "./gameContext";
 
 let placeholderPlayer: Player;
 
@@ -62,15 +63,13 @@ class Round {
 		time,
 		settings,
 		players,
-		game,
 	}: {
 		time: number;
 		settings: Settings;
 		players: Player[];
-		game: Game;
 	}) {
 		emitter(this);
-		this.game = game;
+		this.game = currentGame();
 		// We set this for downstream constructor logic
 		this.game.round = this;
 		this.lastUpdate = time;
@@ -91,7 +90,7 @@ class Round {
 				color: colors.white,
 				id: -1,
 				score: { bulldog: 800 },
-				game,
+				game: this.game,
 			});
 
 		this.pickTeams();
@@ -192,7 +191,6 @@ class Round {
 			graphic: { shape: "circle" },
 			x,
 			y,
-			game: this.game,
 			radius,
 		});
 		const mesh = SceneObjectComponent.get(sprite)!.object;

@@ -1,7 +1,7 @@
-import { Sprite } from "../entities/sprites/Sprite";
 import { DeprecatedComponentConstructor } from "./Component";
 import { Unit } from "../entities/sprites/Unit";
 import { Entity } from "./Entity";
+import { isSprite } from "../typeguards";
 
 abstract class System<T extends Entity = Entity> {
 	private set: Set<T> = new Set();
@@ -9,7 +9,6 @@ abstract class System<T extends Entity = Entity> {
 	private _callbacks: Map<
 		Entity,
 		{
-			removeListener: () => void;
 			changeListener: ((prop: keyof Unit) => void) | undefined;
 		}
 	> = new Map();
@@ -27,8 +26,7 @@ abstract class System<T extends Entity = Entity> {
 		this.set.add(entity);
 		this.dirty?.add(entity);
 
-		if (Sprite.isSprite(entity)) {
-			const removeListener = () => this.remove(entity);
+		if (isSprite(entity)) {
 			const props = (this.constructor as typeof System).props;
 			const changeListener = props.length
 				? (prop: keyof Unit) => {
@@ -36,10 +34,8 @@ abstract class System<T extends Entity = Entity> {
 				  }
 				: undefined;
 			this._callbacks.set(entity, {
-				removeListener,
 				changeListener,
 			});
-			entity.addEventListener("remove", removeListener);
 			if (changeListener)
 				entity.addEventListener("change", changeListener);
 		}
@@ -56,16 +52,15 @@ abstract class System<T extends Entity = Entity> {
 		this.set.delete(entity as T);
 		this.dirty?.delete(entity as T);
 
-		if (Sprite.isSprite(entity)) {
+		if (isSprite(entity)) {
 			const callbacks = this._callbacks.get(entity);
-			if (callbacks) {
-				entity.removeEventListener("remove", callbacks.removeListener);
+			if (callbacks)
 				if (callbacks.changeListener)
 					entity.removeEventListener(
 						"change",
 						callbacks.changeListener,
 					);
-			}
+
 			this._callbacks.delete(entity);
 		}
 

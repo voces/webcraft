@@ -10,7 +10,7 @@ import { Hover } from "../components/Hover";
 import { Emitter, emitter } from "../emitter";
 import { UI, MouseMoveEvent, MouseDownEvent } from "../ui";
 import { SelectionCircle } from "../entities/SelectionCircle";
-import { Sprite } from "../entities/sprites/Sprite";
+import { isSprite } from "../typeguards";
 
 export enum MouseButton {
 	LEFT = 0,
@@ -120,7 +120,7 @@ class Mouse extends System {
 		for (let i = 0; i < this.intersections.length; i++) {
 			const object: EntityObject = this.intersections[i].object;
 			const entity = object?.entity;
-			if (entity && (!Sprite.isSprite(entity) || entity.selectable)) {
+			if (entity && (!isSprite(entity) || entity.selectable)) {
 				foundEntity = true;
 				if (this.entity !== entity) {
 					if (this.entity) Hover.clear(this.entity);

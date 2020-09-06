@@ -17,6 +17,7 @@ import { HoldPositionManager } from "../../components/HoldPositionComponent";
 import { GerminateComponentManager } from "../../components/GerminateComponent";
 import { Selected } from "../../components/Selected";
 import { App } from "../../core/App";
+import { currentGame } from "../../gameContext";
 
 export type SpriteElement = HTMLDivElement & { sprite: Sprite };
 
@@ -35,7 +36,6 @@ export type SpriteProps = {
 	maxHealth?: number;
 	owner?: Player;
 	facing?: number;
-	game: Game;
 	graphic?: MeshBuilderComponentProps;
 };
 
@@ -52,10 +52,7 @@ export type SpriteEvents = {
 };
 
 class Sprite {
-	// eslint-disable-next-line @typescript-eslint/ban-types
-	static isSprite = (object: Object): object is Sprite =>
-		object instanceof Sprite;
-
+	readonly isSprite = true;
 	app: App;
 	game: Game;
 	radius: number;
@@ -112,10 +109,11 @@ class Sprite {
 		health = maxHealth,
 		facing = (3 / 2) * Math.PI,
 		owner,
-		game,
 		graphic = clone(Sprite.defaults.graphic),
 	}: SpriteProps) {
 		emitter<Sprite, SpriteEvents>(this);
+
+		const game = currentGame();
 
 		if (!game.round)
 			throw new Error("trying to create a sprite outside a round");

@@ -2,6 +2,7 @@ import { Sprite } from "../Sprite";
 import { Obstruction } from "./Obstruction";
 import { Game } from "../../../Game";
 
+// TODO: this should have to extend Sprite (health/owner are silly)
 export class Blueprint extends Sprite {
 	static buildTime = 0;
 

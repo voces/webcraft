@@ -3,10 +3,10 @@ import { document } from "../util/globals";
 import { defined } from "../types";
 import { Unit } from "../entities/sprites/Unit";
 import { emptyElement } from "../util/html";
-import { Sprite } from "../entities/sprites/Sprite";
 import { Entity } from "../core/Entity";
 import { Mechanism } from "../core/Merchanism";
-import { Game } from "../Game";
+import { isSprite } from "../typeguards";
+import { currentGame } from "../gameContext";
 
 const container = document.getElementById("hotkeys")!;
 
@@ -64,15 +64,13 @@ const center: Action = {
 		if (selection.length === 0 && player.sprites.length)
 			return selectionSystem.setSelection([player.sprites[0]]);
 
-		const { xSum, ySum } = selection
-			.filter((e): e is Sprite => Sprite.isSprite(e))
-			.reduce(
-				({ xSum, ySum }, { position: { x, y } }) => ({
-					xSum: xSum + x,
-					ySum: ySum + y,
-				}),
-				{ xSum: 0, ySum: 0 },
-			);
+		const { xSum, ySum } = selection.filter(isSprite).reduce(
+			({ xSum, ySum }, { position: { x, y } }) => ({
+				xSum: xSum + x,
+				ySum: ySum + y,
+			}),
+			{ xSum: 0, ySum: 0 },
+		);
 		const x = xSum / selection.length;
 		const y = ySum / selection.length;
 		player.game.graphics.panTo({ x, y });
@@ -87,7 +85,7 @@ export class Hotkeys extends Mechanism {
 
 	constructor() {
 		super();
-		Game.current.addEventListener(
+		currentGame().addEventListener(
 			"selection",
 			(entities: ReadonlyArray<Entity>) => this.onSelection(entities),
 		);
@@ -100,9 +98,10 @@ export class Hotkeys extends Mechanism {
 		this.activeActions.push(center);
 
 		// Get actions
+		const game = currentGame();
 		const units = entities
 			.filter(Unit.isUnit)
-			.filter((u) => u.owner === Game.current.localPlayer);
+			.filter((u) => u.owner === game.localPlayer);
 		if (!units.length) return;
 
 		let activeUnit = units[0];

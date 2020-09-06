@@ -1,6 +1,6 @@
 import { Entity } from "./Entity";
 import { hasAppProp } from "./util";
-import { App } from "./App";
+import { currentApp } from "./appContext";
 
 export abstract class DeprecatedComponent<T extends Entity = Entity> {
 	readonly entity: T;
@@ -44,7 +44,7 @@ export abstract class Component<
 		const cleared = this.map.delete(entity);
 
 		if (cleared) {
-			const app = App.current;
+			const app = currentApp();
 			if (app)
 				app.entityComponentUpdated(
 					entity,

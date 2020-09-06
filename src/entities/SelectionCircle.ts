@@ -1,7 +1,7 @@
 import { TorusBufferGeometry, MeshBasicMaterial, Mesh } from "three";
 import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
 import { Position } from "../components/Position";
-import { App } from "../core/App";
+import { currentGame } from "../gameContext";
 
 export class SelectionCircle {
 	id = "SELECTION_CIRCLE";
@@ -27,6 +27,6 @@ export class SelectionCircle {
 		new SceneObjectComponent(this, mesh);
 		new Position(this, x, y);
 
-		App.current?.add(this);
+		currentGame().add(this);
 	}
 }
