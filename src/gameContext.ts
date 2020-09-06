@@ -8,6 +8,7 @@ const context = new Context<Game | undefined>(undefined);
 export const withGame = <T>(game: Game, fn: (game: Game) => T): T =>
 	withApp(game, () => context.with(game, fn));
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- It is used
 export const wrapGame = <Args extends unknown[], Return extends unknown>(
 	game: Game,
 	fn: (...args: Args) => Return,

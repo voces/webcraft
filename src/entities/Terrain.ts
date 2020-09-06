@@ -28,8 +28,6 @@ export const interpolateZ = (
 	return (k - n.x * x - n.y * y) / n.z;
 };
 
-type TVector = TerrainMesh["vertices"][number][number][number];
-
 export class Terrain {
 	private group: Group;
 	private height: number;
