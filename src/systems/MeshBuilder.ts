@@ -76,8 +76,10 @@ export class MeshBuilder extends System {
 		// Build/set the mesh
 		const builder = graphic.shape === "circle" ? createSphere : createBox;
 		const mesh: EntityMesh = builder(entity, graphic);
-		mesh.castShadow = true;
-		mesh.receiveShadow = true;
+		if (graphic.shadows) {
+			mesh.castShadow = true;
+			mesh.receiveShadow = true;
+		}
 		mesh.position.x = entity.position.x;
 		mesh.position.y = entity.position.y;
 		mesh.position.z = entity.radius;

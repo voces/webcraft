@@ -1,8 +1,8 @@
 import { BinaryHeap } from "./BinaryHeap";
 import { memoize } from "./memoize";
 import { DIRECTION, PATHING_TYPES } from "../constants";
-import { document } from "../util/globals";
-import { emptyElement } from "../util/html";
+// import { document } from "../util/globals";
+// import { emptyElement } from "../util/html";
 import {
 	polarProject,
 	behind,
@@ -12,14 +12,13 @@ import {
 	offset,
 } from "./math";
 
-let debugging = false;
-const elems: HTMLElement[] = [];
-const arena = document.getElementById("arena")!;
-export const toggleDebugging = (): void => {
-	if (debugging) elems.forEach((elem) => arena.removeChild(elem));
+// let debugging = false;
+// const elems: HTMLElement[] = [];
+// export const toggleDebugging = (): void => {
+// 	if (debugging) elems.forEach((elem) => arena.removeChild(elem));
 
-	debugging = !debugging;
-};
+// 	debugging = !debugging;
+// };
 
 const DEFAULT_RESOLUTION = 1;
 
@@ -153,25 +152,25 @@ interface Cache {
 //   0, 255,   0 = 0.5
 // 255, 255,   0 = 0.75
 // 255,   0,   0 = 1
-const r = (v: number) => (v < 0.5 ? 0 : v < 0.75 ? (v - 0.5) * 4 : 1);
-const g = (v: number) => (v < 0.25 ? v * 4 : v < 0.75 ? 1 : (1 - v) * 4);
-const b = (v: number) => (v < 0.25 ? 1 : v < 0.5 ? (0.5 - v) * 4 : 0);
+// const r = (v: number) => (v < 0.5 ? 0 : v < 0.75 ? (v - 0.5) * 4 : 1);
+// const g = (v: number) => (v < 0.25 ? v * 4 : v < 0.75 ? 1 : (1 - v) * 4);
+// const b = (v: number) => (v < 0.25 ? 1 : v < 0.5 ? (0.5 - v) * 4 : 0);
 
-const placeTile = (x: number, y: number, v: number) => {
-	const div = document.createElement("div");
-	div.style.position = "absolute";
-	div.style.top = y * 16 + "px";
-	div.style.left = x * 16 + "px";
-	div.style.zIndex = "10000";
-	div.style.width = "16px";
-	div.style.height = "16px";
-	div.style.background = `rgba(${r(v) * 255}, ${g(v) * 255}, ${
-		b(v) * 255
-	}, 0.5)`;
-	// div.cell = this.grid[ y ][ x ];
-	arena.appendChild(div);
-	elems.push(div);
-};
+// const placeTile = (x: number, y: number, v: number) => {
+// 	const div = document.createElement("div");
+// 	div.style.position = "absolute";
+// 	div.style.top = y * 16 + "px";
+// 	div.style.left = x * 16 + "px";
+// 	div.style.zIndex = "10000";
+// 	div.style.width = "16px";
+// 	div.style.height = "16px";
+// 	div.style.background = `rgba(${r(v) * 255}, ${g(v) * 255}, ${
+// 		b(v) * 255
+// 	}, 0.5)`;
+// 	// div.cell = this.grid[ y ][ x ];
+// 	arena.appendChild(div);
+// 	elems.push(div);
+// };
 
 export class PathingMap {
 	resolution: number;
@@ -1026,70 +1025,70 @@ export class PathingMap {
 			}
 		}
 
-		if (debugging) {
-			elems.forEach((elem) => arena.removeChild(elem));
-			elems.splice(0);
-			const max = this.grid.reduce(
-				(max, row) =>
-					row.reduce(
-						(max, cell) =>
-							Math.max(
-								max,
-								cell.__startTag === startTag &&
-									cell.__startVisited
-									? cell.__startRealPlusEstimatedCost ?? 0
-									: cell.__endTag === endTag &&
-									  cell.__endVisited
-									? cell.__endRealPlusEstimatedCost ?? 0
-									: -Infinity,
-							),
-						max,
-					),
-				-Infinity,
-			);
-			const min = this.grid.reduce(
-				(min, row) =>
-					row.reduce(
-						(min, cell) =>
-							Math.min(
-								min,
-								cell.__startTag === startTag &&
-									cell.__startVisited
-									? cell.__startRealPlusEstimatedCost ?? 0
-									: cell.__endTag === endTag &&
-									  cell.__endVisited
-									? cell.__endRealPlusEstimatedCost ?? 0
-									: Infinity,
-							),
-						min,
-					),
-				Infinity,
-			);
-			const d = max - min;
-			for (let y = 0; y < this.grid.length; y++)
-				for (let x = 0; x < this.grid[y].length; x++)
-					if (
-						(this.grid[y][x].__startTag === startTag &&
-							this.grid[y][x].__startVisited) ||
-						(this.grid[y][x].__endTag === endTag &&
-							this.grid[y][x].__endVisited)
-					)
-						placeTile(
-							x,
-							y,
-							((this.grid[y][x].__startTag === startTag &&
-							this.grid[y][x].__startVisited
-								? this.grid[y][x]
-										.__startRealPlusEstimatedCost ?? 0
-								: this.grid[y][x].__endTag === endTag &&
-								  this.grid[y][x].__endVisited
-								? this.grid[y][x].__endRealPlusEstimatedCost ??
-								  0
-								: Infinity) -
-								min) /
-								d,
-						);
-		}
+		// if (debugging) {
+		// 	elems.forEach((elem) => arena.removeChild(elem));
+		// 	elems.splice(0);
+		// 	const max = this.grid.reduce(
+		// 		(max, row) =>
+		// 			row.reduce(
+		// 				(max, cell) =>
+		// 					Math.max(
+		// 						max,
+		// 						cell.__startTag === startTag &&
+		// 							cell.__startVisited
+		// 							? cell.__startRealPlusEstimatedCost ?? 0
+		// 							: cell.__endTag === endTag &&
+		// 							  cell.__endVisited
+		// 							? cell.__endRealPlusEstimatedCost ?? 0
+		// 							: -Infinity,
+		// 					),
+		// 				max,
+		// 			),
+		// 		-Infinity,
+		// 	);
+		// 	const min = this.grid.reduce(
+		// 		(min, row) =>
+		// 			row.reduce(
+		// 				(min, cell) =>
+		// 					Math.min(
+		// 						min,
+		// 						cell.__startTag === startTag &&
+		// 							cell.__startVisited
+		// 							? cell.__startRealPlusEstimatedCost ?? 0
+		// 							: cell.__endTag === endTag &&
+		// 							  cell.__endVisited
+		// 							? cell.__endRealPlusEstimatedCost ?? 0
+		// 							: Infinity,
+		// 					),
+		// 				min,
+		// 			),
+		// 		Infinity,
+		// 	);
+		// 	const d = max - min;
+		// 	for (let y = 0; y < this.grid.length; y++)
+		// 		for (let x = 0; x < this.grid[y].length; x++)
+		// 			if (
+		// 				(this.grid[y][x].__startTag === startTag &&
+		// 					this.grid[y][x].__startVisited) ||
+		// 				(this.grid[y][x].__endTag === endTag &&
+		// 					this.grid[y][x].__endVisited)
+		// 			)
+		// 				placeTile(
+		// 					x,
+		// 					y,
+		// 					((this.grid[y][x].__startTag === startTag &&
+		// 					this.grid[y][x].__startVisited
+		// 						? this.grid[y][x]
+		// 								.__startRealPlusEstimatedCost ?? 0
+		// 						: this.grid[y][x].__endTag === endTag &&
+		// 						  this.grid[y][x].__endVisited
+		// 						? this.grid[y][x].__endRealPlusEstimatedCost ??
+		// 						  0
+		// 						: Infinity) -
+		// 						min) /
+		// 						d,
+		// 				);
+		// }
 
 		const pathTiles = [];
 		let startCurrent: Tile | null | undefined = startBest;
@@ -1537,86 +1536,86 @@ export class PathingMap {
 		this.entities.delete(entity);
 	}
 
-	paint(): void {
-		const host =
-			this._elem ||
-			(this._elem = (() => {
-				const elem = document.createElement("div");
-				arena.appendChild(elem);
+	// paint(): void {
+	// 	const host =
+	// 		this._elem ||
+	// 		(this._elem = (() => {
+	// 			const elem = document.createElement("div");
+	// 			arena.appendChild(elem);
 
-				return elem;
-			})());
+	// 			return elem;
+	// 		})());
 
-		emptyElement(host);
-		const cellSize = 32 / this.resolution;
+	// 	emptyElement(host);
+	// 	const cellSize = 32 / this.resolution;
 
-		for (let y = 0; y < this.heightMap; y++)
-			for (let x = 0; x < this.widthMap; x++) {
-				const cell = document.createElement("div");
-				Object.assign(cell.style, {
-					zIndex: 10,
-					position: "absolute",
-					top: `${y * cellSize}px`,
-					left: `${x * cellSize}px`,
-					width: `${cellSize}px`,
-					height: `${cellSize}px`,
-					background: `rgba(${
-						this.grid[y][x].pathing & 1 ? 255 : 0
-					}, 0, ${this.grid[y][x].pathing & 2 ? 255 : 0}, 0.4)`,
-				});
-				host.appendChild(cell);
-			}
-	}
+	// 	for (let y = 0; y < this.heightMap; y++)
+	// 		for (let x = 0; x < this.widthMap; x++) {
+	// 			const cell = document.createElement("div");
+	// 			Object.assign(cell.style, {
+	// 				zIndex: 10,
+	// 				position: "absolute",
+	// 				top: `${y * cellSize}px`,
+	// 				left: `${x * cellSize}px`,
+	// 				width: `${cellSize}px`,
+	// 				height: `${cellSize}px`,
+	// 				background: `rgba(${
+	// 					this.grid[y][x].pathing & 1 ? 255 : 0
+	// 				}, 0, ${this.grid[y][x].pathing & 2 ? 255 : 0}, 0.4)`,
+	// 			});
+	// 			host.appendChild(cell);
+	// 		}
+	// }
 
-	paintMap(map: Footprint, xTile: number, yTile: number): void {
-		const host =
-			this._elem ||
-			(this._elem = (() => {
-				const elem = document.createElement("div");
-				arena.appendChild(elem);
+	// paintMap(map: Footprint, xTile: number, yTile: number): void {
+	// 	const host =
+	// 		this._elem ||
+	// 		(this._elem = (() => {
+	// 			const elem = document.createElement("div");
+	// 			arena.appendChild(elem);
 
-				return elem;
-			})());
+	// 			return elem;
+	// 		})());
 
-		const cellSize = 32 / this.resolution;
+	// 	const cellSize = 32 / this.resolution;
 
-		let i = 0;
+	// 	let i = 0;
 
-		for (let y = yTile + map.top; y < yTile + map.height + map.top; y++)
-			for (
-				let x = xTile + map.left;
-				x < xTile + map.width + map.left;
-				x++, i++
-			) {
-				const cell = document.createElement("div");
-				Object.assign(cell.style, {
-					zIndex: 10,
-					position: "absolute",
-					top: `${y * cellSize}px`,
-					left: `${x * cellSize}px`,
-					width: `${cellSize}px`,
-					height: `${cellSize}px`,
-					background:
-						this.grid[y] === undefined ||
-						this.grid[y][x] === undefined ||
-						this.grid[y][x].pathing & map.map[i]
-							? "rgba(255,0,0,0.5)"
-							: "rgba(0,255,0,0.5)",
-				});
-				cell.setAttribute("x", x.toString());
-				cell.setAttribute("y", y.toString());
-				cell.setAttribute("i", i.toString());
-				cell.setAttribute(
-					"grid",
-					(this.grid[y] === undefined
-						? "no-y"
-						: this.grid[y][x] === undefined
-						? "no-x"
-						: this.grid[y][x].pathing
-					).toString(),
-				);
-				cell.setAttribute("map", map.map[i].toString());
-				host.appendChild(cell);
-			}
-	}
+	// 	for (let y = yTile + map.top; y < yTile + map.height + map.top; y++)
+	// 		for (
+	// 			let x = xTile + map.left;
+	// 			x < xTile + map.width + map.left;
+	// 			x++, i++
+	// 		) {
+	// 			const cell = document.createElement("div");
+	// 			Object.assign(cell.style, {
+	// 				zIndex: 10,
+	// 				position: "absolute",
+	// 				top: `${y * cellSize}px`,
+	// 				left: `${x * cellSize}px`,
+	// 				width: `${cellSize}px`,
+	// 				height: `${cellSize}px`,
+	// 				background:
+	// 					this.grid[y] === undefined ||
+	// 					this.grid[y][x] === undefined ||
+	// 					this.grid[y][x].pathing & map.map[i]
+	// 						? "rgba(255,0,0,0.5)"
+	// 						: "rgba(0,255,0,0.5)",
+	// 			});
+	// 			cell.setAttribute("x", x.toString());
+	// 			cell.setAttribute("y", y.toString());
+	// 			cell.setAttribute("i", i.toString());
+	// 			cell.setAttribute(
+	// 				"grid",
+	// 				(this.grid[y] === undefined
+	// 					? "no-y"
+	// 					: this.grid[y][x] === undefined
+	// 					? "no-x"
+	// 					: this.grid[y][x].pathing
+	// 				).toString(),
+	// 			);
+	// 			cell.setAttribute("map", map.map[i].toString());
+	// 			host.appendChild(cell);
+	// 		}
+	// }
 }

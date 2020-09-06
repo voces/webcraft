@@ -126,8 +126,6 @@ class Sprite {
 		this.blocksPathing = blocksPathing;
 
 		this.id = id === undefined ? this.round.spriteId++ : id;
-		// this.x = x;
-		// this.y = y;
 		this.maxHealth = maxHealth;
 		this.health = health;
 		this.isAlive = this.health > 0;
@@ -137,8 +135,6 @@ class Sprite {
 		this.facing = facing;
 		this.color = color;
 		this.selectable = selectable;
-		// todo:
-		Object.assign(this, { html: {} });
 		this.position = new DeprecatedPosition(x, y);
 
 		MeshBuilderComponentManager.set(
@@ -210,8 +206,8 @@ class Sprite {
 	}
 
 	remove(): void {
-		if (Selected.has(this)) Selected.clear(this);
 		this.dispatchEvent("remove");
+		currentGame().remove(this);
 		this.removeEventListeners();
 		this.round.pathingMap.removeEntity(this);
 	}

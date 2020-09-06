@@ -35,6 +35,7 @@ export class Projectile extends Sprite {
 			...Sprite.defaults.graphic,
 			color: "#0000ff",
 			opacity: 0.25,
+			shadows: false,
 		},
 	};
 

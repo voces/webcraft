@@ -10,8 +10,6 @@ export const TILE_TYPES = {
 } as const;
 export type TileType = ValueOf<typeof TILE_TYPES>;
 
-export const WORLD_TO_GRAPHICS_RATIO = 32;
-
 // A mask
 export * from "./pathing/constants";
 

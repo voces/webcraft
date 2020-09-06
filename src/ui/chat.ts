@@ -1,9 +1,10 @@
 import marked from "marked";
 import { document } from "../util/globals";
-import { toggleDebugging } from "../pathing/PathingMap";
+// import { toggleDebugging } from "../pathing/PathingMap";
 import { emptyElement } from "../util/html";
 import { Game } from "../Game";
 import { UI } from "./index";
+import { wrapGame } from "../gameContext";
 
 type Command = {
 	name: string;
@@ -84,28 +85,35 @@ export const initChatListeners = (game: Game, ui: UI): void => {
 	);
 
 	chat.game = game;
+
+	chatInput.addEventListener(
+		"keydown",
+		wrapGame(game, (e) => {
+			e.stopPropagation();
+			if (e.key === "Enter")
+				if (chatInput.value[0] === "/")
+					return onCommandEnter(chatInput.value.slice(1));
+				else return chat.onEnter();
+
+			if (e.key === "Escape") return chat.onEscape();
+
+			if (e.key === "Tab") {
+				e.preventDefault();
+				onCommandTab(chatInput.value.slice(1));
+				return;
+			}
+		}),
+	);
+
+	chatInput.addEventListener(
+		"input",
+		wrapGame(game, () => {
+			if (chatInput.value[0] === "/")
+				onCommandInput(chatInput.value.slice(1));
+			else chatInputSuggestion.value = "";
+		}),
+	);
 };
-
-chatInput.addEventListener("keydown", (e) => {
-	e.stopPropagation();
-	if (e.key === "Enter")
-		if (chatInput.value[0] === "/")
-			return onCommandEnter(chatInput.value.slice(1));
-		else return chat.onEnter();
-
-	if (e.key === "Escape") return chat.onEscape();
-
-	if (e.key === "Tab") {
-		e.preventDefault();
-		onCommandTab(chatInput.value.slice(1));
-		return;
-	}
-});
-
-chatInput.addEventListener("input", () => {
-	if (chatInput.value[0] === "/") onCommandInput(chatInput.value.slice(1));
-	else chatInputSuggestion.value = "";
-});
 
 const _appendMessage = (html: HTMLElement) => {
 	chatLog.appendChild(html);
@@ -264,8 +272,8 @@ registerCommand({
 	},
 });
 
-registerCommand({
-	name: "debug",
-	comment: "Shows debugging information",
-	handler: toggleDebugging,
-});
+// registerCommand({
+// 	name: "debug",
+// 	comment: "Shows debugging information",
+// 	handler: toggleDebugging,
+// });

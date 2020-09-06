@@ -10,6 +10,7 @@ export type Props = {
 	scale?: number;
 	shadow?: string;
 	opacity?: number;
+	shadows?: boolean;
 };
 
 export class MeshBuilderComponent extends DeprecatedComponent {
@@ -20,6 +21,7 @@ export class MeshBuilderComponent extends DeprecatedComponent {
 	readonly scale?: number;
 	readonly shadow?: string;
 	readonly opacity: number;
+	readonly shadows: boolean;
 
 	constructor(
 		entity: Entity,
@@ -31,6 +33,7 @@ export class MeshBuilderComponent extends DeprecatedComponent {
 			scale = 1,
 			shadow,
 			opacity = 1,
+			shadows = true,
 		}: Props & {
 			targetable: boolean;
 		},
@@ -43,6 +46,7 @@ export class MeshBuilderComponent extends DeprecatedComponent {
 		this.scale = scale;
 		this.shadow = shadow;
 		this.opacity = opacity;
+		this.shadows = shadows;
 	}
 }
 

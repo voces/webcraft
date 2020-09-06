@@ -1,11 +1,8 @@
-import { WORLD_TO_GRAPHICS_RATIO } from "../constants";
-import { tweenPoints, PathTweener } from "../util/tweenPoints";
+import { PathTweener } from "../util/tweenPoints";
 import { document, requestAnimationFrame, window } from "../util/globals";
 import { registerCommand } from "../ui/chat";
 import { Round } from "../Round";
-import { Point } from "../pathing/PathingMap";
 import { UI } from "../ui/index";
-import { isSprite } from "../typeguards";
 import { currentGame, wrapGame } from "../gameContext";
 
 type Direction = "right" | "left" | "down" | "up";
@@ -13,8 +10,6 @@ type Direction = "right" | "left" | "down" | "up";
 const CAMERA_SPEED = 25;
 const ZOOM_SPEED = 1 / 500;
 
-const arena = document.getElementById("arena") as HTMLElement &
-	Point & { scale: number };
 const uiElem = document.getElementById("ui")!;
 let keyboard: Record<string, boolean> = {};
 
@@ -34,7 +29,6 @@ const mouse = emptyMouse();
 let knownRound: Round;
 let requestedAnimationFrame: number | undefined;
 let pan: (PathTweener & { duration: number }) | undefined;
-let followInterval: number | undefined;
 
 const setMouseAndRender = (direction: Direction) => {
 	if (mouse[direction]) return;
@@ -49,16 +43,7 @@ const setZoom = (zoom: number) => {
 };
 
 export const initCameraListeners = (ui: UI): void => {
-	ui.addEventListener("keyDown", ({ key, ctrlDown, game }) => {
-		if (key === "f" && ctrlDown)
-			if (followInterval) {
-				clearInterval(followInterval);
-				followInterval = undefined;
-			}
-			// Pulling Node.js's type of setInterval instead of generic API
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			else followInterval = <any>setInterval(follow, 500);
-
+	ui.addEventListener("keyDown", ({ key, game }) => {
 		if (!game.round) return;
 
 		if (knownRound !== game.round) {
@@ -119,9 +104,6 @@ const renderCamera = (time?: number) => {
 	if (pan) {
 		const { x, y } = pan.step((delta * pan.distance) / pan.duration);
 
-		arena.style.top = (arena.y = y) + "px";
-		arena.style.left = (arena.x = x) + "px";
-
 		if (x !== pan.target.x || y !== pan.target.y)
 			requestedAnimationFrame = requestAnimationFrame(
 				wrapGame(game, renderCamera),
@@ -171,57 +153,9 @@ const renderCamera = (time?: number) => {
 	}
 };
 
-export const panTo = ({
-	x,
-	y,
-	duration = 0.125,
-}: {
-	x: number;
-	y: number;
-	duration?: number;
-}): void => {
-	x *= WORLD_TO_GRAPHICS_RATIO * arena.scale;
-	y *= WORLD_TO_GRAPHICS_RATIO * arena.scale;
-
-	const xCenter = window.innerWidth / 2;
-	const yCenter = window.innerHeight / 2;
-
-	pan = Object.assign(
-		tweenPoints([
-			{ x: arena.x || 0, y: arena.y || 0 },
-			{ x: xCenter - x, y: yCenter - y },
-		]),
-		{ duration },
-	);
-
-	renderCamera();
-};
-
-const follow = () => {
-	const selection = currentGame().selectionSystem.selection;
-	if (!selection?.length) return;
-
-	const { xSum, ySum } = selection.filter(isSprite).reduce(
-		({ xSum, ySum }, { position: { x, y } }) => ({
-			xSum: xSum + x,
-			ySum: ySum + y,
-		}),
-		{ xSum: 0, ySum: 0 },
-	);
-
-	const x = xSum / selection.length;
-	const y = ySum / selection.length;
-	panTo({ x, y, duration: 10 });
-};
-
 registerCommand({
 	name: "zoom",
 	comment: "Zooms in or out. Initial 10",
 	args: [{ required: true, name: "level" }],
 	handler: (_, zoom) => setZoom(parseFloat(zoom)),
-});
-
-export const clientToWorld = ({ x, y }: Point): Point => ({
-	x: (x - arena.x) / arena.scale / WORLD_TO_GRAPHICS_RATIO,
-	y: (y - arena.y) / arena.scale / WORLD_TO_GRAPHICS_RATIO,
 });

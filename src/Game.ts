@@ -1,12 +1,10 @@
 import { arenas } from "./arenas/index";
 import { Round } from "./Round";
 import { emitter, Emitter } from "./emitter";
-import { document } from "./util/globals";
 import { Player, patchInState } from "./players/Player";
 import { Arena } from "./arenas/types";
 import { alea } from "./lib/alea";
 import { Settings } from "./types";
-import { emptyElement } from "./util/html";
 import { Network, NetworkEventCallback } from "./Network";
 import { UI } from "./ui/index";
 // import { initObstructionPlacement } from "./entities/sprites/obstructionPlacement";
@@ -30,8 +28,6 @@ import { Entity } from "./core/Entity";
 import { Hotkeys } from "./ui/hotkeys";
 import { Mouse } from "./systems/Mouse";
 import { withGame, wrapGame } from "./gameContext";
-
-const tilesElemnt = document.getElementById("tiles")!;
 
 class Game extends App {
 	private network!: Network;
@@ -140,7 +136,6 @@ class Game extends App {
 		this.settings.arenaIndex = arenaIndex;
 		this.arena = arenas[arenaIndex];
 
-		emptyElement(tilesElemnt);
 		if (this.terrain) this.remove(this.terrain);
 		this.terrain = new Terrain(this.arena);
 		this.add(this.terrain);
