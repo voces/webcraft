@@ -1,4 +1,4 @@
-import { fetch as rawFetch } from "../Network";
+import { fetch as rawFetch } from "../network";
 import { document } from "../util/globals";
 import { Game } from "../Game";
 
