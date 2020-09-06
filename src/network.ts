@@ -202,7 +202,7 @@ const wrappedFetch = <T>(
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> => {
 	if (!url.match(/^\w+:\/\//))
-		url = `http://${activeHost}/${url.replace(/^\//, "")}`;
+		url = `//${activeHost}/${url.replace(/^\//, "")}`;
 
 	if (!options.headers) options.headers = {};
 	if (!options.headers["Content-Type"])
