@@ -141,7 +141,9 @@ class Network {
 
 	connect(token: string): void {
 		this.connection = new WebSocket(
-			`ws://${activeHost}?${encodeURIComponent(token)}`,
+			`${
+				location.protocol === "https:" ? "wss:" : "ws:"
+			}//${activeHost}?${encodeURIComponent(token)}`,
 		);
 
 		this.connection.addEventListener("message", (message) =>
