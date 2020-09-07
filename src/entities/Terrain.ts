@@ -43,7 +43,7 @@ export class Terrain {
 				cliff: arena.cliffs,
 				groundTile: arena.pathing,
 				cliffTile: arena.cliffs.map((r) => r.map(() => 4)),
-				water: arena.cliffs.map((r) => r.map(() => 0)),
+				water: arena.cliffs.map((r) => r.map((v) => (v === 0 ? 1 : 0))),
 				waterHeight: vertexZeroes,
 			},
 			offset: {

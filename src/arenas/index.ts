@@ -1,11 +1,11 @@
 import { theDump } from "./theDump";
 import { theFarm } from "./theFarm";
-import { theGap } from "./theGap";
-import { theRock } from "./theRock";
-import { theTamedWoods } from "./theTamedWoods";
-import { theTarget } from "./theTarget";
-import { theTinyRectangle } from "./theTinyRectangle";
-import { theWoods } from "./theWoods";
+// import { theGap } from "./theGap";
+// import { theRock } from "./theRock";
+// import { theTamedWoods } from "./theTamedWoods";
+// import { theTarget } from "./theTarget";
+// import { theTinyRectangle } from "./theTinyRectangle";
+// import { theWoods } from "./theWoods";
 
 import { PATHING_TYPES } from "../pathing/constants";
 import { Arena, InternalArena } from "./types";
@@ -13,13 +13,9 @@ import { Point } from "../pathing/PathingMap";
 
 const UNPATHABLE = PATHING_TYPES.WALKABLE + PATHING_TYPES.BUILDABLE;
 
-const getHeight = (arena: InternalArena) =>
-	Math.max(arena.cliffs.length, arena.tiles.length) * 2;
+const getHeight = (arena: InternalArena) => arena.cliffs.length * 2;
 const getWidth = (arena: InternalArena) =>
-	Math.max(
-		...arena.cliffs.map((l) => l.length),
-		...arena.tiles.map((t) => t.length),
-	) * 2;
+	Math.max(...arena.cliffs.map((l) => l.length)) * 2;
 
 const _asMaxNum = (v: number | "r") => (typeof v === "number" ? v : -Infinity);
 const cliffHeight = (cliffs: (number | "r")[][], x: number, y: number) => {
@@ -88,6 +84,10 @@ const processArena = (arena: InternalArena): Arena => {
 
 					for (const neighbor of neighbors) {
 						const tile = cliffs[y + neighbor.y]?.[x + neighbor.x];
+
+						// Edges are unpathable
+						if (tile === undefined) return UNPATHABLE;
+
 						if (tile !== "r")
 							if (firstNonRampNeighrborHeight !== undefined) {
 								// Cliff changes are not pathable
@@ -121,7 +121,7 @@ const processArena = (arena: InternalArena): Arena => {
 							return UNPATHABLE;
 
 					// Tiles 1 and 2 are unbuildable
-					if (tiles[y][x] === 1 || tiles[y][x] === 2)
+					if (tiles[y]?.[x] === 1 || tiles[y]?.[x] === 2)
 						return PATHING_TYPES.BUILDABLE;
 
 					// Otherwise it is pathable
@@ -143,10 +143,10 @@ const processArena = (arena: InternalArena): Arena => {
 export const arenas = [
 	theDump,
 	theFarm,
-	theGap,
-	theRock,
-	theTamedWoods,
-	theTarget,
-	theTinyRectangle,
-	theWoods,
+	// theGap,
+	// theRock,
+	// theTamedWoods,
+	// theTarget,
+	// theTinyRectangle,
+	// theWoods,
 ].map(processArena);
