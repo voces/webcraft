@@ -1,29 +1,29 @@
-import { AttackTarget, AttackTargetManager } from "../components/AttackTarget";
+import { AttackTarget } from "../components/AttackTarget";
 import { System } from "../core/System";
 import { Unit } from "../entities/sprites/Unit";
 import { Sprite } from "../entities/sprites/Sprite";
 import { isInAttackRange } from "../entities/sprites/UnitApi";
-import { MoveTargetManager } from "../components/MoveTarget";
-import { DamageComponentManager } from "../components/DamageComponent";
-import { MeshBuilderComponentManager } from "../components/graphics/MeshBuilderComponent";
-import { AnimationManager, Animation } from "../components/graphics/Animation";
+import { Animation } from "../components/graphics/Animation";
+import { DamageComponent } from "../components/DamageComponent";
+import { MoveTarget } from "../components/MoveTarget";
+import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
 
 export class AttackSystem extends System<Unit> {
 	static components = [AttackTarget];
 
 	test(entity: Sprite): entity is Unit {
-		return AttackTargetManager.has(entity) && entity instanceof Unit;
+		return AttackTarget.has(entity) && entity instanceof Unit;
 	}
 
 	update(entity: Unit): void {
-		const damageComponent = DamageComponentManager.get(entity);
+		const damageComponent = entity.get(DamageComponent)[0];
 		if (!damageComponent) {
-			AttackTargetManager.delete(entity);
+			AttackTarget.clear(entity);
 			return;
 		}
 		const weapon = damageComponent.weapons[0];
 
-		const attackTarget = AttackTargetManager.get(entity);
+		const attackTarget = entity.get(AttackTarget)[0];
 
 		if (!attackTarget) return this.remove(entity);
 
@@ -32,16 +32,16 @@ export class AttackSystem extends System<Unit> {
 			attackTarget.target.health <= 0 ||
 			attackTarget.target.invulnerable
 		) {
-			MoveTargetManager.delete(entity);
-			AttackTargetManager.delete(entity);
+			MoveTarget.clear(entity);
+			AttackTarget.clear(entity);
 			return;
 		}
 
 		const isTargetInRange = isInAttackRange(entity, attackTarget.target);
 
 		// We're not moving towards the target and it's not close enough
-		if (!isTargetInRange && !MoveTargetManager.has(entity)) {
-			AttackTargetManager.delete(entity);
+		if (!isTargetInRange && !MoveTarget.has(entity)) {
+			AttackTarget.clear(entity);
 			return;
 		}
 
@@ -62,14 +62,13 @@ export class AttackSystem extends System<Unit> {
 				attackTarget.target.health <= 0 ||
 				attackTarget.target.invulnerable
 			) {
-				MoveTargetManager.delete(entity);
-				AttackTargetManager.delete(entity);
+				MoveTarget.clear(entity);
+				AttackTarget.clear(entity);
 			}
 		} else weapon.projectile(attackTarget.target, entity);
 
-		const MeshBuilderComponent = MeshBuilderComponentManager.get(entity);
-		if (MeshBuilderComponent)
-			AnimationManager.set(entity, new Animation(entity, "attack", 0.25));
+		const meshBuilderComponent = entity.get(MeshBuilderComponent)[0];
+		if (meshBuilderComponent) new Animation(entity, "attack", 0.25);
 
 		weapon.last = entity.round.lastUpdate;
 	}

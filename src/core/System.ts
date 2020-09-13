@@ -1,4 +1,4 @@
-import { DeprecatedComponentConstructor } from "./Component";
+import { ComponentConstructor } from "./Component";
 import { Unit } from "../entities/sprites/Unit";
 import { Entity } from "./Entity";
 import { isSprite } from "../typeguards";
@@ -15,7 +15,7 @@ abstract class System<T extends Entity = Entity> {
 
 	static readonly components: ReadonlyArray<
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		DeprecatedComponentConstructor<any>
+		ComponentConstructor<any>
 	> = [];
 
 	static props = new Array<keyof Unit>();

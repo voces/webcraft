@@ -1,7 +1,6 @@
 import { Sprite } from "../entities/sprites/Sprite";
-import { DeprecatedComponent } from "../core/Component";
-import { DeprecatedComponentManager } from "../core/DeprecatedComponentManager";
-import { NonEmptyArray } from "../types";
+import { Component } from "../core/Component";
+import { Mutable, NonEmptyArray } from "../types";
 
 export type Weapon = {
 	damage: number;
@@ -15,21 +14,15 @@ export type Weapon = {
 	onDamage?: (target: Sprite, damage: number, attacker: Sprite) => void;
 };
 
-export class DamageComponent extends DeprecatedComponent {
-	weapons: NonEmptyArray<Weapon>;
-	autoAttack: boolean;
-
-	constructor(
-		entity: Sprite,
-		weapons: NonEmptyArray<Weapon>,
-		autoAttack: boolean,
-	) {
-		super(entity);
-		this.weapons = weapons;
-		this.autoAttack = autoAttack;
+export class DamageComponent extends Component<
+	[NonEmptyArray<Weapon>, boolean]
+> {
+	readonly weapons!: NonEmptyArray<Weapon>;
+	readonly autoAttack!: boolean;
+	initialize(weapons: NonEmptyArray<Weapon>, autoAttack: boolean): void {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const that: Mutable<DamageComponent> = this;
+		that.weapons = weapons;
+		that.autoAttack = autoAttack;
 	}
 }
-
-export const DamageComponentManager = new DeprecatedComponentManager<
-	DamageComponent
->(DamageComponent);

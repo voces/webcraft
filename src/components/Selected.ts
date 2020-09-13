@@ -7,12 +7,6 @@ type Props = {
 };
 
 export class Selected extends Circle {
-	protected static map = new WeakMap<Entity, Selected>();
-
-	static get(entity: Entity): Selected | undefined {
-		return this.map.get(entity);
-	}
-
 	constructor(entity: Entity, props: Partial<Props> = {}) {
 		if (!props.color) props.color = "#00FF00";
 		super(entity, props);

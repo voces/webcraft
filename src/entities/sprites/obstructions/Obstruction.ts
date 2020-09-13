@@ -7,10 +7,7 @@ import { ResourceMap } from "../../../types";
 import { Player } from "../../../players/Player";
 import { Unit, UnitProps } from "../Unit";
 import { Action } from "../spriteLogic";
-import {
-	GerminateComponentManager,
-	GerminateComponent,
-} from "../../../components/GerminateComponent";
+import { GerminateComponent } from "../../../components/GerminateComponent";
 import { Entity } from "../../../core/Entity";
 
 const destroySelf: Action = {
@@ -89,7 +86,7 @@ export class Obstruction extends Unit {
 		);
 		this.buildTime = buildTime;
 
-		GerminateComponentManager.set(this, new GerminateComponent(this));
+		new GerminateComponent(this);
 	}
 
 	get actions(): Action[] {

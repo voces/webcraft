@@ -1,5 +1,5 @@
 import { System } from "../core/System";
-import { MoveTargetManager, MoveTarget } from "../components/MoveTarget";
+import { MoveTarget } from "../components/MoveTarget";
 import { Sprite } from "../entities/sprites/Sprite";
 import { PathingMap, Point } from "../pathing/PathingMap";
 import { isSprite } from "../typeguards";
@@ -23,7 +23,7 @@ export class MoveSystem extends System<MovingSprite> {
 
 	test(entity: Sprite & { speed?: number }): entity is MovingSprite {
 		return (
-			MoveTargetManager.has(entity) &&
+			entity.has(MoveTarget) &&
 			typeof entity.speed === "number" &&
 			entity.speed > 0
 		);
@@ -35,8 +35,7 @@ export class MoveSystem extends System<MovingSprite> {
 		time: number,
 		retry = true,
 	): void {
-		const moveTarget = MoveTargetManager.get(entity);
-
+		const moveTarget = entity.get(MoveTarget)[0];
 		if (!moveTarget) return this.remove(entity);
 
 		const pathingMap = entity.round.pathingMap;
@@ -47,7 +46,7 @@ export class MoveSystem extends System<MovingSprite> {
 
 		// Validate data
 		if (isNaN(x) || isNaN(y)) {
-			MoveTargetManager.delete(entity);
+			entity.clear(moveTarget);
 			throw new Error(`Returning NaN location x=${x} y=${y}`);
 		}
 
@@ -57,7 +56,7 @@ export class MoveSystem extends System<MovingSprite> {
 
 		// We've reached the end
 		if (moveTarget.path.distance < moveTarget.progress)
-			MoveTargetManager.delete(entity);
+			entity.clear(moveTarget);
 
 		// Recheck path, start a new one periodically or if check fails
 		if (
@@ -75,8 +74,7 @@ export class MoveSystem extends System<MovingSprite> {
 			moveTarget.recalc();
 
 			// No move to go!
-			if (moveTarget.path.distance === 0)
-				MoveTargetManager.delete(entity);
+			if (moveTarget.path.distance === 0) entity.clear(moveTarget);
 
 			if (!pathable && retry) this.update(entity, delta, time, false);
 		}

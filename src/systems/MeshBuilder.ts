@@ -5,10 +5,7 @@ import {
 	BoxBufferGeometry,
 	Color,
 } from "three";
-import {
-	MeshBuilderComponent,
-	MeshBuilderComponentManager,
-} from "../components/graphics/MeshBuilderComponent";
+import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
 import { System } from "../core/System";
 import { Sprite } from "../entities/sprites/Sprite";
 import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
@@ -66,11 +63,11 @@ export class MeshBuilder extends System {
 	private entityData: Map<Sprite, EntityData> = new Map();
 
 	test(entity: Sprite): entity is Sprite {
-		return MeshBuilderComponentManager.has(entity);
+		return MeshBuilderComponent.has(entity);
 	}
 
 	onAddEntity(entity: Sprite): void {
-		const graphic = MeshBuilderComponentManager.get(entity);
+		const graphic = entity.get(MeshBuilderComponent)[0];
 		if (!graphic) return;
 
 		// Build/set the mesh

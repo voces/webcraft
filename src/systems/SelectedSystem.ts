@@ -39,9 +39,10 @@ export class SelectedSystem extends System {
 	}
 
 	onAddEntity(entity: Entity): void {
-		const selected = Selected.get(entity);
-		if (!selected) throw new Error("expected Selected component");
-		this.data.set(entity, selected);
+		const selected = entity.get(Selected);
+		if (!selected || !selected[0])
+			throw new Error("expected Selected component");
+		this.data.set(entity, selected[0]);
 		currentGame().dispatchEvent("selection", Array.from(this));
 	}
 

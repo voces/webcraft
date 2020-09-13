@@ -1,6 +1,6 @@
 import { System } from "../core/System";
 import { Sprite } from "../entities/sprites/Sprite";
-import { MoveTargetManager } from "../components/MoveTarget";
+import { MoveTarget } from "../components/MoveTarget";
 import { distanceBetweenPoints } from "../util/tweenPoints";
 import { Projectile } from "../entities/sprites/projectiles/Projectile";
 
@@ -10,7 +10,7 @@ export class ProjectileSystem extends System<Projectile> {
 	}
 
 	update(projectile: Projectile): void {
-		if (MoveTargetManager.has(projectile)) return;
+		if (MoveTarget.has(projectile)) return;
 
 		projectile.owner
 			.getEnemySprites()

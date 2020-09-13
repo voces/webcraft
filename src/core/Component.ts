@@ -1,85 +1,45 @@
-import { Entity } from "./Entity";
-import { hasAppProp } from "./util";
 import { currentApp } from "./appContext";
+import { Entity } from "./Entity";
 
-export abstract class DeprecatedComponent<T extends Entity = Entity> {
-	readonly entity: T;
-
-	constructor(entity: T) {
-		this.entity = entity;
-	}
-
-	dispose(): void {
-		/* do nothing */
-	}
-}
-
-export type DeprecatedComponentConstructor<
-	T extends DeprecatedComponent
-> = new (
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	...args: any[]
-) => T;
-
-export abstract class Component<
-	InitializationParameters extends unknown[] = []
-> extends DeprecatedComponent<Entity> {
-	static isComponentClass = (
-		klass: typeof DeprecatedComponent | typeof Component,
-	): klass is typeof Component => klass.prototype instanceof Component;
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	protected static map = new WeakMap<Entity, Component<any>>();
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	static get(entity: Entity): Component<any> | undefined {
-		return this.map.get(entity);
-	}
-
+export class Component<
+	InitializationParameters extends unknown[] = [],
+	E extends Entity = Entity
+> {
 	static has(entity: Entity): boolean {
-		return this.map.has(entity);
+		return entity.has(this);
 	}
 
 	static clear(entity: Entity): boolean {
-		const component = this.map.get(entity);
-		if (!component) return false;
-
-		this.map.delete(entity);
-
-		const app = currentApp();
-		if (app)
-			app.entityComponentUpdated(
-				entity,
-				(this as unknown) as DeprecatedComponentConstructor<Component>,
-			);
-
-		component.dispose();
-
-		return true;
+		return entity.clear(this);
 	}
 
-	constructor(entity: Entity, ...rest: InitializationParameters) {
-		super(entity);
+	readonly entity: E;
 
-		const constructor = <typeof Component>this.constructor;
-		if (constructor.has(entity))
-			throw new Error(
-				`Adding duplicate component ${constructor.name} to Entity ${entity.constructor.name}`,
-			);
+	constructor(entity: E, ...rest: InitializationParameters) {
+		this.entity = entity;
 
-		constructor.map.set(entity, this);
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const constructor = <ComponentConstructor<any>>this.constructor;
+		entity.add(constructor, this);
 
 		if (this.initialize) this.initialize(...rest);
-		if (hasAppProp(this.entity))
-			this.entity.app.entityComponentUpdated(
-				entity,
-				<DeprecatedComponentConstructor<Component>>this.constructor,
-			);
+
+		currentApp().entityComponentUpdated(
+			entity,
+			<ComponentConstructor<Component>>this.constructor,
+		);
 	}
 
 	// This method is invoked by the constructor before notifying the App of a
 	// change
 	protected initialize?(...rest: InitializationParameters): void;
+
+	dispose(): void {
+		currentApp().entityComponentUpdated(
+			this.entity,
+			this.constructor as ComponentConstructor<Component>,
+		);
+	}
 }
 
 export type ComponentConstructor<T extends Component> = new (

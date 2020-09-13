@@ -1,7 +1,7 @@
 import { System } from "../core/System";
 import { document, window } from "../util/globals";
 import { Unit } from "../entities/sprites/Unit";
-import { MoveTargetManager } from "../components/MoveTarget";
+import { MoveTarget } from "../components/MoveTarget";
 import { Point } from "../pathing/PathingMap";
 import { tweenPoints, PathTweener } from "../util/tweenPoints";
 import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
@@ -159,7 +159,7 @@ export class ThreeGraphics extends System {
 	}
 
 	onAddEntity(entity: Entity): void {
-		const object = SceneObjectComponent.get(entity)!.object;
+		const object = entity.get(SceneObjectComponent)[0]!.object;
 		this.scene.add(object);
 
 		// Add listeners
@@ -233,7 +233,7 @@ export class ThreeGraphics extends System {
 		let stillDirty = false;
 
 		if (isSprite(entity)) {
-			const moveTarget = MoveTargetManager.get(entity);
+			const moveTarget = entity.get(MoveTarget)[0];
 			if (moveTarget && Unit.isUnit(entity)) {
 				moveTarget.renderProgress += entity.speed * delta;
 				const { x, y } = moveTarget.path(moveTarget.renderProgress);
@@ -252,7 +252,7 @@ export class ThreeGraphics extends System {
 					entity.position.y,
 				);
 			}
-		} else if ((position = Position.get(entity))) {
+		} else if ((position = entity.get(Position)[0])) {
 			mesh.position.x = position.x;
 			mesh.position.y = position.y;
 			mesh.position.z = this.game.terrain!.groundHeight(
@@ -263,9 +263,9 @@ export class ThreeGraphics extends System {
 
 		// TODO: we can probably generalize this with a Children component
 		[Selected, Hover].forEach((Circle) => {
-			const circle = Circle.get(entity)?.circle;
+			const circle = entity.get(Circle)[0]?.circle;
 			if (circle) {
-				const object = SceneObjectComponent.get(circle)?.object;
+				const object = circle.get(SceneObjectComponent)[0]?.object;
 				if (object) object.position.copy(mesh.position);
 			}
 		});
@@ -292,7 +292,7 @@ export class ThreeGraphics extends System {
 	// }
 
 	render(entity: Entity, delta: number, time: number): void {
-		const object = SceneObjectComponent.get(entity)!.object;
+		const object = entity.get(SceneObjectComponent)[0]!.object;
 		const data = this.entityData.get(entity);
 		if (!data || !object) return;
 

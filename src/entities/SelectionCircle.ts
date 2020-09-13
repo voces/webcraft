@@ -1,9 +1,10 @@
 import { TorusBufferGeometry, MeshBasicMaterial, Mesh } from "three";
 import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
 import { Position } from "../components/Position";
+import { Entity } from "../core/Entity";
 import { currentGame } from "../gameContext";
 
-export class SelectionCircle {
+export class SelectionCircle extends Entity {
 	id = "SELECTION_CIRCLE";
 
 	constructor({
@@ -17,6 +18,7 @@ export class SelectionCircle {
 		x: number;
 		y: number;
 	}) {
+		super();
 		const geometry = new TorusBufferGeometry(radius, radius * 0.05, 3, 24);
 		const material = new MeshBasicMaterial({
 			color,

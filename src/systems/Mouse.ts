@@ -104,7 +104,7 @@ class Mouse extends System {
 
 		this.intersections = this.raycaster.intersectObjects(
 			Array.from(this)
-				.map((e) => SceneObjectComponent.get(e)?.object)
+				.map((e) => e.get(SceneObjectComponent)[0]?.object)
 				.filter((e): e is Object3D => e !== undefined),
 			true,
 		);

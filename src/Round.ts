@@ -198,7 +198,7 @@ class Round {
 			y,
 			radius,
 		});
-		const mesh = SceneObjectComponent.get(sprite)!.object;
+		const mesh = sprite.get(SceneObjectComponent)[0]!.object;
 		mesh.position.z = this.game.terrain!.groundHeight(x, y);
 		return sprite;
 	}

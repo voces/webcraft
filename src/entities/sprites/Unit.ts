@@ -4,22 +4,12 @@ import { Point } from "../../pathing/PathingMap";
 import { Player } from "../../players/Player";
 import { Action } from "./spriteLogic";
 import { Obstruction } from "./obstructions/index";
-import { MoveTargetManager, MoveTarget } from "../../components/MoveTarget";
-import {
-	AttackTargetManager,
-	AttackTarget,
-} from "../../components/AttackTarget";
+import { MoveTarget } from "../../components/MoveTarget";
+import { AttackTarget } from "../../components/AttackTarget";
 import { isInAttackRange } from "./UnitApi";
-import {
-	HoldPositionManager,
-	HoldPositionComponent,
-} from "../../components/HoldPositionComponent";
-import { BuildTargetManager, BuildTarget } from "../../components/BuildTarget";
-import {
-	DamageComponentManager,
-	Weapon,
-	DamageComponent,
-} from "../../components/DamageComponent";
+import { HoldPositionComponent } from "../../components/HoldPositionComponent";
+import { BuildTarget } from "../../components/BuildTarget";
+import { Weapon, DamageComponent } from "../../components/DamageComponent";
 import { Entity } from "../../core/Entity";
 import { Color } from "three";
 
@@ -141,18 +131,14 @@ class Unit extends Sprite {
 		this.speed = speed;
 		this.builds = builds;
 
-		if (weapon)
-			DamageComponentManager.set(
-				this,
-				new DamageComponent(this, [weapon], autoAttack),
-			);
+		if (weapon) new DamageComponent(this, [weapon], autoAttack);
 	}
 
 	attack(target: Sprite): void {
-		BuildTargetManager.delete(this);
-		HoldPositionManager.delete(this);
+		BuildTarget.clear(this);
+		HoldPositionComponent.clear(this);
 
-		const damageComponent = DamageComponentManager.get(this);
+		const damageComponent = this.get(DamageComponent)[0];
 
 		// We can't attack without a weapon
 		if (!damageComponent) throw new NoWeaponError();
@@ -161,54 +147,45 @@ class Unit extends Sprite {
 		if (!this.speed && !isInAttackRange(this, target))
 			throw new TargetTooFarError();
 
-		AttackTargetManager.set(this, new AttackTarget(this, target));
-		MoveTargetManager.set(
-			this,
-			new MoveTarget({
-				entity: this,
-				target,
-				distance:
-					this.radius +
-					damageComponent.weapons[0].range +
-					target.radius -
-					1e-7,
-			}),
-		);
+		new AttackTarget(this, target);
+		new MoveTarget({
+			entity: this,
+			target,
+			distance:
+				this.radius +
+				damageComponent.weapons[0].range +
+				target.radius -
+				1e-7,
+		});
 	}
 
 	walkTo(target: Point): void {
-		AttackTargetManager.delete(this);
-		BuildTargetManager.delete(this);
-		HoldPositionManager.delete(this);
-		MoveTargetManager.set(this, new MoveTarget({ entity: this, target }));
+		this.stop();
+		new MoveTarget({ entity: this, target });
 	}
 
 	holdPosition(): void {
-		MoveTargetManager.delete(this);
-		AttackTargetManager.delete(this);
-		BuildTargetManager.delete(this);
-		HoldPositionManager.set(this, new HoldPositionComponent(this));
+		this.stop();
+		new HoldPositionComponent(this);
 	}
 
 	stop(): void {
-		MoveTargetManager.delete(this);
-		AttackTargetManager.delete(this);
-		BuildTargetManager.delete(this);
-		HoldPositionManager.delete(this);
+		MoveTarget.clear(this);
+		AttackTarget.clear(this);
+		BuildTarget.clear(this);
+		HoldPositionComponent.clear(this);
 	}
 
 	buildAt(target: Point, ObstructionClass: typeof Obstruction): void {
-		const moveTarget = new MoveTarget({
+		this.stop();
+
+		new MoveTarget({
 			entity: this,
 			target,
 			distance: BUILD_DISTANCE - 1e-7,
 		});
 
-		MoveTargetManager.set(this, moveTarget);
-		BuildTargetManager.set(
-			this,
-			new BuildTarget(this, ObstructionClass, target),
-		);
+		new BuildTarget(this, ObstructionClass, target);
 	}
 
 	get actions(): Action[] {

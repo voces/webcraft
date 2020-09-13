@@ -1,9 +1,6 @@
 import { System } from "../core/System";
 import { Sprite } from "../entities/sprites/Sprite";
-import {
-	GerminateComponent,
-	GerminateComponentManager,
-} from "../components/GerminateComponent";
+import { GerminateComponent } from "../components/GerminateComponent";
 
 type GerminatingEntity = Sprite & {
 	buildTime: number;
@@ -14,13 +11,13 @@ export class GerminateSystem extends System<GerminatingEntity> {
 
 	test(entity: Sprite & { buildTime?: number }): entity is GerminatingEntity {
 		return (
-			GerminateComponentManager.has(entity) &&
+			GerminateComponent.has(entity) &&
 			typeof entity.buildTime === "number"
 		);
 	}
 
 	update(entity: GerminatingEntity, delta: number): void {
-		const germinateComponent = GerminateComponentManager.get(entity);
+		const germinateComponent = entity.get(GerminateComponent)[0];
 		if (!germinateComponent) return;
 
 		// Move up progress
@@ -38,6 +35,6 @@ export class GerminateSystem extends System<GerminatingEntity> {
 		);
 
 		// Remove the component if we're done
-		if (newProgress === 1) GerminateComponentManager.delete(entity);
+		if (newProgress === 1) GerminateComponent.clear(entity);
 	}
 }

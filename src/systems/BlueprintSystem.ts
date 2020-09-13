@@ -1,8 +1,8 @@
 import { System } from "../core/System";
-import { BuildTargetManager, BuildTarget } from "../components/BuildTarget";
+import { BuildTarget } from "../components/BuildTarget";
 import { Sprite } from "../entities/sprites/Sprite";
 import { Unit } from "../entities/sprites/Unit";
-import { MoveTarget, MoveTargetManager } from "../components/MoveTarget";
+import { MoveTarget } from "../components/MoveTarget";
 import { distanceBetweenPoints } from "../util/tweenPoints";
 import { BUILD_DISTANCE } from "../constants";
 import { appendErrorMessage } from "../ui/chat";
@@ -11,21 +11,24 @@ export class BlueprintSystem extends System<Unit> {
 	static components = [BuildTarget, MoveTarget];
 
 	test(entity: Sprite): entity is Unit {
-		return BuildTargetManager.has(entity) && entity instanceof Unit;
+		return entity.has(BuildTarget) && entity instanceof Unit;
 	}
 
 	update(entity: Unit): void {
-		const buildTarget = BuildTargetManager.get(entity);
-		const moveTarget = MoveTargetManager.get(entity);
+		const buildTarget = entity.get(BuildTarget)[0];
+		const moveTarget = entity.get(MoveTarget)[0];
 
 		// No target anymore, remove the entity
-		if (!buildTarget) return BuildTargetManager.delete(entity);
+		if (!buildTarget) {
+			BuildTarget.clear(entity);
+			return;
+		}
 
 		// We're still moving
 		if (moveTarget) return;
 
 		// We're close enough, so we either will build it or not for some reason
-		BuildTargetManager.delete(entity);
+		BuildTarget.clear(entity);
 
 		// We're not moving, but still too far
 		if (

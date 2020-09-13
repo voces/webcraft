@@ -5,11 +5,6 @@ import { Point } from "../pathing/PathingMap";
 export class Position extends Component<
 	[number, number, { zOffset: number; flyHeight: number }]
 > {
-	protected static map = new WeakMap<Entity, Position>();
-	static get(entity: Entity): Position | undefined {
-		return this.map.get(entity);
-	}
-
 	readonly x!: number;
 	readonly y!: number;
 	readonly zOffset!: number;
@@ -49,7 +44,7 @@ const hasPositionProp = (entity: any): entity is { position: Point } =>
 	typeof entity.position.y === "number";
 
 export const getEntityXY = (entity: Entity): Point | undefined => {
-	const position = Position.get(entity);
+	const position = entity.get(Position)[0];
 	if (position) return { x: position.x, y: position.y };
 
 	if (hasPositionProp(entity))

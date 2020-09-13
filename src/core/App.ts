@@ -1,7 +1,7 @@
 import { System } from "./System";
 import { Mechanism } from "./Merchanism";
 import { requestAnimationFrame } from "../util/globals";
-import { DeprecatedComponentConstructor, Component } from "./Component";
+import { ComponentConstructor, Component } from "./Component";
 import { Entity } from "./Entity";
 import { withApp } from "./appContext";
 
@@ -13,7 +13,7 @@ export class App {
 	private _time = 0;
 	private componentUpdateMap = new Map<
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		DeprecatedComponentConstructor<any>,
+		ComponentConstructor<any>,
 		System[]
 	>();
 	private components: typeof Component[] = [];
@@ -73,8 +73,7 @@ export class App {
 	remove(...entities: Entity[]): App {
 		for (const system of this.systems) system.remove(...entities);
 
-		for (const entity of entities)
-			for (const component of this.components) component.clear(entity);
+		for (const entity of entities) entity.clear();
 
 		return this;
 	}
@@ -86,7 +85,7 @@ export class App {
 	entityComponentUpdated(
 		entity: Entity,
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		component: DeprecatedComponentConstructor<any>,
+		component: ComponentConstructor<any>,
 	): void {
 		const arr = this.componentUpdateMap.get(component);
 		if (!arr) return;

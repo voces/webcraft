@@ -28,6 +28,7 @@ import { Entity } from "./core/Entity";
 import { Hotkeys } from "./ui/hotkeys";
 import { Mouse } from "./systems/Mouse";
 import { withGame, wrapGame } from "./gameContext";
+import { isSprite } from "./typeguards";
 
 class Game extends App {
 	private network!: Network;
@@ -218,6 +219,15 @@ class Game extends App {
 
 	render(): void {
 		withGame(this, () => this._render());
+	}
+
+	remove(entity: Entity): Game {
+		for (const system of this.systems) system.remove(entity);
+
+		entity.clear();
+		if (isSprite(entity)) entity.remove(true);
+
+		return this;
 	}
 
 	protected _update(e: { time: number }): void {

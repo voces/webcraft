@@ -1,7 +1,7 @@
-import { DeprecatedComponent } from "../../core/Component";
-import { DeprecatedComponentManager } from "../../core/DeprecatedComponentManager";
+import { Component } from "../../core/Component";
 import { Entity } from "../../core/Entity";
 import { Color } from "three";
+import { Mutable } from "../../types";
 
 export type Props = {
 	shape: "square" | "circle";
@@ -13,43 +13,37 @@ export type Props = {
 	shadows?: boolean;
 };
 
-export class MeshBuilderComponent extends DeprecatedComponent {
-	readonly shape: "square" | "circle";
-	readonly targetable: boolean;
+type InnerProps = Props & { targetable: boolean };
+
+export class MeshBuilderComponent extends Component<[InnerProps]> {
+	readonly shape!: "square" | "circle";
+	readonly targetable!: boolean;
 	readonly color?: string;
 	readonly colorFilter?: (color: Color) => Color;
 	readonly scale?: number;
 	readonly shadow?: string;
-	readonly opacity: number;
-	readonly shadows: boolean;
+	readonly opacity!: number;
+	readonly shadows!: boolean;
 
-	constructor(
-		entity: Entity,
-		{
-			shape,
-			targetable,
-			color,
-			colorFilter,
-			scale = 1,
-			shadow,
-			opacity = 1,
-			shadows = true,
-		}: Props & {
-			targetable: boolean;
-		},
-	) {
-		super(entity);
-		this.shape = shape;
-		this.targetable = targetable;
-		this.color = color;
-		this.colorFilter = colorFilter;
-		this.scale = scale;
-		this.shadow = shadow;
-		this.opacity = opacity;
-		this.shadows = shadows;
+	initialize({
+		shape,
+		targetable,
+		color,
+		colorFilter,
+		scale = 1,
+		shadow,
+		opacity = 1,
+		shadows = true,
+	}: InnerProps): void {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const that: Mutable<MeshBuilderComponent> = this;
+		that.shape = shape;
+		that.targetable = targetable;
+		that.color = color;
+		that.colorFilter = colorFilter;
+		that.scale = scale;
+		that.shadow = shadow;
+		that.opacity = opacity;
+		that.shadows = shadows;
 	}
 }
-
-export const MeshBuilderComponentManager = new DeprecatedComponentManager<
-	MeshBuilderComponent
->(MeshBuilderComponent);

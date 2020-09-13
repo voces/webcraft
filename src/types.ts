@@ -44,3 +44,7 @@ export type RecursivePartial<T> = {
 export type EntityObject = Object3D & { entity?: Entity };
 
 export type EntityMesh = Mesh & { entity?: Entity };
+
+export type Mutable<T> = {
+	-readonly [P in keyof T]: T[P];
+};

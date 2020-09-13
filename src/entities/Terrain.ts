@@ -9,6 +9,7 @@ import { SceneObjectComponent } from "../components/graphics/SceneObjectComponen
 import { Arena } from "../arenas/types";
 import { Group, Vector3 } from "three";
 import { orientation } from "../pathing/math";
+import { Entity } from "../core/Entity";
 
 /**
  * Returns the z coordinate of point (x, y) on the plane defined by (a, b, c)
@@ -28,11 +29,12 @@ export const interpolateZ = (
 	return (k - n.x * x - n.y * y) / n.z;
 };
 
-export class Terrain {
+export class Terrain extends Entity {
 	private group: Group;
 	private height: number;
 	id = "terrain";
 	constructor(arena: Arena) {
+		super();
 		const vertexZeroes = Array(arena.height + 1).fill(
 			new Array(arena.width + 1).fill(0),
 		);
@@ -79,7 +81,8 @@ export class Terrain {
 
 		const pt = { x, y };
 		let triangle: [Vector3, Vector3, Vector3];
-		const terrain = SceneObjectComponent.get(this)!.object as TerrainMesh;
+		const terrain = this.get(SceneObjectComponent)[0]!
+			.object as TerrainMesh;
 		const geometry = terrain.ground;
 		const faces =
 			terrain.groundFaces[Math.floor(this.height - y)]?.[Math.floor(x)];

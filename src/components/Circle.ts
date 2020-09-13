@@ -12,27 +12,10 @@ type Props = {
 type InternalProps = Props & { x: number; y: number };
 
 const hasRadius = (
-	object: Record<string, unknown>,
-): object is { radius: number } => typeof object.radius === "number";
+	entity: Entity | (Entity & { radius: number }),
+): entity is Entity & { radius: number } => "radius" in entity;
 
 export abstract class Circle extends Component<[InternalProps]> {
-	protected static map = new WeakMap<Entity, Circle>();
-
-	static get(entity: Entity): Circle | undefined {
-		return this.map.get(entity);
-	}
-
-	static clear(entity: Entity): boolean {
-		const selected = this.get(entity);
-		if (!selected) return false;
-
-		super.clear(entity);
-
-		currentGame().remove(selected.circle);
-
-		return true;
-	}
-
 	circle!: SelectionCircle;
 
 	constructor(entity: Entity, props: Partial<Props> = {}) {

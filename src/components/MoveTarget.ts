@@ -7,10 +7,9 @@ import {
 	shortenPath,
 	calcAndTweenShortenedPath,
 } from "../util/tweenPoints";
-import { DeprecatedComponent } from "../core/Component";
-import { DeprecatedComponentManager } from "../core/DeprecatedComponentManager";
+import { Component } from "../core/Component";
 
-export class MoveTarget extends DeprecatedComponent<Sprite> {
+export class MoveTarget extends Component<[], Sprite> {
 	// The entity with the MoveTarget component.
 	target: Point | Sprite;
 
@@ -76,7 +75,3 @@ export class MoveTarget extends DeprecatedComponent<Sprite> {
 		this.ticks = 0;
 	}
 }
-
-export const MoveTargetManager = new DeprecatedComponentManager<MoveTarget>(
-	MoveTarget,
-);

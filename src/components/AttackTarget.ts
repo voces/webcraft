@@ -1,16 +1,13 @@
 import { Sprite } from "../entities/sprites/Sprite";
-import { DeprecatedComponent } from "../core/Component";
-import { DeprecatedComponentManager } from "../core/DeprecatedComponentManager";
+import { Component } from "../core/Component";
+import { Mutable } from "../types";
 
-export class AttackTarget extends DeprecatedComponent {
-	target: Sprite;
+export class AttackTarget extends Component<[Sprite]> {
+	readonly target!: Sprite;
 
-	constructor(entity: Sprite, target: Sprite) {
-		super(entity);
-		this.target = target;
+	initialize(target: Sprite): void {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const that: Mutable<AttackTarget> = this;
+		that.target = target;
 	}
 }
-
-export const AttackTargetManager = new DeprecatedComponentManager<AttackTarget>(
-	AttackTarget,
-);

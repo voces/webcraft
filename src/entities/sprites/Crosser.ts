@@ -12,15 +12,10 @@ import {
 	Tiny,
 } from "./obstructions/index";
 import { Action } from "./spriteLogic";
-import { MoveTargetManager } from "../../components/MoveTarget";
-import { AttackTargetManager } from "../../components/AttackTarget";
-import { BuildTargetManager } from "../../components/BuildTarget";
-import { HoldPositionManager } from "../../components/HoldPositionComponent";
-import { MeshBuilderComponentManager } from "../../components/graphics/MeshBuilderComponent";
-import {
-	Animation,
-	AnimationManager,
-} from "../../components/graphics/Animation";
+import { MeshBuilderComponent } from "../../components/graphics/MeshBuilderComponent";
+import { Animation } from "../../components/graphics/Animation";
+import { Selected } from "../../components/Selected";
+import { Hover } from "../../components/Hover";
 
 const destroyLastBox: Action = {
 	name: "Destroy box",
@@ -78,10 +73,10 @@ export class Crosser extends Unit {
 			if (index >= 0) this.owner.sprites.splice(index, 1);
 		}
 
-		MoveTargetManager.delete(this);
-		AttackTargetManager.delete(this);
-		BuildTargetManager.delete(this);
-		HoldPositionManager.delete(this);
+		// Active components we want to clear right away
+		this.stop();
+		this.clear(Selected);
+		this.clear(Hover);
 
 		this.round.pathingMap.removeEntity(this);
 		const index = this.round.sprites.indexOf(this);
@@ -90,9 +85,8 @@ export class Crosser extends Unit {
 		// Cancel any active placements
 		this.game.obstructionPlacement?.stop();
 
-		const MeshBuilderComponent = MeshBuilderComponentManager.get(this);
-		if (MeshBuilderComponent)
-			AnimationManager.set(this, new Animation(this, "ascend", 1));
+		const meshBuilderComponent = this.get(MeshBuilderComponent)[0];
+		if (meshBuilderComponent) new Animation(this, "ascend", 1);
 
 		this.round.setTimeout(() => this.remove(), 1);
 	}

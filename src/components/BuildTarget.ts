@@ -1,11 +1,10 @@
 import { Sprite } from "../entities/sprites/Sprite";
-import { DeprecatedComponent } from "../core/Component";
-import { DeprecatedComponentManager } from "../core/DeprecatedComponentManager";
 import { Obstruction } from "../entities/sprites/obstructions/index";
 import { Blueprint } from "../entities/sprites/obstructions/Blueprint";
 import { Point } from "../pathing/PathingMap";
+import { Component } from "../core/Component";
 
-export class BuildTarget extends DeprecatedComponent {
+export class BuildTarget extends Component {
 	obstructionClass: typeof Obstruction;
 	target: Point;
 	blueprint?: Blueprint;
@@ -34,7 +33,3 @@ export class BuildTarget extends DeprecatedComponent {
 		this.blueprint?.kill({ removeImmediately: true });
 	}
 }
-
-export const BuildTargetManager = new DeprecatedComponentManager<BuildTarget>(
-	BuildTarget,
-);

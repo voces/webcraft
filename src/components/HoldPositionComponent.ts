@@ -1,13 +1,3 @@
-import { Sprite } from "../entities/sprites/Sprite";
-import { DeprecatedComponent } from "../core/Component";
-import { DeprecatedComponentManager } from "../core/DeprecatedComponentManager";
+import { Component } from "../core/Component";
 
-export class HoldPositionComponent extends DeprecatedComponent {
-	constructor(entity: Sprite) {
-		super(entity);
-	}
-}
-
-export const HoldPositionManager = new DeprecatedComponentManager<
-	HoldPositionComponent
->(HoldPositionComponent);
+export class HoldPositionComponent extends Component {}

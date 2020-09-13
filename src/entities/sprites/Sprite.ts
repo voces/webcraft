@@ -7,17 +7,18 @@ import { Action } from "./spriteLogic";
 import { Game } from "../../Game";
 import {
 	MeshBuilderComponent,
-	MeshBuilderComponentManager,
 	Props as MeshBuilderComponentProps,
 } from "../../components/graphics/MeshBuilderComponent";
 import { DeprecatedPosition } from "../../components/DeprecatedPosition";
-import { MoveTargetManager } from "../../components/MoveTarget";
-import { AttackTargetManager } from "../../components/AttackTarget";
-import { HoldPositionManager } from "../../components/HoldPositionComponent";
-import { GerminateComponentManager } from "../../components/GerminateComponent";
+import { MoveTarget } from "../../components/MoveTarget";
+import { AttackTarget } from "../../components/AttackTarget";
+import { HoldPositionComponent } from "../../components/HoldPositionComponent";
+import { GerminateComponent } from "../../components/GerminateComponent";
 import { Selected } from "../../components/Selected";
 import { App } from "../../core/App";
 import { currentGame } from "../../gameContext";
+import { Entity } from "../../core/Entity";
+import { Hover } from "../../components/Hover";
 
 export type SpriteElement = HTMLDivElement & { sprite: Sprite };
 
@@ -51,7 +52,7 @@ export type SpriteEvents = {
 	remove: () => void;
 };
 
-class Sprite {
+class Sprite extends Entity {
 	readonly isSprite = true;
 	app: App;
 	game: Game;
@@ -111,6 +112,7 @@ class Sprite {
 		owner,
 		graphic = clone(Sprite.defaults.graphic),
 	}: SpriteProps) {
+		super();
 		emitter<Sprite, SpriteEvents>(this);
 
 		const game = currentGame();
@@ -137,13 +139,10 @@ class Sprite {
 		this.selectable = selectable;
 		this.position = new DeprecatedPosition(x, y);
 
-		MeshBuilderComponentManager.set(
-			this,
-			new MeshBuilderComponent(this, {
-				...graphic,
-				targetable: selectable,
-			}),
-		);
+		new MeshBuilderComponent(this, {
+			...graphic,
+			targetable: selectable,
+		});
 
 		// Lists
 		if (this.owner) this.owner.sprites.push(this);
@@ -188,7 +187,9 @@ class Sprite {
 	_death({ removeImmediately = false } = {}): void {
 		if (removeImmediately) this._health = 0;
 
-		if (Selected.has(this)) Selected.clear(this);
+		this.clear(Selected);
+		this.clear(Hover);
+
 		if (this.owner) {
 			const index = this.owner.sprites.indexOf(this);
 			if (index >= 0) this.owner.sprites.splice(index, 1);
@@ -205,9 +206,9 @@ class Sprite {
 		else this.round.setTimeout(() => this.remove(), 0.125);
 	}
 
-	remove(): void {
+	remove(initializedFromApp = false): void {
 		this.dispatchEvent("remove");
-		currentGame().remove(this);
+		if (!initializedFromApp) currentGame().remove(this);
 		this.removeEventListeners();
 		this.round.pathingMap.removeEntity(this);
 	}
@@ -218,10 +219,10 @@ class Sprite {
 
 	get idle(): boolean {
 		return (
-			!MoveTargetManager.has(this) &&
-			!AttackTargetManager.has(this) &&
-			!HoldPositionManager.has(this) &&
-			!GerminateComponentManager.has(this) &&
+			!MoveTarget.has(this) &&
+			!AttackTarget.has(this) &&
+			!HoldPositionComponent.has(this) &&
+			!GerminateComponent.has(this) &&
 			this.isAlive
 		);
 	}

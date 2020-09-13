@@ -3,11 +3,7 @@ import { Obstruction, ObstructionProps } from "./Obstruction";
 import { Unit } from "../Unit";
 import { clone } from "../../../util/clone";
 import { Projectile } from "../projectiles/Projectile";
-import {
-	DamageComponentManager,
-	DamageComponent,
-	Weapon,
-} from "../../../components/DamageComponent";
+import { DamageComponent, Weapon } from "../../../components/DamageComponent";
 
 const slowTimeout = (target: Sprite) =>
 	target.round.setTimeout(() => {
@@ -65,7 +61,7 @@ export class Slow extends Obstruction {
 			},
 			projectile: (target: Sprite, attacker: Sprite): void => {
 				if (!Slow.isSlow(attacker)) return;
-				const damageComponent = DamageComponentManager.get(attacker);
+				const damageComponent = attacker.get(DamageComponent)[0];
 				if (!damageComponent) return;
 
 				new Projectile({
@@ -87,9 +83,6 @@ export class Slow extends Obstruction {
 	}: SlowProps) {
 		super({ ...Slow.clonedDefaults, ...props, weapon, autoAttack });
 
-		DamageComponentManager.set(
-			this,
-			new DamageComponent(this, [weapon], autoAttack),
-		);
+		new DamageComponent(this, [weapon], autoAttack);
 	}
 }

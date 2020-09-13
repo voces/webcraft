@@ -25,7 +25,7 @@ export class ObstructionPlacement extends Mechanism {
 	private requestedAnimationFrame: number | undefined;
 	private placements: Grid[][] = [];
 	private lastRadius?: number;
-	private placementEntity: Entity = { id: "ENTITY_PLACEMENT" };
+	private placementEntity: Entity = new Entity("ENTITY_PLACEMENT");
 	private blueprint?: Blueprint;
 
 	constructor(game: Game) {
@@ -49,7 +49,7 @@ export class ObstructionPlacement extends Mechanism {
 	}
 
 	private placement(): Grid | undefined {
-		return SceneObjectComponent.get(this.placementEntity)?.object as
+		return this.placementEntity.get(SceneObjectComponent)[0]?.object as
 			| Grid
 			| undefined;
 	}

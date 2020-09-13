@@ -6,10 +6,7 @@ import { MoveTarget } from "../components/MoveTarget";
 import { AttackTarget } from "../components/AttackTarget";
 import { HoldPositionComponent } from "../components/HoldPositionComponent";
 import { isInAttackRange } from "../entities/sprites/UnitApi";
-import {
-	DamageComponentManager,
-	DamageComponent,
-} from "../components/DamageComponent";
+import { DamageComponent } from "../components/DamageComponent";
 
 export class AutoAttackSystem extends System<Unit> {
 	static components = [
@@ -21,7 +18,7 @@ export class AutoAttackSystem extends System<Unit> {
 	];
 
 	test(entity: Sprite): entity is Unit {
-		const damageComponent = DamageComponentManager.get(entity);
+		const damageComponent = entity.get(DamageComponent)[0];
 		return (
 			!!damageComponent &&
 			damageComponent.autoAttack &&
@@ -37,7 +34,7 @@ export class AutoAttackSystem extends System<Unit> {
 			position: { x, y },
 		} = entity;
 
-		const damageComponent = DamageComponentManager.get(entity);
+		const damageComponent = entity.get(DamageComponent)[0];
 
 		if (!damageComponent) return this.remove(entity);
 		const weapon = damageComponent.weapons[0];
