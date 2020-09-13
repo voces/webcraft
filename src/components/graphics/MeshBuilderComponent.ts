@@ -1,5 +1,4 @@
 import { Component } from "../../core/Component";
-import { Entity } from "../../core/Entity";
 import { Color } from "three";
 import { Mutable } from "../../types";
 
