@@ -41,20 +41,21 @@ export abstract class Component<
 	}
 
 	static clear(entity: Entity): boolean {
-		const cleared = this.map.delete(entity);
+		const component = this.map.get(entity);
+		if (!component) return false;
 
-		if (cleared) {
-			const app = currentApp();
-			if (app)
-				app.entityComponentUpdated(
-					entity,
-					(this as unknown) as DeprecatedComponentConstructor<
-						Component
-					>,
-				);
-		}
+		this.map.delete(entity);
 
-		return cleared;
+		const app = currentApp();
+		if (app)
+			app.entityComponentUpdated(
+				entity,
+				(this as unknown) as DeprecatedComponentConstructor<Component>,
+			);
+
+		component.dispose();
+
+		return true;
 	}
 
 	constructor(entity: Entity, ...rest: InitializationParameters) {

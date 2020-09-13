@@ -19,6 +19,8 @@ type Command = {
 
 marked.setOptions({ breaks: true });
 
+const uiElem = document.getElementById("ui")!;
+
 const scratch = document.createElement("span");
 const sanitize = (text: string): string => {
 	scratch.textContent = text;
@@ -67,8 +69,15 @@ class Chat {
 const chat = new Chat();
 
 export const initChatListeners = (game: Game, ui: UI): void => {
-	ui.addEventListener("keyDown", ({ key }) => {
-		if (!chat.active && key === "Enter") chat.activate();
+	ui.addEventListener("keyDown", ({ key, target }) => {
+		if (
+			!chat.active &&
+			key === "Enter" &&
+			(!target ||
+				!(target instanceof HTMLElement) ||
+				!uiElem.contains(target))
+		)
+			chat.activate();
 	});
 
 	game.addNetworkListener(

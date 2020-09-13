@@ -1,14 +1,11 @@
 import "./hotkeys";
-import { window } from "../util/globals";
+import { window, document } from "../util/globals";
 import { Game } from "../Game";
 import { emitter, Emitter } from "../emitter";
 import { initCameraListeners } from "../players/camera";
 import { initListeners } from "./listeners";
 import { initChatListeners } from "./chat";
 import { initSplashListeners } from "./waitingSplash";
-import { initEssenceListeners } from "./essence";
-import { initClockListeners } from "./clock";
-import { initLogin } from "./login";
 import { currentGame, wrapGame } from "../gameContext";
 
 enum MouseButton {
@@ -32,7 +29,12 @@ export type MouseDownEvent = MouseMoveEvent & {
 };
 
 export type UIEvents = {
-	keyDown: (data: { key: string; ctrlDown: boolean; game: Game }) => void;
+	keyDown: (data: {
+		key: string;
+		ctrlDown: boolean;
+		game: Game;
+		target: EventTarget | null;
+	}) => void;
 	keyUp: (data: { key: string; ctrlDown: boolean; game: Game }) => void;
 	mouseMove: (data: MouseMoveEvent) => void;
 	mouseOut: (data: { relatedTarget: EventTarget | null }) => void;
@@ -55,6 +57,7 @@ class UI {
 					ctrlDown: e.ctrlKey,
 					game,
 					key: e.key,
+					target: e.target,
 				});
 			}),
 		);
@@ -117,9 +120,18 @@ class UI {
 		initListeners(this);
 		initChatListeners(game, this);
 		initSplashListeners(game);
-		initEssenceListeners(game);
-		initClockListeners(game);
-		initLogin(game);
+
+		const loadApp = async () => {
+			const { initialize } = await import("./preact/App");
+			initialize(game);
+		};
+
+		if (
+			document.readyState === "complete" ||
+			document.readyState === "interactive"
+		)
+			loadApp();
+		else window.addEventListener("DOMContentLoaded", loadApp);
 	}
 }
 

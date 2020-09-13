@@ -12,9 +12,9 @@ export class TileSystem extends System<Crosser> {
 
 	update(crosser: Crosser): void {
 		if (
-			crosser.round.arena.tiles[Math.floor(crosser.position.y)][
-				Math.floor(crosser.position.x)
-			] === TILE_TYPES.END
+			crosser.round.arena.tiles[
+				crosser.round.arena.tiles.length - Math.ceil(crosser.position.y)
+			][Math.floor(crosser.position.x)] === TILE_TYPES.END
 		) {
 			crosser.ascend();
 			crosser.round.scores++;

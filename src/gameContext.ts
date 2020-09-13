@@ -8,11 +8,17 @@ const context = new Context<Game | undefined>(undefined);
 export const withGame = <T>(game: Game, fn: (game: Game) => T): T =>
 	withApp(game, () => context.with(game, fn));
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- It is used
+const wrappedFunctions = new WeakMap();
 export const wrapGame = <Args extends unknown[], Return extends unknown>(
 	game: Game,
 	fn: (...args: Args) => Return,
-): ((...args: Args) => Return) => wrapApp(game, context.wrap(game, fn));
+): ((...args: Args) => Return) => {
+	if (wrappedFunctions.has(fn)) return wrappedFunctions.get(fn);
+
+	const wrappedFunction = wrapApp(game, context.wrap(game, fn));
+	wrappedFunctions.set(fn, wrappedFunction);
+	return wrappedFunction;
+};
 
 export const currentGame = (): Game => {
 	const game = context.current;

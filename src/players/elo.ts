@@ -59,8 +59,8 @@ export const elo = ({
 	updateDisplay(game);
 };
 
-const container = document.getElementById("scores")!;
 export const updateDisplay = (game: Game): void => {
+	const container = document.getElementById("scores")!;
 	emptyElement(container);
 
 	game.players.forEach((player) => {

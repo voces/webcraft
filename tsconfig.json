@@ -1,22 +1,23 @@
 {
 	"compilerOptions": {
 		"allowJs": true,
-		"target": "ES2020",
+		"alwaysStrict": true,
+		"esModuleInterop": true,
+		"incremental": true,
+		"jsx": "react",
+		"jsxFactory": "h",
+		"jsxFragmentFactory": "Fragment",
 		"lib": [ "es2019", "es2020", "DOM" ],
-		"moduleResolution": "node",
-		"strict": true,
 		"module": "ESNext",
+		"moduleResolution": "node",
+		"noEmit": true,
 		"noImplicitAny": true,
 		"noImplicitThis": true,
-		"alwaysStrict": true,
-		"strictNullChecks": true,
-		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"types": [
-			"@types/jest",
-			"@types/node"
-		],
-		"noEmit": true
+		"strict": true,
+		"strictNullChecks": true,
+		"target": "ES2020",
+		"types": [ "@types/jest", "@types/node" ]
 	},
 	"include": ["src", "test"]
 }

@@ -52,6 +52,12 @@ canvas {
     padding: 0;
 }
 
+#bottom-left {
+    position: absolute;
+    bottom: 1em;
+    left: 1em;
+}
+
 #scores span { padding: 0.25em; }
 #scores .score { text-align: right; }
 
@@ -129,29 +135,25 @@ button:hover {
     color: silver;
 }
 
-#login {
+form {
     background-color: var(--bluebg);
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
     text-align: center;
+    padding: 1em;
 }
 
-#login input, #login button {
+form input, form button {
     background: none;
     box-shadow: none;
     text-align: center;
     display: block;
 }
 
-#login-register {
+form button {
     margin: auto;
-}
-
-#login #login-password, #login #login-verify-password {
-    display: none;
-    text-align: center;
 }
 
 .margin8 { margin: 8px; }
@@ -167,12 +169,9 @@ button:hover {
 .h-spacing-8 > :first-child { margin-left: 0; }
 .h-spacing-8 > :last-child { margin-right: 0; }
 
-#ping {
+.diagnostic {
     font-size: 80%;
     color: yellow;
-    bottom: 0.25em;
-    left: 0.25em;
-    position: absolute;
 }
 
 #waiting-splash {

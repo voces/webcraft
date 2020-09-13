@@ -1,5 +1,4 @@
 import { emitter, Emitter } from "./emitter";
-import { newPingMessage } from "./ui/ping";
 import { location } from "./util/globals";
 import { obstructionMap } from "./entities/sprites/obstructions/index";
 import { Game } from "./Game";
@@ -95,6 +94,12 @@ type ConnectionEvent = PlayerEvent & {
 	username: string;
 };
 
+type PingEvent = {
+	type: "ping";
+	eventType: Exclude<keyof typeof networkEvents, "ping">;
+	ping: number;
+};
+
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
 const networkEvents = {
 	init: (data: InitEvent) => {},
@@ -110,6 +115,7 @@ const networkEvents = {
 	chat: (data: ChatEvent) => {},
 	disconnection: (data: DisconnectionEvent) => {},
 	connection: (data: ConnectionEvent) => {},
+	ping: (data: PingEvent) => {},
 } as const;
 /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
 
@@ -165,8 +171,9 @@ class Network {
 				this.localPlayerId === event.connection &&
 				typeof event.sent === "number"
 			)
-				newPingMessage({
-					type: event.type,
+				this.dispatchEvent("ping", {
+					type: "ping",
+					eventType: event.type,
 					ping: performance.now() - event.sent,
 				});
 
@@ -191,7 +198,7 @@ interface Network extends Emitter<NetworkEventCallback> {}
 
 export { Network };
 
-const wrappedFetch = <T>(
+const wrappedFetch = async <T>(
 	url: string,
 	body: T,
 	options: {
@@ -199,8 +206,12 @@ const wrappedFetch = <T>(
 		body?: string;
 		method?: "POST";
 	} = {},
+): Promise<{
+	status: number;
+	ok: boolean;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> => {
+	body: any;
+}> => {
 	if (!url.match(/^\w+:\/\//))
 		url = `//${activeHost}/${url.replace(/^\//, "")}`;
 
@@ -212,7 +223,13 @@ const wrappedFetch = <T>(
 
 	if (options.body && options.method === undefined) options.method = "POST";
 
-	return fetch(url, options).then((r) => r.json());
+	const result = await fetch(url, options);
+
+	return {
+		status: result.status,
+		ok: result.ok,
+		body: await result.json(),
+	};
 };
 
 export { wrappedFetch as fetch };

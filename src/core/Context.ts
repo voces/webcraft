@@ -1,5 +1,11 @@
-export class Context<T> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/ban-types
+type InnerMap = WeakMap<object, any>;
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export class Context<T extends object | undefined> {
 	private _current: T;
+	// eslint-disable-next-line @typescript-eslint/ban-types
+	private memory = new WeakMap<object, InnerMap>();
 
 	constructor(context: T) {
 		this._current = context;
@@ -29,6 +35,19 @@ export class Context<T> {
 		context: Passed,
 		fn: (...args: Args) => Return,
 	): (...args: Args) => Return {
-		return (...args: Args) => this.with(context, () => fn(...args));
+		if (!context) throw new Error("Expected context");
+
+		let innerMemory: InnerMap;
+		if (!this.memory.has(context!)) {
+			innerMemory = new WeakMap();
+			this.memory.set(context!, innerMemory);
+		} else innerMemory = this.memory.get(context!)!;
+
+		if (innerMemory.has(fn)) return innerMemory.get(fn);
+
+		const wrapped = (...args: Args) =>
+			this.with(context, () => fn(...args));
+		innerMemory.set(fn, wrapped);
+		return wrapped;
 	}
 }

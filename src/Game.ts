@@ -32,6 +32,7 @@ import { withGame, wrapGame } from "./gameContext";
 class Game extends App {
 	private network!: Network;
 	addNetworkListener!: Network["addEventListener"];
+	removeNetworkListener!: Network["removeEventListener"];
 	connect!: Network["connect"];
 
 	ui!: UI;
@@ -87,6 +88,12 @@ class Game extends App {
 				this.network.addEventListener(
 					event,
 					// IDK why this is busted...
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					wrapGame(this, callback as any) as any,
+				);
+			this.removeNetworkListener = (event, callback) =>
+				this.network.removeEventListener(
+					event,
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					wrapGame(this, callback as any) as any,
 				);
