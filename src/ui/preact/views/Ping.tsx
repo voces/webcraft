@@ -21,7 +21,7 @@ export const Ping = (): JSX.Element => {
 		}, []),
 	);
 
-	const mode = pings.sort((a, b) => a.ping - b.ping)[
+	const median = [...pings].sort((a, b) => a.ping - b.ping)[
 		Math.min(2, pings.length - 1)
 	];
 
@@ -31,9 +31,9 @@ export const Ping = (): JSX.Element => {
 		.join("\n");
 
 	return (
-		mode && (
+		median && (
 			<span title={title} className="diagnostic">
-				{mode.ping.toFixed(1)}ms
+				{median.ping.toFixed(1)}ms
 			</span>
 		)
 	);

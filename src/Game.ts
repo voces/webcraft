@@ -272,7 +272,7 @@ class Game extends App {
 	}
 }
 
-type GameEvents = {
+export type GameEvents = {
 	update: (time: number) => void;
 	selection: (selection: Entity[]) => void;
 };

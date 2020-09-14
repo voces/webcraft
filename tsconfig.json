@@ -17,7 +17,7 @@
 		"strict": true,
 		"strictNullChecks": true,
 		"target": "ES2020",
-		"types": [ "@types/jest", "@types/node" ]
+		"types": [ "@types/jest", "@types/node", "enzyme-adapter-preact-pure" ]
 	},
 	"include": ["src", "test"]
 }
