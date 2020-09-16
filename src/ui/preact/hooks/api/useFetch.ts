@@ -1,5 +1,5 @@
 import { useCallback, useState } from "preact/hooks";
-import { fetch as rawFetch } from "../../../../network";
+import { fetch, Options } from "../../../util/fetch";
 
 type Initial = {
 	status: "initial";
@@ -92,11 +92,7 @@ export type FetchState<Result, Error> =
 type UseFetchProps<T> = {
 	url: string;
 	body?: T;
-	options?: {
-		headers?: Record<string, string>;
-		body?: string;
-		method?: "POST";
-	};
+	options?: Options;
 };
 
 export const useFetch = <Body, Result, Error>({
@@ -113,37 +109,42 @@ export const useFetch = <Body, Result, Error>({
 	);
 
 	const performFetch = useCallback(
-		({
+		async ({
 			url: finalUrl = url,
 			body: finalBody = body,
 			options: finalOptions = options,
 		}) => {
 			setFetchState(pending);
-			return rawFetch(finalUrl, finalBody, finalOptions)
-				.then(
-					(
-						result:
-							| { ok: true; body: Result }
-							| { ok: false; body: Error },
-					) => {
-						if (!result.ok) {
-							const newFetchState = errored(result.body);
-							setFetchState(newFetchState);
-							return newFetchState;
-						}
-						const newFetchState = completed(result.body);
-						setFetchState(newFetchState);
-						return newFetchState;
-					},
-				)
-				.catch((error) => {
-					const newFetchState = errored({
-						code: -1 as const,
-						message: String(error.message),
-					});
+
+			try {
+				// Makes tests cleaner to test for
+				const args: [string, Body | undefined, Options | undefined] = [
+					finalUrl,
+					finalBody,
+					finalOptions,
+				];
+				for (let i = args.length - 1; i >= 0 && !args[i]; i--)
+					args.length--;
+
+				const result = await fetch(...args);
+
+				if (!result.ok) {
+					const newFetchState = errored(result.body);
 					setFetchState(newFetchState);
 					return newFetchState;
+				}
+
+				const newFetchState = completed(result.body);
+				setFetchState(newFetchState);
+				return newFetchState;
+			} catch (error) {
+				const newFetchState = errored({
+					code: -1 as const,
+					message: String(error.message),
 				});
+				setFetchState(newFetchState);
+				return newFetchState;
+			}
 		},
 		[url, body, options],
 	);

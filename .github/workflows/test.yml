@@ -2,7 +2,7 @@ name: test
 on:
   push:
     paths:
-      - '**.ts'
+      - '**.tsx?'
       - 'package.json'
   workflow_dispatch:
 jobs:

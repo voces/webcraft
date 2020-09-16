@@ -40,5 +40,6 @@ export abstract class Circle extends Component<[InternalProps]> {
 
 	dispose(): void {
 		currentGame().remove(this.circle);
+		super.dispose();
 	}
 }
