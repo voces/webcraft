@@ -5,10 +5,10 @@ import {
 	LordaeronSummerGrass,
 	LordaeronSummerDirtCliff,
 } from "notextures";
-import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
-import { Arena } from "../arenas/types";
+import { SceneObjectComponent } from "../engine/components/graphics/SceneObjectComponent";
+import { Arena } from "../katma/arenas/types";
 import { Group, Vector3 } from "three";
-import { orientation } from "../pathing/math";
+import { orientation } from "../engine/pathing/math";
 import { Entity } from "../core/Entity";
 
 /**

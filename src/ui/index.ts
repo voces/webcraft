@@ -1,12 +1,12 @@
 import "./hotkeys";
-import { window, document } from "../util/globals";
-import { Game } from "../Game";
-import { emitter, Emitter } from "../emitter";
-import { initCameraListeners } from "../players/camera";
+import { window, document } from "../core/util/globals";
+import { Game } from "../engine/Game";
+import { emitter, Emitter } from "../core/emitter";
+import { initCameraListeners } from "../engine/players/camera";
 import { initListeners } from "./listeners";
 import { initChatListeners } from "./chat";
 import { initSplashListeners } from "./waitingSplash";
-import { currentGame, wrapGame } from "../gameContext";
+import { currentGame, wrapGame } from "../engine/gameContext";
 
 enum MouseButton {
 	LEFT = 0,

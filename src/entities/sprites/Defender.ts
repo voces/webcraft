@@ -1,7 +1,7 @@
-import { MIRROR_SEPARATION } from "../../constants";
+import { MIRROR_SEPARATION } from "../../engine/constants";
 import { Unit, UnitProps } from "./Unit";
 import { Sprite } from "./Sprite";
-import { Point } from "../../pathing/PathingMap";
+import { Point } from "../../engine/pathing/PathingMap";
 import { Action } from "./spriteLogic";
 
 const mirror: Action = {

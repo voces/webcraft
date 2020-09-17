@@ -1,10 +1,10 @@
 import marked from "marked";
-import { document } from "../util/globals";
+import { document } from "../core/util/globals";
 // import { toggleDebugging } from "../pathing/PathingMap";
-import { emptyElement } from "../util/html";
-import { Game } from "../Game";
+import { emptyElement } from "../engine/util/html";
+import { Game } from "../engine/Game";
 import { UI } from "./index";
-import { wrapGame } from "../gameContext";
+import { wrapGame } from "../engine/gameContext";
 
 type Command = {
 	name: string;

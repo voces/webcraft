@@ -1,24 +1,24 @@
-import { PATHING_TYPES } from "../../constants";
-import { emitter, Emitter } from "../../emitter";
-import { Player } from "../../players/Player";
-import { Round } from "../../Round";
-import { clone } from "../../util/clone";
+import { PATHING_TYPES } from "../../engine/constants";
+import { emitter, Emitter } from "../../core/emitter";
+import { Player } from "../../engine/players/Player";
+import { Round } from "../../katma/Round";
+import { clone } from "../../engine/util/clone";
 import { Action } from "./spriteLogic";
-import { Game } from "../../Game";
+import { Game } from "../../engine/Game";
 import {
 	MeshBuilderComponent,
 	Props as MeshBuilderComponentProps,
-} from "../../components/graphics/MeshBuilderComponent";
-import { DeprecatedPosition } from "../../components/DeprecatedPosition";
-import { MoveTarget } from "../../components/MoveTarget";
-import { AttackTarget } from "../../components/AttackTarget";
-import { HoldPositionComponent } from "../../components/HoldPositionComponent";
-import { GerminateComponent } from "../../components/GerminateComponent";
-import { Selected } from "../../components/Selected";
+} from "../../engine/components/graphics/MeshBuilderComponent";
+import { DeprecatedPosition } from "../../engine/components/DeprecatedPosition";
+import { MoveTarget } from "../../engine/components/MoveTarget";
+import { AttackTarget } from "../../engine/components/AttackTarget";
+import { HoldPositionComponent } from "../../engine/components/HoldPositionComponent";
+import { GerminateComponent } from "../../engine/components/GerminateComponent";
+import { Selected } from "../../engine/components/Selected";
 import { App } from "../../core/App";
-import { currentGame } from "../../gameContext";
+import { currentGame } from "../../engine/gameContext";
 import { Entity } from "../../core/Entity";
-import { Hover } from "../../components/Hover";
+import { Hover } from "../../engine/components/Hover";
 
 export type SpriteElement = HTMLDivElement & { sprite: Sprite };
 

@@ -1,7 +1,9 @@
 import { ComponentConstructor } from "./Component";
 import { Unit } from "../entities/sprites/Unit";
 import { Entity } from "./Entity";
-import { isSprite } from "../typeguards";
+// https://github.com/voces/mvp-bd-client/issues/43
+// eslint-disable-next-line no-restricted-imports
+import { isSprite } from "../engine/typeguards";
 
 abstract class System<T extends Entity = Entity> {
 	private set: Set<T> = new Set();

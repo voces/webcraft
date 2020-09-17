@@ -12,10 +12,10 @@ import {
 	Tiny,
 } from "./obstructions/index";
 import { Action } from "./spriteLogic";
-import { MeshBuilderComponent } from "../../components/graphics/MeshBuilderComponent";
-import { Animation } from "../../components/graphics/Animation";
-import { Selected } from "../../components/Selected";
-import { Hover } from "../../components/Hover";
+import { MeshBuilderComponent } from "../../engine/components/graphics/MeshBuilderComponent";
+import { Animation } from "../../engine/components/graphics/Animation";
+import { Selected } from "../../engine/components/Selected";
+import { Hover } from "../../engine/components/Hover";
 
 const destroyLastBox: Action = {
 	name: "Destroy box",

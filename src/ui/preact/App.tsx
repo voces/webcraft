@@ -1,7 +1,7 @@
 import { h, render } from "preact";
 import { Login } from "./views/Login";
-import { document } from "../../util/globals";
-import { Game } from "../../Game";
+import { document } from "../../core/util/globals";
+import { Game } from "../../engine/Game";
 import { Game as GameContext } from "./contexts/Game";
 import { Clock } from "./views/Clock";
 import { Essense } from "./views/Essence";

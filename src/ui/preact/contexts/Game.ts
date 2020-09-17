@@ -1,8 +1,8 @@
 import { createContext } from "preact";
 import { App } from "../../../core/App";
-import { Emitter } from "../../../emitter";
-import { Game as WCGame, GameEvents } from "../../../Game";
-import { Round } from "../../../Round";
+import { Emitter } from "../../../core/emitter";
+import { Game as WCGame, GameEvents } from "../../../engine/Game";
+import { Round } from "../../../katma/Round";
 
 type GameType = Emitter<GameEvents> &
 	App & {

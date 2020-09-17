@@ -3,11 +3,11 @@ import { Crosser } from "./Crosser";
 import { Obstruction } from "./obstructions/Obstruction";
 import { Defender } from "./Defender";
 import { obstructionMap } from "./obstructions/index";
-import { Game } from "../../Game";
-import { Player } from "../../players/Player";
-import { MouseEvents } from "../../systems/Mouse";
-import { isSprite } from "../../typeguards";
-import { currentGame } from "../../gameContext";
+import { Game } from "../../engine/Game";
+import { Player } from "../../engine/players/Player";
+import { MouseEvents } from "../../engine/systems/Mouse";
+import { isSprite } from "../../engine/typeguards";
+import { currentGame } from "../../engine/gameContext";
 
 export type Action = {
 	description?: string;

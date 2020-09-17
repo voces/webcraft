@@ -1,8 +1,8 @@
 import { TorusBufferGeometry, MeshBasicMaterial, Mesh } from "three";
-import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
-import { Position } from "../components/Position";
+import { SceneObjectComponent } from "../engine/components/graphics/SceneObjectComponent";
+import { Position } from "../engine/components/Position";
 import { Entity } from "../core/Entity";
-import { currentGame } from "../gameContext";
+import { currentGame } from "../engine/gameContext";
 
 export class SelectionCircle extends Entity {
 	id = "SELECTION_CIRCLE";

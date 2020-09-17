@@ -1,13 +1,13 @@
 import {
 	INITIAL_OBSTRUCTION_PROGRESS,
 	PATHING_TYPES,
-} from "../../../constants";
+} from "../../../engine/constants";
 import { toFootprint } from "./toFootprint";
-import { ResourceMap } from "../../../types";
-import { Player } from "../../../players/Player";
+import { ResourceMap } from "../../../engine/types";
+import { Player } from "../../../engine/players/Player";
 import { Unit, UnitProps } from "../Unit";
 import { Action } from "../spriteLogic";
-import { GerminateComponent } from "../../../components/GerminateComponent";
+import { GerminateComponent } from "../../../engine/components/GerminateComponent";
 import { Entity } from "../../../core/Entity";
 
 const destroySelf: Action = {

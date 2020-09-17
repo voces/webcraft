@@ -2,7 +2,7 @@ import { h } from "preact";
 import { mount } from "enzyme";
 
 import { fakeGame } from "../tests/fake/FakeGame";
-import { Network } from "../../../network";
+import { Network } from "../../../engine/Network";
 import { Game as GameC } from "../contexts/Game";
 
 import { Ping } from "./Ping";

@@ -1,9 +1,12 @@
 import { Sprite, Effect } from "../Sprite";
 import { Obstruction, ObstructionProps } from "./Obstruction";
 import { Unit } from "../Unit";
-import { clone } from "../../../util/clone";
+import { clone } from "../../../engine/util/clone";
 import { Projectile } from "../projectiles/Projectile";
-import { DamageComponent, Weapon } from "../../../components/DamageComponent";
+import {
+	DamageComponent,
+	Weapon,
+} from "../../../engine/components/DamageComponent";
 
 const slowTimeout = (target: Sprite) =>
 	target.round.setTimeout(() => {

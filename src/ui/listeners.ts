@@ -1,4 +1,4 @@
-import { document, localStorage } from "../util/globals";
+import { document, localStorage } from "../core/util/globals";
 import { registerCommand } from "./chat";
 import { UI } from "./index";
 

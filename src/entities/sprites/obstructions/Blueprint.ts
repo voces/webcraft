@@ -1,6 +1,6 @@
 import { Sprite } from "../Sprite";
 import { Obstruction } from "./Obstruction";
-import { Game } from "../../../Game";
+import { Game } from "../../../engine/Game";
 
 // TODO: this should have to extend Sprite (health/owner are silly)
 export class Blueprint extends Sprite {

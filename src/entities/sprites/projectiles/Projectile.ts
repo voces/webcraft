@@ -1,8 +1,8 @@
 import { Sprite, SpriteProps } from "../Sprite";
-import { Point } from "../../../pathing/PathingMap";
-import { Player } from "../../../players/Player";
+import { Point } from "../../../engine/pathing/PathingMap";
+import { Player } from "../../../engine/players/Player";
 import { Unit } from "../Unit";
-import { MoveTarget } from "../../../components/MoveTarget";
+import { MoveTarget } from "../../../engine/components/MoveTarget";
 
 type ProjectileProps = Omit<SpriteProps, "x" | "y" | "game"> & {
 	producer: Unit;

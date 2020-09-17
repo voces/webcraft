@@ -1,6 +1,6 @@
 import { System } from "./System";
 import { Mechanism } from "./Merchanism";
-import { requestAnimationFrame } from "../util/globals";
+import { requestAnimationFrame } from "./util/globals";
 import { ComponentConstructor, Component } from "./Component";
 import { Entity } from "./Entity";
 import { withApp } from "./appContext";
