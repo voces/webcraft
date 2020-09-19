@@ -46,10 +46,6 @@ export class Position extends Component<
 		(this.flyHeight as number) = flyHeight;
 	}
 
-	dispose(): void {
-		super.dispose();
-	}
-
 	setXY(x: number, y: number): Position {
 		return Position.setXY(this.entity, x, y);
 	}
@@ -64,7 +60,7 @@ const hasPositionProp = (entity: any): entity is { position: Point } =>
 	typeof entity.position.x === "number" &&
 	typeof entity.position.y === "number";
 
-export const getEntityXY = (entity: Entity | Point): Point => {
+export const getXY = (entity: Entity | Point): Point => {
 	if (isEntity(entity)) {
 		const position = entity.get(Position)[0];
 		if (position) return { x: position.x, y: position.y };
@@ -83,12 +79,12 @@ export const getEntityXY = (entity: Entity | Point): Point => {
 	throw new Error("Could not get XY from object");
 };
 
-export const getEntityX = (entity: Entity): number => {
-	const xy = getEntityXY(entity);
+export const getX = (entity: Entity): number => {
+	const xy = getXY(entity);
 	return xy.x;
 };
 
-export const getEntityY = (entity: Entity): number => {
-	const xy = getEntityXY(entity);
+export const getY = (entity: Entity): number => {
+	const xy = getXY(entity);
 	return xy.y;
 };

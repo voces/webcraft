@@ -1,7 +1,7 @@
 import { System } from "../../core/System";
 import { Selected } from "../components/Selected";
 import { Entity } from "../../core/Entity";
-import { Position, getEntityXY } from "../components/Position";
+import { Position, getXY } from "../components/Position";
 import { MoveTarget } from "../components/MoveTarget";
 import { Hover } from "../components/Hover";
 
@@ -16,7 +16,7 @@ export class SelectedMovingCircles extends System {
 		const circle = entity.get(Selected)[0]?.circle;
 		if (!circle) return;
 
-		const xy = getEntityXY(entity);
+		const xy = getXY(entity);
 
 		Position.clear(circle);
 		new Position(circle, xy ? xy.x : 0, xy ? xy.y : 0);
@@ -34,7 +34,7 @@ export class HoverMovingCircles extends System {
 		const circle = entity.get(Hover)[0]?.circle;
 		if (!circle) return;
 
-		const xy = getEntityXY(entity);
+		const xy = getXY(entity);
 
 		Position.clear(circle);
 		new Position(circle, xy ? xy.x : 0, xy ? xy.y : 0);

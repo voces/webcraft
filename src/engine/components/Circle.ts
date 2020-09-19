@@ -1,6 +1,6 @@
 import { Component } from "../../core/Component";
 import { SelectionCircle } from "../../entities/SelectionCircle";
-import { getEntityXY } from "./Position";
+import { getXY } from "./Position";
 import { Entity } from "../../core/Entity";
 import { currentGame } from "../gameContext";
 
@@ -19,7 +19,7 @@ export abstract class Circle extends Component<[InternalProps]> {
 	circle!: SelectionCircle;
 
 	constructor(entity: Entity, props: Partial<Props> = {}) {
-		const xy = getEntityXY(entity);
+		const xy = getXY(entity);
 		super(entity, {
 			radius:
 				props.radius ?? (hasRadius(entity) ? entity.radius * 1.25 : 1),
