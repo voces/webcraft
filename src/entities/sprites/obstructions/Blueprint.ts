@@ -19,7 +19,7 @@ export class Blueprint extends Sprite {
 		super({
 			...clonedDefaults,
 			selectable: false,
-			id: -1,
+			id: Math.random() * -1,
 			color: "rgba( 70, 145, 246 )",
 			graphic: {
 				...clonedDefaults.graphic,

@@ -8,6 +8,7 @@ import {
 	calcAndTweenShortenedPath,
 } from "../util/tweenPoints";
 import { Component } from "../../core/Component";
+import { getEntityXY } from "./Position";
 
 export class MoveTarget extends Component<[], Sprite> {
 	// The entity with the MoveTarget component.
@@ -52,10 +53,8 @@ export class MoveTarget extends Component<[], Sprite> {
 		else if (
 			distance > 0 &&
 			Math.abs(
-				distanceBetweenPoints(
-					path.target,
-					"x" in target && "y" in target ? target : target.position,
-				) - distance,
+				distanceBetweenPoints(path.target, getEntityXY(target)) -
+					distance,
 			) < 1e-7
 		)
 			path = tweenPoints(shortenPath(path.points, distance));

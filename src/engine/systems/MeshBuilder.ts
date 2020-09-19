@@ -8,7 +8,7 @@ import {
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
 import { System } from "../../core/System";
 import { Sprite } from "../../entities/sprites/Sprite";
-import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
+import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { EntityMesh } from "../types";
 
 const getColor = (entity: Sprite, graphic: MeshBuilderComponent) => {
@@ -46,21 +46,11 @@ const createBox = (entity: Sprite, graphic: MeshBuilderComponent): Mesh => {
 	return new Mesh(geometry, getMat(entity, graphic));
 };
 
-type EntityData = {
-	onChangePositionListener: () => void;
-	onHealthChangeListener: (prop: string) => void;
-	updatePosition: boolean;
-	updateHealth: boolean;
-};
-
 export class MeshBuilder extends System {
 	static components = [MeshBuilderComponent];
 
 	static isMeshBuilder = (system: System): system is MeshBuilder =>
 		system instanceof MeshBuilder;
-
-	protected dirty = new Set<Sprite>();
-	private entityData: Map<Sprite, EntityData> = new Map();
 
 	test(entity: Sprite): entity is Sprite {
 		return MeshBuilderComponent.has(entity);
@@ -82,43 +72,11 @@ export class MeshBuilder extends System {
 		mesh.position.z = entity.radius;
 		mesh.entity = entity;
 
-		// Add listeners
-		const data = {
-			onChangePositionListener: () => {
-				this.dirty.add(entity);
-				data.updatePosition = true;
-			},
-			onHealthChangeListener: (prop: string) => {
-				if (prop !== "health") return;
-				this.dirty.add(entity);
-				data.updateHealth = true;
-			},
-			updatePosition: true,
-			updateHealth: true,
-		};
-		entity.position.addEventListener(
-			"change",
-			data.onChangePositionListener,
-		);
-		entity.addEventListener("change", data.onHealthChangeListener);
-		this.entityData.set(entity, data);
-
 		// Attach the mesh to the entity
-		new SceneObjectComponent(entity, mesh);
+		new ThreeObjectComponent(entity, mesh);
 	}
 
 	onRemoveEntity(entity: Sprite): void {
-		const data = this.entityData.get(entity);
-		if (data) {
-			entity.position.removeEventListener(
-				"change",
-				data.onChangePositionListener,
-			);
-			entity.removeEventListener("change", data.onHealthChangeListener);
-		}
-
-		this.entityData.delete(entity);
-
-		SceneObjectComponent.clear(entity);
+		ThreeObjectComponent.clear(entity);
 	}
 }

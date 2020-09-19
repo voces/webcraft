@@ -1,9 +1,6 @@
 import { ComponentConstructor } from "./Component";
 import { Unit } from "../entities/sprites/Unit";
 import { Entity } from "./Entity";
-// https://github.com/voces/mvp-bd-client/issues/43
-// eslint-disable-next-line no-restricted-imports
-import { isSprite } from "../engine/typeguards";
 
 abstract class System<T extends Entity = Entity> {
 	private set: Set<T> = new Set();
@@ -20,27 +17,11 @@ abstract class System<T extends Entity = Entity> {
 		ComponentConstructor<any>
 	> = [];
 
-	static props = new Array<keyof Unit>();
-
 	abstract test(entity: Entity | T): entity is T;
 
 	private _add(entity: T): void {
 		this.set.add(entity);
 		this.dirty?.add(entity);
-
-		if (isSprite(entity)) {
-			const props = (this.constructor as typeof System).props;
-			const changeListener = props.length
-				? (prop: keyof Unit) => {
-						if (props.includes(prop)) this.check(entity);
-				  }
-				: undefined;
-			this._callbacks.set(entity, {
-				changeListener,
-			});
-			if (changeListener)
-				entity.addEventListener("change", changeListener);
-		}
 
 		this.onAddEntity?.(entity);
 	}
@@ -53,19 +34,6 @@ abstract class System<T extends Entity = Entity> {
 	private _remove(entity: Entity): void {
 		this.set.delete(entity as T);
 		this.dirty?.delete(entity as T);
-
-		if (isSprite(entity)) {
-			const callbacks = this._callbacks.get(entity);
-			if (callbacks)
-				if (callbacks.changeListener)
-					entity.removeEventListener(
-						"change",
-						callbacks.changeListener,
-					);
-
-			this._callbacks.delete(entity);
-		}
-
 		this.onRemoveEntity?.(entity);
 	}
 
@@ -79,9 +47,10 @@ abstract class System<T extends Entity = Entity> {
 	 * system. Otherwise, it is removed.
 	 */
 	check(entity: Entity): void {
-		if (this.test(entity)) {
+		if (this.test(entity))
 			if (!this.set.has(entity)) this._add(entity);
-		} else if (this.set.has(entity as T)) this._remove(entity);
+			else this.modified?.(entity);
+		else if (this.set.has(entity as T)) this._remove(entity);
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -118,6 +87,7 @@ interface System<T> {
 	render?(entity: T, delta: number, time: number): void;
 	onAddEntity?(entity: T): void;
 	onRemoveEntity?(entity: Entity): void;
+	modified?(entity: Entity): void;
 }
 
 export { System };

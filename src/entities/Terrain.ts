@@ -5,7 +5,7 @@ import {
 	LordaeronSummerGrass,
 	LordaeronSummerDirtCliff,
 } from "notextures";
-import { SceneObjectComponent } from "../engine/components/graphics/SceneObjectComponent";
+import { ThreeObjectComponent } from "../engine/components/graphics/ThreeObjectComponent";
 import { Arena } from "../katma/arenas/types";
 import { Group, Vector3 } from "three";
 import { orientation } from "../engine/pathing/math";
@@ -65,7 +65,7 @@ export class Terrain extends Entity {
 				height: arena.height,
 			},
 		});
-		new SceneObjectComponent(this, mesh);
+		new ThreeObjectComponent(this, mesh);
 		this.group = mesh;
 	}
 
@@ -81,7 +81,7 @@ export class Terrain extends Entity {
 
 		const pt = { x, y };
 		let triangle: [Vector3, Vector3, Vector3];
-		const terrain = this.get(SceneObjectComponent)[0]!
+		const terrain = this.get(ThreeObjectComponent)[0]!
 			.object as TerrainMesh;
 		const geometry = terrain.ground;
 		const faces =

@@ -9,7 +9,7 @@ export default {
 		typescript({
 			tsconfig: "tsconfig.build.json",
 			tsconfigOverride: {
-				compilerOptions: { declaration: true, incremental: true },
+				compilerOptions: { declaration: true },
 			},
 		}),
 		nodeResolve(),

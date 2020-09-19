@@ -70,6 +70,7 @@ export class App {
 		return this;
 	}
 
+	// Also update Game#remove if updating this
 	remove(...entities: Entity[]): App {
 		for (const system of this.systems) system.remove(...entities);
 

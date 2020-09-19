@@ -5,12 +5,15 @@ import { Mechanism } from "../../core/Merchanism";
 import { Mouse } from "../systems/Mouse";
 import { Grid } from "notextures";
 import { Entity } from "../../core/Entity";
-import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
+import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { MeshPhongMaterial } from "three";
 import { Blueprint } from "../../entities/sprites/obstructions/Blueprint";
+import { Position } from "../components/Position";
 
 const edgeSnap = (v: number) => Math.round(v);
 const midSnap = (v: number) => Math.floor(v) + 0.5;
+
+class PlacementEntity extends Entity {}
 
 export class ObstructionPlacement extends Mechanism {
 	static isObstructionPlacement = (
@@ -23,10 +26,13 @@ export class ObstructionPlacement extends Mechanism {
 	private pathable = false;
 	private mouse: Mouse;
 	private requestedAnimationFrame: number | undefined;
-	private placements: Grid[][] = [];
-	private lastRadius?: number;
-	private placementEntity: Entity = new Entity("ENTITY_PLACEMENT");
+	// Cached placements, so we don't create new ones each time
+	private grids: Grid[][] = [];
+	// Container entity with a Grid as its scene object
+	private gridEntity = new PlacementEntity("ENTITY_PLACEMENT");
 	private blueprint?: Blueprint;
+	private lastRadius?: number;
+	private added = false;
 
 	constructor(game: Game) {
 		super();
@@ -48,8 +54,8 @@ export class ObstructionPlacement extends Mechanism {
 		return snapFunc(v);
 	}
 
-	private placement(): Grid | undefined {
-		return this.placementEntity.get(SceneObjectComponent)[0]?.object as
+	private getGrid(): Grid | undefined {
+		return this.gridEntity.get(ThreeObjectComponent)[0]?.object as
 			| Grid
 			| undefined;
 	}
@@ -80,25 +86,21 @@ export class ObstructionPlacement extends Mechanism {
 		const yStart = this.snap(this.mouse.ground.y) - radius;
 
 		// Grab a reference to the current Placement
-		const oldPlacement = this.placement();
+		const oldGrid = this.getGrid();
 
 		// Grab a reference to the new Placement, or create if the size is new
-		if (!this.placements[radius * 2]) this.placements[radius * 2] = [];
-		const placement =
-			this.placements[radius * 2][radius * 2] ??
-			(this.placements[radius * 2][radius * 2] = this.newGrid(
+		if (!this.grids[radius * 2]) this.grids[radius * 2] = [];
+		const newGrid =
+			this.grids[radius * 2][radius * 2] ??
+			(this.grids[radius * 2][radius * 2] = this.newGrid(
 				radius * 2,
 				radius * 2,
 			));
 
 		// If changing placements, hide the old one and show the new one
-		if (placement !== oldPlacement) {
-			if (oldPlacement) {
-				oldPlacement.visible = false;
-				SceneObjectComponent.clear(this.placementEntity);
-			}
-			new SceneObjectComponent(this.placementEntity, placement);
-			placement.visible = true;
+		if (newGrid !== oldGrid) {
+			this.gridEntity.clear(ThreeObjectComponent);
+			new ThreeObjectComponent(this.gridEntity, newGrid);
 		}
 
 		this.game.round.pathingMap.withoutEntity(unit, () => {
@@ -116,7 +118,7 @@ export class ObstructionPlacement extends Mechanism {
 						pathingGrid[y * 2 + 1]?.[x * 2 + 1]?.pathable(pathing);
 
 					if (pathable)
-						placement.setColor(
+						newGrid.setColor(
 							x - xStart,
 							yFinal - y - 1,
 							0.25,
@@ -124,7 +126,7 @@ export class ObstructionPlacement extends Mechanism {
 							0.5,
 						);
 					else {
-						placement.setColor(
+						newGrid.setColor(
 							x - xStart,
 							yFinal - y - 1,
 							1,
@@ -155,24 +157,11 @@ export class ObstructionPlacement extends Mechanism {
 	private updatePosition() {
 		if (!this.plannedObstruction) return;
 
-		const placement = this.placement();
-
 		const x = this.x();
 		const y = this.y();
 
-		if (placement) {
-			placement.position.x = x;
-			placement.position.y = y;
-			placement.position.z = this.game.terrain!.groundHeight(
-				placement.position.x,
-				placement.position.y,
-			);
-		}
-
-		if (this.blueprint) {
-			this.blueprint.position.x = x;
-			this.blueprint.position.y = y;
-		}
+		if (this.gridEntity) Position.setXY(this.gridEntity, x, y);
+		if (this.blueprint) this.blueprint.position.setXY(x, y);
 	}
 
 	private updateSize() {
@@ -195,15 +184,12 @@ export class ObstructionPlacement extends Mechanism {
 
 		this.plannedObstruction = obstruction;
 
-		this.updateSize();
-
-		const placement = this.placement();
-		if (placement) placement.visible = true;
-
-		this.game.add(this.placementEntity);
+		if (!this.added) {
+			this.game.add(this.gridEntity);
+			this.added = true;
+		}
 
 		if (this.blueprint) this.blueprint.remove();
-
 		const blueprint = new Blueprint({
 			obstruction,
 			x: this.x(),
@@ -212,16 +198,16 @@ export class ObstructionPlacement extends Mechanism {
 		});
 		this.blueprint = blueprint;
 		this.game.add(blueprint);
+
+		this.updateSize();
 	}
 
 	stop(): void {
 		if (!this.plannedObstruction) return;
 		this.plannedObstruction = undefined;
 
-		const placement = this.placement();
-		if (placement) placement.visible = false;
-
-		this.game.remove(this.placementEntity);
+		this.game.remove(this.gridEntity);
+		this.added = false;
 
 		if (this.blueprint) {
 			this.blueprint.remove();

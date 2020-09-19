@@ -1,7 +1,7 @@
 import { Component } from "../../../core/Component";
 import { Object3D } from "three";
 
-export class SceneObjectComponent extends Component<[Object3D]> {
+export class ThreeObjectComponent extends Component<[Object3D]> {
 	readonly object!: Object3D;
 
 	protected initialize(object: Object3D): void {

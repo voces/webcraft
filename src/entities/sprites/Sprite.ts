@@ -9,7 +9,6 @@ import {
 	MeshBuilderComponent,
 	Props as MeshBuilderComponentProps,
 } from "../../engine/components/graphics/MeshBuilderComponent";
-import { DeprecatedPosition } from "../../engine/components/DeprecatedPosition";
 import { MoveTarget } from "../../engine/components/MoveTarget";
 import { AttackTarget } from "../../engine/components/AttackTarget";
 import { HoldPositionComponent } from "../../engine/components/HoldPositionComponent";
@@ -19,6 +18,7 @@ import { App } from "../../core/App";
 import { currentGame } from "../../engine/gameContext";
 import { Entity } from "../../core/Entity";
 import { Hover } from "../../engine/components/Hover";
+import { Position } from "../../engine/components/Position";
 
 export type SpriteElement = HTMLDivElement & { sprite: Sprite };
 
@@ -72,9 +72,6 @@ class Sprite extends Entity {
 	invulnerable = false;
 	color?: string;
 	selectable: boolean;
-
-	// components
-	position: DeprecatedPosition;
 
 	// todo: move these to unit
 	buildProgress?: number;
@@ -137,7 +134,7 @@ class Sprite extends Entity {
 		this.facing = facing;
 		this.color = color;
 		this.selectable = selectable;
-		this.position = new DeprecatedPosition(x, y);
+		new Position(this, x, y);
 
 		new MeshBuilderComponent(this, {
 			...graphic,
@@ -227,11 +224,19 @@ class Sprite extends Entity {
 		);
 	}
 
+	get position(): Position {
+		const pos = this.get(Position);
+		if (pos.length !== 1)
+			throw new Error(`Expected a position, got ${pos.length}`);
+
+		return pos[0]!;
+	}
+
 	toJSON(): {
 		constructor: string;
 		health: number;
 		owner?: number;
-		position: DeprecatedPosition;
+		position: Position;
 	} {
 		return {
 			constructor: this.constructor.name,

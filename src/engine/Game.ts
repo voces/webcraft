@@ -32,6 +32,8 @@ import { Hotkeys } from "../ui/hotkeys";
 import { Mouse } from "./systems/Mouse";
 import { withGame, wrapGame } from "./gameContext";
 import { isSprite } from "./typeguards";
+import { GraphicMoveSystem } from "./systems/GraphicMoveSystem";
+import { GraphicTrackPosition } from "./systems/GraphicTrackPosition";
 
 class Game extends App {
 	private network!: Network;
@@ -81,6 +83,8 @@ class Game extends App {
 			this.addSystem(new AnimationSystem());
 			this.addSystem(new MeshBuilder());
 			this.addSystem(new ThreeGraphics(this));
+			this.addSystem(new GraphicMoveSystem());
+			this.addSystem(new GraphicTrackPosition());
 			circleSystems.forEach((CircleSystem) =>
 				this.addSystem(new CircleSystem()),
 			);

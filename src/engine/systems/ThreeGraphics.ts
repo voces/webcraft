@@ -1,10 +1,8 @@
 import { System } from "../../core/System";
 import { document, window } from "../../core/util/globals";
-import { Unit } from "../../entities/sprites/Unit";
-import { MoveTarget } from "../components/MoveTarget";
 import { Point } from "../pathing/PathingMap";
 import { tweenPoints, PathTweener } from "../util/tweenPoints";
-import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
+import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Entity } from "../../core/Entity";
 import {
 	Object3D,
@@ -17,11 +15,7 @@ import {
 	PerspectiveCamera,
 	PCFSoftShadowMap,
 } from "three";
-import { Position } from "../components/Position";
 import { Game } from "../Game";
-import { Selected } from "../components/Selected";
-import { Hover } from "../components/Hover";
-import { isSprite } from "../typeguards";
 
 const getCanvas = () => {
 	const canvas = document.createElement("canvas");
@@ -97,16 +91,10 @@ const getCamera = (renderer: WebGLRenderer) => {
 	return camera;
 };
 
-type EntityData = {
-	onChangePositionListener?: () => void;
-	onHealthChangeListener?: (prop: string) => void;
-	updatePosition: boolean;
-	updateHealth: boolean;
-	knownObject: Object3D;
-};
+type EntityData = { knownObject: Object3D };
 
 export class ThreeGraphics extends System {
-	static components = [SceneObjectComponent];
+	static components = [ThreeObjectComponent];
 
 	static isThreeGraphics = (system: System): system is ThreeGraphics =>
 		system instanceof ThreeGraphics;
@@ -155,57 +143,21 @@ export class ThreeGraphics extends System {
 	}
 
 	test(entity: Entity): entity is Entity {
-		return SceneObjectComponent.has(entity);
+		return ThreeObjectComponent.has(entity);
 	}
 
 	onAddEntity(entity: Entity): void {
-		const object = entity.get(SceneObjectComponent)[0]!.object;
+		const object = entity.get(ThreeObjectComponent)[0]!.object;
 		this.scene.add(object);
 
 		// Add listeners
-		const data: EntityData = {
-			updatePosition: true,
-			updateHealth: true,
-			knownObject: object,
-		};
-		if (isSprite(entity)) {
-			data.onChangePositionListener = () => {
-				this.dirty.add(entity);
-				data.updatePosition = true;
-			};
-			(data.onHealthChangeListener = (prop: string) => {
-				if (prop !== "health") return;
-				this.dirty.add(entity);
-				data.updateHealth = true;
-			}),
-				entity.position.addEventListener(
-					"change",
-					data.onChangePositionListener,
-				);
-			entity.addEventListener("change", data.onHealthChangeListener);
-		}
+		const data: EntityData = { knownObject: object };
 		this.entityData.set(entity, data);
 	}
 
 	onRemoveEntity(entity: Entity): void {
 		const object = this.entityData.get(entity)?.knownObject;
 		if (object) this.scene.remove(object);
-
-		if (isSprite(entity)) {
-			const data = this.entityData.get(entity);
-			if (data) {
-				if (data.onChangePositionListener)
-					entity.position.removeEventListener(
-						"change",
-						data.onChangePositionListener,
-					);
-				if (data.onHealthChangeListener)
-					entity.removeEventListener(
-						"change",
-						data.onHealthChangeListener,
-					);
-			}
-		}
 
 		this.entityData.delete(entity);
 	}
@@ -219,90 +171,6 @@ export class ThreeGraphics extends System {
 			{ duration },
 		);
 		this.updateCamera();
-	}
-
-	private updatePosition(
-		mesh: Object3D,
-		entity: Entity,
-		delta: number,
-		time: number,
-		data: EntityData,
-	): boolean {
-		let position: Position | undefined;
-
-		let stillDirty = false;
-
-		if (isSprite(entity)) {
-			const moveTarget = entity.get(MoveTarget)[0];
-			if (moveTarget && Unit.isUnit(entity)) {
-				moveTarget.renderProgress += entity.speed * delta;
-				const { x, y } = moveTarget.path(moveTarget.renderProgress);
-				mesh.position.x = x;
-				mesh.position.y = y;
-				mesh.position.z =
-					mesh.position.z * 0.8 +
-					entity.game.terrain!.groundHeight(x, y) * 0.2;
-				stillDirty = true;
-			} else {
-				// Otherwise update the rendering position and mark clean
-				mesh.position.x = entity.position.x;
-				mesh.position.y = entity.position.y;
-				mesh.position.z = entity.game.terrain!.groundHeight(
-					entity.position.x,
-					entity.position.y,
-				);
-			}
-		} else if ((position = entity.get(Position)[0])) {
-			mesh.position.x = position.x;
-			mesh.position.y = position.y;
-			mesh.position.z = this.game.terrain!.groundHeight(
-				position.x,
-				position.y,
-			);
-		}
-
-		// TODO: we can probably generalize this with a Children component
-		[Selected, Hover].forEach((Circle) => {
-			const circle = entity.get(Circle)[0]?.circle;
-			if (circle) {
-				const object = circle.get(SceneObjectComponent)[0]?.object;
-				if (object) object.position.copy(mesh.position);
-			}
-		});
-
-		if (!stillDirty) data.updatePosition = false;
-
-		return stillDirty;
-	}
-
-	// private updateHealth(
-	// 	mesh: Object3D,
-	// 	entity: Entity,
-	// 	data: EntityData,
-	// ): boolean {
-	// 	// if (entity.health <= 0) elem.classList.add("death");
-	// 	// else
-	// 	// 	elem.style.opacity = Math.max(
-	// 	// 		entity.health / entity.maxHealth,
-	// 	// 		0.1,
-	// 	// 	).toString();
-
-	// 	// data.updateHealth = false;
-	// 	return false;
-	// }
-
-	render(entity: Entity, delta: number, time: number): void {
-		const object = entity.get(SceneObjectComponent)[0]!.object;
-		const data = this.entityData.get(entity);
-		if (!data || !object) return;
-
-		const stillDirty = [
-			data.updatePosition &&
-				this.updatePosition(object, entity, delta, time, data),
-			// data.updateHealth && this.updateHealth(object, entity, data),
-		].some((v) => v);
-
-		if (!stillDirty) this.dirty.delete(entity);
 	}
 
 	private updateCamera(delta = 17 / 1000): void {

@@ -1,5 +1,5 @@
 import { TorusBufferGeometry, MeshBasicMaterial, Mesh } from "three";
-import { SceneObjectComponent } from "../engine/components/graphics/SceneObjectComponent";
+import { ThreeObjectComponent } from "../engine/components/graphics/ThreeObjectComponent";
 import { Position } from "../engine/components/Position";
 import { Entity } from "../core/Entity";
 import { currentGame } from "../engine/gameContext";
@@ -26,7 +26,7 @@ export class SelectionCircle extends Entity {
 
 		const mesh = new Mesh(geometry, material);
 
-		new SceneObjectComponent(this, mesh);
+		new ThreeObjectComponent(this, mesh);
 		new Position(this, x, y);
 
 		currentGame().add(this);

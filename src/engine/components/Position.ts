@@ -1,10 +1,23 @@
 import { Component } from "../../core/Component";
 import { Entity } from "../../core/Entity";
+import { whileReplacingComponent } from "../../core/util/flags";
 import { Point } from "../pathing/PathingMap";
+import { isEntity } from "../typeguards";
 
 export class Position extends Component<
 	[number, number, { zOffset: number; flyHeight: number }]
 > {
+	static setXY(entity: Entity, x: number, y: number): Position {
+		return whileReplacingComponent(() => {
+			const component = entity.get(Position)[0];
+			if (component) entity.clear(this);
+			return new Position(entity, x, y, {
+				zOffset: component?.zOffset,
+				flyHeight: component?.flyHeight,
+			});
+		});
+	}
+
 	readonly x!: number;
 	readonly y!: number;
 	readonly zOffset!: number;
@@ -32,6 +45,14 @@ export class Position extends Component<
 		(this.zOffset as number) = zOffset;
 		(this.flyHeight as number) = flyHeight;
 	}
+
+	dispose(): void {
+		super.dispose();
+	}
+
+	setXY(x: number, y: number): Position {
+		return Position.setXY(this.entity, x, y);
+	}
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,22 +64,31 @@ const hasPositionProp = (entity: any): entity is { position: Point } =>
 	typeof entity.position.x === "number" &&
 	typeof entity.position.y === "number";
 
-export const getEntityXY = (entity: Entity): Point | undefined => {
-	const position = entity.get(Position)[0];
-	if (position) return { x: position.x, y: position.y };
+export const getEntityXY = (entity: Entity | Point): Point => {
+	if (isEntity(entity)) {
+		const position = entity.get(Position)[0];
+		if (position) return { x: position.x, y: position.y };
+	}
 
 	if (hasPositionProp(entity))
 		return { x: entity.position.x, y: entity.position.y };
 
-	return;
+	if (
+		"x" in entity &&
+		typeof entity.x === "number" &&
+		typeof entity.y === "number"
+	)
+		return { x: entity.x, y: entity.y };
+
+	throw new Error("Could not get XY from object");
 };
 
-export const getEntityX = (entity: Entity): number | undefined => {
+export const getEntityX = (entity: Entity): number => {
 	const xy = getEntityXY(entity);
-	if (xy) return xy.x;
+	return xy.x;
 };
 
-export const getEntityY = (entity: Entity): number | undefined => {
+export const getEntityY = (entity: Entity): number => {
 	const xy = getEntityXY(entity);
-	if (xy) return xy.y;
+	return xy.y;
 };

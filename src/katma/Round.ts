@@ -14,7 +14,6 @@ import { Unit } from "../entities/sprites/Unit";
 import { Sprite } from "../entities/sprites/Sprite";
 import { Game } from "../engine/Game";
 import { TileSystem } from "../engine/systems/TileSystem";
-import { SceneObjectComponent } from "../engine/components/graphics/SceneObjectComponent";
 import { currentGame } from "../engine/gameContext";
 
 let placeholderPlayer: Player;
@@ -190,39 +189,13 @@ class Round {
 			});
 	}
 
-	ball(x: number, y: number): Sprite {
-		const radius = 0.25;
-		const sprite = new Sprite({
-			graphic: { shape: "circle" },
-			x,
-			y,
-			radius,
-		});
-		const mesh = sprite.get(SceneObjectComponent)[0]!.object;
-		mesh.position.z = this.game.terrain!.groundHeight(x, y);
-		return sprite;
-	}
-
 	spawnUnits(): void {
 		this.players.forEach((player) => {
 			const isCrosser = this.crossers.includes(player);
 			const targetTile = isCrosser ? TILE_TYPES.START : TILE_TYPES.SPAWN;
 			const Unit = isCrosser ? Crosser : Defender;
 			this._spawnUnit(player, Unit, targetTile);
-			// if (isCrosser)
-			// 	for (let i = 0; i < 30; i++)
-			// 		this._spawnUnit(player, Unit, targetTile);
-			// else this._spawnUnit(player, Unit, targetTile);
 		});
-		[
-			{ x: 0, y: 0 },
-			{ x: 0, y: this.game.arena.height },
-			{ x: this.game.arena.width, y: 0 },
-			{
-				x: this.game.arena.width,
-				y: this.game.arena.height,
-			},
-		].forEach(({ x, y }) => this.ball(x, y));
 	}
 
 	onCrosserRemoval(): void {

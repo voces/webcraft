@@ -1,7 +1,10 @@
 import { Component, ComponentConstructor } from "./Component";
+// import { whileReplacingComponent } from "./util/flags";
 
 export class Entity {
+	isEntity = true;
 	id: unknown;
+
 	private map = new Map<ComponentConstructor<Component>, Component[]>();
 
 	constructor(id?: unknown) {

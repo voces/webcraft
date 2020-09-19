@@ -4,7 +4,7 @@ import { Terrain } from "notextures";
 import { window } from "../../core/util/globals";
 import { System } from "../../core/System";
 import { Entity } from "../../core/Entity";
-import { SceneObjectComponent } from "../components/graphics/SceneObjectComponent";
+import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { EntityObject } from "../types";
 import { Hover } from "../components/Hover";
 import { Emitter, emitter } from "../../core/emitter";
@@ -30,7 +30,7 @@ export type MouseEvents = {
 };
 
 class Mouse extends System {
-	static components = [SceneObjectComponent];
+	static components = [ThreeObjectComponent];
 
 	client: Vector2;
 	/** Normalized coordinates from (-1 to 1) */
@@ -93,7 +93,7 @@ class Mouse extends System {
 
 	test(entity: Entity): entity is Entity {
 		return (
-			SceneObjectComponent.has(entity) &&
+			ThreeObjectComponent.has(entity) &&
 			// todo: Add Selectable component
 			!(entity instanceof SelectionCircle)
 		);
@@ -104,7 +104,7 @@ class Mouse extends System {
 
 		this.intersections = this.raycaster.intersectObjects(
 			Array.from(this)
-				.map((e) => e.get(SceneObjectComponent)[0]?.object)
+				.map((e) => e.get(ThreeObjectComponent)[0]?.object)
 				.filter((e): e is Object3D => e !== undefined),
 			true,
 		);
