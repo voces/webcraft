@@ -4,6 +4,7 @@ import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponen
 import { Hover } from "../components/Hover";
 import { Position } from "../components/Position";
 import { Selected } from "../components/Selected";
+import { Widget } from "../entities/Widget";
 import { currentGame } from "../gameContext";
 
 /**
@@ -13,13 +14,13 @@ import { currentGame } from "../gameContext";
 export class GraphicTrackPosition extends System {
 	static components = [ThreeObjectComponent, Position];
 
-	test(entity: Entity): entity is Entity {
+	test(entity: Entity | Widget): entity is Widget {
 		return ThreeObjectComponent.has(entity) && Position.has(entity);
 	}
 
-	private updatePosition(entity: Entity) {
-		const position = entity.get(Position)[0]!;
-		const object = entity.get(ThreeObjectComponent)[0]!.object;
+	private updatePosition(entity: Widget) {
+		const position = entity.position;
+		const object = entity.model.object;
 		const game = currentGame();
 
 		object.position.x = position.x;
@@ -29,15 +30,15 @@ export class GraphicTrackPosition extends System {
 		// TODO: we can probably generalize this with a Children component
 		[Selected, Hover].forEach((Circle) => {
 			const circle = entity.get(Circle)[0]?.circle;
-			if (circle) circle.get(Position)[0]!.setXY(position.x, position.y);
+			if (circle) circle.position.setXY(position.x, position.y);
 		});
 	}
 
-	onAddEntity(entity: Entity): void {
+	onAddEntity(entity: Widget): void {
 		this.updatePosition(entity);
 	}
 
-	modified(entity: Entity): void {
+	modified(entity: Widget): void {
 		this.updatePosition(entity);
 	}
 }

@@ -12,5 +12,8 @@ export const isInAttackRange = (attacker: Unit, target: Sprite): boolean => {
 			(target.position.y - attacker.position.y) ** 2,
 	);
 
-	return distanceToTarget <= weapon.range + attacker.radius + target.radius;
+	return (
+		distanceToTarget <=
+		weapon.range + attacker.collisionRadius + target.collisionRadius
+	);
 };

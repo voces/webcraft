@@ -3,7 +3,7 @@ import { Obstruction, ObstructionProps } from "./Obstruction";
 export class Stack extends Obstruction {
 	static defaults = {
 		...Obstruction.defaults,
-		radius: 1,
+		collisionRadius: 1,
 		maxHealth: 15,
 		buildTime: 2,
 		requiresPathing: 0,
@@ -11,8 +11,8 @@ export class Stack extends Obstruction {
 		buildHotkey: "a" as const,
 		buildDescription: "Can be built anywhere",
 		facing: (7 / 4) * Math.PI,
-		graphic: {
-			...Obstruction.defaults.graphic,
+		meshBuilder: {
+			...Obstruction.defaults.meshBuilder,
 			scale: Math.SQRT1_2,
 		},
 	};

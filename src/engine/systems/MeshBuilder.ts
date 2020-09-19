@@ -11,39 +11,41 @@ import { Sprite } from "../../entities/sprites/Sprite";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { EntityMesh } from "../types";
 
-const getColor = (entity: Sprite, graphic: MeshBuilderComponent) => {
+const getColor = (entity: Sprite, meshBuilder: MeshBuilderComponent) => {
 	const rawColor =
-		graphic.color ?? entity.color ?? entity.owner?.color?.hex ?? "white";
-	if (graphic.colorFilter) return graphic.colorFilter(new Color(rawColor));
+		meshBuilder.color ??
+		entity.color ??
+		entity.owner?.color?.hex ??
+		"white";
+	if (meshBuilder.colorFilter)
+		return meshBuilder.colorFilter(new Color(rawColor));
 	return rawColor;
 };
 
-const getMat = (entity: Sprite, graphic: MeshBuilderComponent) =>
+const getMat = (entity: Sprite, meshBuilder: MeshBuilderComponent) =>
 	new MeshPhongMaterial({
-		color: getColor(entity, graphic),
-		opacity: graphic.opacity,
-		transparent: graphic.opacity < 1,
+		color: getColor(entity, meshBuilder),
+		opacity: meshBuilder.opacity,
+		transparent: meshBuilder.opacity < 1,
 	});
 
-const createSphere = (entity: Sprite, graphic: MeshBuilderComponent): Mesh => {
-	const geometry = new SphereBufferGeometry(entity.radius);
-	geometry.translate(0, 0, entity.radius);
-	geometry.rotateZ(entity.facing);
-	if (graphic.scale)
-		geometry.scale(graphic.scale, graphic.scale, graphic.scale);
-	return new Mesh(geometry, getMat(entity, graphic));
+const createSphere = (
+	entity: Sprite,
+	meshBuilder: MeshBuilderComponent,
+): Mesh => {
+	const geometry = new SphereBufferGeometry(meshBuilder.scale);
+	geometry.translate(0, 0, meshBuilder.scale);
+	return new Mesh(geometry, getMat(entity, meshBuilder));
 };
-const createBox = (entity: Sprite, graphic: MeshBuilderComponent): Mesh => {
+const createBox = (entity: Sprite, meshBuilder: MeshBuilderComponent): Mesh => {
 	const geometry = new BoxBufferGeometry(
-		entity.radius * 2,
-		entity.radius * 2,
-		(entity.radius * 3) / 2,
+		meshBuilder.scale * 2,
+		meshBuilder.scale * 2,
+		(meshBuilder.scale * 3) / 2,
 	);
-	geometry.translate(0, 0, (entity.radius * 3) / 4);
+	geometry.translate(0, 0, (meshBuilder.scale * 3) / 4);
 	geometry.rotateZ(entity.facing);
-	if (graphic.scale)
-		geometry.scale(graphic.scale, graphic.scale, graphic.scale);
-	return new Mesh(geometry, getMat(entity, graphic));
+	return new Mesh(geometry, getMat(entity, meshBuilder));
 };
 
 export class MeshBuilder extends System {
@@ -57,19 +59,20 @@ export class MeshBuilder extends System {
 	}
 
 	onAddEntity(entity: Sprite): void {
-		const graphic = entity.get(MeshBuilderComponent)[0];
-		if (!graphic) return;
+		const meshBuilder = entity.get(MeshBuilderComponent)[0];
+		if (!meshBuilder) return;
 
 		// Build/set the mesh
-		const builder = graphic.shape === "circle" ? createSphere : createBox;
-		const mesh: EntityMesh = builder(entity, graphic);
-		if (graphic.shadows) {
+		const builder =
+			meshBuilder.shape === "circle" ? createSphere : createBox;
+		const mesh: EntityMesh = builder(entity, meshBuilder);
+		if (meshBuilder.shadows) {
 			mesh.castShadow = true;
 			mesh.receiveShadow = true;
 		}
 		mesh.position.x = entity.position.x;
 		mesh.position.y = entity.position.y;
-		mesh.position.z = entity.radius;
+		// mesh.position.z = ;
 		mesh.entity = entity;
 
 		// Attach the mesh to the entity

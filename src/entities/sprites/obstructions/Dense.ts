@@ -10,8 +10,8 @@ export class Dense extends Obstruction {
 		armor: 0.25,
 		cost: { essence: 4 },
 		buildHotkey: "g" as const,
-		graphic: {
-			...Obstruction.defaults.graphic,
+		meshBuilder: {
+			...Obstruction.defaults.meshBuilder,
 			colorFilter: (color: Color): Color => color.lerp(darkRed, 0.75),
 		},
 	};

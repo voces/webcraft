@@ -19,7 +19,7 @@ export class MeshBuilderComponent extends Component<[InnerProps]> {
 	readonly targetable!: boolean;
 	readonly color?: string;
 	readonly colorFilter?: (color: Color) => Color;
-	readonly scale?: number;
+	readonly scale!: number;
 	readonly shadow?: string;
 	readonly opacity!: number;
 	readonly shadows!: boolean;

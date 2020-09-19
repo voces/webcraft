@@ -24,15 +24,15 @@ type ProjectileProps = Omit<SpriteProps, "x" | "y" | "game"> & {
 export class Projectile extends Sprite {
 	static defaults = {
 		...Sprite.defaults,
-		radius: 3,
+		collisionRadius: 3,
 		speed: 4,
 		splash: 2.5,
 		maxHealth: Infinity,
 		selectable: false,
 		blocksPathing: 0,
 		requiresPathing: 0,
-		graphic: {
-			...Sprite.defaults.graphic,
+		meshBuilder: {
+			...Sprite.defaults.meshBuilder,
 			color: "#0000ff",
 			opacity: 0.25,
 			shadows: false,

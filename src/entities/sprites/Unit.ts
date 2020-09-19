@@ -69,7 +69,7 @@ class TargetTooFarError extends Error {
 	message = "Target too far";
 }
 
-export type UnitProps = Omit<SpriteProps, "game"> & {
+export type UnitProps = SpriteProps & {
 	isIllusion?: boolean;
 	owner: Player;
 	speed?: number;
@@ -112,14 +112,14 @@ class Unit extends Sprite {
 		name,
 		speed = Unit.defaults.speed,
 		weapon,
-		graphic,
+		meshBuilder,
 		...props
 	}: UnitProps) {
 		super({
 			...props,
-			graphic: {
-				...Unit.defaults.graphic,
-				...graphic,
+			meshBuilder: {
+				...Unit.defaults.meshBuilder,
+				...meshBuilder,
 				...(isIllusion && revealIllusion(props.owner)
 					? {
 							colorFilter: (color: Color): Color =>
@@ -155,9 +155,9 @@ class Unit extends Sprite {
 			entity: this,
 			target,
 			distance:
-				this.radius +
+				this.collisionRadius +
 				damageComponent.weapons[0].range +
-				target.radius -
+				target.collisionRadius -
 				1e-7,
 		});
 	}

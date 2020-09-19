@@ -11,9 +11,10 @@ type Props = {
 
 type InternalProps = Props & { x: number; y: number };
 
-const hasRadius = (
-	entity: Entity | (Entity & { radius: number }),
-): entity is Entity & { radius: number } => "radius" in entity;
+const hasCollisionRadius = (
+	entity: Entity | (Entity & { collisionRadius: number }),
+): entity is Entity & { collisionRadius: number } =>
+	"collisionRadius" in entity;
 
 export abstract class Circle extends Component<[InternalProps]> {
 	circle!: SelectionCircle;
@@ -22,7 +23,10 @@ export abstract class Circle extends Component<[InternalProps]> {
 		const xy = getXY(entity);
 		super(entity, {
 			radius:
-				props.radius ?? (hasRadius(entity) ? entity.radius * 1.25 : 1),
+				props.radius ??
+				(hasCollisionRadius(entity)
+					? entity.collisionRadius * 1.25
+					: 1),
 			color: props.color ?? "#00FF00",
 			x: xy?.x ?? 0,
 			y: xy?.y ?? 0,

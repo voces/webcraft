@@ -1,13 +1,15 @@
 import { Component, ComponentConstructor } from "./Component";
 
+export type EntityID = string | number;
+
 export class Entity {
 	isEntity = true;
-	id: unknown;
+	id: EntityID;
 
 	private map = new Map<ComponentConstructor<Component>, Component[]>();
 
-	constructor(id?: unknown) {
-		if (id && !this.id) this.id = id;
+	constructor(id: EntityID) {
+		this.id = id;
 	}
 
 	/**

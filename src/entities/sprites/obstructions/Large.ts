@@ -3,7 +3,7 @@ import { Obstruction, ObstructionProps } from "./Obstruction";
 export class Large extends Obstruction {
 	static defaults = {
 		...Obstruction.defaults,
-		radius: 1.5,
+		collisionRadius: 1.5,
 		maxHealth: 160,
 		buildTime: 2,
 		cost: { essence: 6 },

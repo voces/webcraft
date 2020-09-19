@@ -77,8 +77,8 @@ export class Defender extends Unit {
 
 	mirror(): void {
 		if (this.mirrors) this.mirrors.forEach((u) => u.kill());
+		this.stop();
 
-		const oldFacing = this.facing;
 		const angle1 = this.facing + Math.PI / 2;
 		const angle2 = this.facing - Math.PI / 2;
 		let pos1 = {
@@ -104,18 +104,17 @@ export class Defender extends Unit {
 		const realPosition = this.round.pathingMap.withoutEntity(this, () =>
 			getMirroringPosition(pos1, this, layer),
 		);
-		this.position.setXY(realPosition.x, realPosition.y),
-			(this.facing = oldFacing);
+		this.position.setXY(realPosition.x, realPosition.y);
 
 		const mirror = new Defender({
 			x: this.position.x,
 			y: this.position.y,
 			owner: this.owner,
 			isIllusion: true,
+			facing: this.facing,
 		});
 		const mirrorPos = getMirroringPosition(pos2, mirror, layer);
 		mirror.position.setXY(mirrorPos.x, mirrorPos.y);
-		mirror.facing = oldFacing;
 		this.round.pathingMap.addEntity(mirror);
 		this.mirrors = [mirror];
 	}

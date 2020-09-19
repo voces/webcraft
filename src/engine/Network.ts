@@ -1,4 +1,5 @@
 import { emitter, Emitter } from "../core/emitter";
+import { EntityID } from "../core/Entity";
 import { location } from "../core/util/globals";
 import { obstructionMap } from "../entities/sprites/obstructions/index";
 import { Game } from "./Game";
@@ -43,7 +44,7 @@ type BuildEvent = PlayerEvent & {
 type MoveEvent = PlayerEvent & {
 	type: "move";
 	connection: number;
-	sprites: number[];
+	sprites: EntityID[];
 	x: number;
 	y: number;
 	obstruction: keyof typeof obstructionMap;
@@ -52,32 +53,32 @@ type MoveEvent = PlayerEvent & {
 type AttackEvent = PlayerEvent & {
 	type: "move";
 	connection: number;
-	attackers: number[];
-	target: number;
+	attackers: EntityID[];
+	target: EntityID;
 };
 
 type KillEvent = PlayerEvent & {
 	type: "kill";
 	connection: number;
-	sprites: number[];
+	sprites: EntityID[];
 };
 
 type HoldPositionEvent = PlayerEvent & {
 	type: "kill";
 	connection: number;
-	sprites: number[];
+	sprites: EntityID[];
 };
 
 type StopEvent = PlayerEvent & {
 	type: "stop";
 	connection: number;
-	sprites: number[];
+	sprites: EntityID[];
 };
 
 type MirrorEvent = PlayerEvent & {
 	type: "mirror";
 	connection: number;
-	sprites: number[];
+	sprites: EntityID[];
 };
 
 type ChatEvent = PlayerEvent & {

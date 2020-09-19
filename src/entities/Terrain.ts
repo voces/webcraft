@@ -32,9 +32,8 @@ export const interpolateZ = (
 export class Terrain extends Entity {
 	private group: Group;
 	private height: number;
-	id = "terrain";
 	constructor(arena: Arena) {
-		super();
+		super("TERRAIN");
 		const vertexZeroes = Array(arena.height + 1).fill(
 			new Array(arena.width + 1).fill(0),
 		);

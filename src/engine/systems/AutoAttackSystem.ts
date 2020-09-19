@@ -64,7 +64,10 @@ export class AutoAttackSystem extends System<Unit> {
 					(u.position.x - entity.position.x) ** 2 +
 						(u.position.y - entity.position.y) ** 2,
 				);
-				if (distanceToTarget < weapon.range + entity.radius + u.radius)
+				if (
+					distanceToTarget <
+					weapon.range + entity.collisionRadius + u.collisionRadius
+				)
 					return true;
 
 				// Otherwise, make sure we can get to it
@@ -81,7 +84,12 @@ export class AutoAttackSystem extends System<Unit> {
 							(endPoint.y - u.position.y) ** 2,
 					);
 
-					if (distance < weapon.range + entity.radius + u.radius)
+					if (
+						distance <
+						weapon.range +
+							entity.collisionRadius +
+							u.collisionRadius
+					)
 						return true;
 				}
 

@@ -49,8 +49,8 @@ export class Obstruction extends Unit {
 		cost: { essence: 1 },
 		requiresPathing: PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE,
 		speed: 0,
-		graphic: {
-			...Unit.defaults.graphic,
+		meshBuilder: {
+			...Unit.defaults.meshBuilder,
 			shape: "square" as "square" | "circle",
 		},
 	};
@@ -58,8 +58,9 @@ export class Obstruction extends Unit {
 	static isObstruction = (entity: Entity): entity is Obstruction =>
 		entity instanceof Obstruction;
 
-	requiresTilemap = toFootprint(this.radius, this.requiresPathing);
-	blocksTilemap = toFootprint(this.radius, this.blocksPathing);
+	readonly isObstruction = true;
+	requiresTilemap = toFootprint(this.collisionRadius, this.requiresPathing);
+	blocksTilemap = toFootprint(this.collisionRadius, this.blocksPathing);
 	buildTime: number;
 	owner!: Player;
 

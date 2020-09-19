@@ -22,7 +22,7 @@ describe("PathingMap#_linearPathable", () => {
 
 							const pathingMap = new PathingMap({ pathing });
 							const entity = {
-								radius: 0.5,
+								collisionRadius: 0.5,
 								pathing: 1,
 								x: 0,
 								y: 0,
@@ -59,7 +59,7 @@ describe("PathingMap#_linearPathable", () => {
 
 							const pathingMap = new PathingMap({ pathing });
 							const entity = {
-								radius: 0.5,
+								collisionRadius: 0.5,
 								pathing: 1,
 								x: 0,
 								y: 0,
@@ -107,7 +107,7 @@ describe("PathingMap#_linearPathable", () => {
 
 							const pathingMap = new PathingMap({ pathing });
 							const entity = {
-								radius: 1,
+								collisionRadius: 1,
 								pathing: 1,
 								x: 0,
 								y: 0,
@@ -147,7 +147,7 @@ describe("PathingMap#_linearPathable", () => {
 
 							const pathingMap = new PathingMap({ pathing });
 							const entity = {
-								radius: 1,
+								collisionRadius: 1,
 								pathing: 1,
 								x: 0,
 								y: 0,

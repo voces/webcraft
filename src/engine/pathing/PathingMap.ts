@@ -28,7 +28,7 @@ const EPSILON = Number.EPSILON * 100;
 type Pathing = number;
 
 interface BaseEntity {
-	radius: number;
+	collisionRadius: number;
 	blocksPathing?: Pathing;
 	blocksTilemap?: Footprint;
 	pathing?: Pathing;
@@ -285,7 +285,7 @@ export class PathingMap {
 		const yTile = this.yWorldToTile(yWorld);
 		const map =
 			entity.requiresTilemap ||
-			this.pointToTilemap(xWorld, yWorld, entity.radius, {
+			this.pointToTilemap(xWorld, yWorld, entity.collisionRadius, {
 				type:
 					entity.requiresPathing === undefined
 						? entity.pathing
@@ -321,13 +321,18 @@ export class PathingMap {
 		if (
 			this._pathable(
 				entity.requiresTilemap ||
-					this.pointToTilemap(xWorld, yWorld, entity.radius, {
-						includeOutOfBounds: true,
-						type:
-							entity.requiresPathing === undefined
-								? entity.pathing
-								: entity.requiresPathing,
-					}),
+					this.pointToTilemap(
+						xWorld,
+						yWorld,
+						entity.collisionRadius,
+						{
+							includeOutOfBounds: true,
+							type:
+								entity.requiresPathing === undefined
+									? entity.pathing
+									: entity.requiresPathing,
+						},
+					),
 				tile.x,
 				tile.y,
 				test,
@@ -346,10 +351,15 @@ export class PathingMap {
 		if (pathing === undefined) throw "entity has no pathing";
 		const minimalTilemap =
 			entity.requiresTilemap ||
-			this.pointToTilemap(entity.radius, entity.radius, entity.radius, {
-				type: pathing,
-			});
-		const radiusOffset = entity.radius % (1 / this.resolution);
+			this.pointToTilemap(
+				entity.collisionRadius,
+				entity.collisionRadius,
+				entity.collisionRadius,
+				{
+					type: pathing,
+				},
+			);
+		const radiusOffset = entity.collisionRadius % (1 / this.resolution);
 		const offset = (point: Point) => ({
 			x: point.x + radiusOffset,
 			y: point.y + radiusOffset,
@@ -435,13 +445,18 @@ export class PathingMap {
 					};
 			} else if (
 				this._pathable(
-					this.pointToTilemap(xWorld, yWorld, entity.radius, {
-						includeOutOfBounds: true,
-						type:
-							entity.requiresPathing === undefined
-								? entity.pathing
-								: entity.requiresPathing,
-					}),
+					this.pointToTilemap(
+						xWorld,
+						yWorld,
+						entity.collisionRadius,
+						{
+							includeOutOfBounds: true,
+							type:
+								entity.requiresPathing === undefined
+									? entity.pathing
+									: entity.requiresPathing,
+						},
+					),
 					xTile,
 					yTile,
 				)
@@ -478,9 +493,9 @@ export class PathingMap {
 			};
 		} else {
 			minimalTilemap = this.pointToTilemap(
-				entity.radius,
-				entity.radius,
-				entity.radius,
+				entity.collisionRadius,
+				entity.collisionRadius,
+				entity.collisionRadius,
 				{
 					type:
 						entity.requiresPathing === undefined
@@ -489,8 +504,8 @@ export class PathingMap {
 				},
 			);
 			offset = {
-				x: entity.radius % (1 / this.resolution),
-				y: entity.radius % (1 / this.resolution),
+				x: entity.collisionRadius % (1 / this.resolution),
+				y: entity.collisionRadius % (1 / this.resolution),
 			};
 		}
 
@@ -636,7 +651,7 @@ export class PathingMap {
 	// towards Theta*
 	// This gets really sad when a path is not possible
 	path(entity: Entity, target: Point): Point[] {
-		if (typeof entity.radius !== "number")
+		if (typeof entity.collisionRadius !== "number")
 			throw new Error("Can only path find radial entities");
 
 		const cache: Cache = {
@@ -657,13 +672,13 @@ export class PathingMap {
 				: entity.requiresPathing;
 		if (pathing === undefined) throw "entity has no pathing";
 		const minimalTilemap = cache.pointToTilemap(
-			entity.radius,
-			entity.radius,
-			entity.radius,
+			entity.collisionRadius,
+			entity.collisionRadius,
+			entity.collisionRadius,
 			{ type: pathing },
 		);
 
-		const offset = entity.radius % (1 / this.resolution);
+		const offset = entity.collisionRadius % (1 / this.resolution);
 		// We can assume start is pathable
 		const position = pos(entity);
 		const startReal = {
@@ -1222,7 +1237,7 @@ export class PathingMap {
 	}
 
 	_linearPathable(entity: Entity, startTile: Tile, endTile: Tile): boolean {
-		const radiusOffset = entity.radius % (1 / this.resolution);
+		const radiusOffset = entity.collisionRadius % (1 / this.resolution);
 		return this.linearPathable(
 			entity,
 			offset(startTile.world, radiusOffset),
@@ -1234,7 +1249,7 @@ export class PathingMap {
 		entity: Entity,
 		position: Point = pos(entity),
 	): { x: number; y: number } {
-		const nudge = EPSILON * entity.radius * this.widthWorld;
+		const nudge = EPSILON * entity.collisionRadius * this.widthWorld;
 		return {
 			x: this.xBoundTile(
 				Math.round(position.x * this.resolution - nudge),
@@ -1257,11 +1272,14 @@ export class PathingMap {
 		endWorld: Point,
 	): boolean {
 		// Restrictions + pull fields off entity
-		if (typeof entity.radius !== "number")
+		if (typeof entity.collisionRadius !== "number")
 			throw new Error("Can only path find radial entities");
 		const radius =
-			entity.radius * this.resolution -
-			EPSILON * entity.radius * this.widthWorld * this.resolution;
+			entity.collisionRadius * this.resolution -
+			EPSILON *
+				entity.collisionRadius *
+				this.widthWorld *
+				this.resolution;
 		const pathing =
 			entity.requiresPathing !== undefined
 				? entity.requiresPathing
@@ -1284,7 +1302,7 @@ export class PathingMap {
 					this.pointToTilemap(
 						startWorld.x,
 						startWorld.y,
-						entity.radius,
+						entity.collisionRadius,
 						{
 							type: pathing,
 						},
@@ -1476,12 +1494,17 @@ export class PathingMap {
 		const position = pos(entity);
 		const { map, top, left, width, height } =
 			entity.blocksTilemap ||
-			this.pointToTilemap(position.x, position.y, entity.radius, {
-				type:
-					entity.blocksPathing === undefined
-						? entity.pathing
-						: entity.blocksPathing,
-			});
+			this.pointToTilemap(
+				position.x,
+				position.y,
+				entity.collisionRadius,
+				{
+					type:
+						entity.blocksPathing === undefined
+							? entity.pathing
+							: entity.blocksPathing,
+				},
+			);
 		const tileX = this.xWorldToTile(position.x);
 		const tileY = this.yWorldToTile(position.y);
 		for (let y = top; y < top + height; y++)
@@ -1503,12 +1526,17 @@ export class PathingMap {
 		const position = pos(entity);
 		const { map, top, left, width, height } =
 			entity.blocksTilemap ||
-			this.pointToTilemap(position.x, position.y, entity.radius, {
-				type:
-					entity.blocksPathing === undefined
-						? entity.pathing
-						: entity.blocksPathing,
-			});
+			this.pointToTilemap(
+				position.x,
+				position.y,
+				entity.collisionRadius,
+				{
+					type:
+						entity.blocksPathing === undefined
+							? entity.pathing
+							: entity.blocksPathing,
+				},
+			);
 		const tileX = this.xWorldToTile(position.x);
 		const tileY = this.yWorldToTile(position.y);
 		for (let y = top; y < top + height; y++)

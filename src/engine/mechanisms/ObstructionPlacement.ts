@@ -4,16 +4,16 @@ import { Game } from "../Game";
 import { Mechanism } from "../../core/Merchanism";
 import { Mouse } from "../systems/Mouse";
 import { Grid } from "notextures";
-import { Entity } from "../../core/Entity";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { MeshPhongMaterial } from "three";
 import { Blueprint } from "../../entities/sprites/obstructions/Blueprint";
 import { Position } from "../components/Position";
+import { Widget } from "../entities/Widget";
 
 const edgeSnap = (v: number) => Math.round(v);
 const midSnap = (v: number) => Math.floor(v) + 0.5;
 
-class PlacementEntity extends Entity {}
+class PlacementEntity extends Widget {}
 
 export class ObstructionPlacement extends Mechanism {
 	static isObstructionPlacement = (
@@ -29,7 +29,11 @@ export class ObstructionPlacement extends Mechanism {
 	// Cached placements, so we don't create new ones each time
 	private grids: Grid[][] = [];
 	// Container entity with a Grid as its scene object
-	private gridEntity = new PlacementEntity("ENTITY_PLACEMENT");
+	private gridEntity = new PlacementEntity({
+		id: "ENTITY_PLACEMENT",
+		x: 0,
+		y: 0,
+	});
 	private blueprint?: Blueprint;
 	private lastRadius?: number;
 	private added = false;
@@ -47,7 +51,7 @@ export class ObstructionPlacement extends Mechanism {
 	snap(v: number): number {
 		const snapFunc =
 			!this.plannedObstruction ||
-			this.plannedObstruction.defaults.radius % 1 === 0
+			this.plannedObstruction.defaults.collisionRadius % 1 === 0
 				? edgeSnap
 				: midSnap;
 
@@ -81,21 +85,22 @@ export class ObstructionPlacement extends Mechanism {
 		if (!unit) return;
 
 		const pathing = this.plannedObstruction.defaults.requiresPathing;
-		const radius = this.plannedObstruction.defaults.radius;
-		const xStart = this.snap(this.mouse.ground.x) - radius;
-		const yStart = this.snap(this.mouse.ground.y) - radius;
+		const collisionRadius = this.plannedObstruction.defaults
+			.collisionRadius;
+		const xStart = this.snap(this.mouse.ground.x) - collisionRadius;
+		const yStart = this.snap(this.mouse.ground.y) - collisionRadius;
 
 		// Grab a reference to the current Placement
 		const oldGrid = this.getGrid();
 
 		// Grab a reference to the new Placement, or create if the size is new
-		if (!this.grids[radius * 2]) this.grids[radius * 2] = [];
+		if (!this.grids[collisionRadius * 2])
+			this.grids[collisionRadius * 2] = [];
 		const newGrid =
-			this.grids[radius * 2][radius * 2] ??
-			(this.grids[radius * 2][radius * 2] = this.newGrid(
-				radius * 2,
-				radius * 2,
-			));
+			this.grids[collisionRadius * 2][collisionRadius * 2] ??
+			(this.grids[collisionRadius * 2][
+				collisionRadius * 2
+			] = this.newGrid(collisionRadius * 2, collisionRadius * 2));
 
 		// If changing placements, hide the old one and show the new one
 		if (newGrid !== oldGrid) {
@@ -104,8 +109,8 @@ export class ObstructionPlacement extends Mechanism {
 		}
 
 		this.game.round.pathingMap.withoutEntity(unit, () => {
-			const xFinal = xStart + radius * 2;
-			const yFinal = yStart + radius * 2;
+			const xFinal = xStart + collisionRadius * 2;
+			const yFinal = yStart + collisionRadius * 2;
 
 			let overallPathable = true;
 			const pathingGrid = unit.round.pathingMap.grid;

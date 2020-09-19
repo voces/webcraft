@@ -16,28 +16,30 @@ import { GerminateComponent } from "../../engine/components/GerminateComponent";
 import { Selected } from "../../engine/components/Selected";
 import { App } from "../../core/App";
 import { currentGame } from "../../engine/gameContext";
-import { Entity } from "../../core/Entity";
 import { Hover } from "../../engine/components/Hover";
 import { Position } from "../../engine/components/Position";
+import { Widget, WidgetProps } from "../../engine/entities/Widget";
+import { currentRound } from "../../katma/roundContext";
+import { EntityID } from "../../core/Entity";
 
 export type SpriteElement = HTMLDivElement & { sprite: Sprite };
 
-export type SpriteProps = {
-	color?: string;
-	id?: number;
-	radius?: number;
-	requiresPathing?: number;
+export type SpriteProps = Omit<WidgetProps, "id"> & {
+	armor?: number;
 	blocksPathing?: number;
+	color?: string;
+	facing?: number;
+	health?: number;
+	id?: EntityID;
+	maxHealth?: number;
+	meshBuilder?: MeshBuilderComponentProps;
+	owner?: Player;
+	priority?: number;
+	collisionRadius?: number;
+	requiresPathing?: number;
 	selectable?: boolean;
 	x: number;
 	y: number;
-	armor?: number;
-	priority?: number;
-	health?: number;
-	maxHealth?: number;
-	owner?: Player;
-	facing?: number;
-	graphic?: MeshBuilderComponentProps;
 };
 
 export type Effect = {
@@ -52,36 +54,10 @@ export type SpriteEvents = {
 	remove: () => void;
 };
 
-class Sprite extends Entity {
-	readonly isSprite = true;
-	app: App;
-	game: Game;
-	radius: number;
-	id: number;
-	requiresPathing: number;
-	blocksPathing: number;
-	armor: number;
-	isAlive: boolean;
-	priority: number;
-	effects: Effect[] = [];
-	owner?: Player;
-	round: Round;
-	facing: number;
-	maxHealth: number;
-	private _health!: number;
-	invulnerable = false;
-	color?: string;
-	selectable: boolean;
-
-	// todo: move these to unit
-	buildProgress?: number;
-
-	private _x!: number;
-	private _y!: number;
-
+class Sprite extends Widget {
 	static defaults = {
-		radius: 1,
-		graphic: { shape: "circle" as "square" | "circle" },
+		collisionRadius: 1,
+		meshBuilder: { shape: "circle" as "square" | "circle" },
 	};
 
 	// TODO: figure out how to type this...
@@ -90,26 +66,49 @@ class Sprite extends Entity {
 		return clone(this.defaults);
 	}
 
-	// static canAttack = <T extends Sprite & {attack: ( sprite: Sprite ) => void}>( sprite: Sprite | T ): sprite is T => "attack" in sprite
+	readonly isSprite = true;
+
+	app: App;
+	armor: number;
+	blocksPathing: number;
+	color?: string;
+	effects: Effect[] = [];
+	facing: number;
+	game: Game;
+	invulnerable = false;
+	isAlive: boolean;
+	maxHealth: number;
+	owner?: Player;
+	priority: number;
+	collisionRadius: number;
+	requiresPathing: number;
+	round: Round;
+	selectable: boolean;
+
+	private _x!: number;
+	private _y!: number;
+	private _health!: number;
 
 	constructor({
-		color,
-		id,
-		radius = Sprite.defaults.radius,
-		requiresPathing = PATHING_TYPES.WALKABLE,
-		blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE,
-		selectable = true,
-		x,
-		y,
 		armor = 0,
-		priority = 0,
+		blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE,
+		color,
+		facing = (3 / 2) * Math.PI,
+		id = currentRound().spriteId++,
 		maxHealth = 1,
 		health = maxHealth,
-		facing = (3 / 2) * Math.PI,
+		meshBuilder = clone(Sprite.defaults.meshBuilder),
 		owner,
-		graphic = clone(Sprite.defaults.graphic),
+		priority = 0,
+		collisionRadius = Sprite.defaults.collisionRadius,
+		requiresPathing = PATHING_TYPES.WALKABLE,
+		selectable = true,
+		...props
 	}: SpriteProps) {
-		super();
+		super({
+			...props,
+			id,
+		});
 		emitter<Sprite, SpriteEvents>(this);
 
 		const game = currentGame();
@@ -120,11 +119,10 @@ class Sprite extends Entity {
 		this.app = game;
 		this.round = game.round;
 
-		this.radius = radius;
+		this.collisionRadius = collisionRadius;
 		this.requiresPathing = requiresPathing;
 		this.blocksPathing = blocksPathing;
 
-		this.id = id === undefined ? this.round.spriteId++ : id;
 		this.maxHealth = maxHealth;
 		this.health = health;
 		this.isAlive = this.health > 0;
@@ -134,10 +132,10 @@ class Sprite extends Entity {
 		this.facing = facing;
 		this.color = color;
 		this.selectable = selectable;
-		new Position(this, x, y);
 
 		new MeshBuilderComponent(this, {
-			...graphic,
+			...meshBuilder,
+			scale: meshBuilder.scale ?? collisionRadius,
 			targetable: selectable,
 		});
 
@@ -151,9 +149,9 @@ class Sprite extends Entity {
 	damage(amount: number): number {
 		if (this.invulnerable) return 0;
 
-		const ignoreArmor =
-			this.buildProgress === undefined || this.buildProgress < 1;
-		const effectiveArmor = ignoreArmor ? this.armor : 0;
+		// Technically, constructing armors are treated as "Normal", but we
+		// don't have armor types yet :)
+		const effectiveArmor = this.has(GerminateComponent) ? 0 : this.armor;
 		const actualDamage = amount * (1 - effectiveArmor);
 
 		if (this.health <= 0) return actualDamage;
@@ -222,14 +220,6 @@ class Sprite extends Entity {
 			!GerminateComponent.has(this) &&
 			this.isAlive
 		);
-	}
-
-	get position(): Position {
-		const pos = this.get(Position);
-		if (pos.length !== 1)
-			throw new Error(`Expected a position, got ${pos.length}`);
-
-		return pos[0]!;
 	}
 
 	toJSON(): {

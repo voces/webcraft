@@ -8,6 +8,7 @@ import { Player } from "../../engine/players/Player";
 import { MouseEvents } from "../../engine/systems/Mouse";
 import { isSprite } from "../../engine/typeguards";
 import { currentGame } from "../../engine/gameContext";
+import { EntityID } from "../../core/Entity";
 
 export type Action = {
 	description?: string;
@@ -62,8 +63,8 @@ const rightClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 	);
 
 	const units = ownedSprites.filter((u) => u instanceof Unit);
-	const toMove: number[] = [];
-	const toAttack: number[] = [];
+	const toMove: EntityID[] = [];
+	const toAttack: EntityID[] = [];
 	const target = mouse.entity;
 
 	units.forEach((unit) => {

@@ -46,7 +46,7 @@ export class Crosser extends Unit {
 	static defaults = {
 		...Unit.defaults,
 		priority: 1,
-		radius: 0.5,
+		collisionRadius: 0.5,
 		builds: [Basic, Dense, Huge, Large, Resource, Slow, Stack, Tiny],
 	};
 

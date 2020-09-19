@@ -2,10 +2,10 @@ import { Context } from "../core/Context";
 import { Game } from "./Game";
 import { withApp, wrapApp } from "../core/appContext";
 
-const context = new Context<Game | undefined>(undefined);
+export const gameContext = new Context<Game | undefined>(undefined);
 
 export const withGame = <T>(game: Game, fn: (game: Game) => T): T =>
-	withApp(game, () => context.with(game, fn));
+	withApp(game, () => gameContext.with(game, fn));
 
 const wrappedFunctions = new WeakMap();
 export const wrapGame = <Args extends unknown[], Return extends unknown>(
@@ -14,13 +14,13 @@ export const wrapGame = <Args extends unknown[], Return extends unknown>(
 ): ((...args: Args) => Return) => {
 	if (wrappedFunctions.has(fn)) return wrappedFunctions.get(fn);
 
-	const wrappedFunction = wrapApp(game, context.wrap(game, fn));
+	const wrappedFunction = wrapApp(game, gameContext.wrap(game, fn));
 	wrappedFunctions.set(fn, wrappedFunction);
 	return wrappedFunction;
 };
 
 export const currentGame = (): Game => {
-	const game = context.current;
+	const game = gameContext.current;
 	if (!game) throw new Error("Expected an Game context");
 	return game;
 };
