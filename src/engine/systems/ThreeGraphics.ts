@@ -99,7 +99,6 @@ export class ThreeGraphics extends System {
 	static isThreeGraphics = (system: System): system is ThreeGraphics =>
 		system instanceof ThreeGraphics;
 
-	protected dirty = new Set<Entity>();
 	private entityData: Map<Entity, EntityData> = new Map();
 	private renderer: WebGLRenderer;
 	private scene: Scene;

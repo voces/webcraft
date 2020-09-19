@@ -10,7 +10,6 @@ import { alea } from "./lib/alea";
 import { Settings } from "./types";
 import { Network, NetworkEventCallback } from "./network";
 import { UI } from "../ui/index";
-// import { initObstructionPlacement } from "./entities/sprites/obstructionPlacement";
 import { initPlayerLogic } from "./players/playerLogic";
 import { initSpriteLogicListeners } from "../entities/sprites/spriteLogic";
 import { App } from "../core/App";

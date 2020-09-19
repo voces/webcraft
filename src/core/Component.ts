@@ -3,7 +3,7 @@ import { Entity } from "./Entity";
 import { isReplacingComponent, whileReplacingComponent } from "./util/flags";
 
 export class Component<
-	InitializationParameters extends unknown[] = [],
+	InitializationParameters extends unknown[] = unknown[],
 	E extends Entity = Entity
 > {
 	static has(entity: Entity): boolean {
@@ -27,7 +27,7 @@ export class Component<
 
 		currentApp().entityComponentUpdated(
 			entity,
-			<ComponentConstructor<Component>>this.constructor,
+			<ComponentConstructor>this.constructor,
 		);
 	}
 
@@ -39,7 +39,7 @@ export class Component<
 		if (!isReplacingComponent())
 			currentApp().entityComponentUpdated(
 				this.entity,
-				this.constructor as ComponentConstructor<Component>,
+				this.constructor as ComponentConstructor,
 			);
 	}
 
@@ -67,7 +67,7 @@ export class Component<
 	}
 }
 
-export type ComponentConstructor<T extends Component> = new (
+export type ComponentConstructor<T extends Component = Component> = new (
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	...args: any[]
 ) => T;

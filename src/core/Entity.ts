@@ -6,7 +6,7 @@ export class Entity {
 	isEntity = true;
 	id: EntityID;
 
-	private map = new Map<ComponentConstructor<Component>, Component[]>();
+	private map = new Map<ComponentConstructor, Component[]>();
 
 	constructor(id: EntityID) {
 		this.id = id;
@@ -16,7 +16,7 @@ export class Entity {
 	 * If `klass` is not passed, returns all components on `this`. Otherwise,
 	 * returns the components of type `C` on `this`.
 	 */
-	get<K extends ComponentConstructor<Component<unknown[]>>>(
+	get<K extends ComponentConstructor>(
 		klass?: K,
 	): ReadonlyArray<InstanceType<K> | undefined> {
 		// Casting to C[] here means we're casting to Component<any>[], which is
@@ -39,7 +39,7 @@ export class Entity {
 		this.map.set(klass, components);
 	}
 
-	has<K extends ComponentConstructor<Component>>(klass: K): boolean {
+	has<K extends ComponentConstructor>(klass: K): boolean {
 		return (this.map.get(klass)?.length ?? 0) > 0;
 	}
 
@@ -48,11 +48,7 @@ export class Entity {
 	 * passed, all components of that type are cleared. If a specific component
 	 * is passed, that component is cleared.
 	 */
-	clear<
-		T extends
-			| Component<unknown[]>
-			| ComponentConstructor<Component<unknown[]>>
-	>(arg?: T): boolean {
+	clear<T extends Component | ComponentConstructor>(arg?: T): boolean {
 		let cleared = false;
 
 		// Clear all components
@@ -69,7 +65,7 @@ export class Entity {
 
 		// Clearing all components of type
 		if (typeof arg === "function") {
-			const klass = arg as ComponentConstructor<Component<unknown[]>>;
+			const klass = arg as ComponentConstructor;
 			const components = this.map.get(klass);
 			if (!components) return false;
 			this.map.set(klass, []);
@@ -84,9 +80,7 @@ export class Entity {
 
 		// Clear a specific component
 		const component = arg as Component<unknown[]>;
-		const klass = arg.constructor as ComponentConstructor<
-			Component<unknown[]>
-		>;
+		const klass = arg.constructor as ComponentConstructor;
 		const components = this.map.get(klass);
 		if (!components) return false;
 

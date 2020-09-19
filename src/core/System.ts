@@ -4,7 +4,6 @@ import { Entity } from "./Entity";
 
 abstract class System<T extends Entity = Entity> {
 	private set: Set<T> = new Set();
-	protected dirty?: Set<T>;
 	private _callbacks: Map<
 		Entity,
 		{
@@ -12,17 +11,12 @@ abstract class System<T extends Entity = Entity> {
 		}
 	> = new Map();
 
-	static readonly components: ReadonlyArray<
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		ComponentConstructor<any>
-	> = [];
+	static readonly components: ReadonlyArray<ComponentConstructor> = [];
 
 	abstract test(entity: Entity | T): entity is T;
 
 	private _add(entity: T): void {
 		this.set.add(entity);
-		this.dirty?.add(entity);
-
 		this.onAddEntity?.(entity);
 	}
 
@@ -33,7 +27,6 @@ abstract class System<T extends Entity = Entity> {
 
 	private _remove(entity: Entity): void {
 		this.set.delete(entity as T);
-		this.dirty?.delete(entity as T);
 		this.onRemoveEntity?.(entity);
 	}
 
@@ -78,7 +71,7 @@ abstract class System<T extends Entity = Entity> {
 	}
 
 	[Symbol.iterator](): IterableIterator<T> {
-		return (this.dirty ?? this.set)[Symbol.iterator]();
+		return this.set[Symbol.iterator]();
 	}
 }
 

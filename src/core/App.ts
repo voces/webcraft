@@ -6,16 +6,13 @@ import { Entity } from "./Entity";
 import { withApp } from "./appContext";
 
 export class App {
+	protected entities: Entity[] = [];
 	protected systems: System[] = [];
 	protected mechanisms: Mechanism[] = [];
 	private lastRender = 0;
 	private requestedAnimationFrame?: number;
 	private _time = 0;
-	private componentUpdateMap = new Map<
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		ComponentConstructor<any>,
-		System[]
-	>();
+	private componentUpdateMap = new Map<ComponentConstructor, System[]>();
 	private components: typeof Component[] = [];
 	// TODO: make this private!
 	lastUpdate = 0;
@@ -85,8 +82,7 @@ export class App {
 	 */
 	entityComponentUpdated(
 		entity: Entity,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		component: ComponentConstructor<any>,
+		component: ComponentConstructor,
 	): void {
 		const arr = this.componentUpdateMap.get(component);
 		if (!arr) return;
