@@ -1,5 +1,5 @@
-import { Player, patchInState } from "./Player";
-import { next as nextColor, release as releaseColor } from "./colors";
+import { Player } from "./Player";
+import { next as nextColor } from "./colors";
 import { updateDisplay } from "./elo";
 import { alea } from "../lib/alea";
 import { Game } from "../Game";
@@ -31,37 +31,11 @@ export const initPlayerLogic = (game: Game): void => {
 
 	// Received when someone leaves
 	game.addNetworkListener("disconnection", ({ time, connection }) => {
-		game.update({ time });
-
 		const playerIndex = game.players.findIndex((p) => p.id === connection);
 		if (playerIndex === -1) return;
-		const player = game.players[playerIndex];
 
-		player.isHere = false;
+		game.update({ time });
 
-		if (game.round) game.round.onPlayerLeave();
-
-		game.players.splice(playerIndex, 1);
-
-		if (player.color) releaseColor(player.color);
-
-		updateDisplay(game);
+		game.onPlayerLeave(game.players[playerIndex]);
 	});
-
-	// Received by the the upon someone connecting after the round ends
-	game.addNetworkListener(
-		"state",
-		({ time, state: { arena, players: inputPlayers } }) => {
-			game.update({ time });
-
-			patchInState(game, inputPlayers);
-
-			game.setArena(arena);
-			game.receivedState = "state";
-			game.lastRoundEnd = time / 1000;
-			// game.random = new Random( time );
-
-			updateDisplay(game);
-		},
-	);
 };

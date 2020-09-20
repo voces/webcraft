@@ -6,6 +6,7 @@ import { MoveTarget } from "../components/MoveTarget";
 import { distanceBetweenPoints } from "../util/tweenPoints";
 import { BUILD_DISTANCE } from "../constants";
 import { appendErrorMessage } from "../../ui/chat";
+import { currentGame } from "../gameContext";
 
 export class BlueprintSystem extends System<Unit> {
 	static components = [BuildTarget, MoveTarget];
@@ -57,19 +58,20 @@ export class BlueprintSystem extends System<Unit> {
 			owner: entity.owner,
 		});
 
-		entity.round.pathingMap.withoutEntity(entity, () => {
+		const pathingMap = currentGame().pathingMap;
+		pathingMap.withoutEntity(entity, () => {
 			if (
-				entity.round.pathingMap.pathable(
+				pathingMap.pathable(
 					obstruction,
 					buildTarget.target.x,
 					buildTarget.target.y,
 				)
 			) {
-				entity.round.pathingMap.addEntity(obstruction);
+				pathingMap.addEntity(obstruction);
 				entity.obstructions.push(obstruction);
 			} else obstruction.kill({ removeImmediately: true });
 
-			const newPos = entity.round.pathingMap.nearestSpiralPathing(
+			const newPos = pathingMap.nearestSpiralPathing(
 				entity.position.x,
 				entity.position.y,
 				entity,

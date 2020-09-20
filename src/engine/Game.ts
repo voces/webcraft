@@ -1,14 +1,8 @@
-// https://github.com/voces/mvp-bd-client/issues/44
-/* eslint-disable no-restricted-imports */
-import { arenas } from "../katma/arenas/index";
-import { Round } from "../katma/Round";
-import { Arena } from "../katma/arenas/types";
-/* eslint-enable no-restricted-imports */
 import { emitter, Emitter } from "../core/emitter";
-import { Player, patchInState } from "./players/Player";
+import { Player } from "./players/Player";
 import { alea } from "./lib/alea";
 import { Settings } from "./types";
-import { Network, NetworkEventCallback } from "./network";
+import { Network } from "./network";
 import { UI } from "../ui/index";
 import { initPlayerLogic } from "./players/playerLogic";
 import { initSpriteLogicListeners } from "../entities/sprites/spriteLogic";
@@ -33,8 +27,30 @@ import { withGame, wrapGame } from "./gameContext";
 import { isSprite } from "./typeguards";
 import { GraphicMoveSystem } from "./systems/GraphicMoveSystem";
 import { GraphicTrackPosition } from "./systems/GraphicTrackPosition";
+import { PathingMap } from "./pathing/PathingMap";
+import { release as releaseColor } from "./players/colors";
+import { updateDisplay } from "./players/elo";
+
+type IntervalId = number;
+type TimeoutId = number;
+
+type Interval = {
+	fn: () => void;
+	next: number;
+	interval: number;
+	oncePerUpdate: boolean;
+	id: number;
+};
+
+type Timeout = {
+	fn: () => void;
+	next: number;
+	id: number;
+};
 
 class Game extends App {
+	readonly isGame = true;
+
 	private network!: Network;
 	addNetworkListener!: Network["addEventListener"];
 	removeNetworkListener!: Network["removeEventListener"];
@@ -45,17 +61,20 @@ class Game extends App {
 	localPlayer!: Player;
 	host?: Player;
 	players: Player[] = [];
-	arena: Arena = arenas[0];
 	receivedState: false | "init" | "state" | "host" = false;
 	newPlayers = false;
 	random = alea("");
-	round?: Round;
 	lastUpdate = 0;
-	lastRoundEnd?: number;
 	terrain?: Terrain;
 
 	mouse!: Mouse;
 	actions!: Hotkeys;
+
+	// Replace with a heap
+	intervals: Interval[] = [];
+	nextIntervalId = 0;
+	timeouts: Timeout[] = [];
+	nextTimeoutId = 0;
 
 	settings: Settings = {
 		arenaIndex: -1,
@@ -67,6 +86,8 @@ class Game extends App {
 			defenders: { essence: { starting: 0, rate: 0 } },
 		},
 	};
+
+	private _pathingMap?: PathingMap;
 
 	constructor(network: Network) {
 		super();
@@ -105,7 +126,6 @@ class Game extends App {
 					wrapGame(this, callback as any) as any,
 				);
 			this.connect = this.network.connect.bind(this.network);
-			this.addNetworkListener("init", (e) => this.onInit(e));
 			this.addNetworkListener("update", (e) => this.update(e));
 
 			this.ui = new UI();
@@ -115,10 +135,12 @@ class Game extends App {
 			this.addSystem(new SelectedSystem());
 			initPlayerLogic(this);
 			initSpriteLogicListeners(this);
-
-			this.setArena(Math.floor(this.random() * arenas.length));
 		});
 	}
+
+	///////////////////////
+	// Network/server interface
+	///////////////////////
 
 	/* This should only be used by servers that need to rewrite bits. */
 	public get __UNSAFE_network(): Network {
@@ -133,46 +155,9 @@ class Game extends App {
 		return this.network.isHost;
 	}
 
-	private onInit: NetworkEventCallback["init"] = ({
-		connections,
-		state: { players: inputPlayers, arena },
-	}) => {
-		if (connections === 0) this.receivedState = "init";
-
-		this.setArena(arena);
-
-		patchInState(this, inputPlayers);
-	};
-
-	setArena(arenaIndex: number): void {
-		if (this.settings.arenaIndex === arenaIndex) return;
-
-		this.settings.arenaIndex = arenaIndex;
-		this.arena = arenas[arenaIndex];
-
-		if (this.terrain) this.remove(this.terrain);
-		this.terrain = new Terrain(this.arena);
-		this.add(this.terrain);
-
-		this.graphics.panTo(
-			{
-				x: this.arena.tiles[0].length / 2,
-				y: this.arena.tiles.length / 2,
-			},
-			0,
-		);
-	}
-
-	nextArena(): void {
-		this.settings.arenaIndex =
-			(this.settings.arenaIndex + 1) % arenas.length;
-	}
-
-	previousArena(): void {
-		this.settings.arenaIndex = this.settings.arenaIndex
-			? this.settings.arenaIndex - 1
-			: arenas.length - 1;
-	}
+	///////////////////////
+	// System getters
+	///////////////////////
 
 	get graphics(): ThreeGraphics {
 		const sys = this.systems.find((s) => ThreeGraphics.isThreeGraphics(s));
@@ -196,44 +181,121 @@ class Game extends App {
 		return sys as SelectedSystem;
 	}
 
-	start({ time }: { time: number }): void {
-		if (this.round) throw new Error("A round is already in progress");
+	get pathingMap(): PathingMap {
+		if (!this._pathingMap) throw new Error("expected a PathingMap");
+		return this._pathingMap;
+	}
 
-		const plays = this.players[0].crosserPlays;
-		const newArena =
-			plays >= 3 &&
-			this.players.every(
-				(p) => p.crosserPlays === plays || p.crosserPlays >= 5,
-			);
+	set pathingMap(pathingMap: PathingMap) {
+		this._pathingMap = pathingMap;
+	}
 
-		if (newArena) {
-			this.setArena(Math.floor(this.random() * arenas.length));
-			this.players.forEach((p) => (p.crosserPlays = 0));
-		}
+	///////////////////////
+	// Timers
+	///////////////////////
 
-		this.settings.crossers =
-			this.players.length === 3
-				? 1 // hardcode 1v2
-				: Math.ceil(this.players.length / 2); // otherwise just do 1v0, 1v1, 1v2, 2v2, 3v2, 3v3, 4v3, etc
+	setInterval(
+		fn: () => void,
+		interval = 0.05,
+		oncePerUpdate = true,
+	): IntervalId {
+		const id = this.nextIntervalId;
 
-		this.round = new Round({
-			time,
-			settings: this.settings,
-			players: this.players,
+		this.intervals.push({
+			fn,
+			next: this.lastUpdate + interval,
+			interval,
+			oncePerUpdate,
+			id,
 		});
+
+		this.nextIntervalId = id + 1;
+
+		return id;
 	}
 
-	render(): void {
-		withGame(this, () => this._render());
+	clearInterval(id: number): void {
+		const index = this.intervals.findIndex((i) => i.id === id);
+		if (index >= 0) this.intervals.splice(index, 1);
 	}
 
-	remove(entity: Entity): Game {
+	setTimeout(fn: () => void, timeout = 0.05): TimeoutId {
+		const id = this.nextTimeoutId;
+
+		this.timeouts.push({ fn, next: this.lastUpdate + timeout, id });
+
+		this.nextTimeoutId = id + 1;
+
+		return id;
+	}
+
+	clearTimeout(id: number): void {
+		const index = this.timeouts.findIndex((i) => i.id === id);
+		if (index >= 0) this.timeouts.splice(index, 1);
+	}
+
+	updateIntervals(time: number): void {
+		this.intervals.sort((a, b) => a.next - b.next);
+		const intervals = [...this.intervals];
+		let intervalIndex = 0;
+		while (
+			intervals[intervalIndex] &&
+			intervals[intervalIndex].next < time
+		) {
+			const interval = intervals[intervalIndex];
+			interval.next = interval.oncePerUpdate
+				? time + interval.interval
+				: interval.next + interval.interval;
+			interval.fn();
+			if (interval.oncePerUpdate || interval.next > time) intervalIndex++;
+		}
+	}
+
+	updateTimeouts(time: number): void {
+		this.timeouts.sort((a, b) => a.next - b.next);
+		const timeouts = [...this.timeouts];
+		let timeoutIndex = 0;
+		while (timeouts[timeoutIndex] && timeouts[timeoutIndex].next < time) {
+			const timeout = timeouts[timeoutIndex];
+			timeout.fn();
+			timeoutIndex++;
+			const index = this.timeouts.indexOf(timeout);
+			if (index >= 0) this.timeouts.splice(index, 1);
+		}
+	}
+
+	///////////////////////
+	// Entities
+	///////////////////////
+
+	onPlayerLeave(player: Player): void {
+		this.players.splice(this.players.indexOf(player), 1);
+
+		player.isHere = false;
+
+		const color = player.color;
+		if (color) releaseColor(color);
+
+		updateDisplay(this);
+	}
+
+	remove(entity: Entity): boolean {
+		if (!this._entities.has(entity)) return false;
+
 		for (const system of this.systems) system.remove(entity);
 
 		entity.clear();
 		if (isSprite(entity)) entity.remove(true);
 
-		return this;
+		return true;
+	}
+
+	///////////////////////
+	// Cycles
+	///////////////////////
+
+	render(): void {
+		withGame(this, () => this._render());
 	}
 
 	protected _update(e: { time: number }): void {
@@ -242,19 +304,8 @@ class Game extends App {
 		const time = e.time / 1000;
 		this.lastUpdate = time;
 
-		// Update is called for people who have recently joined
-		if (this.round) {
-			this.round.update(time);
-			this.dispatchEvent("update", time);
-			return;
-		}
-
-		if (
-			this.players.length &&
-			this.receivedState &&
-			(!this.lastRoundEnd || time > this.lastRoundEnd + 2)
-		)
-			this.start({ time });
+		this.updateIntervals(time);
+		this.updateTimeouts(time);
 	}
 
 	update(e: { time: number }): void {
@@ -263,17 +314,13 @@ class Game extends App {
 
 	toJSON(): {
 		arena: number;
-		lastRoundEnd: number | undefined;
 		lastUpdate: number;
 		players: ReturnType<typeof Player.prototype.toJSON>[];
-		round: ReturnType<typeof Round.prototype.toJSON> | undefined;
 	} {
 		return {
 			arena: this.settings.arenaIndex,
-			lastRoundEnd: this.lastRoundEnd,
 			lastUpdate: this.lastUpdate,
 			players: this.players.map((p) => p.toJSON()),
-			round: this.round?.toJSON(),
 		};
 	}
 }

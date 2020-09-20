@@ -16,6 +16,7 @@ import { MeshBuilderComponent } from "../../engine/components/graphics/MeshBuild
 import { Animation } from "../../engine/components/graphics/Animation";
 import { Selected } from "../../engine/components/Selected";
 import { Hover } from "../../engine/components/Hover";
+import { currentGame } from "../../engine/gameContext";
 
 const destroyLastBox: Action = {
 	name: "Destroy box",
@@ -62,7 +63,7 @@ export class Crosser extends Unit {
 			[...this.owner.sprites].forEach((sprite) => sprite.kill());
 
 			// Cancel any active placements
-			this.game.obstructionPlacement?.stop();
+			currentGame().obstructionPlacement?.stop();
 		});
 	}
 
@@ -78,17 +79,17 @@ export class Crosser extends Unit {
 		this.clear(Selected);
 		this.clear(Hover);
 
-		this.round.pathingMap.removeEntity(this);
-		const index = this.round.sprites.indexOf(this);
-		if (index >= 0) this.round.sprites.splice(index, 1);
+		const game = currentGame();
+
+		game.pathingMap.removeEntity(this);
 
 		// Cancel any active placements
-		this.game.obstructionPlacement?.stop();
+		game.obstructionPlacement?.stop();
 
 		const meshBuilderComponent = this.get(MeshBuilderComponent)[0];
 		if (meshBuilderComponent) new Animation(this, "ascend", 1);
 
-		this.round.setTimeout(() => this.remove(), 1);
+		game.setTimeout(() => this.remove(), 1);
 	}
 
 	get actions(): Action[] {

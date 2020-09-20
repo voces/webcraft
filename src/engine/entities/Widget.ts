@@ -3,7 +3,7 @@ import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponen
 import { Position } from "../components/Position";
 
 export type WidgetProps = {
-	id: EntityID;
+	id?: EntityID;
 	x: number;
 	y: number;
 };

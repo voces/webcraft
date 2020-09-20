@@ -1,5 +1,6 @@
 import { Point } from "../pathing/PathingMap";
 import { Sprite } from "../../entities/sprites/Sprite";
+import { currentGame } from "../gameContext";
 
 export const distanceBetweenPoints = (
 	{ x: x1, y: y1 }: Point,
@@ -279,11 +280,13 @@ export const calcAndTweenShortenedPath = (
 	// Normalize the target
 	const targetPoint = isPoint(target) ? target : target.position;
 
+	const pathingMap = currentGame().pathingMap;
+
 	// Calculate the path, which may not get to the target
 	const path = isPoint(target)
-		? entity.round.pathingMap.path(entity, targetPoint)
-		: entity.round.pathingMap.withoutEntity(target, () =>
-				entity.round.pathingMap.path(entity, targetPoint),
+		? pathingMap.path(entity, targetPoint)
+		: pathingMap.withoutEntity(target, () =>
+				pathingMap.path(entity, targetPoint),
 		  );
 
 	// Check how far we are away from the target and get remaining distance

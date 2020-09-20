@@ -1,12 +1,12 @@
 import { Network, activeHost } from "./engine/Network";
-import { Game } from "./engine/Game";
 import { window } from "./core/util/globals";
+import { Katma } from "./katma/Katma";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const network = ((globalThis as any).network = new Network());
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any).game = new Game(network);
+(globalThis as any).game = new Katma(network);
 
 window.addEventListener("contextmenu", (e: Event) => {
 	e.preventDefault();

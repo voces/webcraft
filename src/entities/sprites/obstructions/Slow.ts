@@ -7,9 +7,10 @@ import {
 	DamageComponent,
 	Weapon,
 } from "../../../engine/components/DamageComponent";
+import { currentGame } from "../../../engine/gameContext";
 
 const slowTimeout = (target: Sprite) =>
-	target.round.setTimeout(() => {
+	currentGame().setTimeout(() => {
 		const effectIndex = target.effects.findIndex((e) => e.type === "slow");
 		const effect = target.effects[effectIndex];
 
@@ -45,7 +46,7 @@ export class Slow extends Obstruction {
 					(e) => e.type === "slow",
 				);
 				if (existingEffect) {
-					target.round.clearTimeout(existingEffect.timeout);
+					currentGame().clearTimeout(existingEffect.timeout);
 					existingEffect.timeout = slowTimeout(target);
 					return;
 				}

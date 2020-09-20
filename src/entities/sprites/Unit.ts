@@ -21,17 +21,16 @@ const holdPosition: Action = {
 	hotkey: "h" as const,
 	type: "custom" as const,
 	handler: ({ player }): void => {
-		if (!player.game.round) return;
-
 		const ownedUnits = player.game.selectionSystem.selection.filter(
 			(u): u is Unit =>
 				Unit.isUnit(u) && u.owner === player && u.speed > 0,
 		);
 
-		player.game.transmit({
-			type: "holdPosition",
-			sprites: ownedUnits.map((u) => u.id),
-		});
+		if (ownedUnits.length > 0)
+			player.game.transmit({
+				type: "holdPosition",
+				sprites: ownedUnits.map((u) => u.id),
+			});
 	},
 };
 
@@ -40,16 +39,15 @@ const stop: Action = {
 	hotkey: "s" as const,
 	type: "custom" as const,
 	handler: ({ player }): void => {
-		if (!player.game.round) return;
-
 		const ownedUnits = player.game.selectionSystem.selection.filter(
 			(u): u is Unit => Unit.isUnit(u) && u.owner === player,
 		);
 
-		player.game.transmit({
-			type: "stop",
-			sprites: ownedUnits.map((u) => u.id),
-		});
+		if (ownedUnits.length > 0)
+			player.game.transmit({
+				type: "stop",
+				sprites: ownedUnits.map((u) => u.id),
+			});
 	},
 };
 

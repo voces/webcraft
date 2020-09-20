@@ -9,6 +9,7 @@ import { MeshPhongMaterial } from "three";
 import { Blueprint } from "../../entities/sprites/obstructions/Blueprint";
 import { Position } from "../components/Position";
 import { Widget } from "../entities/Widget";
+import { currentGame } from "../gameContext";
 
 const edgeSnap = (v: number) => Math.round(v);
 const midSnap = (v: number) => Math.floor(v) + 0.5;
@@ -79,7 +80,7 @@ export class ObstructionPlacement extends Mechanism {
 
 	// We shouldn't just nuke the cells
 	private updateCells() {
-		if (!this.game.round || !this.plannedObstruction) return;
+		if (!this.plannedObstruction) return;
 
 		const unit = this.game.localPlayer.unit;
 		if (!unit) return;
@@ -108,12 +109,14 @@ export class ObstructionPlacement extends Mechanism {
 			new ThreeObjectComponent(this.gridEntity, newGrid);
 		}
 
-		this.game.round.pathingMap.withoutEntity(unit, () => {
+		const pathingMap = currentGame().pathingMap;
+
+		pathingMap.withoutEntity(unit, () => {
 			const xFinal = xStart + collisionRadius * 2;
 			const yFinal = yStart + collisionRadius * 2;
 
 			let overallPathable = true;
-			const pathingGrid = unit.round.pathingMap.grid;
+			const pathingGrid = pathingMap.grid;
 			for (let y = yStart; y < yFinal; y += 1)
 				for (let x = xStart; x < xFinal; x += 1) {
 					const pathable =
@@ -199,7 +202,6 @@ export class ObstructionPlacement extends Mechanism {
 			obstruction,
 			x: this.x(),
 			y: this.y(),
-			game: this.game,
 		});
 		this.blueprint = blueprint;
 		this.game.add(blueprint);

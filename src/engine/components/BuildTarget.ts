@@ -3,6 +3,7 @@ import { Obstruction } from "../../entities/sprites/obstructions/index";
 import { Blueprint } from "../../entities/sprites/obstructions/Blueprint";
 import { Point } from "../pathing/PathingMap";
 import { Component } from "../../core/Component";
+import { currentGame } from "../gameContext";
 
 export class BuildTarget extends Component {
 	obstructionClass: typeof Obstruction;
@@ -20,10 +21,9 @@ export class BuildTarget extends Component {
 		this.target = target;
 
 		this.blueprint =
-			entity.owner === entity.game.localPlayer
+			entity.owner === currentGame().localPlayer
 				? new Blueprint({
 						...target,
-						game: entity.game,
 						obstruction: obstructionClass,
 				  })
 				: undefined;

@@ -3,6 +3,7 @@ import { MoveTarget } from "../components/MoveTarget";
 import { Sprite } from "../../entities/sprites/Sprite";
 import { PathingMap, Point } from "../pathing/PathingMap";
 import { isSprite } from "../typeguards";
+import { currentGame } from "../gameContext";
 
 const withoutTarget = <A>(
 	pathingMap: PathingMap,
@@ -38,7 +39,7 @@ export class MoveSystem extends System<MovingSprite> {
 		const moveTarget = entity.get(MoveTarget)[0];
 		if (!moveTarget) return this.remove(entity);
 
-		const pathingMap = entity.round.pathingMap;
+		const pathingMap = currentGame().pathingMap;
 
 		// Move
 		moveTarget.progress += delta * entity.speed;

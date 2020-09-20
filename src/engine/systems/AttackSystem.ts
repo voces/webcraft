@@ -7,6 +7,7 @@ import { Animation } from "../components/graphics/Animation";
 import { DamageComponent } from "../components/DamageComponent";
 import { MoveTarget } from "../components/MoveTarget";
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
+import { currentGame } from "../gameContext";
 
 export class AttackSystem extends System<Unit> {
 	static components = [AttackTarget];
@@ -45,11 +46,10 @@ export class AttackSystem extends System<Unit> {
 			return;
 		}
 
+		const lastUpdate = currentGame().lastUpdate;
+
 		// Not within range and not in cooldown
-		if (
-			!isTargetInRange ||
-			weapon.last + weapon.cooldown > entity.round.lastUpdate
-		)
+		if (!isTargetInRange || weapon.last + weapon.cooldown > lastUpdate)
 			return;
 
 		if (weapon.projectile === "instant") {
@@ -70,6 +70,6 @@ export class AttackSystem extends System<Unit> {
 		const meshBuilderComponent = entity.get(MeshBuilderComponent)[0];
 		if (meshBuilderComponent) new Animation(entity, "attack", 0.25);
 
-		weapon.last = entity.round.lastUpdate;
+		weapon.last = lastUpdate;
 	}
 }

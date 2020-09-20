@@ -1,6 +1,5 @@
 import { Sprite } from "../Sprite";
 import { Obstruction } from "./Obstruction";
-import { Game } from "../../../engine/Game";
 
 // TODO: this should have to extend Sprite (health/owner are silly)
 export class Blueprint extends Sprite {
@@ -13,7 +12,6 @@ export class Blueprint extends Sprite {
 		obstruction: typeof Obstruction;
 		x: number;
 		y: number;
-		game: Game;
 	}) {
 		const clonedDefaults = obstruction.clonedDefaults;
 		super({

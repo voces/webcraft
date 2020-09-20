@@ -1,10 +1,8 @@
 import { PATHING_TYPES } from "../../engine/constants";
 import { emitter, Emitter } from "../../core/emitter";
 import { Player } from "../../engine/players/Player";
-import { Round } from "../../katma/Round";
 import { clone } from "../../engine/util/clone";
 import { Action } from "./spriteLogic";
-import { Game } from "../../engine/Game";
 import {
 	MeshBuilderComponent,
 	Props as MeshBuilderComponentProps,
@@ -14,12 +12,10 @@ import { AttackTarget } from "../../engine/components/AttackTarget";
 import { HoldPositionComponent } from "../../engine/components/HoldPositionComponent";
 import { GerminateComponent } from "../../engine/components/GerminateComponent";
 import { Selected } from "../../engine/components/Selected";
-import { App } from "../../core/App";
 import { currentGame } from "../../engine/gameContext";
 import { Hover } from "../../engine/components/Hover";
 import { Position } from "../../engine/components/Position";
 import { Widget, WidgetProps } from "../../engine/entities/Widget";
-import { currentRound } from "../../katma/roundContext";
 import { EntityID } from "../../core/Entity";
 
 export type SpriteElement = HTMLDivElement & { sprite: Sprite };
@@ -68,13 +64,11 @@ class Sprite extends Widget {
 
 	readonly isSprite = true;
 
-	app: App;
 	armor: number;
 	blocksPathing: number;
 	color?: string;
 	effects: Effect[] = [];
 	facing: number;
-	game: Game;
 	invulnerable = false;
 	isAlive: boolean;
 	maxHealth: number;
@@ -82,7 +76,6 @@ class Sprite extends Widget {
 	priority: number;
 	collisionRadius: number;
 	requiresPathing: number;
-	round: Round;
 	selectable: boolean;
 
 	private _x!: number;
@@ -94,7 +87,6 @@ class Sprite extends Widget {
 		blocksPathing = PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE,
 		color,
 		facing = (3 / 2) * Math.PI,
-		id = currentRound().spriteId++,
 		maxHealth = 1,
 		health = maxHealth,
 		meshBuilder = clone(Sprite.defaults.meshBuilder),
@@ -105,19 +97,8 @@ class Sprite extends Widget {
 		selectable = true,
 		...props
 	}: SpriteProps) {
-		super({
-			...props,
-			id,
-		});
+		super(props);
 		emitter<Sprite, SpriteEvents>(this);
-
-		const game = currentGame();
-
-		if (!game.round)
-			throw new Error("trying to create a sprite outside a round");
-		this.game = game;
-		this.app = game;
-		this.round = game.round;
 
 		this.collisionRadius = collisionRadius;
 		this.requiresPathing = requiresPathing;
@@ -141,9 +122,7 @@ class Sprite extends Widget {
 
 		// Lists
 		if (this.owner) this.owner.sprites.push(this);
-		this.round.sprites.push(this);
-
-		this.game.add(this);
+		currentGame().add(this);
 	}
 
 	damage(amount: number): number {
@@ -180,6 +159,7 @@ class Sprite extends Widget {
 	}
 
 	_death({ removeImmediately = false } = {}): void {
+		const game = currentGame();
 		if (removeImmediately) this._health = 0;
 
 		this.clear(Selected);
@@ -189,23 +169,23 @@ class Sprite extends Widget {
 			const index = this.owner.sprites.indexOf(this);
 			if (index >= 0) this.owner.sprites.splice(index, 1);
 		}
-
-		this.round.pathingMap.removeEntity(this);
-		const index = this.round.sprites.indexOf(this);
-		if (index >= 0) this.round.sprites.splice(index, 1);
+		game.pathingMap.removeEntity(this);
+		// const index = this.round.sprites.indexOf(this);
+		// if (index >= 0) this.round.sprites.splice(index, 1);
 
 		this.dispatchEvent("death");
 
 		// Death antimation
 		if (removeImmediately) this.remove();
-		else this.round.setTimeout(() => this.remove(), 0.125);
+		else game.setTimeout(() => this.remove(), 0.125);
 	}
 
 	remove(initializedFromApp = false): void {
+		const game = currentGame();
 		this.dispatchEvent("remove");
-		if (!initializedFromApp) currentGame().remove(this);
+		if (!initializedFromApp) game.remove(this);
 		this.removeEventListeners();
-		this.round.pathingMap.removeEntity(this);
+		game.pathingMap.removeEntity(this);
 	}
 
 	get actions(): Action[] {

@@ -7,6 +7,7 @@ import { AttackTarget } from "../components/AttackTarget";
 import { HoldPositionComponent } from "../components/HoldPositionComponent";
 import { isInAttackRange } from "../../entities/sprites/UnitApi";
 import { DamageComponent } from "../components/DamageComponent";
+import { currentGame } from "../gameContext";
 
 export class AutoAttackSystem extends System<Unit> {
 	static components = [
@@ -57,6 +58,7 @@ export class AutoAttackSystem extends System<Unit> {
 				);
 			});
 
+		const pathingMap = currentGame().pathingMap;
 		const nearest =
 			pool.find((u) => {
 				// If unit in range, that's it
@@ -72,9 +74,9 @@ export class AutoAttackSystem extends System<Unit> {
 
 				// Otherwise, make sure we can get to it
 				if (entity.speed) {
-					const endPoint = entity.round.pathingMap
+					const endPoint = pathingMap
 						.withoutEntity(u, () =>
-							entity.round.pathingMap.path(entity, u.position),
+							pathingMap.path(entity, u.position),
 						)
 						.pop();
 					if (!endPoint) return false;

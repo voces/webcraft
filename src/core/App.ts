@@ -4,9 +4,11 @@ import { requestAnimationFrame } from "./util/globals";
 import { ComponentConstructor, Component } from "./Component";
 import { Entity } from "./Entity";
 import { withApp } from "./appContext";
+import { PublicSetView } from "./PublicSetView";
 
 export class App {
-	protected entities: Entity[] = [];
+	protected _entities = new Set<Entity>();
+	entities = new PublicSetView(this._entities);
 	protected systems: System[] = [];
 	protected mechanisms: Mechanism[] = [];
 	private lastRender = 0;
@@ -16,6 +18,7 @@ export class App {
 	private components: typeof Component[] = [];
 	// TODO: make this private!
 	lastUpdate = 0;
+	private entityId = 0;
 
 	constructor() {
 		this.requestedAnimationFrame = requestAnimationFrame(() =>
@@ -61,19 +64,29 @@ export class App {
 		for (const system of this.systems) system.dispose();
 	}
 
-	add(...entities: Entity[]): App {
-		for (const system of this.systems) system.add(...entities);
+	add(entity: Entity): boolean {
+		if (this._entities.has(entity)) return false;
 
-		return this;
+		this._entities.add(entity);
+
+		for (const system of this.systems) system.add(entity);
+
+		return true;
 	}
 
 	// Also update Game#remove if updating this
-	remove(...entities: Entity[]): App {
-		for (const system of this.systems) system.remove(...entities);
+	remove(entity: Entity): boolean {
+		if (!this._entities.has(entity)) return false;
 
-		for (const entity of entities) entity.clear();
+		for (const system of this.systems) system.remove(entity);
 
-		return this;
+		entity.clear();
+
+		return true;
+	}
+
+	consumeEntityId(): number {
+		return this.entityId++;
 	}
 
 	/**

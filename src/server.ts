@@ -1,2 +1,2 @@
 export { Network } from "./engine/Network";
-export { Game } from "./engine/Game";
+export { Katma } from "./katma/Katma";

@@ -3,6 +3,7 @@ import { Unit, UnitProps } from "./Unit";
 import { Sprite } from "./Sprite";
 import { Point } from "../../engine/pathing/PathingMap";
 import { Action } from "./spriteLogic";
+import { currentGame } from "../../engine/gameContext";
 
 const mirror: Action = {
 	name: "Mirror Image",
@@ -24,21 +25,12 @@ const mirror: Action = {
 };
 
 const getMirroringPosition = (pos: Point, entity: Sprite, layer?: number) => {
-	const nearest = entity.round.pathingMap.nearestSpiralPathing(
-		pos.x,
-		pos.y,
-		entity,
-	);
+	const pathingMap = currentGame().pathingMap;
+	const nearest = pathingMap.nearestSpiralPathing(pos.x, pos.y, entity);
 
-	if (entity.round.pathingMap.layer(nearest.x, nearest.y) === layer)
-		return nearest;
+	if (pathingMap.layer(nearest.x, nearest.y) === layer) return nearest;
 
-	return entity.round.pathingMap.nearestSpiralPathing(
-		nearest.x,
-		nearest.y,
-		entity,
-		layer,
-	);
+	return pathingMap.nearestSpiralPathing(nearest.x, nearest.y, entity, layer);
 };
 
 type DefenderProps = UnitProps & {
@@ -76,6 +68,7 @@ export class Defender extends Unit {
 	}
 
 	mirror(): void {
+		const game = currentGame();
 		if (this.mirrors) this.mirrors.forEach((u) => u.kill());
 		this.stop();
 
@@ -90,18 +83,17 @@ export class Defender extends Unit {
 			y: this.position.y + Math.sin(angle2) * MIRROR_SEPARATION,
 		};
 
-		if (this.game.random() < 0.5) {
+		if (game.random() < 0.5) {
 			const temp = pos1;
 			pos1 = pos2;
 			pos2 = temp;
 		}
 
-		const layer = this.round.pathingMap.layer(
-			this.position.x,
-			this.position.y,
-		);
+		const pathingMap = game.pathingMap;
 
-		const realPosition = this.round.pathingMap.withoutEntity(this, () =>
+		const layer = pathingMap.layer(this.position.x, this.position.y);
+
+		const realPosition = pathingMap.withoutEntity(this, () =>
 			getMirroringPosition(pos1, this, layer),
 		);
 		this.position.setXY(realPosition.x, realPosition.y);
@@ -115,7 +107,7 @@ export class Defender extends Unit {
 		});
 		const mirrorPos = getMirroringPosition(pos2, mirror, layer);
 		mirror.position.setXY(mirrorPos.x, mirrorPos.y);
-		this.round.pathingMap.addEntity(mirror);
+		pathingMap.addEntity(mirror);
 		this.mirrors = [mirror];
 	}
 

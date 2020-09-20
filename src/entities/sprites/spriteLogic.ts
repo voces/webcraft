@@ -125,15 +125,11 @@ const leftClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 
 export const initSpriteLogicListeners = (game: Game): void => {
 	game.mouse.addEventListener("mouseDown", (e) => {
-		if (!game.round) return;
-
 		if (e.button === 2 || e.ctrlDown) return rightClick(e);
 		if (e.button === 0) leftClick(e);
 	});
 
 	game.ui.addEventListener("keyDown", (e) => {
-		if (!game.round) return;
-
 		const hotkey = game.actions.activeActions.find(
 			(b) => b.hotkey === e.key,
 		);
@@ -164,9 +160,7 @@ export const initSpriteLogicListeners = (game: Game): void => {
 
 		game.update({ time });
 
-		if (!game.round) return;
-
-		const player = game.round.players.find((p) => p.id === connection);
+		const player = game.players.find((p) => p.id === connection);
 		if (!player) return;
 
 		const unit = player.sprites.find(
@@ -180,9 +174,7 @@ export const initSpriteLogicListeners = (game: Game): void => {
 	game.addNetworkListener("move", ({ time, connection, sprites, x, y }) => {
 		game.update({ time });
 
-		if (!game.round) return;
-
-		const player = game.round.players.find((p) => p.id === connection);
+		const player = game.players.find((p) => p.id === connection);
 		if (!player) return;
 
 		player.sprites
@@ -196,13 +188,11 @@ export const initSpriteLogicListeners = (game: Game): void => {
 		({ time, connection, attackers, target: targetId }) => {
 			game.update({ time });
 
-			if (!game.round) return;
-
-			const player = game.round.players.find((p) => p.id === connection);
+			const player = game.players.find((p) => p.id === connection);
 			if (!player) return;
 
-			const target = game.round.sprites.find((s) => s.id === targetId);
-			if (!target) return;
+			const target = game.entities.find((s) => s.id === targetId);
+			if (!target || !isSprite(target)) return;
 
 			player.sprites
 				.filter((s) => attackers.includes(s.id))
@@ -214,9 +204,7 @@ export const initSpriteLogicListeners = (game: Game): void => {
 	game.addNetworkListener("kill", ({ time, sprites, connection }) => {
 		game.update({ time });
 
-		if (!game.round) return;
-
-		const player = game.round.players.find((p) => p.id === connection);
+		const player = game.players.find((p) => p.id === connection);
 		if (!player) return;
 
 		player.sprites
@@ -227,9 +215,7 @@ export const initSpriteLogicListeners = (game: Game): void => {
 	game.addNetworkListener("holdPosition", ({ time, connection, sprites }) => {
 		game.update({ time });
 
-		if (!game.round) return;
-
-		const player = game.round.players.find((p) => p.id === connection);
+		const player = game.players.find((p) => p.id === connection);
 		if (!player) return;
 
 		player.sprites
@@ -241,9 +227,7 @@ export const initSpriteLogicListeners = (game: Game): void => {
 	game.addNetworkListener("stop", ({ time, connection, sprites }) => {
 		game.update({ time });
 
-		if (!game.round) return;
-
-		const player = game.round.players.find((p) => p.id === connection);
+		const player = game.players.find((p) => p.id === connection);
 		if (!player) return;
 
 		player.sprites
@@ -255,9 +239,7 @@ export const initSpriteLogicListeners = (game: Game): void => {
 	game.addNetworkListener("mirror", ({ time, connection, sprites }) => {
 		game.update({ time });
 
-		if (!game.round) return;
-
-		const player = game.round.players.find((p) => p.id === connection);
+		const player = game.players.find((p) => p.id === connection);
 		if (!player) return;
 
 		player.sprites
