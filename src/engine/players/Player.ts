@@ -8,9 +8,7 @@ import { ResourceMap, resourceKeys, Resource } from "../types";
 import { Unit } from "../entities/widgets/sprites/Unit";
 import { Sprite } from "../entities/widgets/Sprite";
 import { Game } from "../Game";
-// https://github.com/voces/mvp-bd-client/issues/33
-// eslint-disable-next-line no-restricted-imports
-import { currentRound } from "../../katma/roundContext";
+import { currentGame } from "../gameContext";
 
 export interface PlayerState {
 	color: number | undefined;
@@ -64,16 +62,12 @@ export class Player {
 	}
 
 	get enemies(): Player[] {
-		const round = currentRound();
-		const isCrosser = round.crossers.includes(this);
-		return isCrosser ? round.defenders : round.crossers;
+		const game = currentGame();
+		return game.players.filter((p) => game.alliances.isEnemy(this, p));
 	}
 
 	isEnemy(player: Player): boolean {
-		const round = currentRound();
-		const selfIsCrosser = round.crossers.includes(this);
-		const otherIsCrosser = round.crossers.includes(player);
-		return selfIsCrosser !== otherIsCrosser;
+		return currentGame().alliances.isEnemy(this, player);
 	}
 
 	getEnemySprites(): Sprite[] {

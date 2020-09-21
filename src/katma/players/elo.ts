@@ -1,32 +1,47 @@
 import { document } from "../../core/util/globals";
-import { Player } from "./Player";
-import { emptyElement } from "../util/html";
-import { Game } from "../Game";
+import { Player } from "../../engine/players/Player";
+import { emptyElement } from "../../engine/util/html";
+import { Game } from "../../engine/Game";
 
 // Formula taken from
 // https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/
 
-const K = 32;
+const K = 16;
 
-const calculatePower = (team: number[]) =>
-	team.reduce((sum, player) => sum + Math.pow(10, player / 400), 0);
+type ScoreAndPlays = { score: number; plays: number };
 
-const calculateExpectedWin = (teamA: number[], teamB: number[]) => {
+const calculatePower = (team: ScoreAndPlays[]) =>
+	team.reduce((sum, player) => sum + Math.pow(10, player.score / 400), 0);
+
+const calculateExpectedWin = (
+	teamA: ScoreAndPlays[],
+	teamB: ScoreAndPlays[],
+) => {
 	const teamAPower = calculatePower(teamA);
 	return teamAPower / (teamAPower + calculatePower(teamB));
 };
 
 const calculateNewRatings = (
-	teamA: number[],
-	teamB: number[],
+	teamA: ScoreAndPlays[],
+	teamB: ScoreAndPlays[],
 	score: number,
 ) => {
 	const expectedWin = calculateExpectedWin(teamA, teamB);
 	const won = score > 0 ? 1 : 0;
-	const totalChange = (Math.sqrt(score) || 1) * K * (won - expectedWin);
+
+	const players = [...teamA, ...teamB];
+	const averagePlays =
+		players.reduce((sum, player) => sum + player.plays, 0) / players.length;
+
+	const totalChange =
+		(Math.sqrt(score) || 1) *
+		K *
+		(1 + 9 / averagePlays ** (1 / 2)) *
+		(won - expectedWin);
+
 	return [
-		teamA.map((player) => player + totalChange / teamA.length),
-		teamB.map((player) => player - totalChange / teamB.length),
+		teamA.map((player) => player.score + totalChange / teamA.length),
+		teamB.map((player) => player.score - totalChange / teamB.length),
 	];
 };
 
@@ -44,8 +59,8 @@ export const elo = ({
 	game: Game;
 }): void => {
 	const newRatings = calculateNewRatings(
-		crossers.map((p) => p.score[mode]),
-		defenders.map((p) => p.score[mode]),
+		crossers.map((p) => ({ score: p.score[mode], plays: p.crosserPlays })),
+		defenders.map((p) => ({ score: p.score[mode], plays: p.crosserPlays })),
 		scores,
 	);
 

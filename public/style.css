@@ -55,14 +55,14 @@ canvas {
     padding: 0;
 }
 
+#scores span { padding: 0.25em; }
+#scores .score { text-align: right; }
+
 #bottom-left {
     position: absolute;
     bottom: 1em;
     left: 1em;
 }
-
-#scores span { padding: 0.25em; }
-#scores .score { text-align: right; }
 
 #chat-log {
     position: absolute;

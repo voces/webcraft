@@ -1,6 +1,5 @@
 import { Player } from "./Player";
 import { next as nextColor } from "./colors";
-import { updateDisplay } from "./elo";
 import { alea } from "../lib/alea";
 import { Game } from "../Game";
 
@@ -26,7 +25,7 @@ export const initPlayerLogic = (game: Game): void => {
 			game.localPlayer = player;
 		else game.newPlayers = true;
 
-		updateDisplay(game);
+		game.onPlayerJoin();
 	});
 
 	// Received when someone leaves

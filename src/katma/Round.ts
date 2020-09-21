@@ -3,8 +3,7 @@ import { TILE_TYPES, TileType } from "../engine/constants";
 import { Sprite } from "../engine/entities/widgets/Sprite";
 import { Unit } from "../engine/entities/widgets/sprites/Unit";
 import { PathingMap } from "../engine/pathing/PathingMap";
-import { colors } from "../engine/players/colors";
-import { elo, updateDisplay } from "../engine/players/elo";
+import { elo, updateDisplay } from "./players/elo";
 import { Player } from "../engine/players/Player";
 import { resourceKeys, Settings, teamKeys } from "../engine/types";
 import { arenas } from "./arenas/index";
@@ -14,8 +13,7 @@ import { Defender } from "./entities/Defender";
 import { Resource } from "./entities/obstructions/Resource";
 import { currentKatma } from "./katmaContext";
 import { TileSystem } from "./systems/TileSystem";
-
-let placeholderPlayer: Player;
+import { getPlaceholderPlayer } from "./players/placeholder";
 
 // A round starts upon construction
 class Round {
@@ -58,22 +56,46 @@ class Round {
 		this.tileSystem = new TileSystem();
 		katma.addSystem(this.tileSystem);
 
-		if (!placeholderPlayer)
-			placeholderPlayer = new Player({
-				color: colors.white,
-				id: -1,
-				score: { bulldog: 800 },
-				game: katma,
-			});
-
 		this.pickTeams();
 		this.grantResources();
 		this.spawnUnits();
 	}
 
+	private addCrosser(player: Player): void {
+		const katma = currentKatma();
+
+		for (const crosser of this.crossers)
+			katma.alliances.set(player, crosser, "ally", true);
+
+		for (const defender of this.defenders)
+			katma.alliances.set(player, defender, "enemy", true);
+
+		this.crossers.push(player);
+		player.crosserPlays++;
+	}
+
+	private addDefender(player: Player): void {
+		const katma = currentKatma();
+
+		for (const crosser of this.crossers)
+			katma.alliances.set(player, crosser, "enemy", true);
+
+		for (const defender of this.defenders)
+			katma.alliances.set(player, defender, "ally", true);
+
+		this.defenders.push(player);
+	}
+
 	pickTeams(): void {
 		const katma = currentKatma();
-		if (this.players.length === 1) this.players.push(placeholderPlayer);
+		const placeholder = getPlaceholderPlayer();
+
+		if (this.players.length === 1) {
+			katma.players.push(placeholder);
+			this.players.push(placeholder);
+		} else
+			for (const player of this.players)
+				katma.alliances.set(player, placeholder, "neutral", true);
 
 		const remaining = [...this.players];
 		while (remaining.length) {
@@ -85,10 +107,9 @@ class Round {
 				1,
 			)[0];
 			remaining.splice(remaining.indexOf(player), 1);
-			if (this.crossers.length < this.settings.crossers) {
-				this.crossers.push(player);
-				player.crosserPlays++;
-			} else this.defenders.push(player);
+			if (this.crossers.length < this.settings.crossers)
+				this.addCrosser(player);
+			else this.addDefender(player);
 		}
 
 		updateDisplay(katma);
@@ -190,7 +211,7 @@ class Round {
 			game: katma,
 		});
 
-		const placeholderIndex = katma.players.indexOf(placeholderPlayer);
+		const placeholderIndex = katma.players.indexOf(getPlaceholderPlayer());
 		if (placeholderIndex >= 0) katma.players.splice(placeholderIndex, 1);
 
 		if (katma.newPlayers) {

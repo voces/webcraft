@@ -11,6 +11,7 @@ import { DamageComponent, Weapon } from "../../../components/DamageComponent";
 import { HoldPositionComponent } from "../../../components/HoldPositionComponent";
 import { MoveTarget } from "../../../components/MoveTarget";
 import { BUILD_DISTANCE } from "../../../constants";
+import { currentGame } from "../../../gameContext";
 import { Point } from "../../../pathing/PathingMap";
 import { Player } from "../../../players/Player";
 import { Sprite, SpriteProps } from "../Sprite";
@@ -33,8 +34,10 @@ export type UnitProps = SpriteProps & {
 	builds?: typeof Obstruction[];
 };
 
-const revealIllusion = (owner: Player) =>
-	!owner.enemies.includes(owner.game.localPlayer);
+const revealIllusion = (owner: Player) => {
+	const game = currentGame();
+	return game.alliances.isAlly(owner, game.localPlayer);
+};
 
 const darkBlue = new Color("#191966");
 

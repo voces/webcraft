@@ -9,7 +9,8 @@ import { arenas } from "./arenas";
 import { Arena } from "./arenas/types";
 import { Round } from "./Round";
 import { withKatma } from "./katmaContext";
-import { updateDisplay } from "../engine/players/elo";
+import { updateDisplay } from "./players/elo";
+import { getPlaceholderPlayer } from "./players/placeholder";
 
 export class Katma extends Game {
 	readonly isKatma = true;
@@ -44,11 +45,17 @@ export class Katma extends Game {
 	// Entities
 	///////////////////////
 
+	onPlayerJoin(): void {
+		updateDisplay(this);
+	}
+
 	onPlayerLeave(player: Player): void {
 		super.onPlayerLeave(player);
 
 		if (this.round && !this.players.some((player) => player.isHere))
 			this.round = undefined;
+
+		updateDisplay(this);
 	}
 
 	private onPlayerState: NetworkEventCallback["state"] = ({
@@ -115,16 +122,19 @@ export class Katma extends Game {
 	start({ time }: { time: number }): void {
 		if (this.round) throw new Error("A round is already in progress");
 
-		const plays = this.players[0].crosserPlays;
+		const players =
+			this.players.length === 1
+				? [...this.players, getPlaceholderPlayer()]
+				: this.players;
+		const plays = players[0].crosserPlays;
 		const newArena =
 			plays >= 3 &&
-			this.players.every(
+			players.every(
 				(p) => p.crosserPlays === plays || p.crosserPlays >= 5,
 			);
-
 		if (newArena) {
 			this.setArena(Math.floor(this.random() * arenas.length));
-			this.players.forEach((p) => (p.crosserPlays = 0));
+			players.forEach((p) => (p.crosserPlays = 0));
 		}
 
 		this.settings.crossers =

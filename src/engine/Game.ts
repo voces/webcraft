@@ -7,11 +7,11 @@ import { initSpriteLogicListeners } from "./actions/spriteLogic";
 import { Terrain } from "./entities/Terrain";
 import { withGame, wrapGame } from "./gameContext";
 import { alea } from "./lib/alea";
+import { Alliances } from "./mechanisms/Alliances";
 import { ObstructionPlacement } from "./mechanisms/ObstructionPlacement";
 import { Network } from "./network";
 import { PathingMap } from "./pathing/PathingMap";
 import { release as releaseColor } from "./players/colors";
-import { updateDisplay } from "./players/elo";
 import { Player } from "./players/Player";
 import { initPlayerLogic } from "./players/playerLogic";
 import { AnimationSystem } from "./systems/AnimationSystem";
@@ -73,6 +73,7 @@ class Game extends App {
 	obstructionPlacement!: ObstructionPlacement;
 	graphics!: ThreeGraphics;
 	selectionSystem!: SelectedSystem;
+	alliances!: Alliances;
 
 	// Replace with a heap
 	intervals: Interval[] = [];
@@ -146,6 +147,9 @@ class Game extends App {
 
 			this.selectionSystem = new SelectedSystem();
 			this.addSystem(this.selectionSystem);
+
+			this.alliances = new Alliances();
+			this.addMechanism(this.alliances);
 
 			initPlayerLogic(this);
 			initSpriteLogicListeners(this);
@@ -260,6 +264,10 @@ class Game extends App {
 	// Entities
 	///////////////////////
 
+	onPlayerJoin(): void {
+		/* do nothing */
+	}
+
 	onPlayerLeave(player: Player): void {
 		this.players.splice(this.players.indexOf(player), 1);
 
@@ -267,8 +275,6 @@ class Game extends App {
 
 		const color = player.color;
 		if (color) releaseColor(color);
-
-		updateDisplay(this);
 	}
 
 	remove(entity: Entity): boolean {

@@ -12,6 +12,7 @@ export class TileSystem extends System<Crosser> {
 	}
 
 	update(crosser: Crosser): void {
+		if (crosser.invulnerable) return;
 		const round = currentRound();
 		if (
 			round.arena.tiles[
