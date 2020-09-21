@@ -1,6 +1,6 @@
-import { Point } from "../pathing/PathingMap";
-import { Sprite } from "../../entities/sprites/Sprite";
+import { Sprite } from "../entities/widgets/Sprite";
 import { currentGame } from "../gameContext";
+import { Point } from "../pathing/PathingMap";
 
 export const distanceBetweenPoints = (
 	{ x: x1, y: y1 }: Point,

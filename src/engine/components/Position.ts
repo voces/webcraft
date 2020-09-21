@@ -3,6 +3,7 @@ import { Entity } from "../../core/Entity";
 import { whileReplacingComponent } from "../../core/util/flags";
 import { Point } from "../pathing/PathingMap";
 import { isEntity } from "../typeguards";
+import { Mutable } from "../types";
 
 export class Position extends Component<
 	[number, number, { zOffset: number; flyHeight: number }]
@@ -40,10 +41,11 @@ export class Position extends Component<
 		y: number,
 		{ zOffset, flyHeight }: { zOffset: number; flyHeight: number },
 	): void {
-		(this.x as number) = x;
-		(this.y as number) = y;
-		(this.zOffset as number) = zOffset;
-		(this.flyHeight as number) = flyHeight;
+		const mutable: Mutable<Position> = this;
+		mutable.x = x;
+		mutable.y = y;
+		mutable.zOffset = zOffset;
+		mutable.flyHeight = flyHeight;
 	}
 
 	setXY(x: number, y: number): Position {

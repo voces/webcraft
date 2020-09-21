@@ -118,7 +118,7 @@ export class App {
 
 			if (system.render)
 				for (const entity of system)
-					system.render!(entity, delta, thisRender);
+					system.render(entity, delta, thisRender);
 
 			system.postRender(delta, thisRender);
 		}
@@ -142,7 +142,7 @@ export class App {
 
 			if (system.update)
 				for (const entity of system)
-					system.update!(entity, delta, this._time);
+					system.update(entity, delta, this._time);
 
 			system.postUpdate(delta, this._time);
 		}

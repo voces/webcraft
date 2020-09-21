@@ -1,7 +1,7 @@
 import { System } from "../../core/System";
-import { Sprite } from "../../entities/sprites/Sprite";
 import { Animation } from "../components/graphics/Animation";
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
+import { Sprite } from "../entities/widgets/Sprite";
 
 export class AnimationSystem extends System<Sprite> {
 	static components = [Animation];

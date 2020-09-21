@@ -1,12 +1,12 @@
-import { AttackTarget } from "../components/AttackTarget";
 import { System } from "../../core/System";
-import { Unit } from "../../entities/sprites/Unit";
-import { Sprite } from "../../entities/sprites/Sprite";
-import { isInAttackRange } from "../../entities/sprites/UnitApi";
-import { Animation } from "../components/graphics/Animation";
+import { isInAttackRange } from "../api/UnitApi";
+import { AttackTarget } from "../components/AttackTarget";
 import { DamageComponent } from "../components/DamageComponent";
-import { MoveTarget } from "../components/MoveTarget";
+import { Animation } from "../components/graphics/Animation";
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
+import { MoveTarget } from "../components/MoveTarget";
+import { Sprite } from "../entities/widgets/Sprite";
+import { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
 
 export class AttackSystem extends System<Unit> {

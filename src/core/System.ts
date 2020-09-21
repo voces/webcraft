@@ -1,15 +1,8 @@
 import { ComponentConstructor } from "./Component";
-import { Unit } from "../entities/sprites/Unit";
 import { Entity } from "./Entity";
 
 abstract class System<T extends Entity = Entity> {
 	private set: Set<T> = new Set();
-	private _callbacks: Map<
-		Entity,
-		{
-			changeListener: ((prop: keyof Unit) => void) | undefined;
-		}
-	> = new Map();
 
 	static readonly components: ReadonlyArray<ComponentConstructor> = [];
 

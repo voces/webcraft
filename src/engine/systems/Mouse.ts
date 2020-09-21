@@ -9,7 +9,7 @@ import { EntityObject } from "../types";
 import { Hover } from "../components/Hover";
 import { Emitter, emitter } from "../../core/emitter";
 import { UI, MouseMoveEvent, MouseDownEvent } from "../../ui";
-import { SelectionCircle } from "../../entities/SelectionCircle";
+import { SelectionCircle } from "../entities/widgets/sprites/SelectionCircle";
 import { isSprite } from "../typeguards";
 
 export enum MouseButton {

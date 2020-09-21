@@ -1,9 +1,9 @@
-import { Sprite } from "../../entities/sprites/Sprite";
-import { Obstruction } from "../../entities/sprites/obstructions/index";
-import { Blueprint } from "../../entities/sprites/obstructions/Blueprint";
-import { Point } from "../pathing/PathingMap";
 import { Component } from "../../core/Component";
+import { Sprite } from "../entities/widgets/Sprite";
+import { Blueprint } from "../entities/widgets/sprites/Blueprint";
+import { Obstruction } from "../entities/widgets/sprites/units/Obstruction";
 import { currentGame } from "../gameContext";
+import { Point } from "../pathing/PathingMap";
 
 export class BuildTarget extends Component {
 	obstructionClass: typeof Obstruction;

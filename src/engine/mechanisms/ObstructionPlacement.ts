@@ -1,15 +1,16 @@
-import { appendErrorMessage } from "../../ui/chat";
-import { Obstruction } from "../../entities/sprites/obstructions/index";
-import { Game } from "../Game";
-import { Mechanism } from "../../core/Merchanism";
-import { Mouse } from "../systems/Mouse";
 import { Grid } from "notextures";
-import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { MeshPhongMaterial } from "three";
-import { Blueprint } from "../../entities/sprites/obstructions/Blueprint";
+
+import { Mechanism } from "../../core/Merchanism";
+import { appendErrorMessage } from "../../ui/chat";
+import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Position } from "../components/Position";
 import { Widget } from "../entities/Widget";
+import { Blueprint } from "../entities/widgets/sprites/Blueprint";
+import { Obstruction } from "../entities/widgets/sprites/units/Obstruction";
+import { Game } from "../Game";
 import { currentGame } from "../gameContext";
+import { Mouse } from "../systems/Mouse";
 
 const edgeSnap = (v: number) => Math.round(v);
 const midSnap = (v: number) => Math.floor(v) + 0.5;
@@ -17,11 +18,6 @@ const midSnap = (v: number) => Math.floor(v) + 0.5;
 class PlacementEntity extends Widget {}
 
 export class ObstructionPlacement extends Mechanism {
-	static isObstructionPlacement = (
-		mechanism: Mechanism,
-	): mechanism is ObstructionPlacement =>
-		mechanism instanceof ObstructionPlacement;
-
 	private game: Game;
 	private plannedObstruction: typeof Obstruction | undefined;
 	private pathable = false;
@@ -169,7 +165,7 @@ export class ObstructionPlacement extends Mechanism {
 		const y = this.y();
 
 		if (this.gridEntity) Position.setXY(this.gridEntity, x, y);
-		if (this.blueprint) this.blueprint.position.setXY(x, y);
+		this.blueprint?.position.setXY(x, y);
 	}
 
 	private updateSize() {

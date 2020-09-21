@@ -1,9 +1,9 @@
 import { System } from "../../core/System";
 import { MoveTarget } from "../components/MoveTarget";
-import { Sprite } from "../../entities/sprites/Sprite";
+import { Sprite } from "../entities/widgets/Sprite";
+import { currentGame } from "../gameContext";
 import { PathingMap, Point } from "../pathing/PathingMap";
 import { isSprite } from "../typeguards";
-import { currentGame } from "../gameContext";
 
 const withoutTarget = <A>(
 	pathingMap: PathingMap,

@@ -1,12 +1,12 @@
-import { Action } from "../entities/sprites/spriteLogic";
-import { document } from "../core/util/globals";
-import { defined } from "../engine/types";
-import { Unit } from "../entities/sprites/Unit";
-import { emptyElement } from "../engine/util/html";
 import { Entity } from "../core/Entity";
 import { Mechanism } from "../core/Merchanism";
-import { isSprite } from "../engine/typeguards";
+import { document } from "../core/util/globals";
+import { centerAction } from "../engine/actions/center";
+import { Action } from "../engine/actions/types";
 import { currentGame } from "../engine/gameContext";
+import { isUnit } from "../engine/typeguards";
+import { defined } from "../engine/types";
+import { emptyElement } from "../engine/util/html";
 
 const container = document.getElementById("hotkeys")!;
 
@@ -53,30 +53,6 @@ const genNode = (action: Action) => {
 	return elem;
 };
 
-const center: Action = {
-	name: "Center",
-	hotkey: " " as const,
-	type: "custom" as const,
-	handler: ({ player }): void => {
-		const selectionSystem = player.game.selectionSystem;
-		const selection = selectionSystem.selection;
-
-		if (selection.length === 0 && player.sprites.length)
-			return selectionSystem.setSelection([player.sprites[0]]);
-
-		const { xSum, ySum } = selection.filter(isSprite).reduce(
-			({ xSum, ySum }, { position: { x, y } }) => ({
-				xSum: xSum + x,
-				ySum: ySum + y,
-			}),
-			{ xSum: 0, ySum: 0 },
-		);
-		const x = xSum / selection.length;
-		const y = ySum / selection.length;
-		player.game.graphics.panTo({ x, y });
-	},
-};
-
 const aCharCode = "a".charCodeAt(0);
 const zCharCode = "z".charCodeAt(0);
 
@@ -95,12 +71,12 @@ export class Hotkeys extends Mechanism {
 		// Clear actions
 		emptyElement(container);
 		this.activeActions.splice(0);
-		this.activeActions.push(center);
+		this.activeActions.push(centerAction);
 
 		// Get actions
 		const game = currentGame();
 		const units = entities
-			.filter(Unit.isUnit)
+			.filter(isUnit)
 			.filter((u) => u.owner === game.localPlayer);
 		if (!units.length) return;
 

@@ -1,7 +1,7 @@
 import { System } from "../../core/System";
-import { Sprite } from "../../entities/sprites/Sprite";
-import { Crosser } from "../../entities/sprites/Crosser";
 import { TILE_TYPES } from "../../engine/constants";
+import { Sprite } from "../../engine/entities/widgets/Sprite";
+import { Crosser } from "../entities/Crosser";
 import { currentRound } from "../roundContext";
 
 export class TileSystem extends System<Crosser> {

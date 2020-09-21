@@ -1,19 +1,19 @@
-import { arenas } from "./arenas/index";
-import { PathingMap } from "../engine/pathing/PathingMap";
-import { TILE_TYPES, TileType } from "../engine/constants";
-import { Crosser } from "../entities/sprites/Crosser";
-import { Defender } from "../entities/sprites/Defender";
-import { elo, updateDisplay } from "../engine/players/elo";
 import { emitter, Emitter } from "../core/emitter";
-import { Player } from "../engine/players/Player";
+import { TILE_TYPES, TileType } from "../engine/constants";
+import { Sprite } from "../engine/entities/widgets/Sprite";
+import { Unit } from "../engine/entities/widgets/sprites/Unit";
+import { PathingMap } from "../engine/pathing/PathingMap";
 import { colors } from "../engine/players/colors";
-import { Resource } from "../entities/sprites/obstructions/index";
-import { Settings, teamKeys, resourceKeys } from "../engine/types";
+import { elo, updateDisplay } from "../engine/players/elo";
+import { Player } from "../engine/players/Player";
+import { resourceKeys, Settings, teamKeys } from "../engine/types";
+import { arenas } from "./arenas/index";
 import { Arena } from "./arenas/types";
-import { Unit } from "../entities/sprites/Unit";
-import { Sprite } from "../entities/sprites/Sprite";
-import { TileSystem } from "./systems/TileSystem";
+import { Crosser } from "./entities/Crosser";
+import { Defender } from "./entities/Defender";
+import { Resource } from "./entities/obstructions/Resource";
 import { currentKatma } from "./katmaContext";
+import { TileSystem } from "./systems/TileSystem";
 
 let placeholderPlayer: Player;
 

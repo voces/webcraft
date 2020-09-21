@@ -1,13 +1,13 @@
-import { Point } from "../pathing/PathingMap";
-import { Sprite } from "../../entities/sprites/Sprite";
-import {
-	PathTweener,
-	tweenPoints,
-	distanceBetweenPoints,
-	shortenPath,
-	calcAndTweenShortenedPath,
-} from "../util/tweenPoints";
 import { Component } from "../../core/Component";
+import { Sprite } from "../entities/widgets/Sprite";
+import { Point } from "../pathing/PathingMap";
+import {
+	calcAndTweenShortenedPath,
+	distanceBetweenPoints,
+	PathTweener,
+	shortenPath,
+	tweenPoints,
+} from "../util/tweenPoints";
 import { getXY } from "./Position";
 
 export class MoveTarget extends Component<[], Sprite> {

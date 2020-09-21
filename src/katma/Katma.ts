@@ -3,7 +3,7 @@ import { Game } from "../engine/Game";
 import { NetworkEventCallback } from "../engine/Network";
 import { patchInState, Player } from "../engine/players/Player";
 import { isSprite } from "../engine/typeguards";
-import { Terrain } from "../entities/Terrain";
+import { Terrain } from "../engine/entities/Terrain";
 import { Network } from "../server";
 import { arenas } from "./arenas";
 import { Arena } from "./arenas/types";

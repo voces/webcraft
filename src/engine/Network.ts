@@ -1,7 +1,6 @@
 import { emitter, Emitter } from "../core/emitter";
 import { EntityID } from "../core/Entity";
 import { location } from "../core/util/globals";
-import { obstructionMap } from "../entities/sprites/obstructions/index";
 import { Game } from "./Game";
 import { ValueOf } from "./types";
 
@@ -33,49 +32,51 @@ type PlayerEvent = Event & {
 	sent?: number;
 };
 
-type BuildEvent = PlayerEvent & {
+export type BuildEvent = PlayerEvent & {
 	type: "build";
 	builder: number;
 	x: number;
 	y: number;
-	obstruction: keyof typeof obstructionMap;
+	obstruction: string;
 };
 
-type MoveEvent = PlayerEvent & {
+export type MoveEvent = PlayerEvent & {
 	type: "move";
 	connection: number;
 	sprites: EntityID[];
 	x: number;
 	y: number;
-	obstruction: keyof typeof obstructionMap;
+	obstruction: string;
 };
 
-type AttackEvent = PlayerEvent & {
+export type AttackEvent = PlayerEvent & {
 	type: "move";
 	connection: number;
 	attackers: EntityID[];
-	target: EntityID;
+	target: EntityID | undefined;
+	x: number;
+	y: number;
 };
 
-type KillEvent = PlayerEvent & {
-	type: "kill";
+export type SelfDestructEvent = PlayerEvent & {
+	type: "selfDestruct";
 	connection: number;
 	sprites: EntityID[];
 };
 
-type HoldPositionEvent = PlayerEvent & {
-	type: "kill";
+export type HoldPositionEvent = PlayerEvent & {
+	type: "holdPosition";
 	connection: number;
 	sprites: EntityID[];
 };
 
-type StopEvent = PlayerEvent & {
+export type StopEvent = PlayerEvent & {
 	type: "stop";
 	connection: number;
 	sprites: EntityID[];
 };
 
-type MirrorEvent = PlayerEvent & {
+export type MirrorEvent = PlayerEvent & {
 	type: "mirror";
 	connection: number;
 	sprites: EntityID[];
@@ -109,7 +110,7 @@ const networkEvents = {
 	build: (data: BuildEvent) => {},
 	move: (data: MoveEvent) => {},
 	attack: (data: AttackEvent) => {},
-	kill: (data: KillEvent) => {},
+	selfDestruct: (data: SelfDestructEvent) => {},
 	holdPosition: (data: HoldPositionEvent) => {},
 	stop: (data: StopEvent) => {},
 	mirror: (data: MirrorEvent) => {},

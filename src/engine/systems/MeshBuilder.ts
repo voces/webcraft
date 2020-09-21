@@ -1,14 +1,15 @@
 import {
-	MeshPhongMaterial,
-	Mesh,
-	SphereBufferGeometry,
 	BoxBufferGeometry,
 	Color,
+	Mesh,
+	MeshPhongMaterial,
+	SphereBufferGeometry,
 } from "three";
-import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
+
 import { System } from "../../core/System";
-import { Sprite } from "../../entities/sprites/Sprite";
+import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
+import { Sprite } from "../entities/widgets/Sprite";
 import { EntityMesh } from "../types";
 
 const getColor = (entity: Sprite, meshBuilder: MeshBuilderComponent) => {
@@ -50,9 +51,6 @@ const createBox = (entity: Sprite, meshBuilder: MeshBuilderComponent): Mesh => {
 
 export class MeshBuilder extends System {
 	static components = [MeshBuilderComponent];
-
-	static isMeshBuilder = (system: System): system is MeshBuilder =>
-		system instanceof MeshBuilder;
 
 	test(entity: Sprite): entity is Sprite {
 		return MeshBuilderComponent.has(entity);

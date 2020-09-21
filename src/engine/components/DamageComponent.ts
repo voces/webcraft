@@ -1,5 +1,5 @@
-import { Sprite } from "../../entities/sprites/Sprite";
 import { Component } from "../../core/Component";
+import { Sprite } from "../entities/widgets/Sprite";
 import { Mutable, NonEmptyArray } from "../types";
 
 export type Weapon = {
@@ -20,9 +20,8 @@ export class DamageComponent extends Component<
 	readonly weapons!: NonEmptyArray<Weapon>;
 	readonly autoAttack!: boolean;
 	initialize(weapons: NonEmptyArray<Weapon>, autoAttack: boolean): void {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
-		const that: Mutable<DamageComponent> = this;
-		that.weapons = weapons;
-		that.autoAttack = autoAttack;
+		const mutable: Mutable<DamageComponent> = this;
+		mutable.weapons = weapons;
+		mutable.autoAttack = autoAttack;
 	}
 }

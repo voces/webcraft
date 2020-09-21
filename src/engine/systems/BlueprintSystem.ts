@@ -1,12 +1,12 @@
 import { System } from "../../core/System";
-import { BuildTarget } from "../components/BuildTarget";
-import { Sprite } from "../../entities/sprites/Sprite";
-import { Unit } from "../../entities/sprites/Unit";
-import { MoveTarget } from "../components/MoveTarget";
-import { distanceBetweenPoints } from "../util/tweenPoints";
-import { BUILD_DISTANCE } from "../constants";
 import { appendErrorMessage } from "../../ui/chat";
+import { BuildTarget } from "../components/BuildTarget";
+import { MoveTarget } from "../components/MoveTarget";
+import { BUILD_DISTANCE } from "../constants";
+import { Sprite } from "../entities/widgets/Sprite";
+import { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
+import { distanceBetweenPoints } from "../util/tweenPoints";
 
 export class BlueprintSystem extends System<Unit> {
 	static components = [BuildTarget, MoveTarget];
