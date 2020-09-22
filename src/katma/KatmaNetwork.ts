@@ -1,6 +1,11 @@
 import { Emitter } from "../core/emitter";
 // eslint-disable-next-line no-restricted-imports
-import { InitEvent, Network, StateEvent } from "../engine/Network";
+import {
+	ConnectionEvent,
+	InitEvent,
+	Network,
+	StateEvent,
+} from "../engine/Network";
 import { Katma } from "./Katma";
 
 type KatmaInitEvent = InitEvent & {
@@ -31,4 +36,4 @@ class KatmaNetwork extends Network implements Emitter<NetworkEventCallback> {
 	dispatchEvent!: Emitter<NetworkEventCallback>["dispatchEvent"];
 }
 
-export { KatmaNetwork };
+export { KatmaNetwork, ConnectionEvent };

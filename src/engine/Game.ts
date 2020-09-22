@@ -7,9 +7,9 @@ import { withGame, wrapGame } from "./gameContext";
 import { alea } from "./lib/alea";
 import { Alliances } from "./mechanisms/Alliances";
 import { ObstructionPlacement } from "./mechanisms/ObstructionPlacement";
-import { Network } from "./network";
+import { ConnectionEvent, Network } from "./network";
 import { PathingMap } from "./pathing/PathingMap";
-import { release as releaseColor } from "./players/colors";
+import { nextColor, releaseColor } from "./players/colors";
 import { Player } from "./players/Player";
 import { initPlayerLogic } from "./players/playerLogic";
 import { AnimationSystem } from "./systems/AnimationSystem";
@@ -252,8 +252,13 @@ class Game extends App {
 	// Entities
 	///////////////////////
 
-	onPlayerJoin(): void {
-		/* do nothing */
+	onPlayerJoin(data: ConnectionEvent): Player {
+		return new Player({
+			color: nextColor(),
+			game: this,
+			id: data.connection,
+			username: data.username,
+		});
 	}
 
 	onPlayerLeave(player: Player): void {

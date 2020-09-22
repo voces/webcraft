@@ -40,6 +40,7 @@ export class Alliances extends Mechanism {
 	}
 
 	allianceState(sourcePlayer: Player, targetPlayer: Player): AllianceState {
+		if (sourcePlayer === targetPlayer) return "ally";
 		return (
 			this.relationships.get(sourcePlayer)?.get(targetPlayer) ?? "neutral"
 		);

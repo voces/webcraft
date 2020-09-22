@@ -1,6 +1,6 @@
 import { colors } from "../../engine/players/colors";
-import { Player } from "../../engine/players/Player";
 import { currentKatma } from "../katmaContext";
+import { Player } from "./Player";
 
 let placeholderPlayer: Player;
 

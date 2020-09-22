@@ -3,31 +3,18 @@ import { Unit } from "../entities/widgets/sprites/Unit";
 import { Game } from "../Game";
 import { currentGame } from "../gameContext";
 import { Resource, resourceKeys, ResourceMap } from "../types";
-import {
-	Color,
-	colors,
-	release as releaseColor,
-	take as takeColor,
-} from "./colors";
+import { Color, colors, releaseColor, takeColor } from "./colors";
 
 export interface PlayerState {
 	color: number | undefined;
 	id: number;
 	username: string;
-	score: {
-		bulldog: number;
-	};
-	crosserPlays: number;
 }
 
 export class Player {
 	game: Game;
-	score = {
-		bulldog: 1000,
-	};
 	sprites: Array<Sprite> = [];
 	isHere = true;
-	crosserPlays = 0;
 	resources = { essence: 0 };
 	username = "tim";
 	id = -1;
@@ -79,8 +66,6 @@ export class Player {
 			color: this.color ? colors.indexOf(this.color) : undefined,
 			id: this.id,
 			username: this.username,
-			score: this.score,
-			crosserPlays: this.crosserPlays,
 		};
 	}
 }
@@ -98,8 +83,6 @@ export const patchInState = (game: Game, playersState: PlayerState[]): void => {
 			if (player.color) releaseColor(player.color);
 			player.color = takeColor(color);
 		}
-
-		player.score = playerData.score;
 	});
 	game.players.sort((a, b) => a.id - b.id);
 };

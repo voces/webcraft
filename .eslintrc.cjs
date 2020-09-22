@@ -7,7 +7,7 @@ module.exports = {
 			"error",
 			{ allowedNames: ["mutable"] },
 		],
-		"simple-import-sort/sort": "error"
+		"simple-import-sort/sort": "error",
 	},
 	parserOptions: { project: "./tsconfig.json", tsconfigRootDir: __dirname },
 	overrides: [
@@ -34,7 +34,13 @@ module.exports = {
 			rules: {
 				"no-restricted-imports": [
 					"error",
-					{ patterns: ["**/engine/Game", "**/engine/Network"] },
+					{
+						patterns: [
+							"**/engine/Game",
+							"**/engine/Network",
+							"**/engine/players/Player",
+						],
+					},
 				],
 			},
 		},

@@ -2,14 +2,19 @@ import { Entity } from "../core/Entity";
 import { Terrain } from "../engine/entities/Terrain";
 // eslint-disable-next-line no-restricted-imports
 import { Game } from "../engine/Game";
-import { patchInState, Player } from "../engine/players/Player";
+import { nextColor } from "../engine/players/colors";
 import { isSprite } from "../engine/typeguards";
 import { arenas } from "./arenas";
 import { Arena } from "./arenas/types";
 import { withKatma } from "./katmaContext";
-import { KatmaNetwork, NetworkEventCallback } from "./KatmaNetwork";
+import {
+	ConnectionEvent,
+	KatmaNetwork,
+	NetworkEventCallback,
+} from "./KatmaNetwork";
 import { updateDisplay } from "./players/elo";
 import { getPlaceholderPlayer } from "./players/placeholder";
+import { patchInState, Player } from "./players/Player";
 import { Round } from "./Round";
 import { Settings } from "./types";
 
@@ -19,6 +24,8 @@ export class Katma extends Game {
 	arena: Arena = arenas[0];
 	round?: Round;
 	lastRoundEnd?: number;
+	localPlayer!: Player;
+	players: Player[] = [];
 
 	settings: Settings = {
 		arenaIndex: -1,
@@ -60,17 +67,21 @@ export class Katma extends Game {
 	// Entities
 	///////////////////////
 
-	onPlayerJoin(): void {
+	onPlayerJoin(data: ConnectionEvent): Player {
+		const player = new Player({
+			color: nextColor(),
+			game: this,
+			id: data.connection,
+			username: data.username,
+			crosserPlays: Math.max(
+				0,
+				...this.players.map((p) => p.crosserPlays),
+			),
+		});
+
 		updateDisplay(this);
-	}
 
-	onPlayerLeave(player: Player): void {
-		super.onPlayerLeave(player);
-
-		if (this.round && !this.players.some((player) => player.isHere))
-			this.round = undefined;
-
-		updateDisplay(this);
+		return player;
 	}
 
 	private onPlayerState: NetworkEventCallback["state"] = ({
@@ -207,6 +218,7 @@ export class Katma extends Game {
 			...super.toJSON(),
 			arena: this.settings.arenaIndex,
 			lastRoundEnd: this.lastRoundEnd,
+			players: this.players.map((p) => p.toJSON()),
 			round: this.round?.toJSON(),
 		};
 	}

@@ -3,7 +3,6 @@ import { TILE_TYPES, TileType } from "../engine/constants";
 import { Sprite } from "../engine/entities/widgets/Sprite";
 import { Unit } from "../engine/entities/widgets/sprites/Unit";
 import { PathingMap } from "../engine/pathing/PathingMap";
-import { Player } from "../engine/players/Player";
 import { resourceKeys } from "../engine/types";
 import { arenas } from "./arenas/index";
 import { Arena } from "./arenas/types";
@@ -13,6 +12,7 @@ import { Resource } from "./entities/obstructions/Resource";
 import { currentKatma } from "./katmaContext";
 import { elo, updateDisplay } from "./players/elo";
 import { getPlaceholderPlayer } from "./players/placeholder";
+import { Player } from "./players/Player";
 import { TileSystem } from "./systems/TileSystem";
 import { Settings, teamKeys } from "./types";
 

@@ -1,7 +1,7 @@
 import { document } from "../../core/util/globals";
-import { Player } from "../../engine/players/Player";
 import { emptyElement } from "../../engine/util/html";
 import { Katma } from "../Katma";
+import { Player } from "./Player";
 
 // Formula taken from
 // https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/

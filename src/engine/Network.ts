@@ -91,7 +91,7 @@ type DisconnectionEvent = PlayerEvent & {
 	type: "disconnection";
 };
 
-type ConnectionEvent = PlayerEvent & {
+export type ConnectionEvent = PlayerEvent & {
 	type: "connection";
 	username: string;
 };

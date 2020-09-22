@@ -1,31 +1,17 @@
 import { Game } from "../Game";
 import { alea } from "../lib/alea";
-import { next as nextColor } from "./colors";
-import { Player } from "./Player";
 
 export const initPlayerLogic = (game: Game): void => {
 	// Received when someone (including us) joins
 	game.addNetworkListener("connection", (data) => {
 		game.random = alea(data.time.toString());
-
 		game.update(data);
 
-		const player = new Player({
-			color: nextColor(),
-			id: data.connection,
-			username: data.username,
-			crosserPlays: Math.max(
-				0,
-				...game.players.map((p) => p.crosserPlays),
-			),
-			game,
-		});
+		const player = game.onPlayerJoin(data);
 
 		if (game.localPlayer === undefined && !game.isHost)
 			game.localPlayer = player;
 		else game.newPlayers = true;
-
-		game.onPlayerJoin();
 	});
 
 	// Received when someone leaves

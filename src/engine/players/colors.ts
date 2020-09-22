@@ -72,20 +72,20 @@ export const colors: Colors = Object.assign(
 	...colorsArr.map((c) => ({ [c.name]: c })),
 );
 
-export const next = (): Color => {
+export const nextColor = (): Color => {
 	const nextColor = colors.find((color) => !color.taken);
 	if (!nextColor) throw new Error("ran out of colors");
-	return take(nextColor);
+	return takeColor(nextColor);
 };
 
-export const take = (color: Color | number): Color => {
+export const takeColor = (color: Color | number): Color => {
 	if (typeof color === "number") color = colors[color];
 	color.taken += 1;
 
 	return color;
 };
 
-export const release = (color: Color | number): Color => {
+export const releaseColor = (color: Color | number): Color => {
 	if (typeof color === "number") color = colors[color];
 	color.taken -= 1;
 
