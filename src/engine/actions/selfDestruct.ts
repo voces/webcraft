@@ -16,9 +16,8 @@ export const selfDestructAction = {
 		);
 
 		// Select the main unit
-		const playerCrosser = player.unit;
-		if (playerCrosser)
-			player.game.selectionSystem.setSelection([playerCrosser]);
+		const mainUnit = player.unit;
+		if (mainUnit) player.game.selectionSystem.setSelection([mainUnit]);
 
 		// Kill selected obstructions
 		player.game.transmit({

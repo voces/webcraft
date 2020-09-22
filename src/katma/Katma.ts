@@ -1,16 +1,17 @@
 import { Entity } from "../core/Entity";
+import { Terrain } from "../engine/entities/Terrain";
+// eslint-disable-next-line no-restricted-imports
 import { Game } from "../engine/Game";
-import { NetworkEventCallback } from "../engine/Network";
 import { patchInState, Player } from "../engine/players/Player";
 import { isSprite } from "../engine/typeguards";
-import { Terrain } from "../engine/entities/Terrain";
-import { Network } from "../server";
 import { arenas } from "./arenas";
 import { Arena } from "./arenas/types";
-import { Round } from "./Round";
 import { withKatma } from "./katmaContext";
+import { KatmaNetwork, NetworkEventCallback } from "./KatmaNetwork";
 import { updateDisplay } from "./players/elo";
 import { getPlaceholderPlayer } from "./players/placeholder";
+import { Round } from "./Round";
+import { Settings } from "./types";
 
 export class Katma extends Game {
 	readonly isKatma = true;
@@ -19,7 +20,21 @@ export class Katma extends Game {
 	round?: Round;
 	lastRoundEnd?: number;
 
-	constructor(network: Network) {
+	settings: Settings = {
+		arenaIndex: -1,
+		crossers: 1,
+		duration: 120,
+		mode: "bulldog",
+		resources: {
+			crossers: { essence: { starting: 100, rate: 1 } },
+			defenders: { essence: { starting: 0, rate: 0 } },
+		},
+	};
+
+	addNetworkListener!: KatmaNetwork["addEventListener"];
+	removeNetworkListener!: KatmaNetwork["removeEventListener"];
+
+	constructor(network: KatmaNetwork) {
 		super(network);
 		withKatma(this, () => {
 			this.addNetworkListener("init", (e) => this.onInit(e));
@@ -189,10 +204,9 @@ export class Katma extends Game {
 		round: ReturnType<typeof Round.prototype.toJSON> | undefined;
 	} {
 		return {
+			...super.toJSON(),
 			arena: this.settings.arenaIndex,
 			lastRoundEnd: this.lastRoundEnd,
-			lastUpdate: this.lastUpdate,
-			players: this.players.map((p) => p.toJSON()),
 			round: this.round?.toJSON(),
 		};
 	}

@@ -27,5 +27,14 @@ module.exports = {
 				],
 			},
 		},
+		{
+			files: ["./src/katma/**"],
+			rules: {
+				"no-restricted-imports": [
+					"error",
+					{ patterns: ["**/engine/Game", "**/engine/Network"] },
+				],
+			},
+		},
 	],
 };

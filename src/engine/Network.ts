@@ -12,15 +12,15 @@ type Event = {
 	time: number;
 };
 
-type InitEvent = Event & {
+export type InitEvent = Event & {
 	type: "init";
 	connections: number;
-	state: ReturnType<typeof Game.prototype.toJSON>;
+	state: ReturnType<Game["toJSON"]>;
 };
 
-type StateEvent = Event & {
+export type StateEvent = Event & {
 	type: "state";
-	state: ReturnType<typeof Game.prototype.toJSON>;
+	state: ReturnType<Game["toJSON"]>;
 };
 
 type UpdateEvent = Event & {
@@ -124,14 +124,27 @@ const networkEvents = {
 export type NetworkEventCallback = typeof networkEvents;
 type NetworkEvent = Parameters<ValueOf<NetworkEventCallback>>[0];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isNetworkEvent = (json: any): json is NetworkEvent =>
+const isNetworkEvent = (
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	json: any,
+	networkEvents: Record<string, unknown>,
+): json is NetworkEvent =>
 	typeof json === "object" &&
 	typeof json.type === "string" &&
 	json.type.length &&
 	json.type in networkEvents;
 
-class Network {
+export class Network implements Emitter<NetworkEventCallback> {
+	static networkEvents = networkEvents;
+
+	// These are implemented via calling emitter(this)
+	addEventListener!: Emitter<NetworkEventCallback>["addEventListener"];
+	removeEventListener!: Emitter<NetworkEventCallback>["removeEventListener"];
+	removeEventListeners!: Emitter<
+		NetworkEventCallback
+	>["removeEventListeners"];
+	dispatchEvent!: Emitter<NetworkEventCallback>["dispatchEvent"];
+
 	private connection?: WebSocket;
 	private localPlayerId?: number;
 
@@ -162,7 +175,12 @@ class Network {
 	onMessage(message: MessageEvent): void {
 		const json = JSON.parse(message.data);
 
-		if (isNetworkEvent(json)) {
+		if (
+			isNetworkEvent(
+				json,
+				(this.constructor as typeof Network).networkEvents,
+			)
+		) {
 			// TypeScript doesn't allow refinements on guarded types
 			const event: NetworkEvent = json;
 			if (event.type === "connection") this.onConnection(event);
@@ -194,8 +212,3 @@ class Network {
 		return !this.connection;
 	}
 }
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface Network extends Emitter<NetworkEventCallback> {}
-
-export { Network };

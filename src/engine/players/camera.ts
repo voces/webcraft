@@ -5,14 +5,8 @@ import {
 	window,
 } from "../../core/util/globals";
 import { registerCommand } from "../../ui/chat";
-// https://github.com/voces/mvp-bd-client/issues/35
-// eslint-disable-next-line no-restricted-imports
-import { Round } from "../../katma/Round";
 import { UI } from "../../ui/index";
 import { currentGame, wrapGame } from "../gameContext";
-// https://github.com/voces/mvp-bd-client/issues/33
-// eslint-disable-next-line no-restricted-imports
-import { Katma } from "../../katma/Katma";
 
 type Direction = "right" | "left" | "down" | "up";
 
@@ -20,7 +14,7 @@ const CAMERA_SPEED = 25;
 const ZOOM_SPEED = 1 / 500;
 
 const uiElem = document.getElementById("ui")!;
-let keyboard: Record<string, boolean> = {};
+const keyboard: Record<string, boolean> = {};
 
 type Mouse = {
 	left: boolean;
@@ -35,7 +29,6 @@ const emptyMouse = (mouse?: Mouse): Mouse => {
 };
 const mouse = emptyMouse();
 
-let knownRound: Round;
 let requestedAnimationFrame: number | undefined;
 let pan: (PathTweener & { duration: number }) | undefined;
 
@@ -52,17 +45,7 @@ const setZoom = (zoom: number) => {
 };
 
 export const initCameraListeners = (ui: UI): void => {
-	ui.addEventListener("keyDown", ({ key, game }) => {
-		const katma = game as Katma;
-		if (!katma.round) return;
-
-		if (knownRound !== katma.round) {
-			keyboard = {};
-			lastRender = 0;
-		}
-
-		knownRound = katma.round;
-
+	ui.addEventListener("keyDown", ({ key }) => {
 		if (key.startsWith("Arrow") && !keyboard[key]) {
 			if (pan) pan = undefined;
 			keyboard[key] = true;
@@ -70,10 +53,7 @@ export const initCameraListeners = (ui: UI): void => {
 		}
 	});
 
-	ui.addEventListener("keyUp", ({ key, game }) => {
-		const katma = game as Katma;
-		if (!katma.round || !keyboard) return;
-
+	ui.addEventListener("keyUp", ({ key }) => {
 		if (key.startsWith("Arrow")) keyboard[key] = false;
 	});
 

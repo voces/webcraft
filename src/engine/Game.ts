@@ -29,7 +29,6 @@ import { ProjectileSystem } from "./systems/ProjectileSystem";
 import { SelectedSystem } from "./systems/SelectedSystem";
 import { ThreeGraphics } from "./systems/ThreeGraphics";
 import { isSprite } from "./typeguards";
-import { Settings } from "./types";
 
 type IntervalId = number;
 type TimeoutId = number;
@@ -80,17 +79,6 @@ class Game extends App {
 	nextIntervalId = 0;
 	timeouts: Timeout[] = [];
 	nextTimeoutId = 0;
-
-	settings: Settings = {
-		arenaIndex: -1,
-		crossers: 1,
-		duration: 120,
-		mode: "bulldog",
-		resources: {
-			crossers: { essence: { starting: 100, rate: 1 } },
-			defenders: { essence: { starting: 0, rate: 0 } },
-		},
-	};
 
 	private _pathingMap?: PathingMap;
 
@@ -311,12 +299,10 @@ class Game extends App {
 	}
 
 	toJSON(): {
-		arena: number;
 		lastUpdate: number;
 		players: ReturnType<typeof Player.prototype.toJSON>[];
 	} {
 		return {
-			arena: this.settings.arenaIndex,
 			lastUpdate: this.lastUpdate,
 			players: this.players.map((p) => p.toJSON()),
 		};

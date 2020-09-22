@@ -1,31 +1,12 @@
 import { Entity } from "../core/Entity";
 import { Mesh, Object3D } from "three";
 
-// Teams
-interface TeamMap<T> {
-	crossers: T;
-	defenders: T;
-}
-type Team = keyof TeamMap<unknown>;
-export const teamKeys: Team[] = ["crossers", "defenders"];
-
 // Resource
 export interface ResourceMap {
 	essence: number;
 }
 export type Resource = keyof ResourceMap;
 export const resourceKeys: Resource[] = ["essence"];
-
-export interface Settings {
-	arenaIndex: number;
-	crossers: number;
-	duration: number;
-	mode: "bulldog";
-	resources: Record<
-		Team,
-		Record<Resource, { starting: number; rate: number }>
-	>;
-}
 
 export type ValueOf<T> = T[keyof T];
 

@@ -1,7 +1,7 @@
 import { document } from "../../core/util/globals";
 import { Player } from "../../engine/players/Player";
 import { emptyElement } from "../../engine/util/html";
-import { Game } from "../../engine/Game";
+import { Katma } from "../Katma";
 
 // Formula taken from
 // https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/
@@ -56,7 +56,7 @@ export const elo = ({
 	crossers: Player[];
 	defenders: Player[];
 	scores: number;
-	game: Game;
+	game: Katma;
 }): void => {
 	const newRatings = calculateNewRatings(
 		crossers.map((p) => ({ score: p.score[mode], plays: p.crosserPlays })),
@@ -74,7 +74,7 @@ export const elo = ({
 	updateDisplay(game);
 };
 
-export const updateDisplay = (game: Game): void => {
+export const updateDisplay = (game: Katma): void => {
 	const container = document.getElementById("scores")!;
 	emptyElement(container);
 

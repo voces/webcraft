@@ -3,17 +3,18 @@ import { TILE_TYPES, TileType } from "../engine/constants";
 import { Sprite } from "../engine/entities/widgets/Sprite";
 import { Unit } from "../engine/entities/widgets/sprites/Unit";
 import { PathingMap } from "../engine/pathing/PathingMap";
-import { elo, updateDisplay } from "./players/elo";
 import { Player } from "../engine/players/Player";
-import { resourceKeys, Settings, teamKeys } from "../engine/types";
+import { resourceKeys } from "../engine/types";
 import { arenas } from "./arenas/index";
 import { Arena } from "./arenas/types";
 import { Crosser } from "./entities/Crosser";
 import { Defender } from "./entities/Defender";
 import { Resource } from "./entities/obstructions/Resource";
 import { currentKatma } from "./katmaContext";
-import { TileSystem } from "./systems/TileSystem";
+import { elo, updateDisplay } from "./players/elo";
 import { getPlaceholderPlayer } from "./players/placeholder";
+import { TileSystem } from "./systems/TileSystem";
+import { Settings, teamKeys } from "./types";
 
 // A round starts upon construction
 class Round {
