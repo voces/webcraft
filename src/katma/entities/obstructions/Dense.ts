@@ -1,8 +1,9 @@
+import { Color } from "three";
+
 import {
 	Obstruction,
 	ObstructionProps,
 } from "../../../engine/entities/widgets/sprites/units/Obstruction";
-import { Color } from "three";
 
 const darkRed = new Color("#661919");
 

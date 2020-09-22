@@ -1,5 +1,6 @@
-import { Component } from "../../../core/Component";
 import { Color } from "three";
+
+import { Component } from "../../../core/Component";
 import { Mutable } from "../../types";
 
 export type MeshBuilderComponentProps = {

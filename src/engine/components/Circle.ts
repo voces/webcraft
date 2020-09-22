@@ -1,8 +1,8 @@
 import { Component } from "../../core/Component";
-import { SelectionCircle } from "../entities/widgets/sprites/SelectionCircle";
-import { getXY } from "./Position";
 import { Entity } from "../../core/Entity";
+import { SelectionCircle } from "../entities/widgets/sprites/SelectionCircle";
 import { currentGame } from "../gameContext";
+import { getXY } from "./Position";
 
 type Props = {
 	radius: number;

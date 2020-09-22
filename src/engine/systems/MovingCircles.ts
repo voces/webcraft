@@ -1,9 +1,9 @@
-import { System } from "../../core/System";
-import { Selected } from "../components/Selected";
 import { Entity } from "../../core/Entity";
-import { Position, getXY } from "../components/Position";
-import { MoveTarget } from "../components/MoveTarget";
+import { System } from "../../core/System";
 import { Hover } from "../components/Hover";
+import { MoveTarget } from "../components/MoveTarget";
+import { getXY, Position } from "../components/Position";
+import { Selected } from "../components/Selected";
 
 export class SelectedMovingCircles extends System {
 	static components = [MoveTarget, Selected];

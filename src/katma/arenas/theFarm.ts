@@ -1,5 +1,5 @@
-import { stringMap, stringMapWithRamps } from "./util";
 import { InternalArena } from "./types";
+import { stringMap, stringMapWithRamps } from "./util";
 
 export const theFarm: InternalArena = {
 	name: "The Farm",

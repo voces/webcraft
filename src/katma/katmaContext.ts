@@ -1,5 +1,5 @@
-import { Katma } from "./Katma";
 import { currentApp, withApp, wrapApp } from "../core/appContext";
+import { Katma } from "./Katma";
 import { isKatma } from "./typeguards";
 
 export const withKatma = <T>(katma: Katma, fn: (katma: Katma) => T): T =>

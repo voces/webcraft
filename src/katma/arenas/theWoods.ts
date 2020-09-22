@@ -1,5 +1,5 @@
-import { stringMap } from "./util";
 import { InternalArena } from "./types";
+import { stringMap } from "./util";
 
 export const theWoods: InternalArena = {
 	name: "The Woods",

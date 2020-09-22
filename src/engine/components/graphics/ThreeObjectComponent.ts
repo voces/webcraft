@@ -1,5 +1,6 @@
-import { Component } from "../../../core/Component";
 import { Object3D } from "three";
+
+import { Component } from "../../../core/Component";
 import { Mutable } from "../../types";
 
 export class ThreeObjectComponent extends Component<[Object3D]> {

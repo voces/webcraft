@@ -1,5 +1,5 @@
-import { Context } from "./Context";
 import { App } from "./App";
+import { Context } from "./Context";
 
 const context = new Context<App | undefined>(undefined);
 

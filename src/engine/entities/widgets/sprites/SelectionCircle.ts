@@ -1,4 +1,5 @@
-import { TorusBufferGeometry, MeshBasicMaterial, Mesh } from "three";
+import { Mesh, MeshBasicMaterial, TorusBufferGeometry } from "three";
+
 import { ThreeObjectComponent } from "../../../components/graphics/ThreeObjectComponent";
 import { currentGame } from "../../../gameContext";
 import { Widget } from "../../Widget";

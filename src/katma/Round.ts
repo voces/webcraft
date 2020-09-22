@@ -1,4 +1,4 @@
-import { emitter, Emitter } from "../core/emitter";
+import { Emitter, emitter } from "../core/emitter";
 import { TILE_TYPES, TileType } from "../engine/constants";
 import { Sprite } from "../engine/entities/widgets/Sprite";
 import { Unit } from "../engine/entities/widgets/sprites/Unit";

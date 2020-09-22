@@ -2,7 +2,6 @@ import { Grid } from "notextures";
 import { MeshPhongMaterial } from "three";
 
 import { Mechanism } from "../../core/Merchanism";
-import { appendErrorMessage } from "../../ui/chat";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Position } from "../components/Position";
 import { Widget } from "../entities/Widget";
@@ -11,6 +10,7 @@ import { Obstruction } from "../entities/widgets/sprites/units/Obstruction";
 import { Game } from "../Game";
 import { currentGame } from "../gameContext";
 import { Mouse } from "../systems/Mouse";
+import { appendErrorMessage } from "../ui/chat";
 
 const edgeSnap = (v: number) => Math.round(v);
 const midSnap = (v: number) => Math.floor(v) + 0.5;

@@ -1,12 +1,12 @@
-import { PathTweener } from "../util/tweenPoints";
 import {
 	document,
 	requestAnimationFrame,
 	window,
 } from "../../core/util/globals";
-import { registerCommand } from "../../ui/chat";
-import { UI } from "../../ui/index";
 import { currentGame, wrapGame } from "../gameContext";
+import { UI } from "../ui";
+import { registerCommand } from "../ui/chat";
+import { PathTweener } from "../util/tweenPoints";
 
 type Direction = "right" | "left" | "down" | "up";
 

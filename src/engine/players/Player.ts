@@ -1,14 +1,14 @@
+import { Sprite } from "../entities/widgets/Sprite";
+import { Unit } from "../entities/widgets/sprites/Unit";
+import { Game } from "../Game";
+import { currentGame } from "../gameContext";
+import { Resource, resourceKeys, ResourceMap } from "../types";
 import {
+	Color,
 	colors,
 	release as releaseColor,
 	take as takeColor,
-	Color,
 } from "./colors";
-import { ResourceMap, resourceKeys, Resource } from "../types";
-import { Unit } from "../entities/widgets/sprites/Unit";
-import { Sprite } from "../entities/widgets/Sprite";
-import { Game } from "../Game";
-import { currentGame } from "../gameContext";
 
 export interface PlayerState {
 	color: number | undefined;

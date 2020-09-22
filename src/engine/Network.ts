@@ -1,4 +1,4 @@
-import { emitter, Emitter } from "../core/emitter";
+import { Emitter, emitter } from "../core/emitter";
 import { EntityID } from "../core/Entity";
 import { location } from "../core/util/globals";
 import { Game } from "./Game";

@@ -1,11 +1,11 @@
 import { System } from "../../core/System";
-import { appendErrorMessage } from "../../ui/chat";
 import { BuildTarget } from "../components/BuildTarget";
 import { MoveTarget } from "../components/MoveTarget";
 import { BUILD_DISTANCE } from "../constants";
 import { Sprite } from "../entities/widgets/Sprite";
 import { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
+import { appendErrorMessage } from "../ui/chat";
 import { distanceBetweenPoints } from "../util/tweenPoints";
 
 export class BlueprintSystem extends System<Unit> {

@@ -1,21 +1,22 @@
+import {
+	DirectionalLight,
+	HemisphereLight,
+	Object3D,
+	PCFSoftShadowMap,
+	PerspectiveCamera,
+	Scene,
+	Vector2,
+	Vector3,
+	WebGLRenderer,
+} from "three";
+
+import { Entity } from "../../core/Entity";
 import { System } from "../../core/System";
 import { document, window } from "../../core/util/globals";
-import { Point } from "../pathing/PathingMap";
-import { tweenPoints, PathTweener } from "../util/tweenPoints";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
-import { Entity } from "../../core/Entity";
-import {
-	Object3D,
-	WebGLRenderer,
-	Scene,
-	HemisphereLight,
-	DirectionalLight,
-	Vector3,
-	Vector2,
-	PerspectiveCamera,
-	PCFSoftShadowMap,
-} from "three";
 import { Game } from "../Game";
+import { Point } from "../pathing/PathingMap";
+import { PathTweener, tweenPoints } from "../util/tweenPoints";
 
 const getCanvas = () => {
 	const canvas = document.createElement("canvas");

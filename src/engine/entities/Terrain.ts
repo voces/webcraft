@@ -1,15 +1,16 @@
 import {
-	Terrain as TerrainMesh,
 	LordaeronSummerDarkGrass,
-	LordaeronSummerRock,
-	LordaeronSummerGrass,
 	LordaeronSummerDirtCliff,
+	LordaeronSummerGrass,
+	LordaeronSummerRock,
+	Terrain as TerrainMesh,
 } from "notextures";
-import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
-import { Group, Vector3 } from "three";
-import { orientation } from "../pathing/math";
-import { Entity } from "../../core/Entity";
 import { CliffMask } from "notextures/dist/objects/Terrain/Terrain";
+import { Group, Vector3 } from "three";
+
+import { Entity } from "../../core/Entity";
+import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
+import { orientation } from "../pathing/math";
 
 /**
  * Returns the z coordinate of point (x, y) on the plane defined by (a, b, c)

@@ -1,13 +1,15 @@
 module.exports = {
 	extends: ["verit"],
+	plugins: ["simple-import-sort"],
 	rules: {
 		"@typescript-eslint/no-unnecessary-type-assertion": "error",
 		"@typescript-eslint/no-this-alias": [
 			"error",
 			{ allowedNames: ["mutable"] },
 		],
+		"simple-import-sort/sort": "error"
 	},
-	parserOptions: { project: "./tsconfig.json" },
+	parserOptions: { project: "./tsconfig.json", tsconfigRootDir: __dirname },
 	overrides: [
 		{
 			files: ["./src/core/**"],

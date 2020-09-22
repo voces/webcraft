@@ -1,8 +1,6 @@
 import { App } from "../core/App";
-import { emitter, Emitter } from "../core/emitter";
+import { Emitter, emitter } from "../core/emitter";
 import { Entity } from "../core/Entity";
-import { Hotkeys } from "../ui/hotkeys";
-import { UI } from "../ui/index";
 import { initSpriteLogicListeners } from "./actions/spriteLogic";
 import { Terrain } from "./entities/Terrain";
 import { withGame, wrapGame } from "./gameContext";
@@ -29,6 +27,8 @@ import { ProjectileSystem } from "./systems/ProjectileSystem";
 import { SelectedSystem } from "./systems/SelectedSystem";
 import { ThreeGraphics } from "./systems/ThreeGraphics";
 import { isSprite } from "./typeguards";
+import { Hotkeys } from "./ui/hotkeys";
+import { UI } from "./ui/index";
 
 type IntervalId = number;
 type TimeoutId = number;

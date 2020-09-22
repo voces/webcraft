@@ -1,5 +1,5 @@
-import { stringMap } from "./util";
 import { InternalArena } from "./types";
+import { stringMap } from "./util";
 
 const base = {
 	name: "The Target",

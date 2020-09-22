@@ -1,16 +1,16 @@
-import { BinaryHeap } from "./BinaryHeap";
-import { memoize } from "./memoize";
 import { DIRECTION, PATHING_TYPES } from "../constants";
+import { BinaryHeap } from "./BinaryHeap";
 // import { document } from "../util/globals";
 // import { emptyElement } from "../util/html";
 import {
-	polarProject,
 	behind,
 	infront,
-	trueMinX,
-	trueMaxX,
 	offset,
+	polarProject,
+	trueMaxX,
+	trueMinX,
 } from "./math";
+import { memoize } from "./memoize";
 
 // let debugging = false;
 // const elems: HTMLElement[] = [];

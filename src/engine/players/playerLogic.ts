@@ -1,7 +1,7 @@
-import { Player } from "./Player";
-import { next as nextColor } from "./colors";
-import { alea } from "../lib/alea";
 import { Game } from "../Game";
+import { alea } from "../lib/alea";
+import { next as nextColor } from "./colors";
+import { Player } from "./Player";
 
 export const initPlayerLogic = (game: Game): void => {
 	// Received when someone (including us) joins

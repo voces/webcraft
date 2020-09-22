@@ -1,8 +1,8 @@
 import { System } from "../../core/System";
-import { Sprite } from "../entities/widgets/Sprite";
 import { MoveTarget } from "../components/MoveTarget";
-import { distanceBetweenPoints } from "../util/tweenPoints";
+import { Sprite } from "../entities/widgets/Sprite";
 import { Projectile } from "../entities/widgets/sprites/Projectile";
+import { distanceBetweenPoints } from "../util/tweenPoints";
 
 export class ProjectileSystem extends System<Projectile> {
 	test(entity: Sprite): entity is Projectile {

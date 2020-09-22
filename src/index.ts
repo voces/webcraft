@@ -1,5 +1,5 @@
-import { Network, activeHost } from "./engine/Network";
 import { window } from "./core/util/globals";
+import { activeHost, Network } from "./engine/Network";
 import { Katma } from "./katma/Katma";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

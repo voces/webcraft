@@ -1,10 +1,10 @@
-import { System } from "./System";
-import { Mechanism } from "./Merchanism";
-import { requestAnimationFrame } from "./util/globals";
-import { ComponentConstructor, Component } from "./Component";
-import { Entity } from "./Entity";
 import { withApp } from "./appContext";
+import { Component, ComponentConstructor } from "./Component";
+import { Entity } from "./Entity";
+import { Mechanism } from "./Merchanism";
 import { PublicSetView } from "./PublicSetView";
+import { System } from "./System";
+import { requestAnimationFrame } from "./util/globals";
 
 export class App {
 	protected _entities = new Set<Entity>();

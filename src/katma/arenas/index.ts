@@ -1,15 +1,14 @@
-import { theDump } from "./theDump";
-import { theFarm } from "./theFarm";
 // import { theGap } from "./theGap";
 // import { theRock } from "./theRock";
 // import { theTamedWoods } from "./theTamedWoods";
 // import { theTarget } from "./theTarget";
 // import { theTinyRectangle } from "./theTinyRectangle";
 // import { theWoods } from "./theWoods";
-
 import { PATHING_TYPES } from "../../engine/pathing/constants";
-import { Arena, InternalArena } from "./types";
 import { Point } from "../../engine/pathing/PathingMap";
+import { theDump } from "./theDump";
+import { theFarm } from "./theFarm";
+import { Arena, InternalArena } from "./types";
 
 const UNPATHABLE = PATHING_TYPES.WALKABLE + PATHING_TYPES.BUILDABLE;
 
