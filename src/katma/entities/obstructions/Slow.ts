@@ -29,6 +29,8 @@ type SlowProps = ObstructionProps & {
 };
 
 export class Slow extends Obstruction {
+	static readonly isSlow = true;
+
 	static defaults = {
 		...Obstruction.defaults,
 		maxHealth: 200,
@@ -81,8 +83,6 @@ export class Slow extends Obstruction {
 		},
 		buildHotkey: "q" as const,
 	};
-
-	readonly isSlow = true;
 
 	constructor({
 		weapon = clone(Slow.defaults.weapon),

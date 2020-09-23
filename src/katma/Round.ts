@@ -8,12 +8,12 @@ import { arenas } from "./arenas/index";
 import { Arena } from "./arenas/types";
 import { Crosser } from "./entities/Crosser";
 import { Defender } from "./entities/Defender";
-import { Resource } from "./entities/obstructions/Resource";
 import { currentKatma } from "./katmaContext";
 import { elo, updateDisplay } from "./players/elo";
 import { getPlaceholderPlayer } from "./players/placeholder";
 import { Player } from "./players/Player";
 import { TileSystem } from "./systems/TileSystem";
+import { isCrosser, isResource } from "./typeguards";
 import { Settings, teamKeys } from "./types";
 
 // A round starts upon construction
@@ -183,7 +183,7 @@ class Round {
 		if (player)
 			unit.addEventListener("death", () => {
 				player.unit = undefined;
-				if (unit instanceof Crosser) this.onCrosserRemoval();
+				if (isCrosser(unit)) this.onCrosserRemoval();
 			});
 	}
 
@@ -243,7 +243,7 @@ class Round {
 				(sum, p) =>
 					sum +
 					p.sprites.reduce(
-						(sum, s) => sum + (s instanceof Resource ? 1 : 0),
+						(sum, s) => sum + (isResource(s) ? 1 : 0),
 						0,
 					),
 				1,

@@ -3,12 +3,13 @@ import { TILE_TYPES } from "../../engine/constants";
 import { Sprite } from "../../engine/entities/widgets/Sprite";
 import { Crosser } from "../entities/Crosser";
 import { currentRound } from "../roundContext";
+import { isCrosser } from "../typeguards";
 
 export class TileSystem extends System<Crosser> {
 	static components = [];
 
 	test(entity: Sprite): entity is Crosser {
-		return entity instanceof Crosser;
+		return isCrosser(entity);
 	}
 
 	update(crosser: Crosser): void {

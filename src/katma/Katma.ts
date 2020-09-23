@@ -19,7 +19,7 @@ import { Round } from "./Round";
 import { Settings } from "./types";
 
 export class Katma extends Game {
-	readonly isKatma = true;
+	static readonly isKatma = true;
 
 	arena: Arena = arenas[0];
 	round?: Round;

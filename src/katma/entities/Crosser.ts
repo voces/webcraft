@@ -17,6 +17,8 @@ import { Stack } from "./obstructions/Stack";
 import { Tiny } from "./obstructions/Tiny";
 
 export class Crosser extends Unit {
+	static readonly isCrosser = true;
+
 	static defaults = {
 		...Unit.defaults,
 		priority: 1,
@@ -24,7 +26,6 @@ export class Crosser extends Unit {
 		builds: [Basic, Dense, Huge, Large, Resource, Slow, Stack, Tiny],
 	};
 
-	readonly isCrosser = true;
 	// 380 in WC3 on fast
 	speed = 5.9375;
 	obstructions: Obstruction[] = [];

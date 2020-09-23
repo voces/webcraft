@@ -8,12 +8,13 @@ import { MoveTarget } from "../components/MoveTarget";
 import { Sprite } from "../entities/widgets/Sprite";
 import { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
+import { isUnit } from "../typeguards";
 
 export class AttackSystem extends System<Unit> {
 	static components = [AttackTarget];
 
 	test(entity: Sprite): entity is Unit {
-		return AttackTarget.has(entity) && entity instanceof Unit;
+		return AttackTarget.has(entity) && isUnit(entity);
 	}
 
 	update(entity: Unit): void {

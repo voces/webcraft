@@ -17,6 +17,8 @@ export type ObstructionProps = UnitProps & {
 };
 
 export class Obstruction extends Unit {
+	static readonly isObstruction = true;
+
 	static defaults = {
 		...Unit.defaults,
 		buildHotkey: undefined as Action["hotkey"] | undefined,
@@ -30,7 +32,6 @@ export class Obstruction extends Unit {
 		},
 	};
 
-	readonly isObstruction = true;
 	requiresTilemap = toFootprint(this.collisionRadius, this.requiresPathing);
 	blocksTilemap = toFootprint(this.collisionRadius, this.blocksPathing);
 	buildTime: number;

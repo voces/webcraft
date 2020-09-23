@@ -5,6 +5,8 @@ import { currentGame } from "../../gameContext";
 import { Widget } from "../Widget";
 
 export class SelectionCircle extends Widget {
+	static readonly isSelectionCircle = true;
+
 	constructor({
 		radius,
 		color,

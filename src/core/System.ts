@@ -29,7 +29,7 @@ abstract class System<T extends Entity = Entity> {
 	}
 
 	/**
-	 * If the passed entity satisifies `set`, then the entity is added to the
+	 * If the passed entity satisifies `test`, then the entity is added to the
 	 * system. Otherwise, it is removed.
 	 */
 	check(entity: Entity): void {

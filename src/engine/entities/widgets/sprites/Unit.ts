@@ -44,6 +44,8 @@ const darkBlue = new Color("#191966");
 // `Seeing Class extends value undefined is not a constructor or null`? Import
 // Player before Sprite.
 class Unit extends Sprite {
+	static readonly isUnit = true;
+
 	static defaults = {
 		...Sprite.clonedDefaults,
 		isIllusion: false,
@@ -52,7 +54,6 @@ class Unit extends Sprite {
 		autoAttack: false,
 	};
 
-	readonly isUnit = true;
 	isIllusion: boolean;
 	mirrors?: Unit[];
 	owner!: Player;

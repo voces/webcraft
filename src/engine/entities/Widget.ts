@@ -9,7 +9,7 @@ export type WidgetProps = {
 };
 
 export class Widget extends Entity {
-	readonly isWidget = true;
+	static readonly isWidget = true;
 
 	constructor({ id, x, y }: WidgetProps) {
 		super(id);

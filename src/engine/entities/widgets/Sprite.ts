@@ -51,6 +51,8 @@ export type SpriteEvents = {
 };
 
 class Sprite extends Widget {
+	static readonly isSprite = true;
+
 	static defaults = {
 		collisionRadius: 1,
 		meshBuilder: { shape: "circle" as "square" | "circle" },
@@ -61,8 +63,6 @@ class Sprite extends Widget {
 	static get clonedDefaults() {
 		return clone(this.defaults);
 	}
-
-	readonly isSprite = true;
 
 	armor: number;
 	blocksPathing: number;

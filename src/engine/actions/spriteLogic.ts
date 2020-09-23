@@ -14,7 +14,7 @@ const rightClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 	const { x, y } = mouse.ground;
 	const game = currentGame();
 
-	if (isWidget(mouse.entity) || !mouse.entity)
+	if ((mouse.entity && isWidget(mouse.entity)) || !mouse.entity)
 		attackMoveAction.localHandler({
 			player: game.localPlayer,
 			target: mouse.entity,

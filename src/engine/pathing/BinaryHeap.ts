@@ -65,12 +65,13 @@ export class BinaryHeap<T> extends Array<T> {
 		const element = this[index];
 		const score = this.scoreFunc(element);
 
+		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			const rightIndex = (index + 1) * 2;
 			const leftIndex = rightIndex - 1;
 			let leftScore;
 
-			let swapIndex = null;
+			let swapIndex = undefined;
 
 			if (leftIndex < length) {
 				const left = this[leftIndex];
@@ -84,12 +85,12 @@ export class BinaryHeap<T> extends Array<T> {
 
 				if (
 					this.scoreFunc(right) <
-					(swapIndex === null ? score : (leftScore as number))
+					(swapIndex === undefined ? score : (leftScore as number))
 				)
 					swapIndex = rightIndex;
 			}
 
-			if (swapIndex === null) break;
+			if (swapIndex === undefined) break;
 
 			this[index] = this[swapIndex];
 			this[swapIndex] = element;

@@ -5,6 +5,7 @@ import { BUILD_DISTANCE } from "../constants";
 import { Sprite } from "../entities/widgets/Sprite";
 import { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
+import { isUnit } from "../typeguards";
 import { appendErrorMessage } from "../ui/chat";
 import { distanceBetweenPoints } from "../util/tweenPoints";
 
@@ -12,7 +13,7 @@ export class BlueprintSystem extends System<Unit> {
 	static components = [BuildTarget, MoveTarget];
 
 	test(entity: Sprite): entity is Unit {
-		return entity.has(BuildTarget) && entity instanceof Unit;
+		return entity.has(BuildTarget) && isUnit(entity);
 	}
 
 	update(entity: Unit): void {

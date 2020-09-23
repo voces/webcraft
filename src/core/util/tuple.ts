@@ -9,7 +9,11 @@ export const tuple = <T extends object[]>(...values: T): T => {
 
 	for (let i = 0; i < values.length - 1; i++)
 		if (store.has(values[i])) store = store.get(values[i]);
-		else store = store.set(values[i], new WeakMap());
+		else {
+			const newStore = new WeakMap();
+			store.set(values[i], newStore);
+			store = newStore;
+		}
 
 	const lastValue = values[values.length - 1];
 	const tuple = store.get(lastValue);

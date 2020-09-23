@@ -4,6 +4,8 @@ import {
 } from "../../../engine/entities/widgets/sprites/units/Obstruction";
 
 export class Resource extends Obstruction {
+	static readonly isResource = true;
+
 	static defaults = {
 		...Obstruction.defaults,
 		maxHealth: 20,

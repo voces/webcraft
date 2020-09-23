@@ -7,6 +7,8 @@ type DefenderProps = UnitProps & {
 };
 
 export class Defender extends Unit {
+	static readonly isDefender = true;
+
 	static defaults = {
 		...Unit.defaults,
 		maxHealth: Number.MAX_VALUE,
@@ -23,7 +25,6 @@ export class Defender extends Unit {
 		autoAttack: true,
 	};
 
-	readonly isDefender = true;
 	autoAttack: boolean;
 
 	constructor({

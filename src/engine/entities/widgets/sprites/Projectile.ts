@@ -22,6 +22,8 @@ type ProjectileProps = Omit<SpriteProps, "x" | "y" | "game"> & {
 };
 
 export class Projectile extends Sprite {
+	static readonly isProjectile = true;
+
 	static defaults = {
 		...Sprite.defaults,
 		collisionRadius: 3,

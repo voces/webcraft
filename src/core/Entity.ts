@@ -4,7 +4,8 @@ import { Component, ComponentConstructor } from "./Component";
 export type EntityID = string | number;
 
 export class Entity {
-	isEntity = true;
+	static readonly isEntity = true;
+
 	id: EntityID;
 
 	private map = new Map<ComponentConstructor, Component[]>();
@@ -92,5 +93,9 @@ export class Entity {
 			component.dispose();
 		}
 		return cleared;
+	}
+
+	get components(): Component[] {
+		return Array.from(this.map.values()).flat();
 	}
 }

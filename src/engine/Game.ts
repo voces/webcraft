@@ -7,7 +7,7 @@ import { withGame, wrapGame } from "./gameContext";
 import { alea } from "./lib/alea";
 import { Alliances } from "./mechanisms/Alliances";
 import { ObstructionPlacement } from "./mechanisms/ObstructionPlacement";
-import { ConnectionEvent, Network } from "./network";
+import { ConnectionEvent, Network } from "./Network";
 import { PathingMap } from "./pathing/PathingMap";
 import { nextColor, releaseColor } from "./players/colors";
 import { Player } from "./players/Player";
@@ -48,7 +48,7 @@ type Timeout = {
 };
 
 class Game extends App {
-	readonly isGame = true;
+	static readonly isGame = true;
 
 	private network!: Network;
 	addNetworkListener!: Network["addEventListener"];

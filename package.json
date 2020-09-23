@@ -34,6 +34,7 @@
     "build": "rollup --config",
     "dev": "rollup --config --watch",
     "lint": "eslint src --ext .js,.ts,.jsx,.tsx --quiet --fix",
+    "test-lint": "eslint src --ext .js,.ts,.jsx,.tsx --max-warnings 0",
     "jest": "jest --silent",
     "start": "node --experimental-modules --no-warnings server/src/index.js",
     "test": "jest",

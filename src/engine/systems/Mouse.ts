@@ -7,8 +7,7 @@ import { System } from "../../core/System";
 import { window } from "../../core/util/globals";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Hover } from "../components/Hover";
-import { SelectionCircle } from "../entities/widgets/sprites/SelectionCircle";
-import { isSprite } from "../typeguards";
+import { isSelectionCircle, isSprite } from "../typeguards";
 import { EntityObject } from "../types";
 import { MouseDownEvent, MouseMoveEvent, UI } from "../ui";
 import { ThreeGraphics } from "./ThreeGraphics";
@@ -96,7 +95,7 @@ class Mouse extends System {
 		return (
 			ThreeObjectComponent.has(entity) &&
 			// todo: Add Selectable component
-			!(entity instanceof SelectionCircle)
+			!isSelectionCircle(entity)
 		);
 	}
 
