@@ -857,7 +857,7 @@ export class PathingMap {
 						neighbor.__startVisited = true;
 						neighbor.__startParent = startCurrent.__startParent;
 						neighbor.__startEstimatedCostRemaining =
-							neighbor.__startEstimatedCostRemaining ??
+							neighbor.__startEstimatedCostRemaining! ||
 							h(neighbor, endReal);
 						neighbor.__startRealCostFromOrigin = gScore;
 						neighbor.__startRealPlusEstimatedCost =
@@ -892,7 +892,7 @@ export class PathingMap {
 					neighbor.__startVisited = true;
 					neighbor.__startParent = startCurrent;
 					neighbor.__startEstimatedCostRemaining =
-						neighbor.__startEstimatedCostRemaining ??
+						neighbor.__startEstimatedCostRemaining! ||
 						h(neighbor, endReal);
 					neighbor.__startRealCostFromOrigin = gScore;
 					neighbor.__startRealPlusEstimatedCost =
@@ -1009,7 +1009,7 @@ export class PathingMap {
 						neighbor.__endVisited = true;
 						neighbor.__endParent = endCurrent.__endParent;
 						neighbor.__endEstimatedCostRemaining =
-							neighbor.__endEstimatedCostRemaining ??
+							neighbor.__endEstimatedCostRemaining! ||
 							h(neighbor, startReal);
 						neighbor.__endRealCostFromOrigin = gScore;
 						neighbor.__endRealPlusEstimatedCost =
@@ -1043,7 +1043,7 @@ export class PathingMap {
 					neighbor.__endVisited = true;
 					neighbor.__endParent = endCurrent;
 					neighbor.__endEstimatedCostRemaining =
-						neighbor.__endEstimatedCostRemaining ??
+						neighbor.__endEstimatedCostRemaining! ||
 						h(neighbor, startReal);
 					neighbor.__endRealCostFromOrigin = gScore;
 					neighbor.__endRealPlusEstimatedCost =
