@@ -33,8 +33,8 @@ const win = typeof window === "undefined" ? swallow<Window>() : window;
 export {
 	cAF as cancelAnimationFrame,
 	doc as document,
+	storage as localStorage,
 	loc as location,
 	rAF as requestAnimationFrame,
-	storage as localStorage,
 	win as window,
 };

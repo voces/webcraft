@@ -18,7 +18,7 @@ const App = ({ game }: { game: Game }) => {
 				<div id="top-right" className="h-spacing-8">
 					<Essense />
 					<Clock />
-					<span id="scores"></span>
+					<span id="scores" />
 				</div>
 				<div id="bottom-left" className="h-spacing-8">
 					<Ping />

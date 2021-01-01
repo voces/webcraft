@@ -30,10 +30,8 @@ class KatmaNetwork extends Network implements Emitter<NetworkEventCallback> {
 	// These are implemented via calling emitter(this)
 	addEventListener!: Emitter<NetworkEventCallback>["addEventListener"];
 	removeEventListener!: Emitter<NetworkEventCallback>["removeEventListener"];
-	removeEventListeners!: Emitter<
-		NetworkEventCallback
-	>["removeEventListeners"];
+	removeEventListeners!: Emitter<NetworkEventCallback>["removeEventListeners"];
 	dispatchEvent!: Emitter<NetworkEventCallback>["dispatchEvent"];
 }
 
-export { KatmaNetwork, ConnectionEvent };
+export { ConnectionEvent, KatmaNetwork };
