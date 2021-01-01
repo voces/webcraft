@@ -97,7 +97,7 @@ export class AutoAttackSystem extends System<Unit> {
 				}
 
 				return false;
-			}) || pool[0];
+			}) ?? pool[0];
 
 		if (nearest) entity.attack(nearest);
 	}

@@ -579,7 +579,7 @@ describe("PathingMap#nearestSpiralPathing", () => {
 			pathing?: number[][];
 		}) => {
 			const pathingMap = new PathingMap({
-				pathing: passedPathing || pathing,
+				pathing: passedPathing ?? pathing,
 			});
 			pathingMap.addEntity({
 				collisionRadius: 0.5,
@@ -670,7 +670,7 @@ describe("PathingMap#nearestSpiralPathing", () => {
 			pathing?: number[][];
 		}) => {
 			const pathingMap = new PathingMap({
-				pathing: passedPathing || pathing,
+				pathing: passedPathing ?? pathing,
 			});
 			pathingMap.addEntity({
 				collisionRadius: 1,

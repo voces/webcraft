@@ -244,6 +244,10 @@ export class PathingMap {
 			}
 	}
 
+	/**
+	 * Internals of PathingMap#pathable. Not private for interfacee typing
+	 * reasons.
+	 */
 	_pathable(
 		map: Footprint,
 		xTile: number,
@@ -284,7 +288,7 @@ export class PathingMap {
 		const xTile = this.xWorldToTile(xWorld);
 		const yTile = this.yWorldToTile(yWorld);
 		const map =
-			entity.requiresTilemap ||
+			entity.requiresTilemap ??
 			this.pointToTilemap(xWorld, yWorld, entity.collisionRadius, {
 				type:
 					entity.requiresPathing === undefined
@@ -297,7 +301,10 @@ export class PathingMap {
 		);
 	}
 
-	// Make this more efficient by storing known tiles
+	/**
+	 * Temporarily removes an entity from the PathingMap, invokes the passed
+	 * function, re-adds the entity, and returns the result of the function.
+	 */
 	withoutEntity<A>(entity: Entity, fn: () => A): A {
 		const removed = this.entities.has(entity);
 		if (removed) this.removeEntity(entity);
@@ -309,6 +316,11 @@ export class PathingMap {
 		return result;
 	}
 
+	/**
+	 * Given an initial position `(xWorld, yWorld)`, returns the nearest point
+	 * the entity can be placed, measured by euclidean distance (thus would form
+	 * a circle instead of square for repeated placements).
+	 */
 	nearestPathing(
 		xWorld: number,
 		yWorld: number,
@@ -350,7 +362,7 @@ export class PathingMap {
 				: entity.requiresPathing;
 		if (pathing === undefined) throw "entity has no pathing";
 		const minimalTilemap =
-			entity.requiresTilemap ||
+			entity.requiresTilemap ??
 			this.pointToTilemap(
 				entity.collisionRadius,
 				entity.collisionRadius,
@@ -411,6 +423,11 @@ export class PathingMap {
 		return this.layers[yTile][xTile];
 	}
 
+	/**
+	 * Returns the layer for a given world coordinate. Some pathing calculations
+	 * are constrained to specific layers, such as
+	 * PathingMap#nearestSpiralPathing.
+	 */
 	layer(xWorld: number, yWorld: number): number | undefined {
 		if (!this.layers) return;
 		if (yWorld < 0) return;
@@ -422,6 +439,12 @@ export class PathingMap {
 		return this.layers[yWorld][xWorld];
 	}
 
+	/**
+	 * Given an initial position `(xWorld, yWorld)`, returns the nearest point
+	 * on the same layer at which the entity can be placed, as discovered by
+	 * spiraling out (thus would form a square instead of circle for repeated
+	 * placements).
+	 */
 	nearestSpiralPathing(
 		xWorld: number,
 		yWorld: number,
@@ -574,6 +597,10 @@ export class PathingMap {
 		return y / this.resolution;
 	}
 
+	/**
+	 * Calculates a tilemap/footprint required to place something at `(xWorld,
+	 * yWorld)` with `radius`.
+	 */
 	pointToTilemap(
 		xWorld: number,
 		yWorld: number,
@@ -639,17 +666,21 @@ export class PathingMap {
 		return footprint;
 	}
 
-	yBoundTile(yIndex: number): number {
+	private yBoundTile(yIndex: number): number {
 		return Math.max(Math.min(yIndex, this.heightMap - 1), 0);
 	}
 
-	xBoundTile(xIndex: number): number {
+	private xBoundTile(xIndex: number): number {
 		return Math.max(Math.min(xIndex, this.widthMap - 1), 0);
 	}
 
 	// Adapted from https://github.com/bgrins/javascript-astar/blob/master/astar.js
 	// towards Theta*
 	// This gets really sad when a path is not possible
+	/**
+	 * Calculates the shortest path for an entity to reach `target`. If a path
+	 * is not possible, or is extremely long, a partial path will be returned.
+	 */
 	path(entity: Entity, target: Point): Point[] {
 		if (typeof entity.collisionRadius !== "number")
 			throw new Error("Can only path find radial entities");
@@ -826,7 +857,7 @@ export class PathingMap {
 						neighbor.__startVisited = true;
 						neighbor.__startParent = startCurrent.__startParent;
 						neighbor.__startEstimatedCostRemaining =
-							neighbor.__startEstimatedCostRemaining ||
+							neighbor.__startEstimatedCostRemaining ??
 							h(neighbor, endReal);
 						neighbor.__startRealCostFromOrigin = gScore;
 						neighbor.__startRealPlusEstimatedCost =
@@ -861,7 +892,7 @@ export class PathingMap {
 					neighbor.__startVisited = true;
 					neighbor.__startParent = startCurrent;
 					neighbor.__startEstimatedCostRemaining =
-						neighbor.__startEstimatedCostRemaining ||
+						neighbor.__startEstimatedCostRemaining ??
 						h(neighbor, endReal);
 					neighbor.__startRealCostFromOrigin = gScore;
 					neighbor.__startRealPlusEstimatedCost =
@@ -978,7 +1009,7 @@ export class PathingMap {
 						neighbor.__endVisited = true;
 						neighbor.__endParent = endCurrent.__endParent;
 						neighbor.__endEstimatedCostRemaining =
-							neighbor.__endEstimatedCostRemaining ||
+							neighbor.__endEstimatedCostRemaining ??
 							h(neighbor, startReal);
 						neighbor.__endRealCostFromOrigin = gScore;
 						neighbor.__endRealPlusEstimatedCost =
@@ -1012,7 +1043,7 @@ export class PathingMap {
 					neighbor.__endVisited = true;
 					neighbor.__endParent = endCurrent;
 					neighbor.__endEstimatedCostRemaining =
-						neighbor.__endEstimatedCostRemaining ||
+						neighbor.__endEstimatedCostRemaining ??
 						h(neighbor, startReal);
 					neighbor.__endRealCostFromOrigin = gScore;
 					neighbor.__endRealPlusEstimatedCost =
@@ -1220,7 +1251,7 @@ export class PathingMap {
 		return true;
 	}
 
-	_smooth(entity: Entity, path: Tile[], cache: Cache = this): void {
+	private _smooth(entity: Entity, path: Tile[], cache: Cache = this): void {
 		for (let skip = path.length - 1; skip > 1; skip--)
 			for (let index = 0; index < path.length - skip; index++)
 				if (
@@ -1236,6 +1267,9 @@ export class PathingMap {
 				}
 	}
 
+	/**
+	 * Internals of ParthingMap#linearPathable. Public for testing purposes.
+	 */
 	_linearPathable(entity: Entity, startTile: Tile, endTile: Tile): boolean {
 		const radiusOffset = entity.collisionRadius % (1 / this.resolution);
 		return this.linearPathable(
@@ -1266,6 +1300,10 @@ export class PathingMap {
 		return this.grid[y][x];
 	}
 
+	/**
+	 * Checks whether an entity is clearance to go from `startWorld` to
+	 * `endWorld`.
+	 */
 	linearPathable(
 		entity: Entity,
 		startWorld: Point,
@@ -1298,7 +1336,7 @@ export class PathingMap {
 
 			if (startTile === endTile) {
 				const map =
-					entity.requiresTilemap ||
+					entity.requiresTilemap ??
 					this.pointToTilemap(
 						startWorld.x,
 						startWorld.y,
@@ -1489,11 +1527,15 @@ export class PathingMap {
 		return true;
 	}
 
+	/**
+	 * Adds an entity to the PathingMap, adding it to any tiles it intersects
+	 * with.
+	 */
 	addEntity(entity: Entity): void {
 		const tiles = [];
 		const position = pos(entity);
 		const { map, top, left, width, height } =
-			entity.blocksTilemap ||
+			entity.blocksTilemap ??
 			this.pointToTilemap(
 				position.x,
 				position.y,
@@ -1519,13 +1561,20 @@ export class PathingMap {
 		this.entities.set(entity, tiles);
 	}
 
+	/**
+	 * Notifies the PathingMap the entity may occupy a new tiles, removing
+	 * it from tiles it no longer intersects and adding it to tiles it now
+	 * intersects.
+	 * Note: This will not reflect changes to the entity's pathing type. An
+	 * entities pathing type is treatede as immutable.
+	 */
 	updateEntity(entity: Entity): void {
 		if (!this.entities.has(entity)) return;
-		const oldTiles: Tile[] = this.entities.get(entity) || [];
+		const oldTiles: Tile[] = this.entities.get(entity) ?? [];
 		const newTiles: Tile[] = [];
 		const position = pos(entity);
 		const { map, top, left, width, height } =
-			entity.blocksTilemap ||
+			entity.blocksTilemap ??
 			this.pointToTilemap(
 				position.x,
 				position.y,
@@ -1558,6 +1607,9 @@ export class PathingMap {
 		this.entities.set(entity, newTiles);
 	}
 
+	/**
+	 * Removes the entity from the PathingMap, clearing it from all tiles.
+	 */
 	removeEntity(entity: Entity): void {
 		const tiles = this.entities.get(entity);
 		if (tiles) tiles.forEach((tile) => tile.removeEntity(entity));

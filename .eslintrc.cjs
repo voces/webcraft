@@ -7,6 +7,7 @@ module.exports = {
 			"error",
 			{ allowedNames: ["mutable"] },
 		],
+		"@typescript-eslint/prefer-nullish-coalescing": "error",
 	},
 	overrides: [
 		{

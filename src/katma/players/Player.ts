@@ -34,7 +34,7 @@ export const patchInState = (
 ): void => {
 	playersState.forEach(({ color, id, ...playerData }) => {
 		const player =
-			game.players.find((p) => p.id === id) ||
+			game.players.find((p) => p.id === id) ??
 			new Player({ ...playerData, id, game });
 
 		if (
