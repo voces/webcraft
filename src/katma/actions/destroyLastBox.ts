@@ -12,7 +12,7 @@ export const destroyLastBox = {
 		const obstructions = [...crosser.obstructions];
 		while (obstructions.length) {
 			const obstruction = obstructions.pop();
-			if (obstruction && obstruction.health > 0) {
+			if (obstruction && obstruction.isAlive) {
 				player.game.transmit({
 					type: "selfDestruct",
 					sprites: [obstruction.id],

@@ -20,6 +20,11 @@ export class GerminateSystem extends System<GerminatingEntity> {
 		const germinateComponent = entity.get(GerminateComponent)[0];
 		if (!germinateComponent) return;
 
+		if (!entity.isAlive) {
+			entity.clear(germinateComponent);
+			return;
+		}
+
 		// Move up progress
 		const newProgress = Math.min(
 			1,

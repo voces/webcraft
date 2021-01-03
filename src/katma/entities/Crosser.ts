@@ -62,9 +62,9 @@ export class Crosser extends Unit {
 		game.obstructionPlacement?.stop();
 
 		const meshBuilderComponent = this.get(MeshBuilderComponent)[0];
-		if (meshBuilderComponent) new Animation(this, "ascend", 1);
+		if (meshBuilderComponent) new Animation(this, "explode", 0.25);
 
-		game.setTimeout(() => this.remove(), 1);
+		game.setTimeout(() => this.remove(), 0.25);
 	}
 
 	get actions(): Action[] {

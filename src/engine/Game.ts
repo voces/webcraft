@@ -187,7 +187,7 @@ class Game extends App {
 
 		this.intervals.push({
 			fn,
-			next: this.lastUpdate + interval,
+			next: this.time + interval,
 			interval,
 			oncePerUpdate,
 			id,
@@ -206,7 +206,7 @@ class Game extends App {
 	setTimeout(fn: () => void, timeout = 0.05): TimeoutId {
 		const id = this.nextTimeoutId;
 
-		this.timeouts.push({ fn, next: this.lastUpdate + timeout, id });
+		this.timeouts.push({ fn, next: this.time + timeout, id });
 
 		this.nextTimeoutId = id + 1;
 

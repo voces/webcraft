@@ -160,7 +160,10 @@ class Sprite extends Widget {
 
 	_death({ removeImmediately = false } = {}): void {
 		const game = currentGame();
-		if (removeImmediately) this._health = 0;
+		if (removeImmediately) {
+			this._health = 0;
+			this.isAlive = false;
+		}
 
 		this.clear(Selected);
 		this.clear(Hover);

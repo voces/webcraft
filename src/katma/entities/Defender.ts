@@ -20,7 +20,9 @@ export class Defender extends Unit {
 			// todo: add backswing (time before damage) and recovery (time after damage where the unit can't do anything)
 			last: 0,
 			range: 0.65,
-			projectile: "instant" as const,
+			projectile: "swing" as const,
+			damagePoint: 0.5,
+			rangeMotionBuffer: 2.75,
 		},
 		autoAttack: true,
 	};

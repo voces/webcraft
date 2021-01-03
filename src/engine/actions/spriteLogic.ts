@@ -8,6 +8,7 @@ import { buildAction } from "./build";
 import { holdPositionAction } from "./holdPosition";
 import { mirrorAction } from "./mirror";
 import { moveAction } from "./move";
+import { selfDestructAction } from "./selfDestruct";
 import { stopAction } from "./stop";
 
 const rightClick: MouseEvents["mouseDown"] = ({ mouse }) => {
@@ -66,10 +67,11 @@ export const initSpriteLogicListeners = (game: Game): void => {
 		}
 	});
 
-	game.addNetworkListener("stop", stopAction.syncHandler);
-	game.addNetworkListener("mirror", mirrorAction.syncHandler);
-	game.addNetworkListener("holdPosition", holdPositionAction.syncHandler);
 	game.addNetworkListener("attack", attackAction.syncHandler);
-	game.addNetworkListener("move", moveAction.syncHandler);
 	game.addNetworkListener("build", buildAction.syncHandler);
+	game.addNetworkListener("holdPosition", holdPositionAction.syncHandler);
+	game.addNetworkListener("mirror", mirrorAction.syncHandler);
+	game.addNetworkListener("move", moveAction.syncHandler);
+	game.addNetworkListener("selfDestruct", selfDestructAction.syncHandler);
+	game.addNetworkListener("stop", stopAction.syncHandler);
 };

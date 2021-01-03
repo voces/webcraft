@@ -1,9 +1,13 @@
 import {
+	AnimationClip,
+	BooleanKeyframeTrack,
 	BoxBufferGeometry,
 	Color,
 	Mesh,
 	MeshPhongMaterial,
+	NumberKeyframeTrack,
 	SphereBufferGeometry,
+	VectorKeyframeTrack,
 } from "three";
 
 import { System } from "../../core/System";
@@ -72,6 +76,25 @@ export class MeshBuilder extends System {
 		mesh.position.y = entity.position.y;
 		// mesh.position.z = ;
 		mesh.entity = entity;
+
+		mesh.animations.push(
+			new AnimationClip("attack", 0.75, [
+				new VectorKeyframeTrack(
+					".scale",
+					[0, 0.35, 0.5, 0.75],
+					[1, 1, 1, 1.25, 1.25, 1.25, 0.8, 0.8, 0.8, 1, 1, 1],
+				),
+			]),
+			new AnimationClip("explode", 0.25, [
+				new VectorKeyframeTrack(
+					".scale",
+					[0, 0.25],
+					[1, 1, 1, 5, 5, 5],
+				),
+				new NumberKeyframeTrack(".material.opacity", [0, 0.25], [1, 0]),
+				new BooleanKeyframeTrack(".material.transparent", [0], [true]),
+			]),
+		);
 
 		// Attach the mesh to the entity
 		new ThreeObjectComponent(entity, mesh);
