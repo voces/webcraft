@@ -41,15 +41,15 @@ export class GraphicMoveSystem extends System {
 			object.position.y = y;
 			object.position.z =
 				object.position.z * 0.8 +
-				game.terrain!.groundHeight(x, y) * 0.2;
+				game.terrain!.groundHeight(x, y) * 0.2 +
+				entity.position.zOffset;
 		} else {
 			const position = entity.position;
 			object.position.x = position.x;
 			object.position.y = position.y;
-			object.position.z = game.terrain!.groundHeight(
-				position.x,
-				position.y,
-			);
+			object.position.z =
+				game.terrain!.groundHeight(position.x, position.y) +
+				entity.position.zOffset;
 		}
 
 		// TODO: we can probably generalize this with a Children component

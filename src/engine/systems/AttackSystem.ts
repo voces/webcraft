@@ -7,6 +7,7 @@ import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponen
 import { MoveTarget } from "../components/MoveTarget";
 import { Sprite } from "../entities/widgets/Sprite";
 import { Unit } from "../entities/widgets/sprites/Unit";
+import { TextTag } from "../entities/widgets/TextTag";
 import { currentGame } from "../gameContext";
 import { isUnit } from "../typeguards";
 
@@ -14,7 +15,11 @@ const doDamage = (entity: Unit, attackTarget: AttackTarget, weapon: Weapon) => {
 	const isTargetInRange = isInAttackRange(entity, attackTarget.target, true);
 
 	if (!isTargetInRange) {
-		console.log("miss!");
+		new TextTag({
+			text: "miss",
+			x: entity.position.x,
+			y: entity.position.y,
+		});
 		return;
 	}
 

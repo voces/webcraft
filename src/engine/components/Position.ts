@@ -5,16 +5,13 @@ import { Point } from "../pathing/PathingMap";
 import { isEntity } from "../typeguards";
 import { Mutable } from "../types";
 
-export class Position extends Component<
-	[number, number, { zOffset: number; flyHeight: number }]
-> {
+export class Position extends Component<[number, number, { zOffset: number }]> {
 	static setXY(entity: Entity, x: number, y: number): Position {
 		return whileReplacingComponent(() => {
 			const component = entity.get(Position)[0];
 			if (component) entity.clear(this);
 			return new Position(entity, x, y, {
 				zOffset: component?.zOffset,
-				flyHeight: component?.flyHeight,
 			});
 		});
 	}
@@ -22,30 +19,25 @@ export class Position extends Component<
 	readonly x!: number;
 	readonly y!: number;
 	readonly zOffset!: number;
-	readonly flyHeight!: number;
 
 	constructor(
 		entity: Entity,
 		x: number,
 		y: number,
-		{
-			zOffset = 0,
-			flyHeight = 0,
-		}: { zOffset?: number; flyHeight?: number } = {},
+		{ zOffset = 0 }: { zOffset?: number } = {},
 	) {
-		super(entity, x, y, { zOffset, flyHeight });
+		super(entity, x, y, { zOffset });
 	}
 
 	protected initialize(
 		x: number,
 		y: number,
-		{ zOffset, flyHeight }: { zOffset: number; flyHeight: number },
+		{ zOffset }: { zOffset: number },
 	): void {
 		const mutable: Mutable<Position> = this;
 		mutable.x = x;
 		mutable.y = y;
 		mutable.zOffset = zOffset;
-		mutable.flyHeight = flyHeight;
 	}
 
 	setXY(x: number, y: number): Position {

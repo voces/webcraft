@@ -6,14 +6,15 @@ export type WidgetProps = {
 	id?: EntityID;
 	x: number;
 	y: number;
+	zOffset?: number;
 };
 
 export class Widget extends Entity {
 	static readonly isWidget = true;
 
-	constructor({ id, x, y }: WidgetProps) {
+	constructor({ id, x, y, zOffset }: WidgetProps) {
 		super(id);
-		new Position(this, x, y);
+		new Position(this, x, y, { zOffset });
 	}
 
 	get position(): Position {
