@@ -16,6 +16,7 @@ const doDamage = (entity: Unit, attackTarget: AttackTarget, weapon: Weapon) => {
 
 	if (!isTargetInRange) {
 		new TextTag({
+			color: "red",
 			text: "miss",
 			x: entity.position.x,
 			y: entity.position.y,
