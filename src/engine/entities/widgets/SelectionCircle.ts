@@ -4,6 +4,8 @@ import { ThreeObjectComponent } from "../../components/graphics/ThreeObjectCompo
 import { currentGame } from "../../gameContext";
 import { Widget } from "../Widget";
 
+export const SELECTION_CRICLE_ZOFFSET = 0.0625;
+
 export class SelectionCircle extends Widget {
 	static readonly isSelectionCircle = true;
 
@@ -18,7 +20,12 @@ export class SelectionCircle extends Widget {
 		x: number;
 		y: number;
 	}) {
-		super({ id: "SELECTION_CIRCLE", x, y });
+		super({
+			id: "SELECTION_CIRCLE",
+			x,
+			y,
+			zOffset: SELECTION_CRICLE_ZOFFSET,
+		});
 		const geometry = new TorusBufferGeometry(radius, radius * 0.05, 3, 24);
 		const material = new MeshBasicMaterial({
 			color,

@@ -18,8 +18,7 @@ export class SelectedMovingCircles extends System {
 
 		const xy = getXY(entity);
 
-		Position.clear(circle);
-		new Position(circle, xy ? xy.x : 0, xy ? xy.y : 0);
+		Position.setXY(circle, xy ? xy.x : 0, xy ? xy.y : 0);
 	}
 }
 
@@ -36,8 +35,7 @@ export class HoverMovingCircles extends System {
 
 		const xy = getXY(entity);
 
-		Position.clear(circle);
-		new Position(circle, xy ? xy.x : 0, xy ? xy.y : 0);
+		Position.setXY(circle, xy ? xy.x : 0, xy ? xy.y : 0);
 	}
 }
 

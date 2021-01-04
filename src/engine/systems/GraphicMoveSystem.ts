@@ -6,6 +6,7 @@ import { MoveTarget } from "../components/MoveTarget";
 import { Position } from "../components/Position";
 import { Selected } from "../components/Selected";
 import { Widget } from "../entities/Widget";
+import { SELECTION_CRICLE_ZOFFSET } from "../entities/widgets/SelectionCircle";
 import { currentGame } from "../gameContext";
 
 type EntityWithSpeed = Entity & { speed: number };
@@ -55,7 +56,10 @@ export class GraphicMoveSystem extends System {
 		// TODO: we can probably generalize this with a Children component
 		[Selected, Hover].forEach((Circle) => {
 			const circle = entity.get(Circle)[0]?.circle;
-			if (circle) circle.model.object.position.copy(object.position);
+			if (circle) {
+				circle.model.object.position.copy(object.position);
+				circle.model.object.position.z += SELECTION_CRICLE_ZOFFSET;
+			}
 		});
 	}
 }
