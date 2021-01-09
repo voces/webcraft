@@ -126,7 +126,10 @@ export class ThreeGraphics extends System {
 		// helps with camera -> renderer -> updateSize -> camera
 		(async () => this.updateSize())();
 
-		window.addEventListener("resize", () => this.updateSize());
+		window.addEventListener("resize", () => {
+			this.updateSize();
+			this.updateCamera();
+		});
 	}
 
 	updateSize(): void {

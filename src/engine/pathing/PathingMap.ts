@@ -12,13 +12,17 @@ import {
 } from "./math";
 import { memoize } from "./memoize";
 
-// let debugging = false;
+let debugging = false;
 // const elems: HTMLElement[] = [];
 // export const toggleDebugging = (): void => {
 // 	if (debugging) elems.forEach((elem) => arena.removeChild(elem));
 
 // 	debugging = !debugging;
 // };
+Object.defineProperty(globalThis, "debugging", {
+	set: (value) => (debugging = value),
+	get: () => debugging,
+});
 
 const DEFAULT_RESOLUTION = 1;
 
@@ -242,6 +246,24 @@ export class PathingMap {
 				// Below
 				if (y < this.heightMap - 1) nodes.push(this.grid[y + 1][x]);
 			}
+
+		if (debugging) {
+			const oldPath = this.path;
+			this.path = (...args) => {
+				const ret = oldPath.call(this, ...args);
+				// eslint-disable-next-line no-console
+				if (debugging) console.log("PathingMap#path", ret);
+				return ret;
+			};
+
+			const oldRecheck = this.recheck;
+			this.recheck = (...args) => {
+				const ret = oldRecheck.call(this, ...args);
+				// eslint-disable-next-line no-console
+				if (debugging) console.log("PathingMap#recheck", ret);
+				return ret;
+			};
+		}
 	}
 
 	/**

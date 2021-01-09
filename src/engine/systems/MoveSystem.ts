@@ -56,14 +56,16 @@ export class MoveSystem extends System<MovingSprite> {
 		if (pathable) entity.position.setXY(x, y);
 
 		// We've reached the end
-		if (moveTarget.path.distance < moveTarget.progress)
+		if (moveTarget.path.distance < moveTarget.progress) {
 			entity.clear(moveTarget);
+			return;
+		}
 
 		// Recheck path, start a new one periodically or if check fails
 		if (
 			entity.requiresPathing &&
 			(!pathable ||
-				moveTarget.ticks % 5 === 0 ||
+				moveTarget.ticks++ % 5 === 4 ||
 				!withoutTarget(pathingMap, moveTarget.target, () =>
 					pathingMap.recheck(
 						moveTarget.path.points,
