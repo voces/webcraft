@@ -42,6 +42,7 @@ const setMouseAndRender = (direction: Direction) => {
 const setZoom = (zoom: number) => {
 	const camera = currentGame().graphics.camera;
 	if (camera) camera.position.z = zoom;
+	localStorage.setItem("zoom", zoom.toString());
 };
 
 export const initCameraListeners = (ui: UI): void => {

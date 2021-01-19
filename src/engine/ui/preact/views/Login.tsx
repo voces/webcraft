@@ -1,6 +1,7 @@
 import { h, JSX } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
+import { localStorage } from "../../../../core/util/globals";
 import { Button } from "../components/Button";
 import { Group } from "../components/Group";
 import { Input } from "../components/Input";
@@ -20,7 +21,9 @@ export const Login = ({
 	const [mode, setMode] = useState<"init" | "login" | "register" | "done">(
 		"init",
 	);
-	const [username, setUsername] = useState("");
+	const [username, setUsername] = useState(
+		localStorage.getItem("username") ?? "",
+	);
 	const [password, setPassword] = useState<string | undefined>(undefined);
 	const [verifyPassword, setVerifyPassword] = useState<string | undefined>(
 		undefined,
@@ -78,7 +81,10 @@ export const Login = ({
 					value={username}
 					maxLength={16}
 					placeholder="username"
-					onInput={(e) => setUsername(e.currentTarget.value)}
+					onInput={(e) => {
+						setUsername(e.currentTarget.value);
+						localStorage.setItem("username", e.currentTarget.value);
+					}}
 					error={
 						!dirty && login.isErrored && login.error.code === 2
 							? login.error.message

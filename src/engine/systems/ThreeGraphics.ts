@@ -12,7 +12,7 @@ import {
 
 import { Entity } from "../../core/Entity";
 import { System } from "../../core/System";
-import { document, window } from "../../core/util/globals";
+import { document, localStorage, window } from "../../core/util/globals";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Game } from "../Game";
 import { Point } from "../pathing/PathingMap";
@@ -85,7 +85,7 @@ const getCamera = (renderer: WebGLRenderer) => {
 	const size = new Vector2();
 	renderer.getSize(size);
 	const camera = new PerspectiveCamera(75, size.x / size.y, 0.1, 10000);
-	camera.position.z = 10;
+	camera.position.z = parseFloat(localStorage.getItem("zoom") ?? "10");
 	camera.position.y = -7;
 	camera.rotation.x = 0.6;
 
