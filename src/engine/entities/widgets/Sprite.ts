@@ -1,6 +1,7 @@
 import { Emitter, emitter } from "../../../core/emitter";
 import { EntityID } from "../../../core/Entity";
 import { Action } from "../../actions/types";
+import { ActiveComponent } from "../../components/Active";
 import { AttackTarget } from "../../components/AttackTarget";
 import { GerminateComponent } from "../../components/GerminateComponent";
 import {
@@ -185,6 +186,7 @@ class Sprite extends Widget {
 
 	remove(initializedFromApp = false): void {
 		const game = currentGame();
+		this.isAlive = false;
 		this.dispatchEvent("remove");
 		if (!initializedFromApp) game.remove(this);
 		this.removeEventListeners();
@@ -197,6 +199,7 @@ class Sprite extends Widget {
 
 	get idle(): boolean {
 		return (
+			!ActiveComponent.has(this) &&
 			!MoveTarget.has(this) &&
 			!AttackTarget.has(this) &&
 			!HoldPositionComponent.has(this) &&

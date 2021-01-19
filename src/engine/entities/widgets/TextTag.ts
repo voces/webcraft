@@ -5,6 +5,7 @@ import {
 	PlaneBufferGeometry,
 } from "three";
 
+import { document, window } from "../../../core/util/globals";
 import { ThreeObjectComponent } from "../../components/graphics/ThreeObjectComponent";
 import { currentGame } from "../../gameContext";
 import { Widget, WidgetProps } from "../Widget";

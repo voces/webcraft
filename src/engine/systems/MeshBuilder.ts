@@ -85,6 +85,13 @@ export class MeshBuilder extends System {
 					[1, 1, 1, 1.25, 1.25, 1.25, 0.8, 0.8, 0.8, 1, 1, 1],
 				),
 			]),
+			new AnimationClip("cast", 0.5, [
+				new VectorKeyframeTrack(
+					".scale",
+					[0, 0.25, 0.35, 0.5],
+					[1, 1, 1, 0.8, 0.8, 0.8, 1.25, 1.25, 1.25, 1, 1, 1],
+				),
+			]),
 			new AnimationClip("explode", 0.25, [
 				new VectorKeyframeTrack(
 					".scale",

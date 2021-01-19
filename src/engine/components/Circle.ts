@@ -28,8 +28,8 @@ export abstract class Circle extends Component<[InternalProps]> {
 					? entity.collisionRadius * 1.25
 					: 1),
 			color: props.color ?? "#00FF00",
-			x: xy?.x ?? 0,
-			y: xy?.y ?? 0,
+			x: xy?.x ?? 999999,
+			y: xy?.y ?? 999999,
 		});
 	}
 

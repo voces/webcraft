@@ -1,5 +1,6 @@
 import { System } from "../../core/System";
 import { isInAttackRange } from "../api/UnitApi";
+import { ActiveComponent } from "../components/Active";
 import { AttackTarget } from "../components/AttackTarget";
 import { DamageComponent } from "../components/DamageComponent";
 import { GerminateComponent } from "../components/GerminateComponent";
@@ -17,6 +18,7 @@ export class AutoAttackSystem extends System<Unit> {
 		HoldPositionComponent,
 		GerminateComponent,
 		DamageComponent,
+		ActiveComponent,
 	];
 
 	test(entity: Sprite): entity is Unit {

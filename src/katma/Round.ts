@@ -197,7 +197,7 @@ class Round {
 	}
 
 	onCrosserRemoval(): void {
-		if (this.crossers.some((p) => p.unit && p.unit.health > 0)) return;
+		if (this.crossers.some((p) => p.unit && p.unit.isAlive)) return;
 
 		this.end();
 	}

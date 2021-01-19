@@ -5,6 +5,7 @@ import { DamageComponent, Weapon } from "../components/DamageComponent";
 import { Animation } from "../components/graphics/Animation";
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
 import { MoveTarget } from "../components/MoveTarget";
+import { Position } from "../components/Position";
 import { Sprite } from "../entities/widgets/Sprite";
 import { Unit } from "../entities/widgets/sprites/Unit";
 import { TextTag } from "../entities/widgets/TextTag";
@@ -15,12 +16,13 @@ const doDamage = (entity: Unit, attackTarget: AttackTarget, weapon: Weapon) => {
 	const isTargetInRange = isInAttackRange(entity, attackTarget.target, true);
 
 	if (!isTargetInRange) {
-		new TextTag({
-			color: "red",
-			text: "miss",
-			x: entity.position.x,
-			y: entity.position.y,
-		});
+		if (entity.has(Position))
+			new TextTag({
+				color: "red",
+				text: "miss",
+				x: entity.position.x,
+				y: entity.position.y,
+			});
 		return;
 	}
 
@@ -90,7 +92,10 @@ export class AttackSystem extends System<Unit> {
 				weapon.swinging = false;
 
 				// Target could have died while we're swinging
-				if (!attackTarget.target.isAlive) {
+				if (
+					!attackTarget.target.isAlive ||
+					attackTarget.target.invulnerable
+				) {
 					AttackTarget.clear(entity);
 					return;
 				}
