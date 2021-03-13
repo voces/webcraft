@@ -7,7 +7,7 @@ import { isCrosser } from "../typeguards";
 
 export class TileSystem extends System<Crosser> {
 	static components = [];
-	readonly pure = true;
+	readonly pure = false;
 
 	test(entity: Sprite): entity is Crosser {
 		return isCrosser(entity);

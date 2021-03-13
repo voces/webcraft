@@ -1,4 +1,4 @@
-import type { Emitter } from "../core/emitter";
+import type { Emitter, EventMap } from "../core/emitter";
 import { emitter } from "../core/emitter";
 import type { EntityID } from "../core/Entity";
 import { location } from "../core/util/globals";
@@ -129,7 +129,7 @@ const isNetworkEvent = (
 	json.type in networkEvents;
 
 export class Network implements Emitter<NetworkEventCallback> {
-	static networkEvents = networkEvents;
+	static networkEvents: EventMap = networkEvents;
 
 	// These are implemented via calling emitter(this)
 	addEventListener!: Emitter<NetworkEventCallback>["addEventListener"];

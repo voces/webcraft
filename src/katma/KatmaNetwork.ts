@@ -32,6 +32,8 @@ const networkEvents = {
 export type NetworkEventCallback = typeof networkEvents;
 
 class KatmaNetwork extends Network implements Emitter<NetworkEventCallback> {
+	static networkEvents = networkEvents;
+
 	// These are implemented via calling emitter(this)
 	addEventListener!: Emitter<NetworkEventCallback>["addEventListener"];
 	removeEventListener!: Emitter<NetworkEventCallback>["removeEventListener"];

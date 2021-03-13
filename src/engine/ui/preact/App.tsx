@@ -1,4 +1,4 @@
-import { render } from "preact";
+import { h, render } from "preact";
 import { useState } from "preact/hooks";
 
 import { document } from "../../../core/util/globals";
