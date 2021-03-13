@@ -1,5 +1,8 @@
-import { InternalArena } from "./types";
-import { stringMap, stringMapWithRamps } from "./util";
+import type { InternalArena } from "../../engine/entities/terrainHelpers";
+import {
+	stringMap,
+	stringMapWithRamps,
+} from "../../engine/entities/terrainHelpers";
 
 export const theFarm: InternalArena = {
 	name: "The Farm",

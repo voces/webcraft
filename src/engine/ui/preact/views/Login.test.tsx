@@ -1,4 +1,5 @@
-import { mount, ReactWrapper } from "enzyme";
+import type { ReactWrapper } from "enzyme";
+import { mount } from "enzyme";
 import { h } from "preact";
 
 import { Game as GameC } from "../contexts/Game";

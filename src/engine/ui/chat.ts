@@ -1,11 +1,11 @@
 import marked from "marked";
 
 import { document } from "../../core/util/globals";
-import { Game } from "../../engine/Game";
+import type { Game } from "../../engine/Game";
 import { wrapGame } from "../../engine/gameContext";
 // import { toggleDebugging } from "../pathing/PathingMap";
 import { emptyElement } from "../../engine/util/html";
-import { UI } from "./index";
+import type { UI } from "./index";
 
 type Command = {
 	name: string;

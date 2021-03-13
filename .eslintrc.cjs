@@ -8,6 +8,18 @@ module.exports = {
 			{ allowedNames: ["mutable"] },
 		],
 		"@typescript-eslint/prefer-nullish-coalescing": "error",
+		"@typescript-eslint/consistent-type-imports": ["error", { prefer: 'type-imports' }],
+		"no-duplicate-imports": "off",
+		"@typescript-eslint/no-duplicate-imports": ["error"],
+		"react/react-in-jsx-scope": "off",
+		"no-restricted-syntax": ["error", {
+			"selector": "ExportDefaultDeclaration",
+			"message": "Default exports are disallowed. Prefer named exports."
+		}, {
+				"selector": "CallExpression[callee.object.name=Math][callee.property.name=random]",
+				"message": "Using `Math.random()` can result in desyncs. Prefer `game.random()`."
+			}
+		]
 	},
 	overrides: [
 		{
@@ -15,7 +27,7 @@ module.exports = {
 			rules: {
 				"no-restricted-imports": [
 					"error",
-					{ patterns: ["**/engine/*", "**/katma/*"] },
+					{ patterns: ["**/engine/*", "**/katma/*", "**/mazingcontest/*"] },
 				],
 			},
 		},
@@ -24,7 +36,7 @@ module.exports = {
 			rules: {
 				"no-restricted-imports": [
 					"error",
-					{ patterns: ["**/katma/*"] },
+					{ patterns: ["**/katma/*", "**/mazingcontest/*"] },
 				],
 			},
 		},
@@ -38,6 +50,23 @@ module.exports = {
 							"**/engine/Game",
 							"**/engine/Network",
 							"**/engine/players/Player",
+							"**/mazingcontest",
+						],
+					},
+				],
+			},
+		},
+		{
+			files: ["./src/mazingcontest/**"],
+			rules: {
+				"no-restricted-imports": [
+					"error",
+					{
+						patterns: [
+							"**/engine/Game",
+							"**/engine/Network",
+							"**/engine/players/Player",
+							"**/katma",
 						],
 					},
 				],

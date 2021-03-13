@@ -1,6 +1,6 @@
 import { DamageComponent } from "../components/DamageComponent";
-import { Widget } from "../entities/Widget";
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Widget } from "../entities/Widget";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { isUnit } from "../typeguards";
 
 export const isInAttackRange = (

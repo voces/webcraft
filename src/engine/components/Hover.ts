@@ -1,4 +1,4 @@
-import { Entity } from "../../core/Entity";
+import type { Entity } from "../../core/Entity";
 import { Circle } from "./Circle";
 
 type Props = {

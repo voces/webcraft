@@ -1,4 +1,4 @@
-import { Entity } from "../../core/Entity";
+import type { Entity } from "../../core/Entity";
 import { System } from "../../core/System";
 import { Hover } from "../components/Hover";
 import { MoveTarget } from "../components/MoveTarget";
@@ -7,6 +7,7 @@ import { Selected } from "../components/Selected";
 
 export class SelectedMovingCircles extends System {
 	static components = [MoveTarget, Selected];
+	readonly pure = true;
 
 	test(entity: Entity): entity is Entity {
 		return Selected.has(entity) && MoveTarget.has(entity);
@@ -24,6 +25,7 @@ export class SelectedMovingCircles extends System {
 
 export class HoverMovingCircles extends System {
 	static components = [MoveTarget, Hover];
+	readonly pure = true;
 
 	test(entity: Entity): entity is Entity {
 		return Hover.has(entity) && MoveTarget.has(entity);

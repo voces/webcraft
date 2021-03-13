@@ -1,5 +1,12 @@
-import { h, JSX } from "preact";
-import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import type { JSX } from "preact";
+import { h } from "preact";
+import {
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "preact/hooks";
 
 import { localStorage } from "../../../../core/util/globals";
 import { Button } from "../components/Button";
@@ -35,46 +42,52 @@ export const Login = ({
 	const login = useLogin();
 
 	useEffect(() => setDirty(true), [username, password, verifyPassword]);
+
+	const onSubmit = useCallback(
+		async (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
+			e.preventDefault();
+
+			if (login.isPending) return;
+
+			setDirty(false);
+
+			if (mode === "register" && password !== verifyPassword) {
+				verifyPasswordInput.current.focus();
+				return;
+			}
+
+			const result = await login.performFetch(
+				username,
+				password,
+				mode === "register",
+				game.protocol,
+			);
+
+			if (result.isCompleted) {
+				game.connect(result.data.token);
+				setMode("done");
+				onSuccess();
+				return;
+			}
+
+			if (result.isErrored)
+				if (result.error.code === 0 && mode === "init") {
+					setMode("login");
+					passwordInput.current.focus();
+				} else if (result.error.code === 1)
+					passwordInput.current.focus();
+				else if (result.error.code === 2) usernameInput.current.focus();
+		},
+		[login, mode, password, verifyPassword, game],
+	);
+
 	return (
 		<form
 			style={{ visibility: mode === "done" ? "hidden" : "default" }}
-			onSubmit={async (e) => {
-				e.preventDefault();
-
-				if (login.isPending) return;
-
-				setDirty(false);
-
-				if (mode === "register" && password !== verifyPassword) {
-					verifyPasswordInput.current.focus();
-					return;
-				}
-
-				const result = await login.performFetch(
-					username,
-					password,
-					mode === "register",
-				);
-
-				if (result.isCompleted) {
-					game.connect(result.data.token);
-					setMode("done");
-					onSuccess();
-					return;
-				}
-
-				if (result.isErrored)
-					if (result.error.code === 0 && mode === "init") {
-						setMode("login");
-						passwordInput.current.focus();
-					} else if (result.error.code === 1)
-						passwordInput.current.focus();
-					else if (result.error.code === 2)
-						usernameInput.current.focus();
-			}}
+			onSubmit={onSubmit}
 		>
 			<Group spacing={8}>
-				<h2>katma</h2>
+				<h2>{game.displayName}</h2>
 				<Input
 					data-test="username"
 					inputRef={usernameInput}

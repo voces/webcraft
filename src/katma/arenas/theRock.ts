@@ -1,5 +1,5 @@
-import { InternalArena } from "./types";
-import { stringMap } from "./util";
+import type { InternalArena } from "../../engine/entities/terrainHelpers";
+import { stringMap } from "../../engine/entities/terrainHelpers";
 
 export const theRock: InternalArena = {
 	name: "The Rock",

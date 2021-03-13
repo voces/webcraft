@@ -1,4 +1,5 @@
-import { ComponentChild, h, JSX } from "preact";
+import type { ComponentChild, JSX } from "preact";
+import { h } from "preact";
 
 export type Props<
 	Row extends Record<string, ComponentChild>,

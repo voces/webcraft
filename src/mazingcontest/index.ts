@@ -1,12 +1,12 @@
-import { window } from "./core/util/globals";
-import { activeHost, Network } from "./engine/Network";
-import { Katma } from "./katma/Katma";
+import { window } from "../core/util/globals";
+import { MazingContest } from "./MazingContest";
+import { activeHost, MazingContestNetwork } from "./MazingContestNetwork";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const network = ((globalThis as any).network = new Network());
+const network = ((globalThis as any).network = new MazingContestNetwork());
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any).game = new Katma(network);
+(globalThis as any).game = new MazingContest(network);
 
 window.addEventListener("contextmenu", (e: Event) => {
 	e.preventDefault();

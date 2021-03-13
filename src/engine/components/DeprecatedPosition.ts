@@ -1,4 +1,5 @@
-import { Emitter, emitter } from "../../core/emitter";
+import type { Emitter } from "../../core/emitter";
+import { emitter } from "../../core/emitter";
 
 type DeprecatedPositionEvents = {
 	change: <T extends keyof DeprecatedPosition>(

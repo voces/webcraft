@@ -1,14 +1,17 @@
 import { App } from "../core/App";
-import { Emitter, emitter } from "../core/emitter";
-import { Entity } from "../core/Entity";
+import type { Emitter } from "../core/emitter";
+import { emitter } from "../core/emitter";
+import type { Entity } from "../core/Entity";
 import { initSpriteLogicListeners } from "./actions/spriteLogic";
-import { Terrain } from "./entities/Terrain";
+import type { Terrain } from "./entities/Terrain";
+import type { Obstruction } from "./entities/widgets/sprites/units/Obstruction";
 import { withGame, wrapGame } from "./gameContext";
 import { alea } from "./lib/alea";
 import { Alliances } from "./mechanisms/Alliances";
+import { FPSMonitor } from "./mechanisms/FPSMonitor";
 import { ObstructionPlacement } from "./mechanisms/ObstructionPlacement";
-import { ConnectionEvent, Network } from "./Network";
-import { PathingMap } from "./pathing/PathingMap";
+import type { ConnectionEvent, Network } from "./Network";
+import type { PathingMap } from "./pathing/PathingMap";
 import { nextColor, releaseColor } from "./players/colors";
 import { Player } from "./players/Player";
 import { initPlayerLogic } from "./players/playerLogic";
@@ -26,6 +29,8 @@ import { circleSystems } from "./systems/MovingCircles";
 import { ProjectileSystem } from "./systems/ProjectileSystem";
 import { SelectedSystem } from "./systems/SelectedSystem";
 import { ThreeGraphics } from "./systems/ThreeGraphics";
+import { TimerSystem } from "./systems/TimerSystem";
+import { TimerWindows } from "./systems/TimerWindows";
 import { isSprite } from "./typeguards";
 import { Hotkeys } from "./ui/hotkeys";
 import { UI } from "./ui/index";
@@ -60,7 +65,7 @@ class Game extends App {
 	localPlayer!: Player;
 	host?: Player;
 	players: Player[] = [];
-	receivedState: false | "init" | "state" | "host" = false;
+	synchronizationState: "synchronizing" | "synchronized" = "synchronizing";
 	newPlayers = false;
 	random = alea("");
 	lastUpdate = 0;
@@ -73,12 +78,17 @@ class Game extends App {
 	graphics!: ThreeGraphics;
 	selectionSystem!: SelectedSystem;
 	alliances!: Alliances;
+	fpsMonitor!: FPSMonitor;
+	timerWindows!: TimerWindows;
 
 	// Replace with a heap
 	intervals: Interval[] = [];
 	nextIntervalId = 0;
 	timeouts: Timeout[] = [];
 	nextTimeoutId = 0;
+
+	displayName = "Untitled Game";
+	protocol = "unknown";
 
 	private _pathingMap?: PathingMap;
 
@@ -95,6 +105,11 @@ class Game extends App {
 			this.addSystem(new AutoAttackSystem());
 			this.addSystem(new AnimationSystem());
 			this.addSystem(new MeshBuilder());
+			this.addSystem(new TimerSystem());
+			this.fpsMonitor = new FPSMonitor();
+			this.addMechanism(this.fpsMonitor);
+			this.timerWindows = new TimerWindows();
+			this.addSystem(this.timerWindows);
 
 			this.graphics = new ThreeGraphics(this);
 			this.addSystem(this.graphics);
@@ -273,10 +288,11 @@ class Game extends App {
 	remove(entity: Entity): boolean {
 		if (!this._entities.has(entity)) return false;
 
-		for (const system of this.systems) system.remove(entity);
+		for (const system of this.impureSystems) system.remove(entity);
 
 		entity.clear();
 		if (isSprite(entity)) entity.remove(true);
+		this._entities.delete(entity);
 
 		return true;
 	}
@@ -306,10 +322,12 @@ class Game extends App {
 	toJSON(): {
 		lastUpdate: number;
 		players: ReturnType<typeof Player.prototype.toJSON>[];
+		entityId: number;
 	} {
 		return {
 			lastUpdate: this.lastUpdate,
 			players: this.players.map((p) => p.toJSON()),
+			entityId: this.entityId,
 		};
 	}
 }
@@ -317,6 +335,9 @@ class Game extends App {
 export type GameEvents = {
 	update: (time: number) => void;
 	selection: (selection: Entity[]) => void;
+	build: (builder: Entity, obstruction: Obstruction) => void;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	[key: string]: (...args: any[]) => void;
 };
 
 interface Game extends Emitter<GameEvents>, App {}

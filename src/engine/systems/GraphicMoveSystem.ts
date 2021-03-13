@@ -1,12 +1,11 @@
-import { Entity } from "../../core/Entity";
+import type { Entity } from "../../core/Entity";
 import { System } from "../../core/System";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Hover } from "../components/Hover";
 import { MoveTarget } from "../components/MoveTarget";
 import { Position } from "../components/Position";
 import { Selected } from "../components/Selected";
-import { Widget } from "../entities/Widget";
-import { SELECTION_CRICLE_ZOFFSET } from "../entities/widgets/SelectionCircle";
+import type { Widget } from "../entities/Widget";
 import { currentGame } from "../gameContext";
 
 type EntityWithSpeed = Entity & { speed: number };
@@ -21,6 +20,7 @@ const hasSpeed = (
  */
 export class GraphicMoveSystem extends System {
 	static components = [ThreeObjectComponent, Position, MoveTarget];
+	readonly pure = true;
 
 	test(entity: Entity | Widget): entity is Widget {
 		return (
@@ -42,8 +42,8 @@ export class GraphicMoveSystem extends System {
 			object.position.y = y;
 			object.position.z =
 				object.position.z * 0.8 +
-				game.terrain!.groundHeight(x, y) * 0.2 +
-				entity.position.zOffset;
+				(game.terrain!.groundHeight(x, y) + entity.position.zOffset) *
+					0.2;
 		} else {
 			const position = entity.position;
 			object.position.x = position.x;
@@ -56,10 +56,7 @@ export class GraphicMoveSystem extends System {
 		// TODO: we can probably generalize this with a Children component
 		[Selected, Hover].forEach((Circle) => {
 			const circle = entity.get(Circle)[0]?.circle;
-			if (circle) {
-				circle.model.object.position.copy(object.position);
-				circle.model.object.position.z += SELECTION_CRICLE_ZOFFSET;
-			}
+			if (circle) circle.model.object.position.copy(object.position);
 		});
 	}
 }

@@ -1,22 +1,26 @@
+import type { Unit } from "../../engine/entities/widgets/sprites/Unit";
 import { releaseColor, takeColor } from "../../engine/players/colors";
 // eslint-disable-next-line no-restricted-imports
-import {
-	Player as EnginePlayer,
-	PlayerState as EnginePlayerState,
-} from "../../engine/players/Player";
-import { Katma } from "../Katma";
+import type { PlayerState as EnginePlayerState } from "../../engine/players/Player";
+// eslint-disable-next-line no-restricted-imports
+import { Player as EnginePlayer } from "../../engine/players/Player";
+import type { Katma } from "../Katma";
+import type { Resource } from "../types";
 
 export type PlayerState = EnginePlayerState & {
 	crosserPlays: number;
 	score: { bulldog: number };
 };
 
-export class Player extends EnginePlayer {
-	crosserPlays = 0;
-	score = { bulldog: 1000 };
+export class Player extends EnginePlayer<Resource> {
+	crosserPlays;
+	score: { bulldog: number };
+	unit?: Unit;
 
 	constructor(props: Partial<Player> & { game: Katma }) {
 		super(props);
+		this.crosserPlays ??= 0;
+		this.score ??= { bulldog: 1000 };
 	}
 
 	toJSON(): PlayerState {

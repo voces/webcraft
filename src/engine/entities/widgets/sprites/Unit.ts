@@ -3,19 +3,21 @@ import { Color } from "three";
 import { cancelAction } from "../../../actions/cancel";
 import { holdPositionAction } from "../../../actions/holdPosition";
 import { stopAction } from "../../../actions/stop";
-import { Action } from "../../../actions/types";
+import type { Action } from "../../../actions/types";
 import { isInAttackRange } from "../../../api/UnitApi";
 import { AttackTarget } from "../../../components/AttackTarget";
 import { BuildTarget } from "../../../components/BuildTarget";
-import { DamageComponent, Weapon } from "../../../components/DamageComponent";
+import type { Weapon } from "../../../components/DamageComponent";
+import { DamageComponent } from "../../../components/DamageComponent";
 import { HoldPositionComponent } from "../../../components/HoldPositionComponent";
 import { MoveTarget } from "../../../components/MoveTarget";
 import { BUILD_DISTANCE } from "../../../constants";
 import { currentGame } from "../../../gameContext";
-import { Point } from "../../../pathing/PathingMap";
-import { Player } from "../../../players/Player";
-import { Sprite, SpriteProps } from "../Sprite";
-import { Obstruction } from "./units/Obstruction";
+import type { Point } from "../../../pathing/PathingMap";
+import type { Player } from "../../../players/Player";
+import type { SpriteDefaultProps, SpriteProps } from "../Sprite";
+import { Sprite } from "../Sprite";
+import type { Obstruction } from "./units/Obstruction";
 
 class NoWeaponError extends Error {
 	message = "No weapon";
@@ -41,12 +43,15 @@ const revealIllusion = (owner: Player) => {
 
 const darkBlue = new Color("#191966");
 
+export type UnitDefaultProps = SpriteDefaultProps &
+	Required<Pick<UnitProps, "isIllusion" | "speed" | "autoAttack">>;
+
 // `Seeing Class extends value undefined is not a constructor or null`? Import
 // Player before Sprite.
 class Unit extends Sprite {
 	static readonly isUnit = true;
 
-	static defaults = {
+	static defaults: UnitDefaultProps = {
 		...Sprite.clonedDefaults,
 		isIllusion: false,
 		// 380 in WC3

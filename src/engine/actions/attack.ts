@@ -1,10 +1,10 @@
 import { isInAttackRange } from "../api/UnitApi";
 import { DamageComponent } from "../components/DamageComponent";
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
-import { AttackEvent } from "../Network";
+import type { AttackEvent } from "../Network";
 import { isSprite, isUnit } from "../typeguards";
-import { TargetActionProps } from "./types";
+import type { TargetActionProps } from "./types";
 
 export const attackAction = {
 	name: "Attack",

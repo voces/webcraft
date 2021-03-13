@@ -1,6 +1,6 @@
 import { Component } from "../../core/Component";
-import { Sprite } from "../entities/widgets/Sprite";
-import { Mutable } from "../types";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { Mutable } from "../types";
 
 export class AttackTarget extends Component<[Sprite]> {
 	readonly target!: Sprite;

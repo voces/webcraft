@@ -1,10 +1,10 @@
 import { Component } from "../../core/Component";
-import { Sprite } from "../entities/widgets/Sprite";
-import { Point } from "../pathing/PathingMap";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { Point } from "../pathing/PathingMap";
+import type { PathTweener } from "../util/tweenPoints";
 import {
 	calcAndTweenShortenedPath,
 	distanceBetweenPoints,
-	PathTweener,
 	shortenPath,
 	tweenPoints,
 } from "../util/tweenPoints";

@@ -1,29 +1,28 @@
-import { selfDestructAction } from "../../../../actions/selfDestruct";
-import { Action } from "../../../../actions/types";
+import type { Action } from "../../../../actions/types";
 import { toFootprint } from "../../../../api/toFootprint";
 import { GerminateComponent } from "../../../../components/GerminateComponent";
 import {
 	INITIAL_OBSTRUCTION_PROGRESS,
 	PATHING_TYPES,
 } from "../../../../constants";
-import { Player } from "../../../../players/Player";
-import { ResourceMap } from "../../../../types";
-import { Unit, UnitProps } from "../Unit";
+import type { Player } from "../../../../players/Player";
+import type { UnitProps } from "../Unit";
+import { Unit } from "../Unit";
 
-export type ObstructionProps = UnitProps & {
+export type ObstructionProps<Resource extends string> = UnitProps & {
 	buildTime?: number;
-	cost?: ResourceMap;
+	cost?: Record<Resource, number>;
 	owner: Player;
 };
 
-export class Obstruction extends Unit {
+export class Obstruction<Resource extends string = string> extends Unit {
 	static readonly isObstruction = true;
 
 	static defaults = {
 		...Unit.defaults,
 		buildHotkey: undefined as Action["hotkey"] | undefined,
 		buildDescription: undefined as string | undefined,
-		cost: { essence: 1 },
+		cost: {},
 		requiresPathing: PATHING_TYPES.WALKABLE | PATHING_TYPES.BUILDABLE,
 		speed: 0,
 		meshBuilder: {
@@ -34,6 +33,7 @@ export class Obstruction extends Unit {
 
 	requiresTilemap = toFootprint(this.collisionRadius, this.requiresPathing);
 	blocksTilemap = toFootprint(this.collisionRadius, this.blocksPathing);
+	structure = true;
 	buildTime: number;
 	owner!: Player;
 
@@ -45,6 +45,7 @@ export class Obstruction extends Unit {
 			name: this.name,
 			hotkey: this.defaults.buildHotkey!,
 			description: this.defaults.buildDescription,
+			cost: this.defaults.cost,
 			type: "build",
 			obstruction: this,
 		};
@@ -52,20 +53,14 @@ export class Obstruction extends Unit {
 		return this._buildAction;
 	}
 
-	constructor({ buildTime = 1, ...props }: ObstructionProps) {
+	constructor({ buildTime = 1, ...props }: ObstructionProps<Resource>) {
 		super({ ...Obstruction.clonedDefaults, ...props });
 
 		this.health = Math.round(
-			Math.min(this.maxHealth * INITIAL_OBSTRUCTION_PROGRESS, 1),
+			Math.max(this.maxHealth * INITIAL_OBSTRUCTION_PROGRESS, 1),
 		);
 		this.buildTime = buildTime;
 
 		new GerminateComponent(this);
-	}
-
-	get actions(): Action[] {
-		const actions = super.actions;
-		actions.push(selfDestructAction);
-		return actions;
 	}
 }

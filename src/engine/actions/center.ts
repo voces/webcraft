@@ -1,5 +1,5 @@
 import { isSprite } from "../typeguards";
-import { ImmediateActionProps } from "./types";
+import type { ImmediateActionProps } from "./types";
 
 export const centerAction = {
 	name: "Center",

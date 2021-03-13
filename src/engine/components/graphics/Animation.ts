@@ -1,7 +1,7 @@
 import { Component } from "../../../core/Component";
-import { Sprite } from "../../entities/widgets/Sprite";
+import type { Sprite } from "../../entities/widgets/Sprite";
 import { currentGame, wrapGame } from "../../gameContext";
-import { Mutable } from "../../types";
+import type { Mutable } from "../../types";
 
 export class Animation extends Component<[string, number]> {
 	readonly animation!: string;

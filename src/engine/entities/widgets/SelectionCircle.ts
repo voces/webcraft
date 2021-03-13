@@ -14,17 +14,19 @@ export class SelectionCircle extends Widget {
 		color,
 		x,
 		y,
+		zOffset = 0,
 	}: {
 		radius: number;
 		color: string;
 		x: number;
 		y: number;
+		zOffset?: number;
 	}) {
 		super({
 			id: "SELECTION_CIRCLE",
 			x,
 			y,
-			zOffset: SELECTION_CRICLE_ZOFFSET,
+			zOffset: zOffset + SELECTION_CRICLE_ZOFFSET,
 		});
 		const geometry = new TorusBufferGeometry(radius, radius * 0.05, 3, 24);
 		const material = new MeshBasicMaterial({

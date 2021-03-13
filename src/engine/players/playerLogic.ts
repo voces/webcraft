@@ -1,9 +1,11 @@
-import { Game } from "../Game";
+import { logLine } from "../../core/logger";
+import type { Game } from "../Game";
 import { alea } from "../lib/alea";
 
 export const initPlayerLogic = (game: Game): void => {
 	// Received when someone (including us) joins
 	game.addNetworkListener("connection", (data) => {
+		logLine("updating random seed", data.time.toString());
 		game.random = alea(data.time.toString());
 		game.update(data);
 
@@ -11,7 +13,7 @@ export const initPlayerLogic = (game: Game): void => {
 
 		if (game.localPlayer === undefined && !game.isHost)
 			game.localPlayer = player;
-		else game.newPlayers = true;
+		else if (game.players.length > 1) game.newPlayers = true;
 	});
 
 	// Received when someone leaves

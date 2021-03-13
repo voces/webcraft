@@ -1,8 +1,8 @@
 import { System } from "../../core/System";
 import { MoveTarget } from "../components/MoveTarget";
-import { Sprite } from "../entities/widgets/Sprite";
+import type { Sprite } from "../entities/widgets/Sprite";
 import { currentGame } from "../gameContext";
-import { PathingMap, Point } from "../pathing/PathingMap";
+import type { PathingMap, Point } from "../pathing/PathingMap";
 import { isSprite } from "../typeguards";
 
 const withoutTarget = <A>(
@@ -21,6 +21,7 @@ type MovingSprite = Sprite & {
 
 export class MoveSystem extends System<MovingSprite> {
 	static components = [MoveTarget];
+	readonly pure = false;
 
 	test(entity: Sprite & { speed?: number }): entity is MovingSprite {
 		return (

@@ -1,25 +1,25 @@
-import { Sprite } from "../entities/widgets/Sprite";
-import { Unit } from "../entities/widgets/sprites/Unit";
-import { Game } from "../Game";
+import type { Entity } from "../../core/Entity";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { Unit } from "../entities/widgets/sprites/Unit";
+import type { Game } from "../Game";
 import { currentGame } from "../gameContext";
-import { Resource, resourceKeys, ResourceMap } from "../types";
-import { Color, colors, releaseColor, takeColor } from "./colors";
+import { isUnit } from "../typeguards";
+import type { Color } from "./colors";
+import { colors, releaseColor, takeColor } from "./colors";
 
 export interface PlayerState {
 	color: number | undefined;
 	id: number;
 	username: string;
 }
-
-export class Player {
+export class Player<Resource extends string = string> {
 	game: Game;
 	sprites: Array<Sprite> = [];
 	isHere = true;
-	resources = { essence: 0 };
+	resources: Partial<Record<Resource, number>> = {};
 	username = "tim";
 	id = -1;
 	color?: Color;
-	unit?: Unit;
 
 	constructor({ game, ...data }: Partial<Player> & { game: Game }) {
 		this.game = game;
@@ -34,18 +34,19 @@ export class Player {
 		if (data.id !== -1) game.players.push(this);
 	}
 
-	checkResources(resources: ResourceMap): Resource[] {
+	checkResources(resources: Record<Resource, number>): Resource[] {
 		const low: Resource[] = [];
-		for (const resource of resourceKeys)
-			if (this.resources[resource] < resources[resource])
+		for (const resource in resources)
+			if ((this.resources[resource] ?? 0) < resources[resource])
 				low.push(resource);
 
 		return low;
 	}
 
-	subtractResources(resources: ResourceMap): void {
-		for (const resource of resourceKeys)
-			this.resources[resource] -= resources[resource];
+	subtractResources(resources: Record<Resource, number>): void {
+		for (const resource in resources)
+			this.resources[resource] =
+				(this.resources[resource] ?? 0) - resources[resource];
 	}
 
 	get enemies(): Player[] {
@@ -58,7 +59,26 @@ export class Player {
 	}
 
 	getEnemySprites(): Sprite[] {
-		return this.enemies.map((p) => p.sprites).flat();
+		return this.enemies
+			.map((p) => p.sprites.filter((s) => s.isAlive))
+			.flat();
+	}
+
+	get uid(): string {
+		return `${this.username}#${this.id}`;
+	}
+
+	// TODO: Remove off Player and make a helper
+	getPrimarySelectedUnit(entities?: ReadonlyArray<Entity>): Unit | undefined {
+		const universe = entities ?? this.game.selectionSystem.selection;
+		const units = universe.filter(isUnit).filter((u) => u.owner === this);
+		if (!units.length) return;
+
+		let activeUnit = units[0];
+		for (let i = 1; i < units.length; i++)
+			if (units[i].priority > activeUnit.priority) activeUnit = units[i];
+
+		return units[0];
 	}
 
 	toJSON(): PlayerState {

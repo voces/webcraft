@@ -1,8 +1,8 @@
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
-import { BuildEvent } from "../Network";
+import type { BuildEvent } from "../Network";
 import { isUnit } from "../typeguards";
-import { PointActionProps } from "./types";
+import type { PointActionProps } from "./types";
 
 export const buildAction = {
 	name: "Build",

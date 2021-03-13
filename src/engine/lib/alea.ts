@@ -32,21 +32,24 @@ export interface AleaState {
 	s2: number;
 }
 
-interface AleaData extends AleaState {
-	next: {
-		(): number;
-		int32?: () => number;
-		double?: () => number;
-		quick?: () => number;
-		state?: () => AleaState;
-	};
+interface AleaNextInteral {
+	(): number;
+	int32?: () => number;
+	double?: () => number;
+	quick?: () => number;
+	state?: () => AleaState;
+	between?: (min: number, max: number) => number;
+}
+
+interface AleaDataInternal extends AleaState {
+	next: AleaNextInteral;
 }
 
 function _alea(seed: string) {
 	const mash = Mash();
 
 	// Apply the seeding algorithm from Baagoe.
-	const data: AleaData = {
+	const data: AleaDataInternal = {
 		c: 1,
 		s0: mash(" "),
 		s1: mash(" "),
@@ -81,18 +84,31 @@ function copy(f: AleaState, t: AleaState) {
 	return t;
 }
 
+export interface AleaNext {
+	(): number;
+	int32: () => number;
+	double: () => number;
+	quick: () => number;
+	state?: () => AleaState;
+	between: (min: number, max: number) => number;
+}
+
 export function alea(
 	seed: string,
 	opts?: { state: AleaState },
-): AleaData["next"] {
+): AleaNext {
 	const xg = _alea(seed);
 	const state = opts?.state;
-	const prng = xg.next;
+	const prng: AleaNext = xg.next as any;
 
 	prng.int32 = () => (xg.next() * 0x100000000) | 0;
 	prng.double = () =>
 		prng() + ((prng() * 0x200000) | 0) * 1.1102230246251565e-16; // 2^-53;
 	prng.quick = prng;
+	prng.between = (min: number, max: number) => {
+		const range = max - min;
+		return prng() * range + min;
+	}
 
 	if (state) {
 		if (typeof state === "object") copy(state, xg);

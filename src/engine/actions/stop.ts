@@ -1,8 +1,8 @@
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
-import { StopEvent } from "../Network";
+import type { StopEvent } from "../Network";
 import { isUnit } from "../typeguards";
-import { ImmediateActionProps } from "./types";
+import type { ImmediateActionProps } from "./types";
 
 export const stopAction = {
 	name: "Stop",

@@ -1,5 +1,5 @@
 import { Mechanism } from "../../core/Merchanism";
-import { Player } from "../players/Player";
+import type { Player } from "../players/Player";
 
 type AllianceState = "ally" | "neutral" | "enemy";
 

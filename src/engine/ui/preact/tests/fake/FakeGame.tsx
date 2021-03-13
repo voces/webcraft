@@ -1,6 +1,6 @@
 import { emitter } from "../../../../../core/emitter";
-import { Game as WCGame } from "../../../../../engine/Game";
-import { Network } from "../../../../../engine/Network";
+import type { Game as WCGame } from "../../../../../engine/Game";
+import type { Network } from "../../../../../engine/Network";
 
 export const fakeGame = (props?: { network: Network }): WCGame => {
 	const network =

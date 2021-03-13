@@ -1,4 +1,4 @@
-import { ReactWrapper } from "enzyme";
+import type { ReactWrapper } from "enzyme";
 import { act } from "preact/test-utils";
 
 import { Button } from "../components/Button";

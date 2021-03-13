@@ -2,8 +2,8 @@ import { System } from "../../core/System";
 import { BuildTarget } from "../components/BuildTarget";
 import { MoveTarget } from "../components/MoveTarget";
 import { BUILD_DISTANCE } from "../constants";
-import { Sprite } from "../entities/widgets/Sprite";
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
 import { isUnit } from "../typeguards";
 import { appendErrorMessage } from "../ui/chat";
@@ -11,6 +11,7 @@ import { distanceBetweenPoints } from "../util/tweenPoints";
 
 export class BlueprintSystem extends System<Unit> {
 	static components = [BuildTarget, MoveTarget];
+	readonly pure = false;
 
 	test(entity: Sprite): entity is Unit {
 		return entity.has(BuildTarget) && isUnit(entity);
@@ -59,7 +60,8 @@ export class BlueprintSystem extends System<Unit> {
 			owner: entity.owner,
 		});
 
-		const pathingMap = currentGame().pathingMap;
+		const game = currentGame();
+		const pathingMap = game.pathingMap;
 		pathingMap.withoutEntity(entity, () => {
 			if (
 				pathingMap.pathable(
@@ -78,6 +80,7 @@ export class BlueprintSystem extends System<Unit> {
 				entity,
 			);
 			entity.position.setXY(newPos.x, newPos.y);
+			game.dispatchEvent("build", entity, obstruction);
 		});
 	}
 }

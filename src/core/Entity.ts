@@ -1,5 +1,5 @@
 import { currentApp } from "./appContext";
-import { Component, ComponentConstructor } from "./Component";
+import type { Component, ComponentConstructor } from "./Component";
 
 export type EntityID = string | number;
 
@@ -11,7 +11,7 @@ export class Entity {
 	private map = new Map<ComponentConstructor, Component[]>();
 
 	constructor(id?: EntityID) {
-		this.id = id ?? currentApp().consumeEntityId();
+		this.id = id ?? currentApp().entityId++;
 	}
 
 	/**

@@ -1,16 +1,18 @@
 import { Terrain } from "notextures";
-import { Intersection, Object3D, Raycaster, Vector2, Vector3 } from "three";
+import type { Intersection, Object3D } from "three";
+import { Raycaster, Vector2, Vector3 } from "three";
 
-import { Emitter, emitter } from "../../core/emitter";
-import { Entity } from "../../core/Entity";
+import type { Emitter } from "../../core/emitter";
+import { emitter } from "../../core/emitter";
+import type { Entity } from "../../core/Entity";
 import { System } from "../../core/System";
 import { window } from "../../core/util/globals";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Hover } from "../components/Hover";
 import { isSelectionCircle, isSprite } from "../typeguards";
-import { EntityObject } from "../types";
-import { MouseDownEvent, MouseMoveEvent, UI } from "../ui";
-import { ThreeGraphics } from "./ThreeGraphics";
+import type { EntityObject } from "../types";
+import type { MouseDownEvent, MouseMoveEvent, UI } from "../ui";
+import type { ThreeGraphics } from "./ThreeGraphics";
 
 export enum MouseButton {
 	LEFT = 0,
@@ -31,6 +33,8 @@ export type MouseEvents = {
 
 class Mouse extends System {
 	static components = [ThreeObjectComponent];
+	// We can consider this pure since the other condition is static
+	readonly pure = true;
 
 	client: Vector2;
 	/** Normalized coordinates from (-1 to 1) */

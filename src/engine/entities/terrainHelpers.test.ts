@@ -1,4 +1,4 @@
-import { stringMap } from "./util";
+import { stringMap } from "./terrainHelpers";
 
 describe("stringMap", () => {
 	it("works", () => {

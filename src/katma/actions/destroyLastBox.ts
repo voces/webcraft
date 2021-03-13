@@ -1,4 +1,5 @@
-import { ImmediateActionProps } from "../../engine/actions/types";
+import type { ImmediateActionProps } from "../../engine/actions/types";
+import type { Player } from "../players/Player";
 import { isCrosser } from "../typeguards";
 
 export const destroyLastBox = {
@@ -6,7 +7,7 @@ export const destroyLastBox = {
 	description: "Destroys selected or last created box",
 	hotkey: "x" as const,
 	type: "custom" as const,
-	localHandler: ({ player }: ImmediateActionProps): void => {
+	localHandler: ({ player }: ImmediateActionProps<Player>): void => {
 		const crosser = player.unit;
 		if (!crosser || !isCrosser(crosser)) return;
 		const obstructions = [...crosser.obstructions];

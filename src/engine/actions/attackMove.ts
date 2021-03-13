@@ -1,9 +1,9 @@
 import { isInAttackRange } from "../api/UnitApi";
 import { DamageComponent } from "../components/DamageComponent";
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
 import { isObstruction, isUnit } from "../typeguards";
-import { TargetOrPointActionProps } from "./types";
+import type { TargetOrPointActionProps } from "./types";
 
 export const attackMoveAction = {
 	name: "Attack",

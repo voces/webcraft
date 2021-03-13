@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "preact/hooks";
 
-import { NetworkEventCallback } from "../../../../engine/Network";
+import type { NetworkEventCallback } from "../../../../engine/Network";
 import { Game } from "../contexts/Game";
 
 export const useGameNetworkListener = <

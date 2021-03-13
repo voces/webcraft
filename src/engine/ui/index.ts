@@ -1,8 +1,9 @@
 import "./hotkeys";
 
-import { Emitter, emitter } from "../../core/emitter";
+import type { Emitter } from "../../core/emitter";
+import { emitter } from "../../core/emitter";
 import { document, window } from "../../core/util/globals";
-import { Game } from "../Game";
+import type { Game } from "../Game";
 import { currentGame, wrapGame } from "../gameContext";
 import { initCameraListeners } from "../players/camera";
 import { initChatListeners } from "./chat";

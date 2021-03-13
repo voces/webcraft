@@ -1,6 +1,7 @@
-import { FetchState, useFetch } from "./useFetch";
+import type { FetchState } from "./useFetch";
+import { useFetch } from "./useFetch";
 
-type LoginResult = { token: string; username: string };
+type LoginResult = { token: string; username: string; room?: string };
 
 type LoginErrors =
 	| {
@@ -28,6 +29,7 @@ export const useLogin = (): FetchState<LoginResult, LoginErrors> & {
 		username?: string,
 		password?: string,
 		register?: boolean,
+		room?: string,
 	) => Promise<FetchState<LoginResult, LoginErrors>>;
 } => {
 	const fetch = useFetch<
@@ -42,6 +44,7 @@ export const useLogin = (): FetchState<LoginResult, LoginErrors> & {
 		username?: string,
 		password?: string,
 		register = false,
+		room?: string,
 	) =>
 		fetch.performFetch({
 			url: password
@@ -49,7 +52,7 @@ export const useLogin = (): FetchState<LoginResult, LoginErrors> & {
 					? "auth/register"
 					: "auth/login"
 				: "auth/anon",
-			body: { username, password },
+			body: { username, password, ...(room ? { room } : null) },
 		});
 
 	return { ...fetch, performFetch };

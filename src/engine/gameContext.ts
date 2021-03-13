@@ -1,5 +1,5 @@
 import { currentApp, withApp, wrapApp } from "../core/appContext";
-import { Game } from "./Game";
+import type { Game } from "./Game";
 import { isGame } from "./typeguards";
 
 export const withGame = <T>(game: Game, fn: (game: Game) => T): T =>

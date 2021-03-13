@@ -1,6 +1,7 @@
 import { mirrorAction } from "../../engine/actions/mirror";
-import { Action } from "../../engine/actions/types";
-import { Unit, UnitProps } from "../../engine/entities/widgets/sprites/Unit";
+import type { Action } from "../../engine/actions/types";
+import type { UnitProps } from "../../engine/entities/widgets/sprites/Unit";
+import { Unit } from "../../engine/entities/widgets/sprites/Unit";
 
 type DefenderProps = UnitProps & {
 	autoAttack?: boolean;

@@ -1,4 +1,5 @@
-import { Entity, EntityID } from "../../core/Entity";
+import type { EntityID } from "../../core/Entity";
+import { Entity } from "../../core/Entity";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Position } from "../components/Position";
 

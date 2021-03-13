@@ -1,9 +1,13 @@
 import { currentApp, withApp, wrapApp } from "../core/appContext";
-import { Katma } from "./Katma";
+import type { Katma } from "./Katma";
 import { isKatma } from "./typeguards";
 
 export const withKatma = <T>(katma: Katma, fn: (katma: Katma) => T): T =>
 	withApp(katma, fn);
+// export const withKatma: <A>(
+// 	context: Katma,
+// 	fn: (context: Katma) => A,
+// ) => A = withApp;
 
 export const wrapKatma = <Args extends unknown[], Return extends unknown>(
 	katma: Katma,

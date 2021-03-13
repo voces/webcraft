@@ -5,8 +5,8 @@ import {
 	LordaeronSummerRock,
 	Terrain as TerrainMesh,
 } from "notextures";
-import { CliffMask } from "notextures/dist/objects/Terrain/Terrain";
-import { Group, Vector3 } from "three";
+import type { CliffMask } from "notextures/dist/objects/Terrain/Terrain";
+import type { Group, Vector3 } from "three";
 
 import { Entity } from "../../core/Entity";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";

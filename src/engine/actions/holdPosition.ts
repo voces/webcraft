@@ -1,7 +1,7 @@
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
-import { HoldPositionEvent } from "../Network";
-import { Player } from "../players/Player";
+import type { HoldPositionEvent } from "../Network";
+import type { Player } from "../players/Player";
 import { isUnit } from "../typeguards";
 
 export const holdPositionAction = {

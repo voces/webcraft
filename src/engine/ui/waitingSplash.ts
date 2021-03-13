@@ -1,5 +1,5 @@
 import { document } from "../../core/util/globals";
-import { Game } from "../../engine/Game";
+import type { Game } from "../../engine/Game";
 
 const elem = document.getElementById("waiting-splash")!;
 

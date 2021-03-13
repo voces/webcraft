@@ -19,10 +19,14 @@ let debugging = false;
 
 // 	debugging = !debugging;
 // };
-Object.defineProperty(globalThis, "debugging", {
-	set: (value) => (debugging = value),
-	get: () => debugging,
-});
+try {
+	Object.defineProperty(globalThis, "debugging", {
+		set: (value) => (debugging = value),
+		get: () => debugging,
+	});
+} catch (err) {
+	/* do nothing */
+}
 
 const DEFAULT_RESOLUTION = 1;
 
@@ -402,6 +406,8 @@ export class PathingMap {
 		// Create our heap
 		const distance = (a: Point, b: Point) =>
 			(b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+		// This won't desync anything
+		// eslint-disable-next-line no-restricted-syntax
 		const tag = Math.random();
 		const heap = new BinaryHeap((node: Tile) => node.__np ?? 0);
 
@@ -782,6 +788,8 @@ export class PathingMap {
 		const startHeap = new BinaryHeap(
 			(node: Tile) => node.__startRealPlusEstimatedCost ?? 0,
 		);
+		// This won't desync anything.
+		// eslint-disable-next-line no-restricted-syntax
 		const startTag = Math.random();
 		let startBest = startTile;
 		startHeap.push(startTile);
@@ -798,6 +806,8 @@ export class PathingMap {
 		const endHeap = new BinaryHeap(
 			(node: Tile) => node.__endRealPlusEstimatedCost ?? 0,
 		);
+		// This won't desync anything.
+		// eslint-disable-next-line no-restricted-syntax
 		const endTag = Math.random();
 		let endBest = endTile;
 		endHeap.push(endTile);

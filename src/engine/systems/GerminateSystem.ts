@@ -1,6 +1,6 @@
 import { System } from "../../core/System";
 import { GerminateComponent } from "../components/GerminateComponent";
-import { Sprite } from "../entities/widgets/Sprite";
+import type { Sprite } from "../entities/widgets/Sprite";
 
 type GerminatingEntity = Sprite & {
 	buildTime: number;
@@ -8,6 +8,7 @@ type GerminatingEntity = Sprite & {
 
 export class GerminateSystem extends System<GerminatingEntity> {
 	static components = [GerminateComponent];
+	readonly pure = false;
 
 	test(entity: Sprite & { buildTime?: number }): entity is GerminatingEntity {
 		return (

@@ -1,4 +1,5 @@
-import { ComponentChildren, h, JSX, toChildArray, VNode } from "preact";
+import type { ComponentChildren, JSX, VNode } from "preact";
+import { h, toChildArray } from "preact";
 
 import { classNames, styles } from "../util";
 

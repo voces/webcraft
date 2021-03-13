@@ -1,15 +1,16 @@
-import { Obstruction } from "../entities/widgets/sprites/units/Obstruction";
-import { currentGame } from "../gameContext";
-import { SelfDestructEvent } from "../Network";
-import { isObstruction } from "../typeguards";
-import { ImmediateActionProps } from "./types";
+import type { ImmediateActionProps } from "../../engine/actions/types";
+import { isObstruction } from "../../engine/typeguards";
+import type { Obstruction } from "../entities/obstructions/Obstruction";
+import { currentKatma } from "../katmaContext";
+import type { SelfDestructEvent } from "../KatmaNetwork";
+import type { Player } from "../players/Player";
 
 export const selfDestructAction = {
 	name: "Destroy box",
 	description: "Destroys selected boxes",
 	hotkey: "x" as const,
 	type: "custom" as const,
-	localHandler: ({ player }: ImmediateActionProps): void => {
+	localHandler: ({ player }: ImmediateActionProps<Player>): void => {
 		// Get currently selected boxes
 		const obstructions = player.game.selectionSystem.selection.filter(
 			(s): s is Obstruction => isObstruction(s) && s.owner === player,
@@ -26,10 +27,10 @@ export const selfDestructAction = {
 		});
 	},
 	syncHandler: ({ time, sprites, connection }: SelfDestructEvent): void => {
-		const game = currentGame();
-		game.update({ time });
+		const katma = currentKatma();
+		katma.update({ time });
 
-		const player = game.players.find((p) => p.id === connection);
+		const player = katma.players.find((p) => p.id === connection);
 		if (!player) return;
 
 		player.sprites

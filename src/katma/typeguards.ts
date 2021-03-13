@@ -1,10 +1,10 @@
-import { App } from "../core/App";
-import { Entity } from "../core/Entity";
-import { Crosser } from "./entities/Crosser";
-import { Defender } from "./entities/Defender";
-import { Resource } from "./entities/obstructions/Resource";
-import { Slow } from "./entities/obstructions/Slow";
-import { Katma } from "./Katma";
+import type { App } from "../core/App";
+import type { Entity } from "../core/Entity";
+import type { Crosser } from "./entities/Crosser";
+import type { Defender } from "./entities/Defender";
+import type { Resource } from "./entities/obstructions/Resource";
+import type { Slow } from "./entities/obstructions/Slow";
+import type { Katma } from "./Katma";
 
 export const isCrosser = (obj: Entity): obj is Crosser =>
 	"isCrosser" in obj.constructor;

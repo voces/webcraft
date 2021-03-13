@@ -1,6 +1,6 @@
 import { isEqual } from "lodash-es";
 
-import { Entity } from "../../core/Entity";
+import type { Entity } from "../../core/Entity";
 import { System } from "../../core/System";
 import { Selected } from "../components/Selected";
 import { currentGame } from "../gameContext";
@@ -11,6 +11,7 @@ type SelectedEntity = Entity & { __selected: true };
 
 export class SelectedSystem extends System {
 	static components = [Selected];
+	readonly pure = true;
 
 	data = new WeakMap<Entity, Selected>();
 

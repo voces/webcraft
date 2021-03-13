@@ -1,7 +1,7 @@
-import { Color } from "three";
+import type { Color, Mesh } from "three";
 
 import { Component } from "../../../core/Component";
-import { Mutable } from "../../types";
+import type { Mutable } from "../../types";
 
 export type MeshBuilderComponentProps = {
 	shape: "square" | "circle";
@@ -11,6 +11,7 @@ export type MeshBuilderComponentProps = {
 	shadow?: string;
 	opacity?: number;
 	shadows?: boolean;
+	mutator?: (mesh: Mesh) => void;
 };
 
 type InnerProps = MeshBuilderComponentProps & { targetable: boolean };
@@ -24,6 +25,7 @@ export class MeshBuilderComponent extends Component<[InnerProps]> {
 	readonly shadow?: string;
 	readonly opacity!: number;
 	readonly shadows!: boolean;
+	readonly mutator?: (mesh: Mesh) => void;
 
 	initialize({
 		shape,
@@ -34,6 +36,7 @@ export class MeshBuilderComponent extends Component<[InnerProps]> {
 		shadow,
 		opacity = 1,
 		shadows = true,
+		mutator,
 	}: InnerProps): void {
 		const mutable: Mutable<MeshBuilderComponent> = this;
 		mutable.shape = shape;
@@ -44,5 +47,6 @@ export class MeshBuilderComponent extends Component<[InnerProps]> {
 		mutable.shadow = shadow;
 		mutable.opacity = opacity;
 		mutable.shadows = shadows;
+		mutable.mutator = mutator;
 	}
 }

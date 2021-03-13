@@ -1,10 +1,11 @@
-import { Entity } from "../../core/Entity";
+import type { Entity } from "../../core/Entity";
 import { System } from "../../core/System";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Hover } from "../components/Hover";
 import { Position } from "../components/Position";
 import { Selected } from "../components/Selected";
-import { Widget } from "../entities/Widget";
+import type { Widget } from "../entities/Widget";
+import { SELECTION_CRICLE_ZOFFSET } from "../entities/widgets/SelectionCircle";
 import { currentGame } from "../gameContext";
 
 /**
@@ -13,6 +14,7 @@ import { currentGame } from "../gameContext";
  */
 export class GraphicTrackPosition extends System {
 	static components = [ThreeObjectComponent, Position];
+	readonly pure = true;
 
 	test(entity: Entity | Widget): entity is Widget {
 		return ThreeObjectComponent.has(entity) && Position.has(entity);
@@ -32,7 +34,12 @@ export class GraphicTrackPosition extends System {
 		// TODO: we can probably generalize this with a Children component
 		[Selected, Hover].forEach((Circle) => {
 			const circle = entity.get(Circle)[0]?.circle;
-			if (circle) circle.position.setXY(position.x, position.y);
+			if (circle)
+				circle.position.setXY(
+					position.x,
+					position.y,
+					position.zOffset + SELECTION_CRICLE_ZOFFSET,
+				);
 		});
 	}
 

@@ -6,8 +6,8 @@ import { DamageComponent } from "../components/DamageComponent";
 import { GerminateComponent } from "../components/GerminateComponent";
 import { HoldPositionComponent } from "../components/HoldPositionComponent";
 import { MoveTarget } from "../components/MoveTarget";
-import { Sprite } from "../entities/widgets/Sprite";
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
 import { isUnit } from "../typeguards";
 
@@ -20,6 +20,7 @@ export class AutoAttackSystem extends System<Unit> {
 		DamageComponent,
 		ActiveComponent,
 	];
+	readonly pure = false;
 
 	test(entity: Sprite): entity is Unit {
 		const damageComponent = entity.get(DamageComponent)[0];

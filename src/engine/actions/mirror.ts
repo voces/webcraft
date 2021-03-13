@@ -2,13 +2,13 @@ import { ActiveComponent } from "../components/Active";
 import { Animation } from "../components/graphics/Animation";
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
 import { MIRROR_SEPARATION } from "../constants";
-import { Sprite } from "../entities/widgets/Sprite";
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { currentGame } from "../gameContext";
-import { MirrorEvent } from "../Network";
-import { Point } from "../pathing/PathingMap";
+import type { MirrorEvent } from "../Network";
+import type { Point } from "../pathing/PathingMap";
 import { isUnit } from "../typeguards";
-import { ImmediateActionProps } from "./types";
+import type { ImmediateActionProps } from "./types";
 
 const getMirroringPosition = (pos: Point, entity: Sprite, layer?: number) => {
 	const pathingMap = currentGame().pathingMap;

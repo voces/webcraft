@@ -1,13 +1,14 @@
 import { System } from "../../core/System";
 import { isInAttackRange } from "../api/UnitApi";
 import { AttackTarget } from "../components/AttackTarget";
-import { DamageComponent, Weapon } from "../components/DamageComponent";
+import type { Weapon } from "../components/DamageComponent";
+import { DamageComponent } from "../components/DamageComponent";
 import { Animation } from "../components/graphics/Animation";
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
 import { MoveTarget } from "../components/MoveTarget";
 import { Position } from "../components/Position";
-import { Sprite } from "../entities/widgets/Sprite";
-import { Unit } from "../entities/widgets/sprites/Unit";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { Unit } from "../entities/widgets/sprites/Unit";
 import { TextTag } from "../entities/widgets/TextTag";
 import { currentGame } from "../gameContext";
 import { isUnit } from "../typeguards";
@@ -39,6 +40,7 @@ const doDamage = (entity: Unit, attackTarget: AttackTarget, weapon: Weapon) => {
 
 export class AttackSystem extends System<Unit> {
 	static components = [AttackTarget];
+	readonly pure = false;
 
 	test(entity: Sprite): entity is Unit {
 		return AttackTarget.has(entity) && isUnit(entity);

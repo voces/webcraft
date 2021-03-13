@@ -1,4 +1,4 @@
-import { ImmediateActionProps } from "./types";
+import type { ImmediateActionProps } from "./types";
 
 export const cancelAction = {
 	name: "Cancel",

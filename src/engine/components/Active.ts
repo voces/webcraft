@@ -1,5 +1,5 @@
 import { Component } from "../../core/Component";
-import { Mutable } from "../types";
+import type { Mutable } from "../types";
 
 /**
  * An empty component that tags an entity as active for the purpose of idle

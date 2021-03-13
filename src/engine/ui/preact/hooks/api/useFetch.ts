@@ -1,6 +1,7 @@
 import { useCallback, useState } from "preact/hooks";
 
-import { fetch, Options } from "../../../util/fetch";
+import type { Options } from "../../../util/fetch";
+import { fetch } from "../../../util/fetch";
 
 type Initial = {
 	status: "initial";

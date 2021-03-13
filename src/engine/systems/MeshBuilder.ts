@@ -13,8 +13,8 @@ import {
 import { System } from "../../core/System";
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
-import { Sprite } from "../entities/widgets/Sprite";
-import { EntityMesh } from "../types";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { EntityMesh } from "../types";
 
 const getColor = (entity: Sprite, meshBuilder: MeshBuilderComponent) => {
 	const rawColor =
@@ -55,6 +55,7 @@ const createBox = (entity: Sprite, meshBuilder: MeshBuilderComponent): Mesh => {
 
 export class MeshBuilder extends System {
 	static components = [MeshBuilderComponent];
+	readonly pure = true;
 
 	test(entity: Sprite): entity is Sprite {
 		return MeshBuilderComponent.has(entity);
@@ -74,7 +75,7 @@ export class MeshBuilder extends System {
 		}
 		mesh.position.x = entity.position.x;
 		mesh.position.y = entity.position.y;
-		// mesh.position.z = ;
+		meshBuilder.mutator?.(mesh);
 		mesh.entity = entity;
 
 		mesh.animations.push(

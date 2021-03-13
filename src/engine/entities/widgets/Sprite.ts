@@ -1,23 +1,23 @@
-import { Emitter, emitter } from "../../../core/emitter";
-import { EntityID } from "../../../core/Entity";
-import { Action } from "../../actions/types";
+import type { Emitter } from "../../../core/emitter";
+import { emitter } from "../../../core/emitter";
+import type { EntityID } from "../../../core/Entity";
+import type { Action } from "../../actions/types";
 import { ActiveComponent } from "../../components/Active";
 import { AttackTarget } from "../../components/AttackTarget";
 import { GerminateComponent } from "../../components/GerminateComponent";
-import {
-	MeshBuilderComponent,
-	MeshBuilderComponentProps,
-} from "../../components/graphics/MeshBuilderComponent";
+import type { MeshBuilderComponentProps } from "../../components/graphics/MeshBuilderComponent";
+import { MeshBuilderComponent } from "../../components/graphics/MeshBuilderComponent";
 import { HoldPositionComponent } from "../../components/HoldPositionComponent";
 import { Hover } from "../../components/Hover";
 import { MoveTarget } from "../../components/MoveTarget";
-import { Position } from "../../components/Position";
+import type { Position } from "../../components/Position";
 import { Selected } from "../../components/Selected";
 import { PATHING_TYPES } from "../../constants";
 import { currentGame } from "../../gameContext";
-import { Player } from "../../players/Player";
+import type { Player } from "../../players/Player";
 import { clone } from "../../util/clone";
-import { Widget, WidgetProps } from "../Widget";
+import type { WidgetProps } from "../Widget";
+import { Widget } from "../Widget";
 
 export type SpriteElement = HTMLDivElement & { sprite: Sprite };
 
@@ -51,15 +51,20 @@ export type SpriteEvents = {
 	remove: () => void;
 };
 
+export type SpriteDefaultProps = Required<
+	Pick<SpriteProps, "collisionRadius" | "meshBuilder">
+>;
+
 class Sprite extends Widget {
 	static readonly isSprite = true;
 
-	static defaults = {
+	static defaults: SpriteDefaultProps = {
 		collisionRadius: 1,
 		meshBuilder: { shape: "circle" as "square" | "circle" },
 	};
 
 	// TODO: figure out how to type this...
+	// It may not be possible in TS: https://github.com/microsoft/TypeScript/issues/5863
 	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	static get clonedDefaults() {
 		return clone(this.defaults);
@@ -184,13 +189,18 @@ class Sprite extends Widget {
 		else game.setTimeout(() => this.remove(), 0.125);
 	}
 
-	remove(initializedFromApp = false): void {
+	remove(callInitializedFromApp = false): void {
 		const game = currentGame();
 		this.isAlive = false;
 		this.dispatchEvent("remove");
-		if (!initializedFromApp) game.remove(this);
+		if (!callInitializedFromApp) game.remove(this);
 		this.removeEventListeners();
 		game.pathingMap.removeEntity(this);
+
+		if (this.owner) {
+			const index = this.owner.sprites.indexOf(this);
+			if (index >= 0) this.owner.sprites.splice(index, 1);
+		}
 	}
 
 	get actions(): Action[] {

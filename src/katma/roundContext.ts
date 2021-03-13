@@ -1,5 +1,5 @@
 import { currentKatma } from "./katmaContext";
-import { Round } from "./Round";
+import type { Round } from "./Round";
 
 // todo: this is unused...
 export const currentRound = (): Round => {

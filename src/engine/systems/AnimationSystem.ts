@@ -3,10 +3,11 @@ import { AnimationClip } from "three";
 import { System } from "../../core/System";
 import { Animation } from "../components/graphics/Animation";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
-import { Sprite } from "../entities/widgets/Sprite";
+import type { Sprite } from "../entities/widgets/Sprite";
 
 export class AnimationSystem extends System<Sprite> {
 	static components = [Animation, ThreeObjectComponent];
+	readonly pure = true;
 
 	test(entity: Sprite): entity is Sprite {
 		return Animation.has(entity) && ThreeObjectComponent.has(entity);

@@ -1,7 +1,7 @@
+import type { Object3D } from "three";
 import {
 	DirectionalLight,
 	HemisphereLight,
-	Object3D,
 	PCFSoftShadowMap,
 	PerspectiveCamera,
 	Scene,
@@ -10,13 +10,14 @@ import {
 	WebGLRenderer,
 } from "three";
 
-import { Entity } from "../../core/Entity";
+import type { Entity } from "../../core/Entity";
 import { System } from "../../core/System";
 import { document, localStorage, window } from "../../core/util/globals";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
-import { Game } from "../Game";
-import { Point } from "../pathing/PathingMap";
-import { PathTweener, tweenPoints } from "../util/tweenPoints";
+import type { Game } from "../Game";
+import type { Point } from "../pathing/PathingMap";
+import type { PathTweener } from "../util/tweenPoints";
+import { tweenPoints } from "../util/tweenPoints";
 
 const getCanvas = () => {
 	const canvas = document.createElement("canvas");
@@ -96,6 +97,7 @@ type EntityData = { knownObject: Object3D };
 
 export class ThreeGraphics extends System {
 	static components = [ThreeObjectComponent];
+	readonly pure = true;
 
 	private entityData: Map<Entity, EntityData> = new Map();
 	private renderer: WebGLRenderer;

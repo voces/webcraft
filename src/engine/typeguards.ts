@@ -1,11 +1,11 @@
-import { Entity } from "../core/Entity";
-import { Widget } from "./entities/Widget";
-import { SelectionCircle } from "./entities/widgets/SelectionCircle";
-import { Sprite } from "./entities/widgets/Sprite";
-import { Projectile } from "./entities/widgets/sprites/Projectile";
-import { Unit } from "./entities/widgets/sprites/Unit";
-import { Obstruction } from "./entities/widgets/sprites/units/Obstruction";
-import { Game } from "./Game";
+import type { Entity } from "../core/Entity";
+import type { Widget } from "./entities/Widget";
+import type { SelectionCircle } from "./entities/widgets/SelectionCircle";
+import type { Sprite } from "./entities/widgets/Sprite";
+import type { Projectile } from "./entities/widgets/sprites/Projectile";
+import type { Unit } from "./entities/widgets/sprites/Unit";
+import type { Obstruction } from "./entities/widgets/sprites/units/Obstruction";
+import type { Game } from "./Game";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const isEntity = (obj: object): obj is Entity =>

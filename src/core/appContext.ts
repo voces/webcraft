@@ -1,4 +1,4 @@
-import { App } from "./App";
+import type { App } from "./App";
 import { Context } from "./Context";
 
 const context = new Context<App | undefined>(undefined);

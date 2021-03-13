@@ -1,4 +1,4 @@
-import { RecursivePartial } from "./types";
+import type { RecursivePartial } from "./types";
 
 /**
  * Swallow returns a recrusive empty object, allowing you to do
@@ -17,16 +17,17 @@ const swallow = <T>(obj: RecursivePartial<T> = {}): T => {
 			{ valueOf: () => 0 },
 		),
 		{
-			get: <P extends keyof T>(_: unknown, prop: P) => {
-				if (prop in memory) return memory[prop];
-				memory[prop] =
-					prop === Symbol.toPrimitive
-						? (((() => 1) as unknown) as T[P])
-						: swallow<T[P]>();
-				return memory[prop];
+			get: (_: unknown, prop) => {
+				const p = (prop as unknown) as keyof T;
+				if (prop in memory) return memory[p];
+				memory[p] =
+					p === Symbol.toPrimitive
+						? (((() => 1) as unknown) as T[keyof T])
+						: swallow();
+				return memory[p];
 			},
-			set: (_, prop: keyof T, value) => {
-				memory[prop] = value;
+			set: (_, prop, value) => {
+				memory[(prop as unknown) as keyof T] = value;
 				return true;
 			},
 			apply: () => swallow(),

@@ -8,7 +8,8 @@ import {
 import { document, window } from "../../../core/util/globals";
 import { ThreeObjectComponent } from "../../components/graphics/ThreeObjectComponent";
 import { currentGame } from "../../gameContext";
-import { Widget, WidgetProps } from "../Widget";
+import type { WidgetProps } from "../Widget";
+import { Widget } from "../Widget";
 
 const TEXT_OVERSIZE = 10;
 const TEXT_SCALE = 40 * TEXT_OVERSIZE;

@@ -1,10 +1,9 @@
-import { Entity } from "../../core/Entity";
+import type { Entity } from "../../core/Entity";
 import { Mechanism } from "../../core/Merchanism";
 import { document } from "../../core/util/globals";
 import { centerAction } from "../../engine/actions/center";
-import { Action } from "../../engine/actions/types";
+import type { Action } from "../../engine/actions/types";
 import { currentGame } from "../../engine/gameContext";
-import { isUnit } from "../../engine/typeguards";
 import { defined } from "../../engine/types";
 import { emptyElement } from "../../engine/util/html";
 
@@ -41,6 +40,20 @@ const genNode = (action: Action) => {
 			: action.name + ` (${highlight})`;
 	tooltip.appendChild(title);
 
+	if ("cost" in action) {
+		const cost = Object.entries(action.cost).filter(([, v]) => v > 0);
+		const container = document.createElement("div");
+		container.classList.add("resources");
+		for (const [key, value] of cost) {
+			const resource = document.createElement("div");
+			resource.classList.add("resource", key);
+			resource.textContent = value.toString();
+			resource.title = `${key[0].toUpperCase()}${key.slice(1)}: ${value}`;
+			container.appendChild(resource);
+		}
+		tooltip.appendChild(container);
+	}
+
 	const description = document.createElement("div");
 	description.classList.add("description");
 	if (action.description) description.textContent = action.description;
@@ -75,14 +88,9 @@ export class Hotkeys extends Mechanism {
 
 		// Get actions
 		const game = currentGame();
-		const units = entities
-			.filter(isUnit)
-			.filter((u) => u.owner === game.localPlayer);
-		if (!units.length) return;
+		const activeUnit = game.localPlayer.getPrimarySelectedUnit(entities);
+		if (!activeUnit) return;
 
-		let activeUnit = units[0];
-		for (let i = 1; i < units.length; i++)
-			if (units[i].priority > activeUnit.priority) activeUnit = units[i];
 		const actions = activeUnit.actions;
 		const sortedActions = qwertySort
 			.map((k) => actions.find((b) => b.hotkey === k))

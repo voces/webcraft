@@ -1,6 +1,6 @@
 import { document, localStorage } from "../../core/util/globals";
 import { registerCommand } from "./chat";
-import { UI } from "./index";
+import type { UI } from "./index";
 
 export const initListeners = (ui: UI): void => {
 	ui.addEventListener("keyDown", ({ key, ctrlDown }) => {

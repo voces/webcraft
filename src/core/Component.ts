@@ -1,5 +1,5 @@
 import { currentApp } from "./appContext";
-import { Entity } from "./Entity";
+import type { Entity } from "./Entity";
 import { isReplacingComponent, whileReplacingComponent } from "./util/flags";
 
 export class Component<

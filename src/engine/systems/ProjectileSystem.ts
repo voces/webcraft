@@ -1,11 +1,14 @@
 import { System } from "../../core/System";
 import { MoveTarget } from "../components/MoveTarget";
-import { Sprite } from "../entities/widgets/Sprite";
-import { Projectile } from "../entities/widgets/sprites/Projectile";
+import type { Sprite } from "../entities/widgets/Sprite";
+import type { Projectile } from "../entities/widgets/sprites/Projectile";
 import { isProjectile } from "../typeguards";
 import { distanceBetweenPoints } from "../util/tweenPoints";
 
 export class ProjectileSystem extends System<Projectile> {
+	// Conditions are static
+	readonly pure = true;
+
 	test(entity: Sprite): entity is Projectile {
 		return isProjectile(entity);
 	}

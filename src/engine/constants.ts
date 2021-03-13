@@ -1,4 +1,4 @@
-import { ValueOf } from "./types";
+import type { ValueOf } from "./types";
 
 // A map
 export const TILE_NAMES = ["open", "start", "end", "spawn"];
