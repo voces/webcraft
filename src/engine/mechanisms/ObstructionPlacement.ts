@@ -1,6 +1,7 @@
 import { Grid } from "notextures";
 import { MeshPhongMaterial } from "three";
 
+import type { Entity } from "../../core/Entity";
 import { Mechanism } from "../../core/Merchanism";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Position } from "../components/Position";
@@ -22,7 +23,6 @@ export class ObstructionPlacement extends Mechanism {
 	private plannedObstruction: typeof Obstruction | undefined;
 	private pathable = false;
 	private mouse: Mouse;
-	private requestedAnimationFrame: number | undefined;
 	// Cached placements, so we don't create new ones each time
 	private grids: Grid[][] = [];
 	// Container entity with a Grid as its scene object
@@ -34,6 +34,7 @@ export class ObstructionPlacement extends Mechanism {
 	private blueprint?: Blueprint;
 	private lastRadius?: number;
 	private added = false;
+	private _builder?: Entity;
 
 	constructor(game: Game) {
 		super();
@@ -175,7 +176,7 @@ export class ObstructionPlacement extends Mechanism {
 		this.updatePosition();
 	}
 
-	start(obstruction: typeof Obstruction): void {
+	start(obstruction: typeof Obstruction, builder?: Entity): void {
 		if (obstruction.defaults.cost) {
 			const check = this.game.localPlayer.checkResources(
 				obstruction.defaults.cost,
@@ -186,6 +187,7 @@ export class ObstructionPlacement extends Mechanism {
 			}
 		}
 
+		this._builder = builder;
 		this.plannedObstruction = obstruction;
 
 		if (!this.added) {
@@ -224,5 +226,9 @@ export class ObstructionPlacement extends Mechanism {
 
 	get valid(): boolean {
 		return !!this.plannedObstruction && this.pathable;
+	}
+
+	get builder(): Entity | undefined {
+		return this._builder;
 	}
 }

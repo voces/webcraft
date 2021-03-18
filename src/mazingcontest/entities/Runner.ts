@@ -6,7 +6,7 @@ export class Runner extends Unit {
 	static defaults = {
 		...Unit.defaults,
 		collisionRadius: 0.5,
-		speed: 3,
+		speed: 4,
 	};
 
 	isRunner = true;

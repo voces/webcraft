@@ -292,6 +292,8 @@ class Game extends App {
 
 		entity.clear();
 		if (isSprite(entity)) entity.remove(true);
+		if (this.obstructionPlacement.builder === entity)
+			this.obstructionPlacement.stop();
 		this._entities.delete(entity);
 
 		return true;

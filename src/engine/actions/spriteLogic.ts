@@ -51,17 +51,16 @@ export const initSpriteLogicListeners = (game: Game): void => {
 			return hotkey.localHandler({ player: game.localPlayer });
 
 		if (hotkey.type === "build") {
-			const ownBuilders = game.selectionSystem.selection.filter(
+			const builder = game.selectionSystem.selection.find(
 				(u) =>
 					isUnit(u) &&
 					u.owner === game.localPlayer &&
 					u.builds.includes(hotkey.obstruction),
 			);
 
-			if (ownBuilders.length) {
+			if (builder) {
 				const obstructionPlacement = game.obstructionPlacement;
-				if (!obstructionPlacement) return;
-				obstructionPlacement.start(hotkey.obstruction);
+				obstructionPlacement.start(hotkey.obstruction, builder);
 			}
 		}
 	});

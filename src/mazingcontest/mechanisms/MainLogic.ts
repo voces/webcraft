@@ -1,4 +1,5 @@
 import { Entity } from "../../core/Entity";
+import { logLine } from "../../core/logger";
 import { Mechanism } from "../../core/Merchanism";
 import { Timer } from "../../engine/components/Timer";
 import { TimerWindow } from "../../engine/components/TimerWindow";
@@ -12,7 +13,10 @@ import { Thunder } from "../entities/Thunder";
 import { isPathable } from "../helpers";
 import type { MazingContest } from "../MazingContest";
 import { currentMazingContest } from "../mazingContestContext";
-import { getPlaceholderPlayer } from "../players/placeholder";
+import {
+	getAlliedPlaceholderPlayer,
+	getEnemyPlaceholderPlayer,
+} from "../players/placeholder";
 import type { Player } from "../players/Player";
 import { terrain } from "../terrain";
 import { isCheckpoint } from "../typeguards";
@@ -30,7 +34,7 @@ const spawnCheckpoint = (game: MazingContest) => {
 	const entity = new Checkpoint({
 		x,
 		y,
-		owner: getPlaceholderPlayer(),
+		owner: getAlliedPlaceholderPlayer(),
 	});
 
 	const newPos = game.pathingMap.nearestSpiralPathing(x, y, entity);
@@ -54,7 +58,7 @@ const spawnUnits = (
 		const entity = factory({
 			x,
 			y,
-			owner: getPlaceholderPlayer(),
+			owner: getAlliedPlaceholderPlayer(),
 		});
 
 		const newPos = game.pathingMap.nearestSpiralPathing(x, y, entity);
@@ -99,6 +103,7 @@ export class MainLogic extends Mechanism {
 		this.round.runnerStart = game.time;
 
 		game.players.forEach((p) => {
+			if (p.id < 0) return;
 			const builder = p.sprites.find((s) => s instanceof Builder);
 			if (builder) builder.kill();
 		});
@@ -106,7 +111,7 @@ export class MainLogic extends Mechanism {
 		const u = new Runner({
 			x: terrain.width / 2,
 			y: terrain.height / 2 - 10.5,
-			owner: getPlaceholderPlayer(),
+			owner: getEnemyPlaceholderPlayer(),
 		});
 		game.pathingMap.addEntity(u);
 
@@ -135,9 +140,23 @@ export class MainLogic extends Mechanism {
 			lumber: Math.ceil(game.random() * game.random() * 35),
 		};
 
+		const alliedPlaceholderPlayer = getAlliedPlaceholderPlayer();
+		const enemyPlaceholderPlayer = getEnemyPlaceholderPlayer();
+
+		game.alliances.set(
+			alliedPlaceholderPlayer,
+			enemyPlaceholderPlayer,
+			"enemy",
+			true,
+		);
+
 		for (const owner of game.players) {
+			if (owner.id < 0) continue;
+
 			owner.resources.gold = this.round.gold;
 			owner.resources.lumber = this.round.lumber;
+			game.alliances.set(owner, alliedPlaceholderPlayer, "ally", true);
+			game.alliances.set(owner, enemyPlaceholderPlayer, "enemy", true);
 
 			const u = new Builder({
 				x: terrain.width / 2,
@@ -165,8 +184,8 @@ export class MainLogic extends Mechanism {
 	private endRound(game: MazingContest) {
 		if (!this.round) return;
 
-		// if (this.round.runnerStart)
-		// 	console.log("done!", game.time - this.round.runnerStart);
+		if (this.round.runnerStart)
+			logLine("endRound", game.time - this.round.runnerStart);
 
 		this.round = undefined;
 		game.entities.forEach((v) => isUnit(v) && v.kill());
@@ -178,6 +197,7 @@ export class MainLogic extends Mechanism {
 		if (this.round?.runnerStart && game.runnerTracker.done)
 			this.endRound(game);
 
-		if (!this.round && game.players.length > 0) this.startRound(time, game);
+		if (!this.round && game.players.some((p) => p.id >= 0))
+			this.startRound(time, game);
 	}
 }
