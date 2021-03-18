@@ -18,6 +18,8 @@ jobs:
       run: npm install
     - name: Run tests
       run: npm test
+    - name: Run typecheck
+      run: npm run typecheck
     - name: Run linter
       run: npm run test-lint
     - name: Run build

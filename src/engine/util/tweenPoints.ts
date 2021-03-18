@@ -37,7 +37,7 @@ export type PathTweener = {
 };
 
 export const shortenPath = (points: Point[], amount: number): Point[] => {
-	// Not shortening, return the original apth
+	// Not shortening, return the original path
 	if (amount <= 0) return points;
 
 	// Path has a single note, return it

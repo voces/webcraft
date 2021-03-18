@@ -13,6 +13,7 @@ export type ObstructionProps<Resource extends string> = UnitProps & {
 	buildTime?: number;
 	cost?: Record<Resource, number>;
 	owner: Player;
+	progress?: number;
 };
 
 export class Obstruction<Resource extends string = string> extends Unit {
@@ -29,6 +30,7 @@ export class Obstruction<Resource extends string = string> extends Unit {
 			...Unit.defaults.meshBuilder,
 			shape: "square" as "square" | "circle",
 		},
+		progress: INITIAL_OBSTRUCTION_PROGRESS,
 	};
 
 	requiresTilemap = toFootprint(this.collisionRadius, this.requiresPathing);
@@ -53,14 +55,16 @@ export class Obstruction<Resource extends string = string> extends Unit {
 		return this._buildAction;
 	}
 
-	constructor({ buildTime = 1, ...props }: ObstructionProps<Resource>) {
+	constructor({
+		buildTime = 1,
+		progress = Obstruction.defaults.progress,
+		...props
+	}: ObstructionProps<Resource>) {
 		super({ ...Obstruction.clonedDefaults, ...props });
 
-		this.health = Math.round(
-			Math.max(this.maxHealth * INITIAL_OBSTRUCTION_PROGRESS, 1),
-		);
+		this.health = Math.round(Math.max(this.maxHealth * progress, 1));
 		this.buildTime = buildTime;
 
-		new GerminateComponent(this);
+		if (progress < 1) new GerminateComponent(this);
 	}
 }

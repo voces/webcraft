@@ -6,16 +6,36 @@ import { PublicSetView } from "./PublicSetView";
 import type { System } from "./System";
 import { requestAnimationFrame } from "./util/globals";
 
+const NoComponent = { isNoComponent: true };
+
+const addComponentToMap = (
+	map: Map<ComponentConstructor | typeof NoComponent, System[]>,
+	component: ComponentConstructor | typeof NoComponent,
+	system: System,
+) => {
+	let arr = map.get(component);
+
+	if (!arr) {
+		arr = [];
+		map.set(component, arr);
+	}
+
+	arr.push(system);
+};
+
 export class App {
 	protected _entities = new Set<Entity>();
 	entities = new PublicSetView(this._entities);
 	protected impureSystems: System[] = [];
-	private allSystems: System[] = [];
+	protected allSystems: System[] = [];
 	protected mechanisms: Mechanism[] = [];
 	private lastRender = 0;
 	private requestedAnimationFrame?: number;
 	private _time = 0;
-	private componentUpdateMap = new Map<ComponentConstructor, System[]>();
+	private componentUpdateMap = new Map<
+		ComponentConstructor | typeof NoComponent,
+		System[]
+	>();
 	private components: typeof Component[] = [];
 	// TODO: make this private!
 	lastUpdate = 0;
@@ -31,17 +51,13 @@ export class App {
 		this.allSystems.push(system);
 		if (!system.pure) this.impureSystems.push(system);
 
-		for (const component of (system.constructor as typeof System)
-			.components) {
-			let arr = this.componentUpdateMap.get(component);
+		const constructor = system.constructor as typeof System;
 
-			if (!arr) {
-				arr = [];
-				this.componentUpdateMap.set(component, arr);
-			}
+		for (const component of constructor.components)
+			addComponentToMap(this.componentUpdateMap, component, system);
 
-			arr.push(system);
-		}
+		if (constructor.components.length === 0)
+			addComponentToMap(this.componentUpdateMap, NoComponent, system);
 
 		return this;
 	}
@@ -75,6 +91,7 @@ export class App {
 		this._entities.add(entity);
 
 		for (const system of this.impureSystems) system.add(entity);
+		this.entityComponentUpdated(entity, NoComponent);
 
 		return true;
 	}
@@ -97,7 +114,7 @@ export class App {
 	 */
 	entityComponentUpdated(
 		entity: Entity,
-		component: ComponentConstructor,
+		component: ComponentConstructor | typeof NoComponent,
 	): void {
 		const systems = this.componentUpdateMap.get(component);
 		if (!systems) return;

@@ -15,6 +15,7 @@ import { currentMazingContest } from "../mazingContestContext";
 import { getPlaceholderPlayer } from "../players/placeholder";
 import type { Player } from "../players/Player";
 import { terrain } from "../terrain";
+import { isCheckpoint } from "../typeguards";
 
 interface Obstruction {
 	type: "thunder" | "block";
@@ -108,10 +109,19 @@ export class MainLogic extends Mechanism {
 			owner: getPlaceholderPlayer(),
 		});
 		game.pathingMap.addEntity(u);
-		u.walkTo({
+
+		let target = {
 			x: terrain.width / 2,
 			y: terrain.height / 2 + 10.5,
-		});
+		};
+		if (game.settings.checkpoints) {
+			const checkpoint = game.entities.find(isCheckpoint)!;
+			target = {
+				x: checkpoint.position.x,
+				y: checkpoint.position.y,
+			};
+		}
+		u.walkTo(target);
 	}
 
 	private startRound(time: number, game: MazingContest) {

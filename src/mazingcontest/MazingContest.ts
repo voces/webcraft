@@ -4,7 +4,6 @@ import { Terrain } from "../engine/entities/Terrain";
 import { Game } from "../engine/Game";
 import { PathingMap } from "../engine/pathing/PathingMap";
 import { nextColor } from "../engine/players/colors";
-import { isPathable } from "./helpers";
 import { withMazingContest } from "./mazingContestContext";
 import type {
 	ConnectionEvent,
@@ -13,9 +12,9 @@ import type {
 } from "./MazingContestNetwork";
 import { MainLogic } from "./mechanisms/MainLogic";
 import { patchInState, Player } from "./players/Player";
+import { BuildWatcher } from "./systems/BuildWatcher";
 import { RunnerTracker } from "./systems/RunnerTracker";
 import { terrain } from "./terrain";
-import { isThunder } from "./typeguards";
 import type { Settings } from "./types";
 
 class MazingContest extends Game {
@@ -48,16 +47,6 @@ class MazingContest extends Game {
 			// Received by the the upon someone connecting after the round ends
 			this.addNetworkListener("state", (e) => this.onState(e));
 
-			this.addEventListener("build", (_, obstruction) => {
-				if (isPathable() || !obstruction.isAlive) return;
-				obstruction.kill();
-				obstruction.owner.resources.lumber =
-					(obstruction.owner.resources.lumber ?? 0) + 1;
-				if (isThunder(obstruction))
-					obstruction.owner.resources.gold =
-						(obstruction.owner.resources.gold ?? 0) + 1;
-			});
-
 			this.terrain = new Terrain(terrain);
 			this.graphics.panTo(
 				{ x: terrain.height / 2, y: terrain.width / 2 - 7 },
@@ -70,6 +59,7 @@ class MazingContest extends Game {
 			});
 			this.addMechanism(new MainLogic());
 			this.runnerTracker = new RunnerTracker().addToApp(this);
+			this.addSystem(new BuildWatcher());
 		});
 	}
 
@@ -109,12 +99,6 @@ class MazingContest extends Game {
 		this.synchronizationState = "synchronized";
 	};
 
-	// add(entity: Entity): boolean {
-	// 	if (!super.add(entity)) return false;
-
-	// 	return true;
-	// }
-
 	///////////////////////
 	// Cycles
 	///////////////////////
@@ -124,19 +108,7 @@ class MazingContest extends Game {
 
 		const time = e.time / 1000;
 
-		// Update is called for people who have recently joined
-		// if (this.round) {
-		// 	this.round.update(time);
 		this.dispatchEvent("update", time);
-		// 	return;
-		// }
-
-		// if (
-		// 	this.players.length &&
-		// 	this.receivedState &&
-		// 	(!this.lastRoundEnd || time > this.lastRoundEnd + 2)
-		// )
-		// 	this.start({ time });
 	}
 
 	render(): void {

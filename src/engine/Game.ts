@@ -288,7 +288,7 @@ class Game extends App {
 	remove(entity: Entity): boolean {
 		if (!this._entities.has(entity)) return false;
 
-		for (const system of this.impureSystems) system.remove(entity);
+		for (const system of this.allSystems) system.remove(entity);
 
 		entity.clear();
 		if (isSprite(entity)) entity.remove(true);

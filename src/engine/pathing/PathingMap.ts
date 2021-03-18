@@ -709,7 +709,7 @@ export class PathingMap {
 	 * Calculates the shortest path for an entity to reach `target`. If a path
 	 * is not possible, or is extremely long, a partial path will be returned.
 	 */
-	path(entity: Entity, target: Point): Point[] {
+	path(entity: Entity, target: Point, start: Point = pos(entity)): Point[] {
 		if (typeof entity.collisionRadius !== "number")
 			throw new Error("Can only path find radial entities");
 
@@ -739,10 +739,9 @@ export class PathingMap {
 
 		const offset = entity.collisionRadius % (1 / this.resolution);
 		// We can assume start is pathable
-		const position = pos(entity);
 		const startReal = {
-			x: position.x * this.resolution,
-			y: position.y * this.resolution,
+			x: start.x * this.resolution,
+			y: start.y * this.resolution,
 		};
 
 		const startTile = this.entityToTile(entity);
@@ -773,7 +772,7 @@ export class PathingMap {
 		if (startTile === endTile && this.pathable(entity)) {
 			if (removed) this.addEntity(entity);
 			return [
-				{ x: position.x, y: position.y },
+				{ x: start.x, y: start.y },
 				{
 					x: endReal.x / this.resolution,
 					y: endReal.y / this.resolution,
@@ -1194,10 +1193,10 @@ export class PathingMap {
 
 		const beginning =
 			pathWorld.length > 1 &&
-			(pathWorld[0].x !== position.x || pathWorld[0].y !== position.y)
-				? this.linearPathable(entity, position, pathWorld[1])
-					? [{ x: position.x, y: position.y }]
-					: [{ x: position.x, y: position.y }, pathWorld[0]]
+			(pathWorld[0].x !== start.x || pathWorld[0].y !== start.y)
+				? this.linearPathable(entity, start, pathWorld[1])
+					? [{ x: start.x, y: start.y }]
+					: [{ x: start.x, y: start.y }, pathWorld[0]]
 				: [pathWorld[0]];
 
 		if (removed) this.addEntity(entity);
