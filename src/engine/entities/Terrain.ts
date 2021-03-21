@@ -88,15 +88,14 @@ export class Terrain extends Entity {
 		let triangle: [Vector3, Vector3, Vector3];
 		const terrain = this.get(ThreeObjectComponent)[0]!
 			.object as TerrainMesh;
-		const geometry = terrain.ground;
 		const faces =
 			terrain.groundFaces[Math.floor(this.height - y)]?.[Math.floor(x)];
 		if (!faces) return 0;
 
 		{
-			const v1 = geometry.vertices[faces[0].a];
-			const v2 = geometry.vertices[faces[0].b];
-			const v3 = geometry.vertices[faces[0].c];
+			const v1 = faces[0].a;
+			const v2 = faces[0].b;
+			const v3 = faces[0].c;
 
 			const side1 = Math.abs(orientation(pt, v1, v2)) < 1e-7;
 			const side2 = Math.abs(orientation(pt, v2, v3)) < 1e-7;
@@ -105,14 +104,10 @@ export class Terrain extends Entity {
 			triangle =
 				side1 === side2 && side2 === side3
 					? [v1, v2, v3]
-					: [
-							geometry.vertices[faces[1].a],
-							geometry.vertices[faces[1].b],
-							geometry.vertices[faces[1].c],
-					  ];
+					: [faces[1].a, faces[1].b, faces[1].c];
 		}
 
-		const height = interpolateZ(triangle, x, y);
+		const height = interpolateZ(triangle, x, -this.height + y);
 
 		this.lastGroundHeight = { x, y, height };
 
