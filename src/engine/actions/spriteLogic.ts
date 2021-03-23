@@ -9,6 +9,7 @@ import { holdPositionAction } from "./holdPosition";
 import { mirrorAction } from "./mirror";
 import { moveAction } from "./move";
 import { stopAction } from "./stop";
+import { upgradeSyncHandler } from "./upgrade";
 
 const rightClick: MouseEvents["mouseDown"] = ({ mouse }) => {
 	const { x, y } = mouse.ground;
@@ -71,4 +72,5 @@ export const initSpriteLogicListeners = (game: Game): void => {
 	game.addNetworkListener("mirror", mirrorAction.syncHandler);
 	game.addNetworkListener("move", moveAction.syncHandler);
 	game.addNetworkListener("stop", stopAction.syncHandler);
+	game.addNetworkListener("upgrade", upgradeSyncHandler);
 };

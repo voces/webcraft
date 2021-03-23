@@ -19,14 +19,14 @@ import type { Point } from "../pathing/PathingMap";
 import type { PathTweener } from "../util/tweenPoints";
 import { tweenPoints } from "../util/tweenPoints";
 
-const getCanvas = () => {
+const createCanvas = () => {
 	const canvas = document.createElement("canvas");
 	document.body.prepend(canvas);
 
 	return canvas;
 };
 
-const getRenderer = (canvas: HTMLCanvasElement) => {
+const createRenderer = (canvas: HTMLCanvasElement) => {
 	const renderer = new WebGLRenderer({
 		antialias: window.devicePixelRatio > 1 ? false : true,
 		canvas,
@@ -66,7 +66,7 @@ const updateLight = (
 	}
 };
 
-const getScene = (camera: PerspectiveCamera, container?: HTMLElement) => {
+const createScene = (camera: PerspectiveCamera, container?: HTMLElement) => {
 	const scene = new Scene();
 
 	// Basic lighting
@@ -82,7 +82,7 @@ const getScene = (camera: PerspectiveCamera, container?: HTMLElement) => {
 	return { scene, sun };
 };
 
-const getCamera = (renderer: WebGLRenderer) => {
+const createCamera = (renderer: WebGLRenderer) => {
 	const size = new Vector2();
 	renderer.getSize(size);
 	const camera = new PerspectiveCamera(75, size.x / size.y, 0.1, 10000);
@@ -115,10 +115,10 @@ export class ThreeGraphics extends System {
 		super();
 		this.game = game;
 
-		const canvas = getCanvas();
-		this.renderer = getRenderer(canvas);
-		this.camera = getCamera(this.renderer);
-		const { scene, sun } = getScene(
+		const canvas = createCanvas();
+		this.renderer = createRenderer(canvas);
+		this.camera = createCamera(this.renderer);
+		const { scene, sun } = createScene(
 			this.camera,
 			this.renderer.domElement.parentElement ?? undefined,
 		);

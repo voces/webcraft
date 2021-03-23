@@ -1,11 +1,13 @@
 import type { ObstructionProps } from "./Obstruction";
 import { Obstruction } from "./Obstruction";
+import { Thunder } from "./Thunder";
 
 export class Block extends Obstruction {
 	static defaults = {
 		...Obstruction.defaults,
 		buildHotkey: "b" as const,
 		cost: { lumber: 1 },
+		upgradesTo: [Thunder],
 	};
 
 	constructor(props: ObstructionProps) {

@@ -3,10 +3,10 @@ import {
 	LordaeronSummerDirtCliff,
 	LordaeronSummerGrass,
 	LordaeronSummerRock,
-	Terrain as TerrainMesh,
+	Terrain as TerrainGroup,
 } from "notextures";
 import type { CliffMask } from "notextures/dist/objects/Terrain/Terrain";
-import type { Group, Vector3 } from "three";
+import type { Vector3 } from "three";
 
 import { Entity } from "../../core/Entity";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
@@ -31,7 +31,7 @@ export const interpolateZ = (
 };
 
 export class Terrain extends Entity {
-	private group: Group;
+	private group: TerrainGroup;
 	private height: number;
 	constructor(arena: {
 		width: number;
@@ -44,7 +44,7 @@ export class Terrain extends Entity {
 			new Array(arena.width + 1).fill(0),
 		);
 		this.height = arena.height;
-		const mesh = new TerrainMesh({
+		const group = new TerrainGroup({
 			masks: {
 				height: vertexZeroes,
 				cliff: arena.cliffs,
@@ -70,8 +70,8 @@ export class Terrain extends Entity {
 				height: arena.height,
 			},
 		});
-		new ThreeObjectComponent(this, mesh);
-		this.group = mesh;
+		new ThreeObjectComponent(this, group);
+		this.group = group;
 	}
 
 	private lastGroundHeight?: {
@@ -86,10 +86,9 @@ export class Terrain extends Entity {
 
 		const pt = { x, y };
 		let triangle: [Vector3, Vector3, Vector3];
-		const terrain = this.get(ThreeObjectComponent)[0]!
-			.object as TerrainMesh;
-		const faces =
-			terrain.groundFaces[Math.floor(this.height - y)]?.[Math.floor(x)];
+		const faces = this.group.groundFaces[Math.floor(this.height - y)]?.[
+			Math.floor(x)
+		];
 		if (!faces) return 0;
 
 		{

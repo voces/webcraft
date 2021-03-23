@@ -51,6 +51,7 @@ export type Action<
 	  }
 	| {
 			type: "custom";
+			cost?: { [key: string]: number };
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			localHandler: (data: ImmediateActionProps<any>) => void;
 	  }

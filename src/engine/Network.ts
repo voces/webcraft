@@ -77,6 +77,12 @@ export type MirrorEvent = PlayerEvent & {
 	sprites: EntityID[];
 };
 
+export type UpgradeEvent = PlayerEvent & {
+	type: "upgrade";
+	obstructions: [EntityID];
+	upgrade: string;
+};
+
 type ChatEvent = PlayerEvent & {
 	type: "chat";
 	message: string;
@@ -108,6 +114,7 @@ const networkEvents = {
 	holdPosition: (data: HoldPositionEvent) => {},
 	stop: (data: StopEvent) => {},
 	mirror: (data: MirrorEvent) => {},
+	upgrade: (data: UpgradeEvent) => {},
 	chat: (data: ChatEvent) => {},
 	disconnection: (data: DisconnectionEvent) => {},
 	connection: (data: ConnectionEvent) => {},

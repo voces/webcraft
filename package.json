@@ -28,7 +28,7 @@
     "typescript": "^4.2.2"
   },
   "scripts": {
-    "build": "esbuild src/katma/index.ts src/katma/server.ts src/mazingcontest/index.ts src/mazingcontest/server.ts --bundle --sourcemap --format=esm --outdir=public",
+    "build": "esbuild src/katma/index.ts src/katma/server.ts src/mazingcontest/index.ts src/mazingcontest/server.ts --bundle --keep-names --sourcemap --format=esm --outdir=public",
     "dev": "npm run build -- --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .js,.ts,.jsx,.tsx --quiet --fix",
@@ -47,7 +47,7 @@
     "@types/three": "^0.126.1",
     "lodash-es": "^4.17.20",
     "marked": "^2.0.1",
-    "notextures": "^4.0.2",
+    "notextures": "^4.0.3",
     "preact": "^10.5.8",
     "three": "^0.126.1"
   }

@@ -40,18 +40,22 @@ const genNode = (action: Action) => {
 			: action.name + ` (${highlight})`;
 	tooltip.appendChild(title);
 
-	if ("cost" in action) {
+	if ("cost" in action && action.cost) {
 		const cost = Object.entries(action.cost).filter(([, v]) => v > 0);
-		const container = document.createElement("div");
-		container.classList.add("resources");
-		for (const [key, value] of cost) {
-			const resource = document.createElement("div");
-			resource.classList.add("resource", key);
-			resource.textContent = value.toString();
-			resource.title = `${key[0].toUpperCase()}${key.slice(1)}: ${value}`;
-			container.appendChild(resource);
+		if (cost.length > 0) {
+			const container = document.createElement("div");
+			container.classList.add("resources");
+			for (const [key, value] of cost) {
+				const resource = document.createElement("div");
+				resource.classList.add("resource", key);
+				resource.textContent = value.toString();
+				resource.title = `${key[0].toUpperCase()}${key.slice(
+					1,
+				)}: ${value}`;
+				container.appendChild(resource);
+			}
+			tooltip.appendChild(container);
 		}
-		tooltip.appendChild(container);
 	}
 
 	const description = document.createElement("div");

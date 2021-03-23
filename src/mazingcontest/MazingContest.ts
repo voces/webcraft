@@ -4,6 +4,7 @@ import { Terrain } from "../engine/entities/Terrain";
 import { Game } from "../engine/Game";
 import { PathingMap } from "../engine/pathing/PathingMap";
 import { nextColor } from "../engine/players/colors";
+import { registerNetworkedActionListeners } from "./actions";
 import { withMazingContest } from "./mazingContestContext";
 import type {
 	ConnectionEvent,
@@ -25,7 +26,7 @@ class MazingContest extends Game {
 
 	settings: Settings = {
 		numberOfRounds: 10,
-		buildTime: 15,
+		buildTime: 150,
 		thunderTowers: true,
 		checkpoints: true,
 	};
@@ -36,6 +37,7 @@ class MazingContest extends Game {
 	displayName = "Mazing Contest";
 	protocol = "mazingcontest";
 
+	mainLogic!: MainLogic;
 	runnerTracker!: RunnerTracker;
 
 	constructor(network: MazingContestNetwork) {
@@ -48,6 +50,7 @@ class MazingContest extends Game {
 			this.addNetworkListener("state", (e) => this.onState(e));
 
 			this.terrain = new Terrain(terrain);
+			this.add(this.terrain);
 			this.graphics.panTo(
 				{ x: terrain.height / 2, y: terrain.width / 2 - 7 },
 				0,
@@ -57,9 +60,11 @@ class MazingContest extends Game {
 				layers: terrain.pathingCliffs.slice().reverse(),
 				resolution: 2,
 			});
-			this.addMechanism(new MainLogic());
+			this.mainLogic = new MainLogic().addToApp(this);
 			this.runnerTracker = new RunnerTracker().addToApp(this);
 			this.addSystem(new BuildWatcher());
+
+			registerNetworkedActionListeners();
 		});
 	}
 
