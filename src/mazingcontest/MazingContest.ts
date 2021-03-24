@@ -26,7 +26,7 @@ class MazingContest extends Game {
 
 	settings: Settings = {
 		numberOfRounds: 10,
-		buildTime: 150,
+		buildTime: 60,
 		thunderTowers: true,
 		checkpoints: true,
 	};

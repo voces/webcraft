@@ -16,8 +16,11 @@ interface MazingContestStateEvent extends StateEvent {
 
 export type SelfDestructEvent = PlayerEvent & {
 	type: "selfDestruct";
-	connection: number;
 	sprites: EntityID[];
+};
+
+export type ReadyEvent = PlayerEvent & {
+	type: "ready";
 };
 
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
@@ -26,6 +29,7 @@ const networkEvents = {
 	init: (data: MazingContestInitEvent) => {},
 	state: (data: MazingContestStateEvent) => {},
 	selfDestruct: (data: SelfDestructEvent) => {},
+	ready: (data: ReadyEvent) => {},
 } as const;
 /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function */
 

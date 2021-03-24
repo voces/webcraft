@@ -153,6 +153,7 @@ export class MainLogic extends Mechanism {
 		for (const owner of game.players) {
 			if (owner.id < 0) continue;
 
+			owner.ready = false;
 			owner.resources.gold = this.round.gold;
 			owner.resources.lumber = this.round.lumber;
 			game.alliances.set(owner, alliedPlaceholderPlayer, "ally", true);

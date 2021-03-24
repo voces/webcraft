@@ -11,6 +11,8 @@ interface PlayerStateMC extends EnginePlayerState {
 }
 
 export class Player extends EnginePlayer<Resource> {
+	ready = false;
+
 	toJSON(): PlayerStateMC {
 		return {
 			...super.toJSON(),
