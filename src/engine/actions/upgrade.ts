@@ -78,7 +78,8 @@ export const upgradeSyncHandler = ({
 		player.subtractResources(cost);
 		const { x, y } = obstruction.position;
 		obstruction.remove();
-		new obstructionClass({ x, y, owner: player });
+		const newObstruction = new obstructionClass({ x, y, owner: player });
+		game.pathingMap.addEntity(newObstruction);
 	}
 };
 

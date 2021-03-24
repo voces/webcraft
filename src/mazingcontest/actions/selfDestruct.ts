@@ -1,5 +1,7 @@
 import type { ImmediateActionProps } from "../../engine/actions/types";
-import { isObstruction } from "../../engine/typeguards";
+import type { Sprite } from "../../engine/entities/widgets/Sprite";
+import { isObstruction, isSprite } from "../../engine/typeguards";
+import { appendErrorMessage } from "../../engine/ui/chat";
 import type { Obstruction } from "../entities/Obstruction";
 import { currentMazingContest } from "../mazingContestContext";
 import type { SelfDestructEvent } from "../MazingContestNetwork";
@@ -12,9 +14,11 @@ export const selfDestructAction = {
 	hotkey: "x" as const,
 	type: "custom" as const,
 	localHandler: ({ player }: ImmediateActionProps<Player>): void => {
+		let tnt = player.resources.tnt ?? 0;
 		// Get currently selected boxes
 		const obstructions = player.game.selectionSystem.selection.filter(
-			(s): s is Obstruction => isObstruction(s) && s.owner === player,
+			(s): s is Obstruction =>
+				isObstruction(s) && (s.owner === player || tnt-- > 0),
 		);
 
 		// Select the main unit
@@ -35,12 +39,21 @@ export const selfDestructAction = {
 		const player = mazingContest.players.find((p) => p.id === connection);
 		if (!player) return;
 
-		player.sprites
-			.filter((s) => sprites.includes(s.id))
+		mazingContest.entities
+			.filter((s): s is Sprite => isSprite(s) && sprites.includes(s.id))
 			.forEach((s) => {
+				if (s.owner !== player) {
+					const check = player.checkResources({ tnt: 1 });
+					if (check?.length) {
+						appendErrorMessage(`Not enough ${check.join(" ")}`);
+						return;
+					}
+					player.subtractResources({ tnt: 1 });
+				}
+
 				s.kill();
 
-				if (!s.owner) return;
+				if (s.owner !== player) return;
 
 				// All obstructions cost 1 lumber
 				s.owner.resources.lumber = (s.owner.resources.lumber ?? 0) + 1;
@@ -50,4 +63,6 @@ export const selfDestructAction = {
 					s.owner.resources.gold = (s.owner.resources.gold ?? 0) + 1;
 			});
 	},
+	available: (): boolean =>
+		(currentMazingContest().localPlayer.resources.tnt ?? 0) > 0,
 };

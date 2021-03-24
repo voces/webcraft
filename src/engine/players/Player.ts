@@ -34,7 +34,7 @@ export class Player<Resource extends string = string> {
 		if (data.id !== -1) game.players.push(this);
 	}
 
-	checkResources(resources: Record<Resource, number>): Resource[] {
+	checkResources(resources: Partial<Record<Resource, number>>): Resource[] {
 		const low: Resource[] = [];
 		for (const resource in resources)
 			if ((this.resources[resource] ?? 0) < resources[resource])
@@ -43,10 +43,10 @@ export class Player<Resource extends string = string> {
 		return low;
 	}
 
-	subtractResources(resources: Record<Resource, number>): void {
+	subtractResources(resources: Partial<Record<Resource, number>>): void {
 		for (const resource in resources)
 			this.resources[resource] =
-				(this.resources[resource] ?? 0) - resources[resource];
+				(this.resources[resource] ?? 0) - (resources[resource] ?? 0);
 	}
 
 	get enemies(): Player[] {
@@ -71,7 +71,7 @@ export class Player<Resource extends string = string> {
 	// TODO: Remove off Player and make a helper
 	getPrimarySelectedUnit(entities?: ReadonlyArray<Entity>): Unit | undefined {
 		const universe = entities ?? this.game.selectionSystem.selection;
-		const units = universe.filter(isUnit).filter((u) => u.owner === this);
+		const units = universe.filter(isUnit);
 		if (!units.length) return;
 
 		let activeUnit = units[0];

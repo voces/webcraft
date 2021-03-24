@@ -43,6 +43,10 @@ export type Action<
 	syncHandler?: NetworkEvent extends keyof NetworkEventCallback
 		? NetworkEventCallback[NetworkEvent]
 		: never;
+	/**
+	 * Whether the action is available on non-owned units.
+	 */
+	available?: () => boolean;
 } & (
 	| {
 			type: "build";

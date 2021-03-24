@@ -91,6 +91,7 @@ export class MainLogic extends Mechanism {
 		initial: Obstruction[];
 		lumber: number;
 		gold: number;
+		tnt: number;
 	};
 	timer?: Entity;
 
@@ -135,9 +136,10 @@ export class MainLogic extends Mechanism {
 			buildTime: game.settings.buildTime,
 			initial: [],
 			gold: game.settings.thunderTowers
-				? Math.floor(game.random() * game.random() * 4)
+				? Math.floor((game.random() * game.random()) ** (1 / 2) * 4)
 				: 0,
-			lumber: Math.ceil(game.random() * game.random() * 35),
+			lumber: Math.ceil((game.random() * game.random()) ** (1 / 2) * 35),
+			tnt: Math.floor((game.random() * game.random()) ** (1 / 2) * 3),
 		};
 
 		const alliedPlaceholderPlayer = getAlliedPlaceholderPlayer();
@@ -156,6 +158,7 @@ export class MainLogic extends Mechanism {
 			owner.ready = false;
 			owner.resources.gold = this.round.gold;
 			owner.resources.lumber = this.round.lumber;
+			owner.resources.tnt = this.round.tnt;
 			game.alliances.set(owner, alliedPlaceholderPlayer, "ally", true);
 			game.alliances.set(owner, enemyPlaceholderPlayer, "enemy", true);
 

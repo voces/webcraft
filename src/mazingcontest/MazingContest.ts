@@ -29,6 +29,7 @@ class MazingContest extends Game {
 		buildTime: 60,
 		thunderTowers: true,
 		checkpoints: true,
+		tnt: true,
 	};
 
 	addNetworkListener!: MazingContestNetwork["addEventListener"];

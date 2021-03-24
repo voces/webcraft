@@ -233,6 +233,11 @@ form input:focus {
 	background-color: green;
 }
 
+#hotkeys .tooltip .resource.tnt::before,
+#top-right .resource.tnt::before {
+	background-color: red;
+}
+
 button { border: 2px solid white; }
 button[type="submit"] {
     background: white;

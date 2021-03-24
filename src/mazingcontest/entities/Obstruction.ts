@@ -9,9 +9,14 @@ export type ObstructionProps = EngineObstructionProps<Resource>;
 
 export class Obstruction extends EngineObstruction<Resource> {
 	get actions(): Action[] {
-		if (currentMazingContest().mainLogic.round?.runnerStart) return [];
+		const mazingContest = currentMazingContest();
+		if (mazingContest.mainLogic.round?.runnerStart) return [];
 		const actions = super.actions;
-		actions.push(selfDestructAction);
+		actions.push(
+			this.owner === mazingContest.localPlayer
+				? selfDestructAction
+				: { ...selfDestructAction, cost: { tnt: 1 } },
+		);
 		return actions;
 	}
 }
