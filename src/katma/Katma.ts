@@ -206,7 +206,7 @@ export class Katma extends Game {
 		}
 
 		if (
-			this.players.length &&
+			this.players.some((p) => p.id >= 0) &&
 			this.synchronizationState === "synchronized" &&
 			(!this.lastRoundEnd || time > this.lastRoundEnd + 2)
 		)
