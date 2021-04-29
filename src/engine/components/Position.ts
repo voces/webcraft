@@ -4,8 +4,11 @@ import { whileReplacingComponent } from "../../core/util/flags";
 import type { Point } from "../pathing/PathingMap";
 import { isEntity } from "../typeguards";
 import type { Mutable } from "../types";
+import { isObject } from "../types";
 
 export class Position extends Component<[number, number, { zOffset: number }]> {
+	static argMap = ["x", "y"];
+
 	static setXY(
 		entity: Entity,
 		x: number,
@@ -50,12 +53,11 @@ export class Position extends Component<[number, number, { zOffset: number }]> {
 	}
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const hasPositionProp = (entity: any): entity is { position: Point } =>
-	entity &&
-	typeof entity === "object" &&
-	entity.position &&
-	typeof entity.position === "object" &&
+export const hasPositionProp = (
+	entity: unknown,
+): entity is { position: Point } =>
+	isObject(entity) &&
+	isObject(entity.position) &&
 	typeof entity.position.x === "number" &&
 	typeof entity.position.y === "number";
 

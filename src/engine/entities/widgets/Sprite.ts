@@ -1,3 +1,4 @@
+import type { Component, ComponentConstructor } from "../../../core/Component";
 import type { Emitter } from "../../../core/emitter";
 import { emitter } from "../../../core/emitter";
 import type { EntityID } from "../../../core/Entity";
@@ -10,7 +11,8 @@ import { MeshBuilderComponent } from "../../components/graphics/MeshBuilderCompo
 import { HoldPositionComponent } from "../../components/HoldPositionComponent";
 import { Hover } from "../../components/Hover";
 import { MoveTarget } from "../../components/MoveTarget";
-import type { Position } from "../../components/Position";
+import { PathingComponent } from "../../components/PathingComponent";
+import { Position } from "../../components/Position";
 import { Selected } from "../../components/Selected";
 import { PATHING_TYPES } from "../../constants";
 import { currentGame } from "../../gameContext";
@@ -54,6 +56,8 @@ export type SpriteEvents = {
 export type SpriteDefaultProps = Required<
 	Pick<SpriteProps, "collisionRadius" | "meshBuilder">
 >;
+
+const spriteDerivedComponents = [Position.name, MeshBuilderComponent.name];
 
 class Sprite extends Widget {
 	static readonly isSprite = true;
@@ -173,12 +177,12 @@ class Sprite extends Widget {
 
 		this.clear(Selected);
 		this.clear(Hover);
+		this.clear(PathingComponent);
 
 		if (this.owner) {
 			const index = this.owner.sprites.indexOf(this);
 			if (index >= 0) this.owner.sprites.splice(index, 1);
 		}
-		game.pathingMap.removeEntity(this);
 		// const index = this.round.sprites.indexOf(this);
 		// if (index >= 0) this.round.sprites.splice(index, 1);
 
@@ -195,7 +199,6 @@ class Sprite extends Widget {
 		this.dispatchEvent("remove");
 		if (!callInitializedFromApp) game.remove(this);
 		this.removeEventListeners();
-		game.pathingMap.removeEntity(this);
 
 		if (this.owner) {
 			const index = this.owner.sprites.indexOf(this);
@@ -218,18 +221,68 @@ class Sprite extends Widget {
 		);
 	}
 
-	toJSON(): {
-		constructor: string;
+	toJSON(): ReturnType<Widget["toJSON"]> & {
+		type: string;
 		health: number;
 		owner?: number;
-		position: Position;
 	} {
 		return {
-			constructor: this.constructor.name,
+			...super.toJSON(),
+			type: this.constructor.name,
 			health: this.health,
-			owner: this.owner && this.owner.id,
-			position: this.position,
+			owner: this.owner?.id,
 		};
+	}
+
+	static fromJSON({
+		components,
+		type,
+		owner: ownerId,
+		...data
+	}: ReturnType<Sprite["toJSON"]>): Sprite {
+		const game = currentGame();
+		const map = components.reduce(
+			(map, component) => {
+				if (!map[component.type])
+					map[component.type] = {
+						class: game.componentsMap[component.type],
+						components: [],
+					};
+				map[component.type]!.components.push(component);
+				return map;
+			},
+			{} as {
+				[key: string]: {
+					class: ComponentConstructor | undefined;
+					components: ReturnType<Component["toJSON"]>[];
+				};
+			},
+		);
+
+		const position = map.Position?.components[0] ?? { x: 0, y: 0 };
+		const x = typeof position.x === "number" ? position.x : 0;
+		const y = typeof position.y === "number" ? position.y : 0;
+
+		const owner =
+			ownerId === undefined
+				? undefined
+				: game.players.find((p) => p.id === ownerId);
+
+		const entity = new this({ x, y, owner, ...data });
+
+		for (const { type, ...componentProps } of components.filter(
+			(c) => !spriteDerivedComponents.includes(c.type),
+		)) {
+			const constructor = game.componentsMap[type];
+			if (!constructor) {
+				console.warn(`Unable to hydrate unknown component ${type}`);
+				continue;
+			}
+			const args = constructor.argMap.map((k) => componentProps[k]);
+			constructor.fromJSON(entity, ...args, componentProps);
+		}
+
+		return entity;
 	}
 }
 

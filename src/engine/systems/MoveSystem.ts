@@ -2,15 +2,16 @@ import { System } from "../../core/System";
 import { MoveTarget } from "../components/MoveTarget";
 import type { Sprite } from "../entities/widgets/Sprite";
 import { currentGame } from "../gameContext";
-import type { PathingMap, Point } from "../pathing/PathingMap";
+import type { Point } from "../pathing/PathingMap";
 import { isSprite } from "../typeguards";
+import type { PathingSystem } from "./PathingSystem";
 
 const withoutTarget = <A>(
-	pathingMap: PathingMap,
+	pathingSystem: PathingSystem,
 	target: Point | Sprite,
 	fn: () => A,
 ): A => {
-	if (isSprite(target)) return pathingMap.withoutEntity(target, fn);
+	if (isSprite(target)) return pathingSystem.withoutEntity(target, fn);
 
 	return fn();
 };
@@ -40,7 +41,7 @@ export class MoveSystem extends System<MovingSprite> {
 		const moveTarget = entity.get(MoveTarget)[0];
 		if (!moveTarget) return this.remove(entity);
 
-		const pathingMap = currentGame().pathingMap;
+		const pathingSystem = currentGame().pathingSystem!;
 
 		// Move
 		moveTarget.progress += delta * entity.speed;
@@ -53,7 +54,7 @@ export class MoveSystem extends System<MovingSprite> {
 		}
 
 		// Update self
-		const pathable = pathingMap.pathable(entity, x, y);
+		const pathable = pathingSystem.pathable(entity, x, y);
 		if (pathable) entity.position.setXY(x, y);
 
 		// We've reached the end
@@ -67,8 +68,8 @@ export class MoveSystem extends System<MovingSprite> {
 			entity.requiresPathing &&
 			(!pathable ||
 				moveTarget.ticks++ % 5 === 4 ||
-				!withoutTarget(pathingMap, moveTarget.target, () =>
-					pathingMap.recheck(
+				!withoutTarget(pathingSystem, moveTarget.target, () =>
+					pathingSystem.recheck(
 						moveTarget.path.points,
 						entity,
 						delta * entity.speed * 6,

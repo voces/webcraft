@@ -11,4 +11,11 @@ export class UpgradeComponent extends Component<
 		const mutable: Mutable<UpgradeComponent> = this;
 		mutable.obstruction = obstruction;
 	}
+
+	toJSON(): { type: string; obstruction: string } {
+		return {
+			type: this.constructor.name,
+			obstruction: this.obstruction.name,
+		};
+	}
 }

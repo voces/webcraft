@@ -157,15 +157,6 @@ form input:focus {
     color: yellow;
 }
 
-#waiting-splash {
-    top: 50%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    position: absolute;
-    background-color: var(--bluebg);
-    visibility: hidden;
-}
-
 #hotkeys {
     position: absolute;
     bottom: 0.5em;

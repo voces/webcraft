@@ -280,13 +280,15 @@ export const calcAndTweenShortenedPath = (
 	// Normalize the target
 	const targetPoint = isPoint(target) ? target : target.position;
 
-	const pathingMap = currentGame().pathingMap;
+	const pathingSystem = currentGame().pathingSystem;
+	if (!pathingSystem)
+		throw new Error("Expected pathingSystem to be instantiated");
 
 	// Calculate the path, which may not get to the target
 	const path = isPoint(target)
-		? pathingMap.path(entity, targetPoint)
-		: pathingMap.withoutEntity(target, () =>
-				pathingMap.path(entity, targetPoint),
+		? pathingSystem.path(entity, targetPoint)
+		: pathingSystem.withoutEntity(target, () =>
+				pathingSystem.path(entity, targetPoint),
 		  );
 
 	// Check how far we are away from the target and get remaining distance

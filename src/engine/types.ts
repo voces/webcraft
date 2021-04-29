@@ -15,3 +15,9 @@ export type EntityMesh = Mesh & { entity?: Entity };
 export type Mutable<T> = {
 	-readonly [P in keyof T]: T[P];
 };
+
+export const isObject = (obj: unknown): obj is Record<string, unknown> =>
+	typeof obj === "object" && !!obj;
+
+// const in_ = <K extends string, O>(key: K, object: O): key is K & keyof O =>
+// 	key in object;

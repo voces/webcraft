@@ -7,6 +7,7 @@ import type { Mutable } from "../../types";
 export class ThreeObjectComponent extends Component<[Object3D]> {
 	readonly object!: Object3D;
 	readonly mixer!: AnimationMixer;
+	readonly derived = true;
 
 	protected initialize(object: Object3D): void {
 		const mutable: Mutable<ThreeObjectComponent> = this;

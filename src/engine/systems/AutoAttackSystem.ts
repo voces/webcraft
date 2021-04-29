@@ -62,7 +62,7 @@ export class AutoAttackSystem extends System<Unit> {
 				);
 			});
 
-		const pathingMap = currentGame().pathingMap;
+		const pathingSystem = currentGame().pathingSystem!;
 		const nearest =
 			pool.find((u) => {
 				// If unit in range, that's it
@@ -78,9 +78,9 @@ export class AutoAttackSystem extends System<Unit> {
 
 				// Otherwise, make sure we can get to it
 				if (entity.speed) {
-					const endPoint = pathingMap
+					const endPoint = pathingSystem
 						.withoutEntity(u, () =>
-							pathingMap.path(entity, u.position),
+							pathingSystem.path(entity, u.position),
 						)
 						.pop();
 					if (!endPoint) return false;

@@ -10,7 +10,8 @@ export class Entity {
 
 	private map = new Map<ComponentConstructor, Component[]>();
 
-	constructor(id?: EntityID) {
+	constructor(id?: EntityID | { id: EntityID }) {
+		if (id && typeof id === "object") id = id.id;
 		this.id = id ?? currentApp().entityId++;
 	}
 
@@ -32,7 +33,7 @@ export class Entity {
 	/**
 	 * Adds `component` to `this`.
 	 */
-	add<C extends Component, K extends ComponentConstructor<C>>(
+	add<K extends ComponentConstructor, C extends InstanceType<K>>(
 		klass: K,
 		component: C,
 	): void {
@@ -82,7 +83,7 @@ export class Entity {
 
 		// Clear a specific component
 		const component = arg as Component<unknown[]>;
-		const klass = arg.constructor as ComponentConstructor;
+		const klass = arg.constructor as typeof Component;
 		const components = this.map.get(klass);
 		if (!components) return false;
 
@@ -97,5 +98,46 @@ export class Entity {
 
 	get components(): Component[] {
 		return Array.from(this.map.values()).flat();
+	}
+
+	toJSON(): {
+		id: EntityID;
+		components: ReturnType<Component["toJSON"]>[];
+		[key: string]: unknown;
+	} {
+		return {
+			id: this.id,
+			components: Array.from(this.map.values()).flatMap((v) =>
+				v.filter((c) => !c.derived).map((c) => c.toJSON()),
+			),
+		};
+	}
+
+	static fromJSON({
+		components,
+		...rest
+	}: ReturnType<Entity["toJSON"]>): Entity {
+		if ("clonedDefaults" in this)
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			rest = { ...(this as any).clonedDefaults, ...rest };
+
+		const entity = new this(rest);
+
+		const app = currentApp();
+
+		for (const { type, ...componentProps } of components) {
+			const constructor = app.componentsMap[type];
+			if (!constructor) {
+				console.warn(`Unable to hydrate unknown component ${type}`);
+				continue;
+			}
+			const args =
+				constructor.argMap.length > 0
+					? constructor.argMap.map((k) => componentProps[k])
+					: [componentProps];
+			constructor.fromJSON(entity, ...args);
+		}
+
+		return entity;
 	}
 }

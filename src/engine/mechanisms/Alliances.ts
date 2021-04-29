@@ -1,4 +1,5 @@
 import { Mechanism } from "../../core/Merchanism";
+import { currentGame } from "../gameContext";
 import type { Player } from "../players/Player";
 
 type AllianceState = "ally" | "neutral" | "enemy";
@@ -52,5 +53,51 @@ export class Alliances extends Mechanism {
 
 	isEnemy(sourcePlayer: Player, targetPlayer: Player): boolean {
 		return this.allianceState(sourcePlayer, targetPlayer) === "enemy";
+	}
+
+	toJSON(): Record<number, Record<number, AllianceState>> {
+		const state: ReturnType<Alliances["toJSON"]> = {};
+		const players = currentGame().players;
+		for (const sourcePlayer of players) {
+			const playerRelationships = this.relationships.get(sourcePlayer);
+			if (!playerRelationships) continue;
+			for (const targetPlayer of players) {
+				if (sourcePlayer === targetPlayer) continue;
+				const allianceState = playerRelationships.get(targetPlayer);
+				if (allianceState) {
+					if (!state[sourcePlayer.id]) state[sourcePlayer.id] = {};
+					state[sourcePlayer.id][targetPlayer.id] = allianceState;
+				}
+			}
+		}
+		return state;
+	}
+
+	fromJSON(state: ReturnType<Alliances["toJSON"]>): void {
+		const players = currentGame().players;
+		for (const sourcePlayerId in state) {
+			const sourcePlayer = players.find(
+				(p) => p.id === parseInt(sourcePlayerId),
+			);
+			if (!sourcePlayer)
+				throw new Error(
+					`Could not hydrate Alliances due to missing player ${sourcePlayerId}`,
+				);
+			for (const targetPlayerId in state[sourcePlayerId]) {
+				const targetPlayer = players.find(
+					(p) => p.id === parseInt(targetPlayerId),
+				);
+				if (!targetPlayer)
+					throw new Error(
+						`Could not hydrate Alliances due to missing player ${targetPlayerId}`,
+					);
+				this.set(
+					sourcePlayer,
+					targetPlayer,
+					state[sourcePlayerId][targetPlayerId],
+					false,
+				);
+			}
+		}
 	}
 }

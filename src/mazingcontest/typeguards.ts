@@ -11,5 +11,5 @@ export const isMazingContest = (obj: App): obj is MazingContest =>
 export const isThunder = (obj: Entity): obj is Thunder => "isThunder" in obj;
 export const isRunner = (obj: Entity): obj is Runner => "isRunner" in obj;
 export const isCheckpoint = (obj: Entity): obj is Checkpoint =>
-	"isCheckpoint" in obj;
+	"isCheckpoint" in obj || "isCheckpoint" in obj.constructor;
 export const isBuilder = (obj: Entity): obj is Builder => "isBuilder" in obj;

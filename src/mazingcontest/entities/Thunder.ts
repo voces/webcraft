@@ -1,13 +1,12 @@
 import { Color } from "three";
 
 import type { Weapon } from "../../engine/components/DamageComponent";
-import { DamageComponent } from "../../engine/components/DamageComponent";
 import type { Effect, Sprite } from "../../engine/entities/widgets/Sprite";
 import { isUnit } from "../../engine/typeguards";
-import { clone } from "../../engine/util/clone";
 import { currentMazingContest } from "../mazingContestContext";
 import type { ObstructionProps } from "./Obstruction";
 import { Obstruction } from "./Obstruction";
+import { registerEntity } from "./registry";
 
 const black = new Color("#000");
 
@@ -72,13 +71,9 @@ export class Thunder extends Obstruction {
 
 	readonly isThunder = true;
 
-	constructor({
-		weapon = clone(Thunder.defaults.weapon),
-		autoAttack = Thunder.defaults.autoAttack,
-		...props
-	}: ThunderProps) {
-		super({ ...Thunder.clonedDefaults, ...props, weapon });
-
-		new DamageComponent(this, [weapon], autoAttack);
+	constructor(props: ThunderProps) {
+		super({ ...Thunder.clonedDefaults, ...props });
 	}
 }
+
+registerEntity(Thunder);

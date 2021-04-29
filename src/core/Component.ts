@@ -14,20 +14,22 @@ export class Component<
 		return entity.clear(this);
 	}
 
+	static argMap: string[] = [];
+
 	readonly entity: E;
+	readonly derived: boolean = false;
 
 	constructor(entity: E, ...rest: InitializationParameters) {
 		this.entity = entity;
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const constructor = <ComponentConstructor<any>>this.constructor;
+		const constructor = <typeof Component>this.constructor;
 		entity.add(constructor, this);
 
 		if (this.initialize) this.initialize(...rest);
 
 		currentApp().entityComponentUpdated(
 			entity,
-			<ComponentConstructor>this.constructor,
+			<typeof Component>this.constructor,
 		);
 	}
 
@@ -39,7 +41,7 @@ export class Component<
 		if (!isReplacingComponent())
 			currentApp().entityComponentUpdated(
 				this.entity,
-				this.constructor as ComponentConstructor,
+				this.constructor as typeof Component,
 			);
 	}
 
@@ -60,14 +62,26 @@ export class Component<
 		});
 	}
 
-	toJSON(): Pick<this, Exclude<keyof this, "entity">> {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { entity, ...props } = this;
-		return props;
+	toJSON(): {
+		type: string;
+		[key: string]: unknown;
+	} {
+		const { entity, derived, ...props } = this;
+		return { type: this.constructor.name, ...props };
+	}
+
+	static fromJSON(
+		...args: ConstructorParameters<typeof Component>
+	): Component {
+		return new this(...args);
 	}
 }
 
-export type ComponentConstructor<T extends Component = Component> = new (
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	...args: any[]
-) => T;
+export interface ComponentConstructor<T extends Component = Component> {
+	new (
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		...args: any[]
+	): T;
+	fromJSON: typeof Component["fromJSON"];
+	argMap: string[];
+}

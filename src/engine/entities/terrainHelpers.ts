@@ -151,42 +151,36 @@ const leftTrim = (v: string) => {
 const commonLeftTrim = (rows: string[]) =>
 	rows.reduce((min, row) => Math.min(min, leftTrim(row)), leftTrim(rows[0]));
 
-export const stringMap = (map: string): number[][] => {
+export const trimMap = (map: string): string => {
 	const rows = map.split("\n").filter((v) => v.trim());
 
 	const minLeftTrim = commonLeftTrim(rows);
 
-	return rows.map((row) =>
-		row
-			.trimRight()
-			.slice(minLeftTrim)
-			.split("")
-			.map((v) => {
+	return rows.map((row) => row.trimRight().slice(minLeftTrim)).join("\n");
+};
+
+export const stringMap = (map: string): number[][] =>
+	trimMap(map)
+		.split("\n")
+		.map((r) =>
+			r.split("").map((v) => {
 				const num = parseInt(v);
 				if (isNaN(num)) return 0;
 				return num;
 			}),
-	);
-};
+		);
 
 export const stringMapWithRamps = (
 	map: string,
 	floor = 0,
-): (number | "r")[][] => {
-	const rows = map.split("\n").filter((v) => v.trim());
-
-	const minLeftTrim = commonLeftTrim(rows);
-
-	return rows.map((row) =>
-		row
-			.trimRight()
-			.slice(minLeftTrim)
-			.split("")
-			.map((v) => {
+): (number | "r")[][] =>
+	trimMap(map)
+		.split("\n")
+		.map((r) =>
+			r.split("").map((v) => {
 				if (v === "r") return "r";
+				if (v === " ") return floor;
 				const num = parseInt(v);
-				if (isNaN(num)) return floor;
 				return num;
 			}),
-	);
-};
+		);

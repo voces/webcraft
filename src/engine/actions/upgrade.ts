@@ -1,3 +1,4 @@
+import { PathingComponent } from "../components/PathingComponent";
 import { UpgradeComponent } from "../components/UpgradeComponent";
 import type { Obstruction } from "../entities/widgets/sprites/units/Obstruction";
 import { currentGame } from "../gameContext";
@@ -79,7 +80,7 @@ export const upgradeSyncHandler = ({
 		const { x, y } = obstruction.position;
 		obstruction.remove();
 		const newObstruction = new obstructionClass({ x, y, owner: player });
-		game.pathingMap.addEntity(newObstruction);
+		new PathingComponent(newObstruction);
 	}
 };
 

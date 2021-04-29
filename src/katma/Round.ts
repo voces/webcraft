@@ -1,12 +1,13 @@
 import type { Emitter } from "../core/emitter";
 import { emitter } from "../core/emitter";
 import { logLine } from "../core/logger";
+import { PathingComponent } from "../engine/components/PathingComponent";
 import type { TileType } from "../engine/constants";
 import { TILE_TYPES } from "../engine/constants";
 import type { Arena } from "../engine/entities/terrainHelpers";
 import type { Sprite } from "../engine/entities/widgets/Sprite";
 import type { Unit } from "../engine/entities/widgets/sprites/Unit";
-import { PathingMap } from "../engine/pathing/PathingMap";
+import { PathingSystem } from "../engine/systems/PathingSystem";
 import { arenas } from "./arenas/index";
 import { Crosser } from "./entities/Crosser";
 import { Defender } from "./entities/Defender";
@@ -30,10 +31,10 @@ class Round {
 	lastUpdate: number;
 	settings: Settings;
 	arena: Arena;
-	pathingMap: PathingMap;
 	expireAt: number;
 
 	private tileSystem: TileSystem;
+	private pathingSystem: PathingSystem;
 
 	constructor({
 		time,
@@ -51,14 +52,14 @@ class Round {
 		this.settings = settings;
 		this.players = [...players];
 		this.arena = arenas[settings.arenaIndex];
-		katma.pathingMap = this.pathingMap = new PathingMap({
+		this.expireAt = time + settings.duration;
+
+		this.tileSystem = new TileSystem().addToApp(katma);
+		this.pathingSystem = katma.pathingSystem = new PathingSystem({
 			pathing: this.arena.pathing.slice().reverse(),
 			layers: this.arena.pathingCliffs.slice().reverse(),
 			resolution: 2,
-		});
-		this.expireAt = time + settings.duration;
-		this.tileSystem = new TileSystem();
-		katma.addSystem(this.tileSystem);
+		}).addToApp(katma);
 
 		this.pickTeams();
 		this.grantResources();
@@ -144,8 +145,8 @@ class Round {
 		// Place it
 		let maxTries = 8192;
 		while (--maxTries) {
-			const xRand = katma.random() * this.pathingMap.widthWorld;
-			const yRand = katma.random() * this.pathingMap.heightWorld;
+			const xRand = katma.random() * this.pathingSystem.widthWorld;
+			const yRand = katma.random() * this.pathingSystem.heightWorld;
 
 			if (
 				this.arena.tiles[this.arena.tiles.length - Math.ceil(yRand)][
@@ -154,7 +155,7 @@ class Round {
 			)
 				continue;
 
-			const { x, y } = this.pathingMap.nearestSpiralPathing(
+			const { x, y } = this.pathingSystem.nearestSpiralPathing(
 				xRand,
 				yRand,
 				unit,
@@ -166,7 +167,7 @@ class Round {
 				] === targetTile
 			) {
 				unit.position.setXY(x, y);
-				this.pathingMap.addEntity(unit);
+				new PathingComponent(unit);
 
 				break;
 			}
@@ -233,6 +234,8 @@ class Round {
 
 			katma.setTimeout(() => {
 				katma.removeSystem(this.tileSystem);
+				katma.removeSystem(this.pathingSystem);
+				katma.pathingSystem = undefined;
 				this.removeEventListeners();
 				katma.round = undefined;
 			}, 0.25);

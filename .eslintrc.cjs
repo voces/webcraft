@@ -12,6 +12,7 @@ module.exports = {
 		"no-duplicate-imports": "off",
 		"@typescript-eslint/no-duplicate-imports": ["error"],
 		"react/react-in-jsx-scope": "off",
+		"@typescript-eslint/no-unused-vars": ["warn", {ignoreRestSiblings: true}],
 		"no-restricted-syntax": ["error", {
 			"selector": "ExportDefaultDeclaration",
 			"message": "Default exports are disallowed. Prefer named exports."

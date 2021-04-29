@@ -30,8 +30,7 @@ export class Player<Resource extends string = string> {
 				get: () => (this.color ? this.color.name : this.id),
 			});
 
-		// placeholder player (solo)
-		if (data.id !== -1) game.players.push(this);
+		game.players.push(this);
 	}
 
 	checkResources(resources: Partial<Record<Resource, number>>): Resource[] {

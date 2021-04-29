@@ -106,14 +106,14 @@ export class ObstructionPlacement extends Mechanism {
 			new ThreeObjectComponent(this.gridEntity, newGrid);
 		}
 
-		const pathingMap = currentGame().pathingMap;
+		const pathingSystem = currentGame().pathingSystem!;
 
-		pathingMap.withoutEntity(unit, () => {
+		pathingSystem.withoutEntity(unit, () => {
 			const xFinal = xStart + collisionRadius * 2;
 			const yFinal = yStart + collisionRadius * 2;
 
 			let overallPathable = true;
-			const pathingGrid = pathingMap.grid;
+			const pathingGrid = pathingSystem.grid;
 			for (let y = yStart; y < yFinal; y += 1)
 				for (let x = xStart; x < xFinal; x += 1) {
 					const pathable =

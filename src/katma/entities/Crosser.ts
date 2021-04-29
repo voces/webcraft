@@ -2,6 +2,7 @@ import type { Action } from "../../engine/actions/types";
 import { Animation } from "../../engine/components/graphics/Animation";
 import { MeshBuilderComponent } from "../../engine/components/graphics/MeshBuilderComponent";
 import { Hover } from "../../engine/components/Hover";
+import { PathingComponent } from "../../engine/components/PathingComponent";
 import { Selected } from "../../engine/components/Selected";
 import type { UnitProps } from "../../engine/entities/widgets/sprites/Unit";
 import type { Obstruction } from "../../engine/entities/widgets/sprites/units/Obstruction";
@@ -54,10 +55,9 @@ export class Crosser extends Unit {
 		this.stop();
 		this.clear(Selected);
 		this.clear(Hover);
+		this.clear(PathingComponent);
 
 		const game = currentGame();
-
-		game.pathingMap.removeEntity(this);
 
 		// Cancel any active placements
 		game.obstructionPlacement?.stop();

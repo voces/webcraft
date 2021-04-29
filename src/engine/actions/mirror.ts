@@ -1,6 +1,7 @@
 import { ActiveComponent } from "../components/Active";
 import { Animation } from "../components/graphics/Animation";
 import { MeshBuilderComponent } from "../components/graphics/MeshBuilderComponent";
+import { PathingComponent } from "../components/PathingComponent";
 import { MIRROR_SEPARATION } from "../constants";
 import type { Sprite } from "../entities/widgets/Sprite";
 import type { Unit } from "../entities/widgets/sprites/Unit";
@@ -11,12 +12,17 @@ import { isUnit } from "../typeguards";
 import type { ImmediateActionProps } from "./types";
 
 const getMirroringPosition = (pos: Point, entity: Sprite, layer?: number) => {
-	const pathingMap = currentGame().pathingMap;
-	const nearest = pathingMap.nearestSpiralPathing(pos.x, pos.y, entity);
+	const pathingSystem = currentGame().pathingSystem!;
+	const nearest = pathingSystem.nearestSpiralPathing(pos.x, pos.y, entity);
 
-	if (pathingMap.layer(nearest.x, nearest.y) === layer) return nearest;
+	if (pathingSystem.layer(nearest.x, nearest.y) === layer) return nearest;
 
-	return pathingMap.nearestSpiralPathing(nearest.x, nearest.y, entity, layer);
+	return pathingSystem.nearestSpiralPathing(
+		nearest.x,
+		nearest.y,
+		entity,
+		layer,
+	);
 };
 
 const isMirroring = (unit: Unit) => {
@@ -57,11 +63,11 @@ const mirror = (unit: Unit) => {
 			pos2 = temp;
 		}
 
-		const pathingMap = game.pathingMap;
+		const pathingSystem = game.pathingSystem!;
 
-		const layer = pathingMap.layer(unit.position.x, unit.position.y);
+		const layer = pathingSystem.layer(unit.position.x, unit.position.y);
 
-		const realPosition = pathingMap.withoutEntity(unit, () =>
+		const realPosition = pathingSystem.withoutEntity(unit, () =>
 			getMirroringPosition(pos1, unit, layer),
 		);
 		unit.position.setXY(realPosition.x, realPosition.y);
@@ -79,7 +85,7 @@ const mirror = (unit: Unit) => {
 		});
 		const mirrorPos = getMirroringPosition(pos2, mirror, layer);
 		mirror.position.setXY(mirrorPos.x, mirrorPos.y);
-		pathingMap.addEntity(mirror);
+		new PathingComponent(mirror);
 		unit.mirrors?.push(mirror);
 	}, 0.5);
 };

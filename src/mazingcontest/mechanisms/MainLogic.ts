@@ -1,16 +1,20 @@
 import { Entity } from "../../core/Entity";
 import { logLine } from "../../core/logger";
 import { Mechanism } from "../../core/Merchanism";
+import { PathingComponent } from "../../engine/components/PathingComponent";
 import { Timer } from "../../engine/components/Timer";
 import { TimerWindow } from "../../engine/components/TimerWindow";
 import type { Unit } from "../../engine/entities/widgets/sprites/Unit";
 import { isUnit } from "../../engine/typeguards";
+import { ForPlayer } from "../components/ForPlayer";
+import { IsDone } from "../components/IsDone";
+import { MainLogicTimerHook } from "../components/MainLogictimerHook";
 import { Block } from "../entities/Block";
 import { Builder } from "../entities/Builder";
 import { Checkpoint } from "../entities/Checkpoint";
 import { Runner } from "../entities/Runner";
 import { Thunder } from "../entities/Thunder";
-import { isPathable } from "../helpers";
+import { getCheckpoint, isPathable } from "../helpers";
 import type { MazingContest } from "../MazingContest";
 import { currentMazingContest } from "../mazingContestContext";
 import {
@@ -18,32 +22,40 @@ import {
 	getEnemyPlaceholderPlayer,
 } from "../players/placeholder";
 import type { Player } from "../players/Player";
-import { terrain } from "../terrain";
-import { isCheckpoint } from "../typeguards";
-
-interface Obstruction {
-	type: "thunder" | "block";
-	x: number;
-	y: number;
-}
+import { center, offset, spawn, target } from "../terrain";
+import { isRunner } from "../typeguards";
 
 const spawnCheckpoint = (game: MazingContest) => {
-	const x = terrain.width / 2 + Math.round(game.random.between(-9, 8)) + 0.5;
-	const y = terrain.height / 2 + Math.round(game.random.between(-9, 8)) + 0.5;
+	const firstPlayer = game.players.find((p) => p.id >= 0)!;
+	const firstPlayerIndex = firstPlayer.color!.index;
+	const lCenter = center(firstPlayerIndex);
+	const x = lCenter.x + Math.round(game.random.between(-9, 8)) + 0.5;
+	const y = lCenter.y + Math.round(game.random.between(-9, 8)) + 0.5;
 
 	const entity = new Checkpoint({
 		x,
 		y,
 		owner: getAlliedPlaceholderPlayer(),
 	});
+	new ForPlayer(entity, firstPlayer);
 
-	const newPos = game.pathingMap.nearestSpiralPathing(x, y, entity);
-
-	if (game.pathingMap.pathable(entity, x, y)) {
+	const newPos = game.pathingSystem.nearestSpiralPathing(x, y, entity);
+	if (game.pathingSystem.pathable(entity, x, y)) {
 		entity.position.setXY(newPos.x, newPos.y);
+		new PathingComponent(entity);
 
-		game.pathingMap.addEntity(entity);
-	} else entity.kill({ removeImmediately: true });
+		for (const player of game.players) {
+			if (player.id <= firstPlayer.id) continue;
+			const lOffset = offset(player.color!.index);
+			const clone = new Checkpoint({
+				x: newPos.x + lOffset.x,
+				y: newPos.y + lOffset.y,
+				owner: entity.owner,
+			});
+			new ForPlayer(clone, player);
+			new PathingComponent(clone);
+		}
+	} else throw new Error("Unable to place Checkpooint!");
 };
 
 const spawnUnits = (
@@ -51,9 +63,12 @@ const spawnUnits = (
 	count: number,
 	factory: (props: { x: number; y: number; owner: Player }) => Unit,
 ) => {
+	const firstPlayer = game.players.find((p) => p.id >= 0)!;
+	const firstPlayerIndex = firstPlayer.color!.index;
+	const lCenter = center(firstPlayerIndex);
 	while (count--) {
-		const x = terrain.width / 2 + Math.round(game.random.between(-9, 8));
-		const y = terrain.height / 2 + Math.round(game.random.between(-9, 8));
+		const x = lCenter.x + Math.round(game.random.between(-9, 8));
+		const y = lCenter.y + Math.round(game.random.between(-9, 8));
 
 		const entity = factory({
 			x,
@@ -61,14 +76,28 @@ const spawnUnits = (
 			owner: getAlliedPlaceholderPlayer(),
 		});
 
-		const newPos = game.pathingMap.nearestSpiralPathing(x, y, entity);
+		const newPos = game.pathingSystem.nearestSpiralPathing(x, y, entity);
 
-		if (game.pathingMap.pathable(entity, newPos.x, newPos.y)) {
+		if (game.pathingSystem.pathable(entity, newPos.x, newPos.y)) {
 			entity.position.setXY(newPos.x, newPos.y);
-			game.pathingMap.addEntity(entity);
+			new PathingComponent(entity);
 
-			if (!isPathable()) entity.kill({ removeImmediately: true });
-		} else entity.kill({ removeImmediately: true });
+			if (!isPathable(firstPlayerIndex)) entity.remove();
+			else {
+				new ForPlayer(entity, firstPlayer);
+				for (const player of game.players) {
+					if (player.id <= firstPlayer.id) continue;
+					const lOffset = offset(player.color!.index);
+					const clone = factory({
+						x: newPos.x + lOffset.x,
+						y: newPos.y + lOffset.y,
+						owner: getAlliedPlaceholderPlayer(),
+					});
+					new ForPlayer(clone, player);
+					new PathingComponent(clone);
+				}
+			}
+		} else entity.remove();
 	}
 };
 
@@ -82,23 +111,31 @@ const spawnThunders = (game: MazingContest) => {
 	spawnUnits(game, count, (props) => new Thunder(props));
 };
 
+const derivedCallback = () => {
+	const mazingContest = currentMazingContest();
+	return () => mazingContest.mainLogic.startRunners();
+};
+
 export class MainLogic extends Mechanism {
 	phase: "idle" | "build" | "run" = "idle";
 	round?: {
+		players: number[];
 		buildStart: number;
-		buildTime: number;
 		runnerStart?: number;
-		initial: Obstruction[];
-		lumber: number;
-		gold: number;
-		tnt: number;
 	};
 	timer?: Entity;
+	derivedCallback: number;
+
+	constructor() {
+		super();
+		this.derivedCallback = Timer.registerDerviedCallback(derivedCallback);
+	}
 
 	startRunners(): void {
 		if (!this.timer || !this.round) return;
 
 		const game = currentMazingContest();
+		logLine("startRunners", game.time);
 
 		game.remove(this.timer);
 		this.round.runnerStart = game.time;
@@ -109,38 +146,38 @@ export class MainLogic extends Mechanism {
 			if (builder) builder.kill();
 		});
 
-		const u = new Runner({
-			x: terrain.width / 2,
-			y: terrain.height / 2 - 10.5,
-			owner: getEnemyPlaceholderPlayer(),
-		});
-		game.pathingMap.addEntity(u);
+		for (const player of game.players) {
+			if (!this.round.players.includes(player.id)) continue;
+			const u = new Runner({
+				...spawn(player.color!.index),
+				owner: getEnemyPlaceholderPlayer(),
+			});
+			new ForPlayer(u, player);
+			new PathingComponent(u);
 
-		let target = {
-			x: terrain.width / 2,
-			y: terrain.height / 2 + 10.5,
-		};
-		if (game.settings.checkpoints) {
-			const checkpoint = game.entities.find(isCheckpoint)!;
-			target = {
-				x: checkpoint.position.x,
-				y: checkpoint.position.y,
-			};
+			let lTarget = target(player.color!.index);
+			const checkpoint = getCheckpoint(player.color!.index);
+			if (checkpoint)
+				lTarget = {
+					x: checkpoint.position.x,
+					y: checkpoint.position.y,
+				};
+			u.walkTo(lTarget);
 		}
-		u.walkTo(target);
 	}
 
 	private startRound(time: number, game: MazingContest) {
+		logLine("startRound", time);
 		this.round = {
 			buildStart: time,
-			buildTime: game.settings.buildTime,
-			initial: [],
-			gold: game.settings.thunderTowers
-				? Math.floor((game.random() * game.random()) ** (1 / 2) * 4)
-				: 0,
-			lumber: Math.ceil((game.random() * game.random()) ** (1 / 2) * 35),
-			tnt: Math.floor((game.random() * game.random()) ** (1 / 2) * 3),
+			players: game.players.map((p) => p.id).filter((v) => v >= 0),
 		};
+
+		const gold = Math.floor((game.random() * game.random()) ** (1 / 2) * 4);
+		const lumber = Math.ceil(
+			(game.random() * game.random()) ** (1 / 2) * 35,
+		);
+		const tnt = Math.floor((game.random() * game.random()) ** (1 / 2) * 3);
 
 		const alliedPlaceholderPlayer = getAlliedPlaceholderPlayer();
 		const enemyPlaceholderPlayer = getEnemyPlaceholderPlayer();
@@ -156,17 +193,17 @@ export class MainLogic extends Mechanism {
 			if (owner.id < 0) continue;
 
 			owner.ready = false;
-			owner.resources.gold = this.round.gold;
-			owner.resources.lumber = this.round.lumber;
-			owner.resources.tnt = this.round.tnt;
+			owner.resources.gold = gold;
+			owner.resources.lumber = lumber;
+			owner.resources.tnt = tnt;
 			game.alliances.set(owner, alliedPlaceholderPlayer, "ally", true);
 			game.alliances.set(owner, enemyPlaceholderPlayer, "enemy", true);
 
 			const u = new Builder({
-				x: terrain.width / 2,
-				y: terrain.height / 2,
+				...center(owner.color!.index),
 				owner,
 			});
+			new PathingComponent(u);
 
 			if (owner === game.localPlayer) {
 				game.selectionSystem.select(u);
@@ -174,14 +211,23 @@ export class MainLogic extends Mechanism {
 			}
 		}
 
-		if (game.settings.checkpoints) spawnCheckpoint(game);
+		spawnCheckpoint(game);
 
 		spawnBlocks(game);
 		spawnThunders(game);
 
 		this.timer = new Entity();
-		new Timer(this.timer, () => this.startRunners(), this.round.buildTime);
+		new Timer(
+			this.timer,
+			derivedCallback(),
+			30, // build time
+			false,
+			true,
+			undefined,
+			this.derivedCallback,
+		);
 		new TimerWindow(this.timer, "Time remaining: ");
+		new MainLogicTimerHook(this.timer);
 		game.add(this.timer);
 	}
 
@@ -189,7 +235,16 @@ export class MainLogic extends Mechanism {
 		if (!this.round) return;
 
 		if (this.round.runnerStart)
-			logLine("endRound", game.time - this.round.runnerStart);
+			logLine(
+				"endRound",
+				game.time - this.round.runnerStart,
+				game.entities
+					.filter((e) => isRunner(e))
+					.map(
+						(e) =>
+							e.get(IsDone)[0]!.time - this.round!.runnerStart!,
+					),
+			);
 
 		this.round = undefined;
 		game.entities.forEach((v) => isUnit(v) && v.kill());

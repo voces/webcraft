@@ -1,6 +1,4 @@
-import { isEqual } from "lodash-es";
-
-import type { Entity } from "../../core/Entity";
+import type { Entity, EntityID } from "../../core/Entity";
 import { System } from "../../core/System";
 import { Selected } from "../components/Selected";
 import { currentGame } from "../gameContext";
@@ -69,11 +67,15 @@ export class SelectedSystem extends System {
 	}
 
 	setSelection(entities: ReadonlyArray<Entity>): void {
-		const curIds: unknown[] = [];
+		const curIds: EntityID[] = [];
 		for (const curSelected of this) curIds.push(curSelected.id);
 		const newIds = entities.map((e) => e.id);
 
-		if (isEqual(curIds.sort(), newIds.sort())) return;
+		if (
+			curIds.length === newIds.length &&
+			curIds.every((v, i) => v === newIds[i])
+		)
+			return;
 
 		for (const curSelected of this) Selected.clear(curSelected);
 

@@ -4,7 +4,6 @@ import type { Effect, Sprite } from "../../../engine/entities/widgets/Sprite";
 import { Projectile } from "../../../engine/entities/widgets/sprites/Projectile";
 import { currentGame } from "../../../engine/gameContext";
 import { isUnit } from "../../../engine/typeguards";
-import { clone } from "../../../engine/util/clone";
 import { isSlow } from "../../typeguards";
 import type { ObstructionProps } from "./Obstruction";
 import { Obstruction } from "./Obstruction";
@@ -80,13 +79,7 @@ export class Slow extends Obstruction {
 		buildHotkey: "q" as const,
 	};
 
-	constructor({
-		weapon = clone(Slow.defaults.weapon),
-		autoAttack = Slow.defaults.autoAttack,
-		...props
-	}: SlowProps) {
-		super({ ...Slow.clonedDefaults, ...props, weapon, autoAttack });
-
-		new DamageComponent(this, [weapon], autoAttack);
+	constructor(props: SlowProps) {
+		super({ ...Slow.clonedDefaults, ...props });
 	}
 }

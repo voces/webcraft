@@ -8,7 +8,9 @@ export const getAlliedPlaceholderPlayer = (): Player => {
 
 	const game = currentMazingContest();
 
-	alliedPlaceholderPlayer = new Player({ color: colors.white, id: -1, game });
+	alliedPlaceholderPlayer =
+		game.players.find((p) => p.id === -1) ??
+		new Player({ color: colors.white, id: -1, game });
 
 	return alliedPlaceholderPlayer;
 };
@@ -19,7 +21,9 @@ export const getEnemyPlaceholderPlayer = (): Player => {
 
 	const game = currentMazingContest();
 
-	enemyPlaceholderPlayer = new Player({ color: colors.black, id: -2, game });
+	enemyPlaceholderPlayer =
+		game.players.find((p) => p.id === -2) ??
+		new Player({ color: colors.black, id: -2, game });
 
 	return enemyPlaceholderPlayer;
 };

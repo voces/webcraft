@@ -8,6 +8,8 @@ import { requestAnimationFrame } from "./util/globals";
 
 const NoComponent = { isNoComponent: true };
 
+let warnedOnMultipleComponentsOfSameName = false;
+
 const addComponentToMap = (
 	map: Map<ComponentConstructor | typeof NoComponent, System[]>,
 	component: ComponentConstructor | typeof NoComponent,
@@ -30,21 +32,18 @@ export class App {
 	protected allSystems: System[] = [];
 	protected mechanisms: Mechanism[] = [];
 	private lastRender = 0;
-	private requestedAnimationFrame?: number;
 	private _time = 0;
 	private componentUpdateMap = new Map<
 		ComponentConstructor | typeof NoComponent,
 		System[]
 	>();
-	private components: typeof Component[] = [];
 	// TODO: make this private!
+	componentsMap: { [key: string]: ComponentConstructor } = {};
 	lastUpdate = 0;
 	entityId = 0;
 
 	constructor() {
-		this.requestedAnimationFrame = requestAnimationFrame(() =>
-			this.render(),
-		);
+		requestAnimationFrame(() => this.render());
 	}
 
 	addSystem(system: System): App {
@@ -53,8 +52,10 @@ export class App {
 
 		const constructor = system.constructor as typeof System;
 
-		for (const component of constructor.components)
+		for (const component of constructor.components) {
 			addComponentToMap(this.componentUpdateMap, component, system);
+			this.registerComponent(component, false);
+		}
 
 		if (constructor.components.length === 0)
 			addComponentToMap(this.componentUpdateMap, NoComponent, system);
@@ -114,17 +115,42 @@ export class App {
 	 */
 	entityComponentUpdated(
 		entity: Entity,
-		component: ComponentConstructor | typeof NoComponent,
+		component: typeof Component | typeof NoComponent,
 	): void {
+		if (!("isNoComponent" in component))
+			this.registerComponent(component, false);
+
 		const systems = this.componentUpdateMap.get(component);
 		if (!systems) return;
 		for (const system of systems) system.check(entity);
 	}
 
+	/**
+	 * Registers a component constructor. This is only required if the
+	 * component may be hydrated via fromJSON before it is ever used.
+	 */
+	registerComponent(
+		component: ComponentConstructor,
+		warnOnDuplicate = true,
+	): void {
+		if (
+			warnOnDuplicate &&
+			this.componentsMap[component.name] &&
+			warnedOnMultipleComponentsOfSameName
+		) {
+			warnedOnMultipleComponentsOfSameName = true;
+			console.warn(
+				`Multiple components of name ${component.name} registered`,
+				component,
+				this.componentsMap[component.name],
+			);
+		}
+
+		this.componentsMap[component.name] = component;
+	}
+
 	protected _render(): void {
-		this.requestedAnimationFrame = requestAnimationFrame(() =>
-			this.render(),
-		);
+		requestAnimationFrame(() => this.render());
 
 		const thisRender = Date.now() / 1000;
 		const delta = thisRender - this.lastRender;

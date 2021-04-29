@@ -11,7 +11,6 @@ import { Alliances } from "./mechanisms/Alliances";
 import { FPSMonitor } from "./mechanisms/FPSMonitor";
 import { ObstructionPlacement } from "./mechanisms/ObstructionPlacement";
 import type { ConnectionEvent, Network } from "./Network";
-import type { PathingMap } from "./pathing/PathingMap";
 import { nextColor, releaseColor } from "./players/colors";
 import { Player } from "./players/Player";
 import { initPlayerLogic } from "./players/playerLogic";
@@ -26,6 +25,7 @@ import { MeshBuilder } from "./systems/MeshBuilder";
 import { Mouse } from "./systems/Mouse";
 import { MoveSystem } from "./systems/MoveSystem";
 import { circleSystems } from "./systems/MovingCircles";
+import type { PathingSystem } from "./systems/PathingSystem";
 import { ProjectileSystem } from "./systems/ProjectileSystem";
 import { SelectedSystem } from "./systems/SelectedSystem";
 import { ThreeGraphics } from "./systems/ThreeGraphics";
@@ -80,6 +80,7 @@ class Game extends App {
 	alliances!: Alliances;
 	fpsMonitor!: FPSMonitor;
 	timerWindows!: TimerWindows;
+	pathingSystem?: PathingSystem;
 
 	// Replace with a heap
 	intervals: Interval[] = [];
@@ -89,8 +90,6 @@ class Game extends App {
 
 	displayName = "Untitled Game";
 	protocol = "unknown";
-
-	private _pathingMap?: PathingMap;
 
 	constructor(network: Network) {
 		super();
@@ -106,22 +105,15 @@ class Game extends App {
 			this.addSystem(new AnimationSystem());
 			this.addSystem(new MeshBuilder());
 			this.addSystem(new TimerSystem());
-			this.fpsMonitor = new FPSMonitor();
-			this.addMechanism(this.fpsMonitor);
-			this.timerWindows = new TimerWindows();
-			this.addSystem(this.timerWindows);
-
-			this.graphics = new ThreeGraphics(this);
-			this.addSystem(this.graphics);
-
+			this.fpsMonitor = new FPSMonitor().addToApp(this);
+			this.timerWindows = new TimerWindows().addToApp(this);
+			this.graphics = new ThreeGraphics(this).addToApp(this);
 			this.addSystem(new GraphicMoveSystem());
 			this.addSystem(new GraphicTrackPosition());
 			circleSystems.forEach((CircleSystem) =>
 				this.addSystem(new CircleSystem()),
 			);
-
-			this.actions = new Hotkeys();
-			this.addMechanism(this.actions);
+			this.actions = new Hotkeys().addToApp(this);
 
 			this.network = network;
 			this.addNetworkListener = (event, callback) =>
@@ -142,17 +134,12 @@ class Game extends App {
 
 			this.ui = new UI();
 
-			this.mouse = new Mouse(this.graphics, this.ui);
-			this.addSystem(this.mouse);
-
-			this.obstructionPlacement = new ObstructionPlacement(this);
-			this.addMechanism(this.obstructionPlacement);
-
-			this.selectionSystem = new SelectedSystem();
-			this.addSystem(this.selectionSystem);
-
-			this.alliances = new Alliances();
-			this.addMechanism(this.alliances);
+			this.mouse = new Mouse(this.graphics, this.ui).addToApp(this);
+			this.obstructionPlacement = new ObstructionPlacement(this).addToApp(
+				this,
+			);
+			this.selectionSystem = new SelectedSystem().addToApp(this);
+			this.alliances = new Alliances().addToApp(this);
 
 			initPlayerLogic(this);
 			initSpriteLogicListeners(this);
@@ -174,19 +161,6 @@ class Game extends App {
 
 	get isHost(): boolean {
 		return this.network.isHost;
-	}
-
-	///////////////////////
-	// System getters
-	///////////////////////
-
-	get pathingMap(): PathingMap {
-		if (!this._pathingMap) throw new Error("expected a PathingMap");
-		return this._pathingMap;
-	}
-
-	set pathingMap(pathingMap: PathingMap) {
-		this._pathingMap = pathingMap;
 	}
 
 	///////////////////////

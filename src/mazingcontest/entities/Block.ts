@@ -1,5 +1,6 @@
 import type { ObstructionProps } from "./Obstruction";
 import { Obstruction } from "./Obstruction";
+import { registerEntity } from "./registry";
 import { Thunder } from "./Thunder";
 
 export class Block extends Obstruction {
@@ -14,3 +15,5 @@ export class Block extends Obstruction {
 		super({ ...Block.clonedDefaults, ...props });
 	}
 }
+
+registerEntity(Block);

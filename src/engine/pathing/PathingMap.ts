@@ -42,7 +42,6 @@ interface BaseEntity {
 	pathing?: Pathing;
 	requiresPathing?: Pathing;
 	requiresTilemap?: Footprint;
-	// todo: this seems unused?
 	structure?: boolean;
 }
 
@@ -181,19 +180,19 @@ interface Cache {
 // };
 
 export class PathingMap {
-	resolution: number;
-	private layers?: number[][];
-	heightWorld: number;
-	widthWorld: number;
-	heightMap: number;
-	widthMap: number;
+	readonly resolution: number;
+	private readonly layers?: number[][];
+	readonly heightWorld: number;
+	readonly widthWorld: number;
+	readonly heightMap: number;
+	readonly widthMap: number;
 	readonly grid: Tile[][];
 
 	// debugging
 	private _elem?: HTMLDivElement;
 
 	// Maps entities to tiles
-	private entities: Map<Entity, Tile[]> = new Map();
+	private readonly entities: Map<Entity, Tile[]> = new Map();
 
 	constructor({
 		pathing,

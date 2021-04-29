@@ -1,6 +1,7 @@
 import { System } from "../../core/System";
 import { BuildTarget } from "../components/BuildTarget";
 import { MoveTarget } from "../components/MoveTarget";
+import { PathingComponent } from "../components/PathingComponent";
 import { BUILD_DISTANCE } from "../constants";
 import type { Sprite } from "../entities/widgets/Sprite";
 import type { Unit } from "../entities/widgets/sprites/Unit";
@@ -61,20 +62,20 @@ export class BlueprintSystem extends System<Unit> {
 		});
 
 		const game = currentGame();
-		const pathingMap = game.pathingMap;
-		pathingMap.withoutEntity(entity, () => {
+		const pathingSystem = game.pathingSystem!;
+		pathingSystem.withoutEntity(entity, () => {
 			if (
-				pathingMap.pathable(
+				pathingSystem.pathable(
 					obstruction,
 					buildTarget.target.x,
 					buildTarget.target.y,
 				)
 			) {
-				pathingMap.addEntity(obstruction);
+				new PathingComponent(obstruction);
 				entity.obstructions.push(obstruction);
 			} else obstruction.kill({ removeImmediately: true });
 
-			const newPos = pathingMap.nearestSpiralPathing(
+			const newPos = pathingSystem.nearestSpiralPathing(
 				entity.position.x,
 				entity.position.y,
 				entity,
