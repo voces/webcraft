@@ -55,6 +55,19 @@ type Timeout = {
 class Game extends App {
 	static readonly isGame = true;
 
+	static displayName = "Untitled Game";
+	static protocol = "unknown";
+
+	get displayName(): string {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return ((this.constructor as any) as typeof Game).displayName;
+	}
+
+	get protocol(): string {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return ((this.constructor as any) as typeof Game).protocol;
+	}
+
 	private network!: Network;
 	addNetworkListener!: Network["addEventListener"];
 	removeNetworkListener!: Network["removeEventListener"];
@@ -87,9 +100,6 @@ class Game extends App {
 	nextIntervalId = 0;
 	timeouts: Timeout[] = [];
 	nextTimeoutId = 0;
-
-	displayName = "Untitled Game";
-	protocol = "unknown";
 
 	constructor(network: Network) {
 		super();

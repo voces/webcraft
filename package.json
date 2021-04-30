@@ -1,7 +1,29 @@
 {
   "name": "mvp-bd-client",
+  "private": true,
   "description": "Minimum viable product of Bulldog client",
+  "scripts": {
+    "build": "esbuild src/katma/index.ts src/katma/server.ts src/mazingcontest/index.ts src/mazingcontest/server.ts --bundle --keep-names --sourcemap --format=esm --outdir=public",
+    "dev": "npm run build -- --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .js,.ts,.jsx,.tsx --quiet --fix",
+    "test-lint": "eslint src --ext .js,.ts,.jsx,.tsx --max-warnings 0",
+    "jest": "jest --silent",
+    "start": "node --experimental-modules --no-warnings server/src/index.js",
+    "test": "jest",
+    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "setup": "mkdir -p ./public/node_modules/three && ln -si ../../node_modules/three public/node_modules/three"
+  },
+  "license": "ISC",
+  "author": "verit",
   "main": "server/src/index.js",
+  "dependencies": {
+    "@types/three": "^0.126.1",
+    "marked": "^2.0.1",
+    "notextures": "^4.0.3",
+    "preact": "^10.5.8",
+    "three": "^0.126.1"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.12.7",
@@ -27,27 +49,5 @@
     "ts-jest": "^26.4.4",
     "typescript": "^4.2.2"
   },
-  "scripts": {
-    "build": "esbuild src/katma/index.ts src/katma/server.ts src/mazingcontest/index.ts src/mazingcontest/server.ts --bundle --keep-names --sourcemap --format=esm --outdir=public",
-    "dev": "npm run build -- --watch",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .js,.ts,.jsx,.tsx --quiet --fix",
-    "test-lint": "eslint src --ext .js,.ts,.jsx,.tsx --max-warnings 0",
-    "jest": "jest --silent",
-    "start": "node --experimental-modules --no-warnings server/src/index.js",
-    "test": "jest",
-    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
-    "setup": "mkdir -p ./public/node_modules/three && ln -si ../../node_modules/three public/node_modules/three"
-  },
-  "author": "verit",
-  "license": "ISC",
-  "type": "module",
-  "private": true,
-  "dependencies": {
-    "@types/three": "^0.126.1",
-    "marked": "^2.0.1",
-    "notextures": "^4.0.3",
-    "preact": "^10.5.8",
-    "three": "^0.126.1"
-  }
+  "type": "module"
 }

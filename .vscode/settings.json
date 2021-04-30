@@ -1,5 +1,4 @@
 {
-	"eslint.enable": true,
 	"eslint.validate": ["typescript", "typescriptreact"],
 	"typescript.tsdk": "node_modules/typescript/lib"
 }

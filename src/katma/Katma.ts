@@ -23,6 +23,9 @@ import type { Settings } from "./types";
 export class Katma extends Game {
 	static readonly isKatma = true;
 
+	static displayName = "katma";
+	static protocol = "katma";
+
 	arena: Arena = arenas[0];
 	round?: Round;
 	lastRoundEnd?: number;
@@ -42,9 +45,6 @@ export class Katma extends Game {
 
 	addNetworkListener!: KatmaNetwork["addEventListener"];
 	removeNetworkListener!: KatmaNetwork["removeEventListener"];
-
-	displayName = "katma";
-	protocol = "katma";
 
 	constructor(network: KatmaNetwork) {
 		super(network);

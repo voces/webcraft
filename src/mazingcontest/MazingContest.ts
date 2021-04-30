@@ -31,14 +31,14 @@ import { levelSize, terrain } from "./terrain";
 class MazingContest extends Game {
 	static readonly isMazingContest = true;
 
+	static displayName = "Mazing Contest";
+	static protocol = "mazingcontest";
+
 	localPlayer!: Player;
 	players: Player[] = [];
 
 	addNetworkListener!: MazingContestNetwork["addEventListener"];
 	removeNetworkListener!: MazingContestNetwork["removeEventListener"];
-
-	displayName = "Mazing Contest";
-	protocol = "mazingcontest";
 
 	mainLogic!: MainLogic;
 	runnerTracker!: RunnerTracker;
