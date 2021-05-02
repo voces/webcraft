@@ -1,10 +1,10 @@
 {
   "name": "webcraft",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "a web-first game engine",
   "scripts": {
     "build-types": "tsc --project tsconfig.buildTypes.json",
-    "build": "esbuild src/index.ts --bundle --keep-names --sourcemap --format=esm --outdir=dist",
+    "build": "esbuild src/index.ts --bundle --keep-names --sourcemap --format=esm --external:three --external:notextures --external:marked --external:preact --outdir=dist",
     "dev": "npm run build -- --watch",
     "jest": "jest --silent",
     "lint": "eslint src --ext .js,.ts,.jsx,.tsx --quiet --fix",
@@ -22,6 +22,12 @@
   "files": [
     "dist/*"
   ],
+  "peerDependencies": {
+    "marked": "^2.0.1",
+    "notextures": "^4.0.3",
+    "preact": "^10.5.8",
+    "three": "^0.126.1"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-typescript": "^7.12.7",

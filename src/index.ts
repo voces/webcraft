@@ -1,3 +1,4 @@
+export type { App } from "./core/App";
 export { currentApp, withApp, wrapApp } from "./core/appContext";
 export { Component } from "./core/Component";
 export type { Emitter } from "./core/emitter";
