@@ -1,4 +1,4 @@
-import { Mechanism } from "../../core/Merchanism";
+import { Mechanism } from "../../core/Mechanism";
 import { currentGame } from "../gameContext";
 import type { Player } from "../players/Player";
 

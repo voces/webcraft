@@ -1,4 +1,4 @@
-import { Mechanism } from "../../core/Merchanism";
+import { Mechanism } from "../../core/Mechanism";
 
 export class FPSMonitor extends Mechanism {
 	private renders: number[] = [];

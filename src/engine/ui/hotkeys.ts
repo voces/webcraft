@@ -1,5 +1,5 @@
 import type { Entity } from "../../core/Entity";
-import { Mechanism } from "../../core/Merchanism";
+import { Mechanism } from "../../core/Mechanism";
 import { document } from "../../core/util/globals";
 import { centerAction } from "../../engine/actions/center";
 import type { Action } from "../../engine/actions/types";

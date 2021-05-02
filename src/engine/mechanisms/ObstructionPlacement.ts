@@ -2,7 +2,7 @@ import { Grid } from "notextures";
 import { MeshPhongMaterial } from "three";
 
 import type { Entity } from "../../core/Entity";
-import { Mechanism } from "../../core/Merchanism";
+import { Mechanism } from "../../core/Mechanism";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Position } from "../components/Position";
 import { Widget } from "../entities/Widget";

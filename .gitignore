@@ -1,4 +1,3 @@
 node_modules
 .DS_STORE
-public/**/*.js
-public/**/*.js.map
+dist

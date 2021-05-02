@@ -1,7 +1,7 @@
 import { withApp } from "./appContext";
 import type { Component, ComponentConstructor } from "./Component";
 import type { Entity } from "./Entity";
-import type { Mechanism } from "./Merchanism";
+import type { Mechanism } from "./Mechanism";
 import { PublicSetView } from "./PublicSetView";
 import type { System } from "./System";
 import { requestAnimationFrame } from "./util/globals";
@@ -27,7 +27,7 @@ const addComponentToMap = (
 
 export class App {
 	protected _entities = new Set<Entity>();
-	entities = new PublicSetView(this._entities);
+	entities = new PublicSetView<Entity>(this._entities);
 	protected impureSystems: System[] = [];
 	protected allSystems: System[] = [];
 	protected mechanisms: Mechanism[] = [];
