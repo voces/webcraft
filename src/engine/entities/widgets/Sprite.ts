@@ -161,7 +161,7 @@ class Sprite extends Widget {
 		if (value <= 0 && this.isAlive) {
 			this.isAlive = false;
 			this._death();
-		} else this.isAlive = true;
+		} else if (value > 0) this.isAlive = true;
 	}
 
 	get health(): number {
@@ -178,6 +178,7 @@ class Sprite extends Widget {
 		this.clear(Selected);
 		this.clear(Hover);
 		this.clear(PathingComponent);
+		this.clear(MoveTarget);
 
 		if (this.owner) {
 			const index = this.owner.sprites.indexOf(this);

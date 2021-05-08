@@ -1,6 +1,6 @@
 {
   "name": "webcraft",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "a web-first game engine",
   "scripts": {
     "build-types": "tsc --project tsconfig.buildTypes.json",
@@ -37,8 +37,8 @@
     "@types/marked": "^1.2.1",
     "@types/node": "^14.14.19",
     "@types/three": "^0.126.1",
-    "@typescript-eslint/eslint-plugin": "^4.11.1",
-    "@typescript-eslint/parser": "^4.11.1",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
     "enzyme": "^3.11.0",
     "enzyme-adapter-preact-pure": "^2.2.3",
     "esbuild": "^0.9.2",

@@ -13,7 +13,11 @@ export const initPlayerLogic = (game: Game): void => {
 
 		if (game.localPlayer === undefined && !game.isHost)
 			game.localPlayer = player;
-		else if (game.players.length > 1) game.newPlayers = true;
+		else if (
+			game.players.reduce((count, p) => count + (p.id >= 0 ? 1 : 0), 0) >
+			1
+		)
+			game.newPlayers = true;
 	});
 
 	// Received when someone leaves

@@ -93,10 +93,7 @@ export interface AleaNext {
 	between: (min: number, max: number) => number;
 }
 
-export function alea(
-	seed: string,
-	opts?: { state: AleaState },
-): AleaNext {
+export function alea(seed: string, opts?: { state: AleaState }): AleaNext {
 	const xg = _alea(seed);
 	const state = opts?.state;
 	const prng: AleaNext = xg.next as any;
@@ -108,7 +105,7 @@ export function alea(
 	prng.between = (min: number, max: number) => {
 		const range = max - min;
 		return prng() * range + min;
-	}
+	};
 
 	if (state) {
 		if (typeof state === "object") copy(state, xg);
