@@ -18,7 +18,7 @@ export const simulateInput = (
 	const input = findInput(wrapper, dataTest);
 	const actualInput = input.find("input");
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	((actualInput.instance() as any) as HTMLInputElement).value = value;
+	(actualInput.instance() as any as HTMLInputElement).value = value;
 	actualInput.simulate("input");
 	wrapper.update();
 };

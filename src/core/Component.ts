@@ -4,7 +4,7 @@ import { isReplacingComponent, whileReplacingComponent } from "./util/flags";
 
 export class Component<
 	InitializationParameters extends unknown[] = unknown[],
-	E extends Entity = Entity
+	E extends Entity = Entity,
 > {
 	static has(entity: Entity): boolean {
 		return entity.has(this);
@@ -85,3 +85,9 @@ export interface ComponentConstructor<T extends Component = Component> {
 	fromJSON: typeof Component["fromJSON"];
 	argMap: string[];
 }
+
+export const isComponentConstructor = (
+	value: unknown,
+): value is ComponentConstructor =>
+	// Todo: make this not include all constructors
+	typeof value === "function" && "prototype" in value;

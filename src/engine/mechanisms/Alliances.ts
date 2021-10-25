@@ -27,15 +27,13 @@ export class Alliances extends Mechanism {
 		allianceState: AllianceState,
 		mutual = true,
 	): void {
-		const sourcePlayerRelationships = this.getPlayerRelationships(
-			sourcePlayer,
-		);
+		const sourcePlayerRelationships =
+			this.getPlayerRelationships(sourcePlayer);
 		sourcePlayerRelationships.set(targetPlayer, allianceState);
 
 		if (mutual) {
-			const targetPlayerRelationships = this.getPlayerRelationships(
-				targetPlayer,
-			);
+			const targetPlayerRelationships =
+				this.getPlayerRelationships(targetPlayer);
 			targetPlayerRelationships.set(sourcePlayer, allianceState);
 		}
 	}

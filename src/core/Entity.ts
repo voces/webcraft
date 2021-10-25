@@ -1,5 +1,6 @@
 import { currentApp } from "./appContext";
 import type { Component, ComponentConstructor } from "./Component";
+import { isComponentConstructor } from "./Component";
 
 export type EntityID = string | number;
 
@@ -67,11 +68,10 @@ export class Entity {
 		}
 
 		// Clearing all components of type
-		if (typeof arg === "function") {
-			const klass = arg as ComponentConstructor;
-			const components = this.map.get(klass);
+		if (isComponentConstructor(arg)) {
+			const components = this.map.get(arg);
 			if (!components) return false;
-			this.map.set(klass, []);
+			this.map.set(arg, []);
 
 			for (const component of components) {
 				cleared = true;
@@ -82,16 +82,15 @@ export class Entity {
 		}
 
 		// Clear a specific component
-		const component = arg as Component<unknown[]>;
 		const klass = arg.constructor as typeof Component;
 		const components = this.map.get(klass);
 		if (!components) return false;
 
-		const index = components.indexOf(component);
+		const index = components.indexOf(arg);
 		if (index >= 0) {
 			cleared = true;
 			components.splice(index, 1);
-			component.dispose();
+			arg.dispose();
 		}
 		return cleared;
 	}

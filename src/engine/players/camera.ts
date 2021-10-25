@@ -46,7 +46,8 @@ const setZoom = (zoom: number) => {
 };
 
 export const initCameraListeners = (ui: UI): void => {
-	ui.addEventListener("keyDown", ({ key }) => {
+	ui.addEventListener("keyDown", (e) => {
+		const { key } = e;
 		if (key.startsWith("Arrow") && !keyboard[key]) {
 			if (pan) pan = undefined;
 			keyboard[key] = true;

@@ -8,15 +8,15 @@ export const Input = ({
 	...props
 }: JSX.HTMLAttributes<HTMLInputElement> & {
 	error?: string;
-	inputRef?: { current: HTMLInputElement };
+	inputRef?: { current: HTMLInputElement | null };
 	hidden?: boolean;
 }): JSX.Element => {
-	const input = inputRef ?? useRef<HTMLInputElement>();
+	const input = inputRef ?? useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
-		input.current.setCustomValidity(error ?? "");
-		input.current.reportValidity();
-		if (error) input.current.focus();
+		input.current?.setCustomValidity(error ?? "");
+		input.current?.reportValidity();
+		if (error) input.current?.focus();
 	}, [error]);
 
 	return <input ref={input} {...props} />;

@@ -958,9 +958,10 @@ export class PathingMap {
 					entity,
 					(tile) => tile.__endTag !== endTag,
 				);
-				const newEndtile = this.grid[
-					Math.round((y - offset) * this.resolution)
-				][Math.round((x - offset) * this.resolution)];
+				const newEndtile =
+					this.grid[Math.round((y - offset) * this.resolution)][
+						Math.round((x - offset) * this.resolution)
+					];
 
 				endBest = newEndtile;
 				endHeap.push(newEndtile);

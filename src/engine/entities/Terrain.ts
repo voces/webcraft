@@ -86,9 +86,10 @@ export class Terrain extends Entity {
 
 		const pt = { x, y };
 		let triangle: [Vector3, Vector3, Vector3];
-		const faces = this.group.groundFaces[Math.floor(this.height - y)]?.[
-			Math.floor(x)
-		];
+		const faces =
+			this.group.groundFaces[Math.floor(this.height - y)]?.[
+				Math.floor(x)
+			];
 		if (!faces) return 0;
 
 		{

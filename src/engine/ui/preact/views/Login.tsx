@@ -35,9 +35,9 @@ export const Login = ({
 	const [verifyPassword, setVerifyPassword] = useState<string | undefined>(
 		undefined,
 	);
-	const usernameInput = useRef<HTMLInputElement>();
-	const passwordInput = useRef<HTMLInputElement>();
-	const verifyPasswordInput = useRef<HTMLInputElement>();
+	const usernameInput = useRef<HTMLInputElement>(null);
+	const passwordInput = useRef<HTMLInputElement>(null);
+	const verifyPasswordInput = useRef<HTMLInputElement>(null);
 	const [dirty, setDirty] = useState(false);
 	const login = useLogin();
 
@@ -52,7 +52,7 @@ export const Login = ({
 			setDirty(false);
 
 			if (mode === "register" && password !== verifyPassword) {
-				verifyPasswordInput.current.focus();
+				verifyPasswordInput.current?.focus();
 				return;
 			}
 
@@ -73,10 +73,11 @@ export const Login = ({
 			if (result.isErrored)
 				if (result.error.code === 0 && mode === "init") {
 					setMode("login");
-					passwordInput.current.focus();
+					passwordInput.current?.focus();
 				} else if (result.error.code === 1)
-					passwordInput.current.focus();
-				else if (result.error.code === 2) usernameInput.current.focus();
+					passwordInput.current?.focus();
+				else if (result.error.code === 2)
+					usernameInput.current?.focus();
 		},
 		[login, mode, password, verifyPassword, game],
 	);
@@ -111,7 +112,7 @@ export const Login = ({
 					inputRef={passwordInput}
 					placeholder="password"
 					type="password"
-					autoComplete="password"
+					autocomplete="new-password"
 					onInput={(e) => setPassword(e.currentTarget.value)}
 					hidden={mode === "init"}
 					style={
@@ -142,8 +143,8 @@ export const Login = ({
 						onClick={() => {
 							setMode("register");
 							if (username.trim().length > 0)
-								passwordInput.current.focus();
-							else usernameInput.current.focus();
+								passwordInput.current?.focus();
+							else usernameInput.current?.focus();
 						}}
 						disabled={login.isPending}
 					/>
@@ -155,7 +156,7 @@ export const Login = ({
 							inputRef={verifyPasswordInput}
 							placeholder="verify password"
 							type="password"
-							autoComplete="password"
+							autocomplete="new-password"
 							onInput={(e) =>
 								setVerifyPassword(e.currentTarget.value)
 							}
@@ -179,7 +180,7 @@ export const Login = ({
 						disabled={login.isPending}
 						onClick={() => {
 							setMode("init");
-							usernameInput.current.focus();
+							usernameInput.current?.focus();
 						}}
 					>
 						Cancel

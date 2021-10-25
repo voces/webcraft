@@ -1,4 +1,5 @@
 import { array2 } from "../../../test/array2";
+import { isError } from "../../core/util/typeguards";
 import { PATHING_TYPES } from "../constants";
 import { pathDistance, tweenPoints } from "../util/tweenPoints";
 import { PathingMap } from "./PathingMap";
@@ -1379,7 +1380,8 @@ describe("PathingMap#recheck", () => {
 					pathingMap.recheck(path.points, entity, 0.123),
 				).toBeTruthy();
 			} catch (err) {
-				err.message += ` (check ${check}) x=${entity.x} y=${entity.y}`;
+				if (isError(err))
+					err.message += ` (check ${check}) x=${entity.x} y=${entity.y}`;
 				throw err;
 			}
 			try {
@@ -1387,7 +1389,8 @@ describe("PathingMap#recheck", () => {
 					pathingMap.pathable(entity, point.x, point.y),
 				).toBeTruthy();
 			} catch (err) {
-				err.message += ` (check ${check}) x=${entity.x} y=${entity.y}`;
+				if (isError(err))
+					err.message += ` (check ${check}) x=${entity.x} y=${entity.y}`;
 				throw err;
 			}
 			entity.x = point.x;

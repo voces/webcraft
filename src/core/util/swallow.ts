@@ -9,7 +9,7 @@ import type { RecursivePartial } from "./types";
 const swallow = <T>(obj: RecursivePartial<T> = {}): T => {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const memory: T = obj as any;
-	return (new Proxy(
+	return new Proxy(
 		Object.assign(
 			() => {
 				/* do nothing */
@@ -18,22 +18,22 @@ const swallow = <T>(obj: RecursivePartial<T> = {}): T => {
 		),
 		{
 			get: (_: unknown, prop) => {
-				const p = (prop as unknown) as keyof T;
+				const p = prop as unknown as keyof T;
 				if (prop in memory) return memory[p];
 				memory[p] =
 					p === Symbol.toPrimitive
-						? (((() => 1) as unknown) as T[keyof T])
+						? ((() => 1) as unknown as T[keyof T])
 						: swallow();
 				return memory[p];
 			},
 			set: (_, prop, value) => {
-				memory[(prop as unknown) as keyof T] = value;
+				memory[prop as unknown as keyof T] = value;
 				return true;
 			},
 			apply: () => swallow(),
 		},
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	) as any) as T;
+	) as any as T;
 };
 
 export { swallow };

@@ -83,8 +83,8 @@ export class ObstructionPlacement extends Mechanism {
 		if (!unit) return;
 
 		const pathing = this.plannedObstruction.defaults.requiresPathing;
-		const collisionRadius = this.plannedObstruction.defaults
-			.collisionRadius;
+		const collisionRadius =
+			this.plannedObstruction.defaults.collisionRadius;
 		const xStart = this.snap(this.mouse.ground.x) - collisionRadius;
 		const yStart = this.snap(this.mouse.ground.y) - collisionRadius;
 
@@ -96,9 +96,8 @@ export class ObstructionPlacement extends Mechanism {
 			this.grids[collisionRadius * 2] = [];
 		const newGrid =
 			this.grids[collisionRadius * 2][collisionRadius * 2] ??
-			(this.grids[collisionRadius * 2][
-				collisionRadius * 2
-			] = this.newGrid(collisionRadius * 2, collisionRadius * 2));
+			(this.grids[collisionRadius * 2][collisionRadius * 2] =
+				this.newGrid(collisionRadius * 2, collisionRadius * 2));
 
 		// If changing placements, hide the old one and show the new one
 		if (newGrid !== oldGrid) {

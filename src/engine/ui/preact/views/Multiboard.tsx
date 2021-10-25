@@ -3,7 +3,7 @@ import { h } from "preact";
 
 export type Props<
 	Row extends Record<string, ComponentChild>,
-	Key extends keyof Row
+	Key extends keyof Row,
 > = {
 	rows: Row[];
 	rowKey: Key;
@@ -11,7 +11,7 @@ export type Props<
 
 export const Multiboard = <
 	Row extends Record<string, ComponentChild>,
-	Key extends keyof Row
+	Key extends keyof Row,
 >({
 	rows,
 	rowKey,

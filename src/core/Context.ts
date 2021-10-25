@@ -38,10 +38,10 @@ export class Context<T extends object | undefined> {
 		if (!context) throw new Error("Expected context");
 
 		let innerMemory: InnerMap;
-		if (!this.memory.has(context!)) {
+		if (!this.memory.has(context)) {
 			innerMemory = new WeakMap();
-			this.memory.set(context!, innerMemory);
-		} else innerMemory = this.memory.get(context!)!;
+			this.memory.set(context, innerMemory);
+		} else innerMemory = this.memory.get(context)!;
 
 		if (innerMemory.has(fn)) return innerMemory.get(fn);
 

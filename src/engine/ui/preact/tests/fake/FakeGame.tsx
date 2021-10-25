@@ -5,15 +5,15 @@ import type { Network } from "../../../../../engine/Network";
 export const fakeGame = (props?: { network: Network }): WCGame => {
 	const network =
 		props?.network ??
-		emitter(({
+		emitter({
 			connect: jest.fn(),
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		} as any) as Network);
+		} as any as Network);
 
-	return (emitter({
+	return emitter({
 		network,
 		connect: network.connect.bind(network),
 		addNetworkListener: network.addEventListener.bind(network),
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	}) as any) as WCGame;
+	}) as any as WCGame;
 };

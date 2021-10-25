@@ -3,7 +3,7 @@ import { h } from "preact";
 import { useContext } from "preact/hooks";
 
 import { Mechanism } from "../../../../core/Mechanism";
-import type { GameType } from "../contexts/Game";
+import type { Game as GameType } from "../../../../engine/Game";
 import { Game } from "../contexts/Game";
 import { useForceRender } from "../hooks/useForceRender";
 

@@ -1,5 +1,6 @@
 import { useCallback, useState } from "preact/hooks";
 
+import { isError } from "../../../../../core/util/typeguards";
 import type { Options } from "../../../util/fetch";
 import { fetch } from "../../../util/fetch";
 
@@ -106,9 +107,8 @@ export const useFetch = <Body, Result, Error>({
 		props: UseFetchProps<Body>,
 	) => Promise<FetchState<Result, Error>>;
 } => {
-	const [fetchState, setFetchState] = useState<FetchState<Result, Error>>(
-		initial,
-	);
+	const [fetchState, setFetchState] =
+		useState<FetchState<Result, Error>>(initial);
 
 	const performFetch = useCallback(
 		async ({
@@ -140,9 +140,14 @@ export const useFetch = <Body, Result, Error>({
 				setFetchState(newFetchState);
 				return newFetchState;
 			} catch (error) {
+				const message =
+					(isError(error) && error.message) ||
+					(typeof error === "string" && error) ||
+					"Unknown error";
+
 				const newFetchState = errored({
 					code: -1 as const,
-					message: String(error.message),
+					message: String(message),
 				});
 				setFetchState(newFetchState);
 				return newFetchState;

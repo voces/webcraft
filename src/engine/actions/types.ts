@@ -6,7 +6,7 @@ import type { Player } from "../players/Player";
 
 export type Action<
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	NetworkEvent extends keyof NetworkEventCallback | undefined = any
+	NetworkEvent extends keyof NetworkEventCallback | undefined = any,
 > = {
 	description?: string;
 	name: string;

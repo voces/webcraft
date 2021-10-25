@@ -8,7 +8,6 @@ import { currentGame, wrapGame } from "../gameContext";
 import { initCameraListeners } from "../players/camera";
 import { initChatListeners } from "./chat";
 import { initListeners } from "./listeners";
-import { initSplashListeners } from "./waitingSplash";
 
 enum MouseButton {
 	LEFT = 0,
@@ -121,7 +120,6 @@ class UI {
 		initCameraListeners(this);
 		initListeners(this);
 		initChatListeners(game, this);
-		initSplashListeners(game);
 
 		const loadApp = async () => {
 			const { initialize } = await import("./preact/App");

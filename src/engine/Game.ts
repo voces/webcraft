@@ -60,12 +60,12 @@ class Game extends App {
 
 	get displayName(): string {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return ((this.constructor as any) as typeof Game).displayName;
+		return (this.constructor as any as typeof Game).displayName;
 	}
 
 	get protocol(): string {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return ((this.constructor as any) as typeof Game).protocol;
+		return (this.constructor as any as typeof Game).protocol;
 	}
 
 	private network!: Network;
