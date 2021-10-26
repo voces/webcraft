@@ -90,6 +90,7 @@ export const Login = ({
 			<Group spacing={8}>
 				<h2>{game.displayName}</h2>
 				<Input
+					autocomplete="username"
 					data-test="username"
 					inputRef={usernameInput}
 					value={username}

@@ -1582,6 +1582,7 @@ export class PathingMap {
 		const tileY = this.yWorldToTile(position.y);
 		for (let y = top; y < top + height; y++)
 			for (let x = left; x < left + width; x++) {
+				if (!this.grid[tileY + y]?.[tileX + x]) continue;
 				tiles.push(this.grid[tileY + y][tileX + x]);
 				this.grid[tileY + y][tileX + x].addEntity(
 					entity,
