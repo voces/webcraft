@@ -13,6 +13,7 @@ export type { Action, ImmediateActionProps } from "./engine/actions/types";
 export { DamageComponent, Weapon } from "./engine/components/DamageComponent";
 export { Animation } from "./engine/components/graphics/Animation";
 export { MeshBuilderComponent } from "./engine/components/graphics/MeshBuilderComponent";
+export { ThreeObjectComponent } from "./engine/components/graphics/ThreeObjectComponent";
 export { Hover } from "./engine/components/Hover";
 export { MoveTarget } from "./engine/components/MoveTarget";
 export { PathingComponent } from "./engine/components/PathingComponent";

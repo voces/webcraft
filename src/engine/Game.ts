@@ -60,12 +60,28 @@ class Game extends App {
 
 	get displayName(): string {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return (this.constructor as any as typeof Game).displayName;
+		let displayName = (this.constructor as any as typeof Game).displayName;
+
+		if (!displayName) {
+			console.warn(
+				"Game.displayName undefined, falling back to class name",
+			);
+			displayName = this.constructor.name;
+		}
+
+		return displayName;
 	}
 
 	get protocol(): string {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return (this.constructor as any as typeof Game).protocol;
+		let protocol = (this.constructor as any as typeof Game).protocol;
+
+		if (!protocol) {
+			console.warn("Game.protocol undefined, falling back to class name");
+			protocol = this.constructor.name.toLowerCase();
+		}
+
+		return protocol;
 	}
 
 	private network!: Network;

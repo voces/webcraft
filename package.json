@@ -1,6 +1,6 @@
 {
 	"name": "webcraft",
-	"version": "5.0.1",
+	"version": "5.0.2",
 	"description": "a web-first game engine",
 	"scripts": {
 		"build-types": "tsc --project tsconfig.buildTypes.json",
