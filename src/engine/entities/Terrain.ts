@@ -33,32 +33,42 @@ export const interpolateZ = (
 export class Terrain extends Entity {
 	private group: TerrainGroup;
 	private height: number;
-	constructor(arena: {
+	constructor(opts: {
 		width: number;
 		height: number;
 		cliffs: CliffMask;
 		pathing: number[][];
+		heightMask?: number[][];
+		waterMask?: number[][];
+		waterHeightMask?: number[][];
+		waterHeight?: number;
+		tiles?: { color: string }[];
 	}) {
 		super("TERRAIN");
-		const vertexZeroes = Array(arena.height + 1).fill(
-			new Array(arena.width + 1).fill(0),
+		const vertexZeroes = Array(opts.height + 1).fill(
+			new Array(opts.width + 1).fill(0),
 		);
-		this.height = arena.height;
+		this.height = opts.height;
+		const waterHeightMask = opts.waterHeightMask ?? vertexZeroes;
 		const group = new TerrainGroup({
 			masks: {
-				height: vertexZeroes,
-				cliff: arena.cliffs,
-				groundTile: arena.pathing,
-				cliffTile: arena.cliffs.map((r) => r.map(() => 4)),
-				water: arena.cliffs.map((r) => r.map((v) => (v === 0 ? 1 : 0))),
-				waterHeight: vertexZeroes,
+				height: opts.heightMask ?? vertexZeroes,
+				cliff: opts.cliffs,
+				groundTile: opts.pathing,
+				cliffTile: opts.cliffs.map((r) => r.map(() => 4)),
+				water:
+					opts.waterMask ??
+					opts.cliffs.map((r, y) =>
+						r.map((v, x) => (v <= waterHeightMask[y][x] ? 1 : 0)),
+					),
+				waterHeight: opts.waterHeightMask ?? vertexZeroes,
 			},
 			offset: {
 				x: 0,
 				y: this.height,
 				z: 0,
 			},
-			tiles: [
+			tiles: opts.tiles ?? [
 				LordaeronSummerDarkGrass,
 				LordaeronSummerGrass,
 				LordaeronSummerRock,
@@ -66,8 +76,8 @@ export class Terrain extends Entity {
 				LordaeronSummerDirtCliff,
 			],
 			size: {
-				width: arena.width,
-				height: arena.height,
+				width: opts.width,
+				height: opts.height,
 			},
 		});
 		new ThreeObjectComponent(this, group);
