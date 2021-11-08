@@ -8,6 +8,7 @@ export { logLine } from "./core/logger";
 export { Mechanism } from "./core/Mechanism";
 export { System } from "./core/System";
 export { document, window } from "./core/util/globals";
+export { swallow } from "./core/util/swallow";
 export { mirrorAction } from "./engine/actions/mirror";
 export type { Action, ImmediateActionProps } from "./engine/actions/types";
 export { DamageComponent, Weapon } from "./engine/components/DamageComponent";
