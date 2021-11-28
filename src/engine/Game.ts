@@ -55,14 +55,16 @@ type Timeout = {
 class Game extends App {
 	static readonly isGame = true;
 
-	static displayName = "Untitled Game";
-	static protocol = "unknown";
+	// eslint-disable-next-line no-restricted-syntax
+	static displayName = Math.random().toString();
+	// eslint-disable-next-line no-restricted-syntax
+	static protocol = Math.random().toString();
 
 	get displayName(): string {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let displayName = (this.constructor as any as typeof Game).displayName;
 
-		if (!displayName) {
+		if (!displayName || displayName === Game.displayName) {
 			console.warn(
 				"Game.displayName undefined, falling back to class name",
 			);
@@ -76,7 +78,7 @@ class Game extends App {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let protocol = (this.constructor as any as typeof Game).protocol;
 
-		if (!protocol) {
+		if (!protocol || protocol === Game.protocol) {
 			console.warn("Game.protocol undefined, falling back to class name");
 			protocol = this.constructor.name.toLowerCase();
 		}
