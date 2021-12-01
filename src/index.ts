@@ -18,6 +18,7 @@ export { ThreeObjectComponent } from "./engine/components/graphics/ThreeObjectCo
 export { Hover } from "./engine/components/Hover";
 export { MoveTarget } from "./engine/components/MoveTarget";
 export { PathingComponent } from "./engine/components/PathingComponent";
+export { Position } from "./engine/components/Position";
 export { Selected } from "./engine/components/Selected";
 export { Timer } from "./engine/components/Timer";
 export { TimerWindow } from "./engine/components/TimerWindow";

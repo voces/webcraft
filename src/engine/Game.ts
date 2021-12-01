@@ -3,7 +3,7 @@ import type { Emitter } from "../core/emitter";
 import { emitter } from "../core/emitter";
 import type { Entity } from "../core/Entity";
 import { initSpriteLogicListeners } from "./actions/spriteLogic";
-import type { Terrain } from "./entities/Terrain";
+import type { TerrainInterface } from "./entities/Terrain";
 import type { Obstruction } from "./entities/widgets/sprites/units/Obstruction";
 import { withGame, wrapGame } from "./gameContext";
 import { alea } from "./lib/alea";
@@ -102,7 +102,7 @@ class Game extends App {
 	newPlayers = false;
 	random = alea("");
 	lastUpdate = 0;
-	terrain?: Terrain;
+	terrain?: TerrainInterface;
 
 	// Systems/mechanisms
 	mouse!: Mouse;

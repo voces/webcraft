@@ -124,3 +124,7 @@ export class Terrain extends Entity {
 		return height;
 	}
 }
+
+export type TerrainInterface = {
+	groundHeight: Terrain["groundHeight"];
+};

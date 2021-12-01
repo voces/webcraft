@@ -28,7 +28,7 @@ export class GraphicTrackPosition extends System {
 		object.position.x = position.x;
 		object.position.y = position.y;
 		object.position.z =
-			game.terrain!.groundHeight(position.x, position.y) +
+			(game.terrain?.groundHeight(position.x, position.y) ?? 0) +
 			entity.position.zOffset;
 
 		// TODO: we can probably generalize this with a Children component
