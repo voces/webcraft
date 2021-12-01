@@ -1,4 +1,3 @@
-import { Terrain } from "notextures";
 import type { Intersection, Object3D } from "three";
 import { Raycaster, Vector2, Vector3 } from "three";
 
@@ -113,11 +112,16 @@ class Mouse extends System {
 			true,
 		);
 
-		for (let i = this.intersections.length - 1; i >= 0; i--)
-			if (this.intersections[i].object.parent instanceof Terrain) {
-				this.ground = this.intersections[i].point;
-				break;
+		outer: for (let i = this.intersections.length - 1; i >= 0; i--) {
+			let obj: Object3D | null = this.intersections[i].object;
+			while (obj) {
+				if (obj && "isTerrain" in obj) {
+					this.ground = this.intersections[i].point;
+					break outer;
+				}
+				obj = obj.parent;
 			}
+		}
 
 		let foundEntity = false;
 

@@ -31,6 +31,7 @@ export const interpolateZ = (
 };
 
 export class Terrain extends Entity {
+	readonly isTerrain = true;
 	private group: TerrainGroup;
 	private height: number;
 	constructor(opts: {
@@ -126,5 +127,6 @@ export class Terrain extends Entity {
 }
 
 export type TerrainInterface = {
+	isTerrain: true;
 	groundHeight: Terrain["groundHeight"];
 };
