@@ -1,6 +1,6 @@
 {
 	"name": "webcraft",
-	"version": "5.1.0",
+	"version": "5.1.1",
 	"description": "a web-first game engine",
 	"scripts": {
 		"build-types": "tsc --project tsconfig.buildTypes.json",
@@ -24,7 +24,7 @@
 	],
 	"peerDependencies": {
 		"marked": "^3.0.7",
-		"notextures": "^5.0.0",
+		"notextures": "^5.1.0",
 		"preact": "^10.5.15",
 		"three": "^0.133.1"
 	},
@@ -49,7 +49,7 @@
 		"jest-ts-webcompat-resolver": "^1.0.0",
 		"jsdom": "^18.0.0",
 		"marked": "^3.0.7",
-		"notextures": "^5.0.0",
+		"notextures": "5.1.0",
 		"preact": "^10.5.15",
 		"prettier": "^2.4.1",
 		"three": "^0.133.1",

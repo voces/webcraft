@@ -8,7 +8,6 @@ export interface InternalArena {
 }
 
 export interface Arena extends InternalArena {
-	cliffs: (number | "r")[][];
 	pathing: number[][];
 	width: number;
 	height: number;

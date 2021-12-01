@@ -61,13 +61,14 @@ class Game extends App {
 	static protocol = Math.random().toString();
 
 	get displayName(): string {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let displayName = (this.constructor as any as typeof Game).displayName;
+		let displayName = (this.constructor as typeof Game).displayName;
 
 		if (!displayName || displayName === Game.displayName) {
 			console.warn(
 				"Game.displayName undefined, falling back to class name",
 			);
+			(this.constructor as typeof Game).displayName =
+				this.constructor.name;
 			displayName = this.constructor.name;
 		}
 
@@ -75,11 +76,12 @@ class Game extends App {
 	}
 
 	get protocol(): string {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		let protocol = (this.constructor as any as typeof Game).protocol;
+		let protocol = (this.constructor as typeof Game).protocol;
 
 		if (!protocol || protocol === Game.protocol) {
 			console.warn("Game.protocol undefined, falling back to class name");
+			(this.constructor as typeof Game).protocol =
+				this.constructor.name.toLowerCase();
 			protocol = this.constructor.name.toLowerCase();
 		}
 
