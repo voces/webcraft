@@ -8,9 +8,9 @@ import { System } from "../../core/System";
 import { window } from "../../core/util/globals";
 import { ThreeObjectComponent } from "../components/graphics/ThreeObjectComponent";
 import { Hover } from "../components/Hover";
-import { isSelectionCircle, isSprite } from "../typeguards";
+import { isSelectionCircle } from "../typeguards";
 import type { EntityObject } from "../types";
-import type { MouseDownEvent, MouseMoveEvent, UI } from "../ui";
+import type { MouseDownEvent, MouseMoveEvent, UI } from "../ui/index";
 import type { ThreeGraphics } from "./ThreeGraphics";
 
 export enum MouseButton {
@@ -29,6 +29,10 @@ export type MouseEvents = {
 		mouse: Mouse;
 	}) => void;
 };
+
+const isSelectableEntity = (
+	entity: Entity,
+): entity is Entity & { selectable: unknown } => "selectable" in entity;
 
 class Mouse extends System {
 	static components = [ThreeObjectComponent];
@@ -113,9 +117,9 @@ class Mouse extends System {
 		);
 
 		outer: for (let i = this.intersections.length - 1; i >= 0; i--) {
-			let obj: Object3D | null = this.intersections[i].object;
+			let obj: EntityObject | null = this.intersections[i].object;
 			while (obj) {
-				if (obj && "isTerrain" in obj) {
+				if (obj && obj.entity && "isTerrain" in obj.entity) {
 					this.ground = this.intersections[i].point;
 					break outer;
 				}
@@ -128,7 +132,7 @@ class Mouse extends System {
 		for (let i = 0; i < this.intersections.length; i++) {
 			const object: EntityObject = this.intersections[i].object;
 			const entity = object?.entity;
-			if (entity && (!isSprite(entity) || entity.selectable)) {
+			if (entity && isSelectableEntity(entity) && entity.selectable) {
 				foundEntity = true;
 				if (this.entity !== entity) {
 					if (this.entity) Hover.clear(this.entity);

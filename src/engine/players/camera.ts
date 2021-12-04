@@ -4,8 +4,8 @@ import {
 	window,
 } from "../../core/util/globals";
 import { currentGame, wrapGame } from "../gameContext";
-import type { UI } from "../ui";
 import { registerCommand } from "../ui/chat";
+import type { UI } from "../ui/index";
 import type { PathTweener } from "../util/tweenPoints";
 
 type Direction = "right" | "left" | "down" | "up";
