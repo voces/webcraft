@@ -23,7 +23,7 @@
 		"dist/*"
 	],
 	"peerDependencies": {
-		"marked": "^3.0.7",
+		"marked": "^4.0.10",
 		"notextures": "^5.1.0",
 		"preact": "^10.5.15",
 		"three": "^0.133.1"
@@ -48,7 +48,7 @@
 		"jest": "^27.3.1",
 		"jest-ts-webcompat-resolver": "^1.0.0",
 		"jsdom": "^18.0.0",
-		"marked": "^3.0.7",
+		"marked": "^4.0.10",
 		"notextures": "5.1.0",
 		"preact": "^10.5.15",
 		"prettier": "^2.4.1",
